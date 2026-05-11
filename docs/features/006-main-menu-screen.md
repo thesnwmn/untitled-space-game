@@ -18,7 +18,7 @@
 
   ```
   rows  2–12  title block  (ASCII art "UNTITLED / SPACE GAME" in bright-cyan on black)
-  rows 14–16  tagline      (centred, white on black, e.g. "- A space game -")
+  rows 14–16  tagline      (centred, white on black, e.g. "- A journey of space and character -")
   rows 22–28  menu options (see below)
   row  58     footer hint  (centred, bright-black — text varies by primaryInput, see below)
   ```
