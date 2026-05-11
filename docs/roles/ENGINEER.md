@@ -33,9 +33,42 @@ Never begin implementation without confirming which feature is being worked on.
     - Record: what was built, tsc output, test results, and play-test instructions.
 11. If you run out of context before finishing:
     - Do not leave code in a broken state. Revert or stub cleanly.
-    - Write a HANDOFF.md in the repo root with: what was done, what remains,
-      which files were changed, and where to pick up.
+    - Write a HANDOFF.md in the repo root using the template below.
     - Update the backlog item status to IN PROGRESS.
+
+## HANDOFF.md Template
+
+```markdown
+# Handoff — [Feature NNN: short name]
+
+## Current State
+- Session ended: [timestamp or approximate]
+- Backlog item: [NNN · title]
+- Status: IN PROGRESS
+
+## Completed This Session
+- [bullet list of what was actually finished and verified]
+
+## Remaining
+- [bullet list of what is left to implement]
+
+## Blockers / Risks
+- [any known problem or uncertainty the next session should be aware of]
+
+## Decisions Made
+- [any non-obvious choice made during this session, and why]
+
+## Evidence So Far
+- tsc: [passed / not yet run / errors found — paste errors if any]
+- Tests: [passed / not yet run / failures — paste failures if any]
+
+## Files Modified
+- [list of files changed or created]
+
+## Where to Pick Up
+[One paragraph of plain-language context — what the next session needs to know
+to continue without re-reading everything. Include the exact next step to take.]
+```
 12. On successful completion, automatically proceed to the Reviewer role. Do not
     wait for the manager to ask. The review is part of the Engineer session.
 
