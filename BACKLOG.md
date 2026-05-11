@@ -12,6 +12,9 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 007 · Responsive screen sizing
+See docs/features/007-responsive-screen-sizing.md.
+
 ### 003 · Keyboard input handler (browser)
 See docs/features/003-keyboard-input-browser.md.
 
