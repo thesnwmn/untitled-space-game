@@ -12,16 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 001 · Scaffold: Vite + TypeScript + Bun project structure
-Set up the base repo with Vite browser entry, Bun terminal entry, shared types,
-and placeholder renderer implementations. Placeholders are type-correct stubs that
-implement the `Renderer` interface; `drawBuffer` and all other methods are no-ops.
-`init.sh` must pass on a clean checkout; it should run `npm install`, `tsc --noEmit`,
-and `npm run build` in sequence.
-Also include a GitHub Actions workflow that builds the Vite output and deploys it
-to the `gh-pages` branch on every merge to main. GitHub Pages should be configured
-to serve from that branch, not from `/docs` on main.
-
 ### 002 · CharBuffer and DOMRenderer
 See docs/features/002-char-buffer-dom-renderer.md.
 
@@ -53,4 +43,32 @@ _(none)_
 
 ## DONE
 
-_(none yet)
+### 001 · Scaffold: Vite + TypeScript + Bun project structure
+
+**Built:**
+- `package.json` with Vite + TypeScript + Vitest dev dependencies and all required scripts
+- `tsconfig.json` — strict mode, `moduleResolution: "bundler"`, targets `src/**/*`
+- `vite.config.ts` — base path `/untitled-space-game/` for GitHub Pages; Vitest config included
+- `index.html` — browser entry (Vite)
+- `src/main.ts` — browser bootstrap (detects touch vs keyboard, instantiates stubs)
+- `src/shared/types.ts` — `Color`, `Cell`, `CharBuffer`, `Renderer`, `InputHandler`, `GameAction`, `GameContext`
+- `src/platform/dom/DOMRenderer.ts` — no-op stub implementing `Renderer` (40×60 grid)
+- `src/platform/dom/DOMInputHandler.ts` — no-op stub implementing `InputHandler`
+- `src/platform/terminal/TerminalRenderer.ts` — no-op stub implementing `Renderer` (40×60 grid)
+- `src/platform/terminal/TerminalInputHandler.ts` — no-op stub implementing `InputHandler`
+- `terminal.ts` — Bun entry point
+- `src/tests/scaffold.test.ts` — 6 tests verifying all stubs are instantiable and return correct dimensions
+- `.github/workflows/deploy.yml` — builds on push to main, deploys `dist/` to `gh-pages` branch via peaceiris/actions-gh-pages
+- `.gitignore`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 6/6 tests passed
+- `npm run build`: ✓ Vite build OK (dist/index.html 0.32 kB)
+- `bun --check terminal.ts`: ✓ exits 0
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Clone repo, run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm run dev` — Vite dev server starts; open browser, console shows `Space game initialised — browser/keyboard`
+3. Run `bun terminal.ts` — prints `Space game initialised — terminal/keyboard` and `Grid: 40×60`
