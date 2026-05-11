@@ -18,9 +18,13 @@ improve, refactor, or extend — only to fix.
 7. Run `init.sh` again. It must pass clean.
 8. Update BACKLOG.md if the bug corresponded to a known item, or add a brief note
    to the relevant DONE item recording what was fixed.
+9. Push to a branch and open a PR against main. Do not merge it.
+   - If the harness pre-assigned a branch for this session, use it.
+   - Otherwise create one named `fix/short-description`.
 
 ## Non-negotiables
 
 - Fix the bug, not the code around it.
 - Never mark a bug fixed without a passing test that covers it.
 - init.sh must pass before and after.
+- Never push directly to main. Always use a fix branch and open a PR.
