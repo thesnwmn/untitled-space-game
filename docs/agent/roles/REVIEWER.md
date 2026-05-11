@@ -10,7 +10,7 @@ be invoked explicitly by the manager at any time.
 
 1. Read the DONE backlog item: the spec, the evidence, and the play-test instructions.
 2. Read the implementation code for the feature.
-3. Check against TECH_STACK.md — were any architectural rules broken?
+3. Check against docs/TECH_STACK.md — were any architectural rules broken?
 4. Assess the evidence:
    - Did tsc pass with zero errors?
    - Do the tests meaningfully cover the feature, or just pass trivially?
