@@ -19,7 +19,7 @@ Never begin implementation without confirming which feature is being worked on.
 4. If the PR for this item already exists, check it for unresolved Reviewer comments
    before writing any code. Address any outstanding feedback as part of this session.
 5. Read any existing code that the feature touches.
-6. Implement. Follow DECISION_REGISTER.md — do not introduce new dependencies or
+6. Implement. Follow TECH_STACK.md — do not introduce new dependencies or
    patterns without flagging them to the manager first.
 7. Verify:
    - TypeScript: `tsc --noEmit` must pass with zero errors.

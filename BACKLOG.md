@@ -17,7 +17,7 @@ Set up the base repo with Vite browser entry, Bun terminal entry, shared types,
 and placeholder renderer implementations. init.sh must pass on a clean checkout.
 
 ### 002 · CharBuffer and DOMRenderer
-Implement `CharBuffer`, `Cell`, and `Color` types from DECISION_REGISTER.md.
+Implement `CharBuffer`, `Cell`, and `Color` types from TECH_STACK.md.
 Implement `DOMRenderer` that renders a buffer to a `<pre>` element.
 Browser should display a test pattern of coloured ASCII characters.
 

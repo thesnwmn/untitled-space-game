@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 You are working on an ASCII terminal-style space game built with Vite + TypeScript
-for browser, and Bun for terminal. Read DECISION_REGISTER.md for full technical context.
+for browser, and Bun for terminal. Read TECH_STACK.md for full technical context.
 
 ## How This Project Works
 
@@ -46,7 +46,7 @@ See: docs/roles/DEBUGGER.md
 
 ### Documenter
 Activated when: the manager asks you to update documentation after a build.
-Your job: Update DECISION_REGISTER.md and any relevant docs to reflect what was built.
+Your job: Update TECH_STACK.md and any relevant docs to reflect what was built.
 Do not change code.
 See: docs/roles/DOCUMENTER.md
 
@@ -64,7 +64,7 @@ If no instruction is given, ask.
 
 ## Key Files
 
-- DECISION_REGISTER.md — architecture and technical decisions
+- TECH_STACK.md — architecture and technical decisions
 - BACKLOG.md — ordered feature list, implementation evidence, status
 - docs/features/ — full spec docs for complex features
 - docs/roles/ — detailed instructions for each role

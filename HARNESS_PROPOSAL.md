@@ -33,7 +33,7 @@ The entry point Claude reads at the start of every session. Kept short by design
 # CLAUDE.md
 
 You are working on an ASCII terminal-style space game built with Vite + TypeScript
-for browser, and Bun for terminal. Read DECISION_REGISTER.md for full technical context.
+for browser, and Bun for terminal. Read TECH_STACK.md for full technical context.
 
 ## How This Project Works
 
@@ -78,7 +78,7 @@ See: docs/roles/DEBUGGER.md
 
 ### Documenter
 Activated when: the manager asks you to update documentation after a build.
-Your job: Update DECISION_REGISTER.md and any relevant docs to reflect what was built.
+Your job: Update TECH_STACK.md and any relevant docs to reflect what was built.
 Do not change code.
 See: docs/roles/DOCUMENTER.md
 
@@ -96,7 +96,7 @@ If no instruction is given, ask.
 
 ## Key Files
 
-- DECISION_REGISTER.md — architecture and technical decisions
+- TECH_STACK.md — architecture and technical decisions
 - BACKLOG.md — ordered feature list, implementation evidence, status
 - docs/features/ — full spec docs for complex features
 - docs/roles/ — detailed instructions for each role
@@ -121,7 +121,7 @@ single session, and clear enough that no clarifying questions are needed mid-bui
 ## Process
 
 1. Understand what the manager wants. Ask clarifying questions now, not during build.
-2. Check DECISION_REGISTER.md — any spec must fit within agreed architecture.
+2. Check TECH_STACK.md — any spec must fit within agreed architecture.
 3. Check BACKLOG.md — does this feature depend on anything not yet built?
 4. Write the spec. Use the format below.
 5. Decide: is this a one-liner for BACKLOG.md, or does it need a docs/features/ doc?
@@ -185,7 +185,7 @@ Never begin implementation without confirming which feature is being worked on.
 4. If the PR for this item already exists, check it for unresolved Reviewer comments
    before writing any code. Address any outstanding feedback as part of this session.
 5. Read any existing code that the feature touches.
-6. Implement. Follow DECISION_REGISTER.md — do not introduce new dependencies or
+6. Implement. Follow TECH_STACK.md — do not introduce new dependencies or
    patterns without flagging them to the manager first.
 7. Verify:
    - TypeScript: `tsc --noEmit` must pass with zero errors.
@@ -231,7 +231,7 @@ be invoked explicitly by the manager at any time.
 
 1. Read the DONE backlog item: the spec, the evidence, and the play-test instructions.
 2. Read the implementation code for the feature.
-3. Check against DECISION_REGISTER.md — were any architectural rules broken?
+3. Check against TECH_STACK.md — were any architectural rules broken?
 4. Assess the evidence:
    - Did tsc pass with zero errors?
    - Do the tests meaningfully cover the feature, or just pass trivially?
@@ -290,14 +290,14 @@ improve, refactor, or extend — only to fix.
 ```markdown
 # Role: Documenter
 
-Your goal is to keep DECISION_REGISTER.md and supporting docs accurate after
+Your goal is to keep TECH_STACK.md and supporting docs accurate after
 features are built that settle or change architectural questions.
 
 ## Process
 
 1. Read the recently completed backlog item and its implementation.
 2. Identify anything that:
-   - Settles a previously open question (add it to DECISION_REGISTER.md).
+   - Settles a previously open question (add it to TECH_STACK.md).
    - Changes or extends an existing decision (update the relevant section).
    - Introduces a new pattern other roles should know about.
 3. Make the updates. Keep the register factual and concise — it is a reference,
@@ -387,7 +387,7 @@ Set up the base repo with Vite browser entry, Bun terminal entry, shared types,
 and placeholder renderer implementations. init.sh must pass on a clean checkout.
 
 ### 002 · CharBuffer and DOMRenderer
-Implement `CharBuffer`, `Cell`, and `Color` types from DECISION_REGISTER.md.
+Implement `CharBuffer`, `Cell`, and `Color` types from TECH_STACK.md.
 Implement `DOMRenderer` that renders a buffer to a `<pre>` element.
 Browser should display a test pattern of coloured ASCII characters.
 
