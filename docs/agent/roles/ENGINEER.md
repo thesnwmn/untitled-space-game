@@ -80,3 +80,9 @@ to continue without re-reading everything. Include the exact next step to take.]
 - Never introduce a new dependency without manager approval.
 - init.sh must pass both before you start and after you finish.
 - Never push directly to main. Always use a feature branch and open a PR.
+- Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
+  runtime environment guards (`typeof X === 'undefined'`, `process.platform` checks,
+  etc.) to paper over a mismatch between the class's platform and the test environment.
+  If a platform class requires an API that the test environment doesn't provide,
+  configure the test environment to provide it (e.g. set `environment: 'jsdom'` in
+  vite.config.ts for DOM classes). The guard belongs in the test config, not the code.

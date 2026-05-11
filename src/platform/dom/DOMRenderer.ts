@@ -9,21 +9,15 @@ function escapeHtml(char: string): string {
 }
 
 export class DOMRenderer implements Renderer {
-  private pre: HTMLPreElement | null = null;
+  private pre: HTMLPreElement;
 
-  private getOrCreatePre(): HTMLPreElement | null {
-    if (typeof document === 'undefined') return null;
-    if (!this.pre) {
-      this.pre = document.createElement('pre');
-      this.pre.className = 'game-screen';
-      document.body.appendChild(this.pre);
-    }
-    return this.pre;
+  constructor() {
+    this.pre = document.createElement('pre');
+    this.pre.className = 'game-screen';
+    document.body.appendChild(this.pre);
   }
 
   drawBuffer(buffer: CharBuffer): void {
-    const pre = this.getOrCreatePre();
-    if (!pre) return;
     const rows: string[] = [];
     for (const row of buffer) {
       let rowHtml = '';
@@ -36,15 +30,13 @@ export class DOMRenderer implements Renderer {
       }
       rows.push(rowHtml);
     }
-    pre.innerHTML = rows.join('\n');
+    this.pre.innerHTML = rows.join('\n');
   }
 
   getWidth(): number { return GRID_WIDTH; }
   getHeight(): number { return GRID_HEIGHT; }
 
   clear(): void {
-    const pre = this.getOrCreatePre();
-    if (!pre) return;
-    pre.innerHTML = '';
+    this.pre.innerHTML = '';
   }
 }
