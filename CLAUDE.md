@@ -73,4 +73,6 @@ If no instruction is given, ask.
 ## Git Workflow
 
 All changes go to a feature branch. Open a PR against main. Never push to main directly.
-The manager merges after Reviewer approval. Branch naming: `feature/NNN-short-description`.
+The manager merges after Reviewer approval. Branch naming:
+- Features: `feature/NNN-short-description`
+- Bug fixes: `fix/short-description`
