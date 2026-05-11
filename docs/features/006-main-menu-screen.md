@@ -12,14 +12,20 @@
   }
   ```
 - `MainMenuScene` is implemented in `src/game/scenes/MainMenuScene.ts` and satisfies `Scene`.
+- `MainMenuScene` constructor signature: `constructor(inputHandler: InputHandler, context: GameContext)`.
+- The `GameContext` type (`RuntimeEnvironment`, `PrimaryInput`) is also added to `src/shared/types.ts` as specified in docs/TECH_STACK.md.
 - The menu renders into the full 40×60 grid with this layout:
 
   ```
   rows  2–12  title block  (ASCII art "UNTITLED / SPACE GAME" in bright-cyan on black)
   rows 14–16  tagline      (centred, white on black, e.g. "- A space game -")
   rows 22–28  menu options (see below)
-  row  58     footer hint  (centred, bright-black: "↑↓ navigate   ENTER select")
+  row  58     footer hint  (centred, bright-black — text varies by primaryInput, see below)
   ```
+
+  Footer hint text:
+  - `context.primaryInput === 'keyboard'`: `"↑↓ navigate   ENTER select"`
+  - `context.primaryInput === 'touch'`: `"tap an option to select"`
 
 - Menu options rendered as (example, cursor on first item):
 
@@ -29,6 +35,7 @@
   ```
 
   The cursor `>` and the highlighted option label use `bright-green` fg; unselected options use `white` fg. All options on `black` bg.
+- When `context.environment === 'browser'`, QUIT is not rendered and not selectable. The menu only shows NEW GAME. (There is nothing meaningful to quit to in a browser tab.)
 
 - **Keyboard/swipe navigation (incremental):**
   - UP / DOWN move the cursor, wrapping around (bottom to top and vice versa).
@@ -63,6 +70,8 @@
 - The footer hint row uses `bright-black` (dark grey) to keep it visually subordinate to the menu.
 - `dt` passed to `update` is milliseconds since the last frame. `MainMenuScene` does not use it at this stage (static menu), but the signature must match the interface.
 - `onTap` is optional on the `InputHandler` interface. `MainMenuScene` should guard: `if (inputHandler.onTap) inputHandler.onTap(...)`.
+- `GameContext` is constructed by the entry point (see docs/TECH_STACK.md — Runtime Context). Browser: `{ environment: 'browser', primaryInput: navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard' }`. Terminal: `{ environment: 'terminal', primaryInput: 'keyboard' }`.
+- `MainMenuScene` must not contain any `if (typeof window !== 'undefined')` or other environment sniffing — all platform decisions are made via `GameContext`.
 
 ## Dependencies
 

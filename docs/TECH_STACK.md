@@ -85,6 +85,14 @@ export type GameAction =
   | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
   | 'SELECT' | 'BACK' | 'PAUSE'
   | 'PAGE_UP' | 'PAGE_DOWN';
+
+export type RuntimeEnvironment = 'browser' | 'terminal';
+export type PrimaryInput = 'keyboard' | 'touch';
+
+export interface GameContext {
+  environment: RuntimeEnvironment;
+  primaryInput: PrimaryInput;
+}
 ```
 
 ## Colour
@@ -109,6 +117,27 @@ Input is abstracted into semantic `GameAction` events and an optional positional
 | PAUSE | P | — | P |
 
 **Touch and menus:** Touch does not use incremental UP/DOWN to move a cursor. Instead, a tap fires `onTap(col, row)` with grid coordinates. Menu scenes map the tapped row directly to a menu item and activate it — one tap, no cursor movement. Swipes fire directional `GameAction` events and are reserved for future in-game use.
+
+## Runtime Context
+
+Scenes sometimes need to know what environment they are running in — for example, to hide a QUIT option that is meaningless in a browser, or to show touch-appropriate hints instead of keyboard hints. This is expressed as `GameContext`, injected into each scene's constructor:
+
+```typescript
+const context: GameContext = { environment: 'browser', primaryInput: 'touch' };
+const scene = new MainMenuScene(inputHandler, context);
+```
+
+`GameContext` is constructed once in each entry point and passed down. It never changes at runtime.
+
+**`environment`** — set statically by the entry point:
+- `terminal.ts` (Bun): always `'terminal'`
+- `index.ts` (browser): always `'browser'`
+
+**`primaryInput`** — detected once at startup:
+- Terminal: always `'keyboard'`
+- Browser: `navigator.maxTouchPoints > 0` → `'touch'`; otherwise `'keyboard'`
+
+Scenes use `context` to drive presentation decisions (which options to show, which hints to display) but never use it to bypass game logic. Platform-specific *behaviour* belongs in the renderer and input handler; `GameContext` is only for *presentation* choices that game-layer code needs to make.
 
 ## Build Tooling: Vite + TypeScript + Bun
 
