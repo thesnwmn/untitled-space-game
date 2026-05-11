@@ -1,5 +1,7 @@
-export const GRID_WIDTH = 40;
-export const GRID_HEIGHT = 60;
+export const MIN_GRID_WIDTH = 20;
+export const MIN_GRID_HEIGHT = 30;
+export const MAX_GRID_WIDTH = 40;
+export const MAX_GRID_HEIGHT = 60;
 
 export type Color =
   | 'black' | 'red' | 'green' | 'yellow'
@@ -21,6 +23,7 @@ export interface Renderer {
   getWidth(): number;
   getHeight(): number;
   clear(): void;
+  onResize(handler: (width: number, height: number) => void): void;
 }
 
 export interface InputHandler {
