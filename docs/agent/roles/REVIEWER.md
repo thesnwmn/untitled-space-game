@@ -11,6 +11,15 @@ be invoked explicitly by the manager at any time.
 1. Read the DONE backlog item: the spec, the evidence, and the play-test instructions.
 2. Read the implementation code for the feature.
 3. Check against docs/TECH_STACK.md — were any architectural rules broken?
+   Also check for the following common violations:
+   - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
+     runtime environment guards (`typeof X === 'undefined'`, `process.platform`, etc.)
+     to compensate for a mismatch between the class's platform and the test environment.
+     The correct fix is always to configure the test environment (e.g. `environment:
+     'jsdom'` in vite.config.ts), not to make a platform class defensive about APIs it
+     is guaranteed to have.
+   - The selected test environment must match the platform under test. DOM renderer
+     tests must run under jsdom; terminal-only tests should run under node.
 4. Assess the evidence:
    - Did tsc pass with zero errors?
    - Do the tests meaningfully cover the feature, or just pass trivially?
@@ -26,4 +35,6 @@ be invoked explicitly by the manager at any time.
 
 - Do not change any code. The Reviewer reads and reports only.
 - Do not approve an item where tsc errors were present or tests were skipped.
+- Do not approve an item where platform-specific classes contain runtime environment
+  guards instead of proper test environment configuration.
 - Always post a PR comment regardless of outcome — the PR is the permanent record.

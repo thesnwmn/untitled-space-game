@@ -1,3 +1,6 @@
+export const GRID_WIDTH = 40;
+export const GRID_HEIGHT = 60;
+
 export type Color =
   | 'black' | 'red' | 'green' | 'yellow'
   | 'blue' | 'magenta' | 'cyan' | 'white'

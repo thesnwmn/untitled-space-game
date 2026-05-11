@@ -1,7 +1,5 @@
 import type { Renderer, CharBuffer } from '../../shared/types';
-
-const GRID_WIDTH = 40;
-const GRID_HEIGHT = 60;
+import { GRID_WIDTH, GRID_HEIGHT } from '../../shared/types';
 
 export class TerminalRenderer implements Renderer {
   drawBuffer(_buffer: CharBuffer): void {}
