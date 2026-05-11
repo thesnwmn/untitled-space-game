@@ -14,11 +14,13 @@
   | ArrowDown | DOWN |
   | ArrowLeft | LEFT |
   | ArrowRight | RIGHT |
+  | PageUp | PAGE_UP |
+  | PageDown | PAGE_DOWN |
   | Enter | SELECT |
   | Escape | BACK |
   | P / p | PAUSE |
 
-- Arrow key events call `event.preventDefault()` to suppress browser scroll.
+- Arrow key and Page Up/Down events call `event.preventDefault()` to suppress default browser scroll behaviour.
 - The handler is activated by calling `connect()` (attaches a `keydown` listener to `document`) and deactivated by calling `disconnect()` (removes the listener). No `GameAction` events fire after `disconnect()` is called.
 - `DOMInputHandler` is instantiated and connected in the browser entry point and a smoke-test callback logs each received `GameAction` to `console.log`. This can be left in place until the main menu is wired up.
 - `tsc --noEmit` passes with zero errors.

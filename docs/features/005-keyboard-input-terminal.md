@@ -10,10 +10,12 @@
 
   | Input bytes | GameAction |
   |---|---|
-  | `\x1b[A` (ESC [ A) | UP |
-  | `\x1b[B` (ESC [ B) | DOWN |
-  | `\x1b[C` (ESC [ C) | RIGHT |
-  | `\x1b[D` (ESC [ D) | LEFT |
+  | `\x1b[A` | UP |
+  | `\x1b[B` | DOWN |
+  | `\x1b[C` | RIGHT |
+  | `\x1b[D` | LEFT |
+  | `\x1b[5~` | PAGE_UP |
+  | `\x1b[6~` | PAGE_DOWN |
   | `\r` or `\n` | SELECT |
   | `\x1b` (bare, single byte) | BACK |
   | `p` or `P` | PAUSE |
@@ -26,12 +28,13 @@
 ## Out of scope
 
 - Mouse input in terminal
+- `onTap` (positional input has no terminal equivalent)
 - Any rendering
 
 ## Technical notes
 
 - Use `process.stdin.on('data', (chunk: Buffer) => ...)` in raw mode. Each keypress arrives as a `Buffer`.
-- Distinguish bare Escape from arrow keys by byte length: arrow sequences are exactly 3 bytes (`\x1b`, `[`, `A/B/C/D`). A single `\x1b` byte is a bare Escape.
+- Distinguish bare Escape from arrow/page sequences by byte length and content: arrow sequences are exactly 3 bytes (`\x1b`, `[`, `A/B/C/D`); page sequences are 4 bytes (`\x1b`, `[`, `5`/`6`, `~`). A single `\x1b` byte is a bare Escape.
 - `connect()` and `disconnect()` are concrete methods on `TerminalInputHandler`, not part of the shared `InputHandler` interface.
 
 ## Dependencies

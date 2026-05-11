@@ -30,14 +30,22 @@
 
   The cursor `>` and the highlighted option label use `bright-green` fg; unselected options use `white` fg. All options on `black` bg.
 
-- Keyboard/touch navigation:
+- **Keyboard/swipe navigation (incremental):**
   - UP / DOWN move the cursor, wrapping around (bottom to top and vice versa).
-  - SELECT on "NEW GAME" logs `"[MainMenu] Starting game…"` to console and stops responding to further input (placeholder until a game scene exists).
-  - SELECT on "QUIT" logs `"[MainMenu] Quitting…"`, then calls `process.exit(0)` in the terminal build. In the browser build it is a no-op beyond the log.
+  - SELECT activates the currently highlighted item.
+
+- **Touch navigation (direct):**
+  - `MainMenuScene` registers an `onTap` handler with the `InputHandler`. When a tap arrives, the scene checks whether the tapped grid row falls on a menu item row. If it does, that item is activated immediately — no cursor movement required.
+  - Tapping a non-item row has no effect.
+
+- **Item actions:**
+  - Activating "NEW GAME" (via either input method) logs `"[MainMenu] Starting game…"` to console and stops responding to further input (placeholder until a game scene exists).
+  - Activating "QUIT" logs `"[MainMenu] Quitting…"`, then calls `process.exit(0)` in the terminal build. In the browser build it is a no-op beyond the log.
   - BACK while on the menu has no effect.
+
 - The browser entry point runs a game loop using `requestAnimationFrame`: `scene.update(dt)` → `scene.render(buffer)` → `renderer.drawBuffer(buffer)`. Target is uncapped but renders each frame.
 - The terminal entry point runs a game loop using `setInterval` at 30fps (33ms interval).
-- `MainMenuScene` receives an `InputHandler` in its constructor. It registers its own `onAction` listener internally. No global input state.
+- `MainMenuScene` receives an `InputHandler` in its constructor. It registers its own `onAction` and `onTap` listeners internally. No global input state.
 - `tsc --noEmit` passes with zero errors.
 
 ## Out of scope
@@ -54,6 +62,7 @@
 - The `Scene` interface is intentionally minimal. Do not add lifecycle methods (`init`, `destroy`, etc.) until a second scene exists and the pattern is proven necessary.
 - The footer hint row uses `bright-black` (dark grey) to keep it visually subordinate to the menu.
 - `dt` passed to `update` is milliseconds since the last frame. `MainMenuScene` does not use it at this stage (static menu), but the signature must match the interface.
+- `onTap` is optional on the `InputHandler` interface. `MainMenuScene` should guard: `if (inputHandler.onTap) inputHandler.onTap(...)`.
 
 ## Dependencies
 
