@@ -74,6 +74,7 @@ export interface Renderer {
   getWidth(): number;
   getHeight(): number;
   clear(): void;
+  onResize(handler: (width: number, height: number) => void): void;
 }
 
 export interface InputHandler {
@@ -167,12 +168,12 @@ bun build          → Bundle terminal version to standalone binary
 
 ## Layout
 
-The game targets a fixed character grid (e.g. 40×60 characters) designed for a portrait/phone aspect ratio.
+The game targets a responsive character grid bounded between **20–40 columns × 30–60 rows** (`MIN_GRID_WIDTH/HEIGHT` and `MAX_GRID_WIDTH/HEIGHT` in `shared/types.ts`), designed for a portrait/phone aspect ratio.
 
-- **Browser:** The `<pre>` is centred and letterboxed with CSS. Wider viewports show more background — the game area stays fixed. No JavaScript layout logic needed.
-- **Terminal:** Grid is clamped to the fixed size; terminal dimensions are read via `process.stdout.columns` / `process.stdout.rows`.
+- **Browser:** After `document.fonts.ready`, `DOMRenderer` measures the actual pixel size of a character cell. On construction and on each debounced `window.resize` event (~100ms), it computes the largest grid that fits the viewport within the min/max bounds. If the viewport is smaller than the minimum grid, the font is scaled down proportionally so the minimum grid always fits. All registered `onResize` handlers are fired with the new dimensions.
+- **Terminal:** `TerminalRenderer` reads `process.stdout.columns`/`rows` at construction and clamps them to the min/max bounds. A `SIGWINCH` listener (guarded by try/catch) recomputes dimensions and fires `onResize` handlers when the terminal is resized.
 
-ASCII art and layouts are designed once for the fixed grid and work across both targets without reflowing.
+The `Renderer` interface exposes `onResize(handler)` so game-layer code can react to dimension changes without platform knowledge. ASCII art and layouts must be designed to work within the full range of allowed grid sizes.
 
 ## Deployment
 - Source hosted on GitHub
@@ -191,7 +192,4 @@ ASCII art and layouts are designed once for the fixed grid and work across both 
 | Styling | CSS classes + monospace font | CRT/terminal effects achievable without Canvas; easy theming |
 | Colour palette | 16 named ANSI colours | Authentic retro feel, works in both DOM and terminal |
 | Input model | Semantic GameActions | Decouples game logic from platform-specific input events |
-| Layout | Fixed character grid | Design once, works across browser and terminal targets |
-| Build tool | Vite | Simple config, fast dev loop, easy GitHub Pages deploy |
-| Game framework | None | No framework matches the DOM+pre rendering approach |
-| Styling | CSS + monospace font | CRT/terminal effects achievable without Canvas |
+| Layout | Responsive grid (20–40 × 30–60) | Fills available viewport; font scales down for small screens; fixed design target avoids per-platform layout logic |
