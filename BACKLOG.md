@@ -12,9 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 007 · Responsive screen sizing
-See docs/features/007-responsive-screen-sizing.md.
-
 ### 003 · Keyboard input handler (browser)
 See docs/features/003-keyboard-input-browser.md.
 
@@ -42,6 +39,34 @@ _(none)_
 ---
 
 ## DONE
+
+### 007 · Responsive screen sizing
+
+**Built:**
+- `src/shared/types.ts` — replaced `GRID_WIDTH`/`GRID_HEIGHT` with `MIN_GRID_WIDTH = 20`, `MIN_GRID_HEIGHT = 30`, `MAX_GRID_WIDTH = 40`, `MAX_GRID_HEIGHT = 60`; added `onResize(handler)` to `Renderer` interface
+- `src/platform/dom/DOMRenderer.ts` — measures char cell size once via `document.fonts.ready`; on construction and every debounced `window.resize` event (~100ms): clamps grid to min/max, scales font down if viewport smaller than min grid, sets explicit `<pre>` pixel width; fires all `onResize` handlers
+- `src/platform/terminal/TerminalRenderer.ts` — reads `process.stdout.columns`/`process.stdout.rows` at construction, clamps to min/max, registers `SIGWINCH` listener (guarded by try/catch) to recompute and fire `onResize` handlers
+- `src/platform/terminal/process.d.ts` — minimal ambient declaration for `process` global (avoids new package dependency)
+- `src/main.ts` — uses `renderer.getWidth()`/`getHeight()` for test pattern, re-renders on resize
+- `index.html` — added `html, body { overflow: hidden }`, changed `align-items` to `center`, `height: 100vh`, body background `#000000`
+- `src/tests/setup.ts` — polyfills `document.fonts.ready` for jsdom test environment
+- `vite.config.ts` — added `setupFiles: ['src/tests/setup.ts']`
+- `src/tests/scaffold.test.ts` — updated dimension assertions to use `MAX_GRID_*` constants; added `onResize` callable tests for both renderers; added async resize handler test for DOMRenderer
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 9/9 tests passed
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 3.16 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm run dev` — open browser; a grid of `#` characters fills the viewport (up to 40×60), cycling through all 16 foreground colours; no scrollbar visible
+3. Resize the browser window — grid dimensions update and re-render without scrollbar appearing
+4. Narrow the window below 320px — font scales down so the minimum 20×30 grid still fits
+5. Run `bun terminal.ts` — prints `Grid: 40×60` (or actual terminal dimensions clamped to 20–40 × 30–60)
+
+---
 
 ### 002 · CharBuffer and DOMRenderer
 

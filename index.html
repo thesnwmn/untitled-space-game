@@ -10,13 +10,13 @@
     <link rel="stylesheet" href="./src/platform/dom/colors.css">
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { overflow: hidden; }
       body {
-        background: #111;
+        background: #000000;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-        overflow-x: hidden;
+        align-items: center;
+        height: 100vh;
       }
       .game-screen {
         font-family: 'VT323', monospace;
@@ -26,6 +26,7 @@
         background: var(--color-black, #000);
         color: var(--color-white, #aaa);
         display: block;
+        overflow: hidden;
       }
     </style>
   </head>
