@@ -18,8 +18,9 @@ improve, refactor, or extend — only to fix.
 7. Run `init.sh` again. It must pass clean.
 8. Update BACKLOG.md if the bug corresponded to a known item, or add a brief note
    to the relevant DONE item recording what was fixed.
-9. Push to a branch named `fix/short-description` and open a PR against main.
-   Do not merge it.
+9. Push to a branch and open a PR against main. Do not merge it.
+   - If the harness pre-assigned a branch for this session, use it.
+   - Otherwise create one named `fix/short-description`.
 
 ## Non-negotiables
 

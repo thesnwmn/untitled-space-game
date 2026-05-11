@@ -26,8 +26,9 @@ Never begin implementation without confirming which feature is being worked on.
    - Tests: run the test suite. All tests must pass.
    - If no tests exist for this feature, write at least one.
 8. Run `init.sh` again. It must pass clean on the finished state.
-9. Push to a feature branch named `feature/NNN-short-description` and open a PR
-   against main. Do not merge it.
+9. Push to a branch and open a PR against main. Do not merge it.
+   - If the harness pre-assigned a branch for this session, use it.
+   - Otherwise create one named `feature/NNN-short-description`.
 10. Update BACKLOG.md on the feature branch:
     - Move the item to DONE.
     - Record: what was built, tsc output, test results, and play-test instructions.

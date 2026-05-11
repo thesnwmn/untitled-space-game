@@ -73,6 +73,9 @@ If no instruction is given, ask.
 ## Git Workflow
 
 All changes go to a feature branch. Open a PR against main. Never push to main directly.
-The manager merges after Reviewer approval. Branch naming:
+The manager merges after Reviewer approval.
+
+If the harness has pre-assigned a branch for this session, use it as-is.
+Otherwise, create a branch following these conventions:
 - Features: `feature/NNN-short-description`
 - Bug fixes: `fix/short-description`
