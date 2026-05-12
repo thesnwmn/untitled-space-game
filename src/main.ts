@@ -6,14 +6,16 @@ import { StoryScene } from './game/scenes/StoryScene';
 import type { CharBuffer, Color, GameContext, Scene } from './shared/types';
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
+const debug = new URLSearchParams(window.location.search).has('debug');
 
 const context: GameContext = {
   environment: 'browser',
   primaryInput,
+  debug,
 };
 
 const renderer = new DOMRenderer();
-const input = new DOMInputHandler();
+const input = new DOMInputHandler(context);
 input.connect();
 
 let currentScene: Scene;

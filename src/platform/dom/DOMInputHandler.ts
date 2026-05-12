@@ -1,4 +1,4 @@
-import type { InputHandler, GameAction } from '../../shared/types';
+import type { InputHandler, GameAction, GameContext } from '../../shared/types';
 
 const KEY_MAP: Record<string, GameAction> = {
   ArrowUp: 'UP',
@@ -28,9 +28,13 @@ export class DOMInputHandler implements InputHandler {
   private pointerDownListener: ((event: PointerEvent) => void) | null = null;
   private pointerUpListener: ((event: PointerEvent) => void) | null = null;
   private pointerCancelListener: ((event: PointerEvent) => void) | null = null;
-  private readonly debugMode = new URLSearchParams(window.location.search).has('debug');
+  private readonly debugMode: boolean;
   private debugEl: HTMLDivElement | null = null;
   private debugLog: string[] = [];
+
+  constructor(context: GameContext) {
+    this.debugMode = context.debug;
+  }
 
   private logDebug(line: string): void {
     if (!this.debugMode) return;
