@@ -26,6 +26,29 @@ export class DOMInputHandler implements InputHandler {
   private keyListener: ((event: KeyboardEvent) => void) | null = null;
   private touchStartListener: ((event: TouchEvent) => void) | null = null;
   private touchEndListener: ((event: TouchEvent) => void) | null = null;
+  private debugEl: HTMLDivElement | null = null;
+  private debugLog: string[] = [];
+
+  private ensureDebug(): HTMLDivElement {
+    if (this.debugEl) return this.debugEl;
+    const el = document.createElement('div');
+    el.style.cssText = [
+      'position:fixed', 'top:0', 'left:0', 'right:0',
+      'background:rgba(0,0,0,0.85)', 'color:#0f0',
+      'font-family:monospace', 'font-size:11px',
+      'padding:4px 6px', 'z-index:99999',
+      'pointer-events:none', 'white-space:pre', 'line-height:1.25',
+    ].join(';');
+    document.body.appendChild(el);
+    this.debugEl = el;
+    return el;
+  }
+
+  private logDebug(line: string): void {
+    this.debugLog.unshift(line);
+    if (this.debugLog.length > 8) this.debugLog.length = 8;
+    this.ensureDebug().textContent = this.debugLog.join('\n');
+  }
 
   onAction(handler: (action: GameAction) => void): void {
     this.actionHandlers.push(handler);
@@ -48,6 +71,7 @@ export class DOMInputHandler implements InputHandler {
       event.preventDefault();
       for (const touch of Array.from(event.changedTouches)) {
         this.touchStartMap.set(touch.identifier, { startX: touch.clientX, startY: touch.clientY });
+        this.logDebug(`START id=${touch.identifier} (${Math.round(touch.clientX)},${Math.round(touch.clientY)}) n=${event.touches.length}`);
       }
     };
 
@@ -65,21 +89,30 @@ export class DOMInputHandler implements InputHandler {
           }
         }
         if (allSmall) {
+          this.logDebug(`END 2-finger -> BACK`);
           for (const handler of this.actionHandlers.slice()) handler('BACK');
+        } else {
+          this.logDebug(`END 2-finger (not tap)`);
         }
       } else if (changed.length >= 1) {
         const touch = changed[0];
         const start = this.touchStartMap.get(touch.identifier);
-        if (start) {
+        if (!start) {
+          this.logDebug(`END id=${touch.identifier} (${Math.round(touch.clientX)},${Math.round(touch.clientY)}) NO START`);
+        } else {
           const dx = touch.clientX - start.startX;
           const dy = touch.clientY - start.startY;
           const absDx = Math.abs(dx);
           const absDy = Math.abs(dy);
 
           if (absDx < 20 && absDy < 20) {
+            const rect = this.getRectInfo();
             const coords = this.getGridCoords(start.startX, start.startY);
             if (coords) {
+              this.logDebug(`TAP start=(${Math.round(start.startX)},${Math.round(start.startY)}) rect=${rect} -> (col=${coords.col},row=${coords.row}) handlers=${this.tapHandlers.length}`);
               for (const handler of this.tapHandlers.slice()) handler(coords.col, coords.row);
+            } else {
+              this.logDebug(`TAP start=(${Math.round(start.startX)},${Math.round(start.startY)}) rect=${rect} -> OUT OF BOUNDS`);
             }
           } else {
             let action: GameAction;
@@ -88,6 +121,7 @@ export class DOMInputHandler implements InputHandler {
             } else {
               action = dy > 0 ? 'DOWN' : 'UP';
             }
+            this.logDebug(`SWIPE dx=${Math.round(dx)} dy=${Math.round(dy)} -> ${action}`);
             for (const handler of this.actionHandlers.slice()) handler(action);
           }
         }
@@ -118,6 +152,13 @@ export class DOMInputHandler implements InputHandler {
     this.touchStartMap.clear();
   }
 
+  private getRectInfo(): string {
+    const pre = document.querySelector('.game-screen') as HTMLElement | null;
+    if (!pre) return 'NO PRE';
+    const r = pre.getBoundingClientRect();
+    return `L${Math.round(r.left)},T${Math.round(r.top)},R${Math.round(r.right)},B${Math.round(r.bottom)}`;
+  }
+
   private getGridCoords(clientX: number, clientY: number): { col: number; row: number } | null {
     const pre = document.querySelector('.game-screen') as HTMLElement | null;
     if (!pre) return null;
@@ -125,10 +166,9 @@ export class DOMInputHandler implements InputHandler {
     const cols = parseInt(pre.dataset['gridCols'] ?? '1');
     const rows = parseInt(pre.dataset['gridRows'] ?? '1');
     if (!cols || !rows || !rect.width || !rect.height) return null;
-    if (clientX < rect.left || clientX >= rect.right || clientY < rect.top || clientY >= rect.bottom) return null;
-    return {
-      col: Math.floor((clientX - rect.left) / (rect.width / cols)),
-      row: Math.floor((clientY - rect.top) / (rect.height / rows)),
-    };
+    const col = Math.floor((clientX - rect.left) / (rect.width / cols));
+    const row = Math.floor((clientY - rect.top) / (rect.height / rows));
+    if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
+    return { col, row };
   }
 }
