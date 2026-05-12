@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered, drawBorder } from '../../shared/buffer-utils';
+import { writeText, writeCentered } from '../../shared/buffer-utils';
 
 interface Mission {
   id: string;
@@ -27,7 +27,6 @@ const TYPE_ICONS: Record<Mission['type'], string> = {
 
 const MISSION_ROW_START = 5;
 const MISSION_COL = 1;
-// contentWidth is computed dynamically in render() as w - 3
 
 export class MissionBoardScene implements Scene {
   private readonly context: GameContext;
@@ -78,12 +77,10 @@ export class MissionBoardScene implements Scene {
       }
     }
 
-    drawBorder(buffer, 'white', 'black');
-
     writeCentered(buffer, 2, 'MISSION BOARD', 'bright-cyan', 'black');
     writeCentered(buffer, 3, '=============', 'cyan', 'black');
 
-    const contentWidth = w - 3; // leaves 1 gap before right border
+    const contentWidth = w - 2;
     for (let i = 0; i < MISSIONS.length; i++) {
       const row = MISSION_ROW_START + i;
       if (row >= h) continue;

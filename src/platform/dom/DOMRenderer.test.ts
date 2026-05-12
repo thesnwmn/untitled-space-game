@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { DOMRenderer } from './DOMRenderer';
-import { GRID_WIDTH, GRID_HEIGHT } from '../../shared/types';
+import { GRID_WIDTH, MIN_GRID_HEIGHT } from '../../shared/types';
 
 describe('DOMRenderer', () => {
   it('returns correct grid dimensions', () => {
     const r = new DOMRenderer();
     expect(r.getWidth()).toBe(GRID_WIDTH);
-    expect(r.getHeight()).toBe(GRID_HEIGHT);
+    expect(r.getHeight()).toBe(MIN_GRID_HEIGHT);
   });
 
   it('drawBuffer and clear do not throw', () => {

@@ -12,19 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 014 · Adaptive Height, Border Removal & Screen Centering Fix
-
-Three presentation fixes delivered as one item: (1) grid height adapts to the viewport
-between 30 and 50 rows by updating `DOMRenderer.applyScale()` and `TerminalRenderer`;
-(2) all five scenes that call `drawBorder()` have those calls removed; (3) the
-`measureChar()` font mismatch (VT323 measured, Share Tech Mono rendered) is fixed so
-the `<pre>` width is correct and flexbox centering works. See
-`docs/features/014-adaptive-height-border-removal-centering.md` for full spec.
-
-**Depends on:** 011
-
----
-
 ### 012 · Animated Starfield — Ship Scene
 
 Replace the static dot pattern in ShipScene with a three-layer parallax scrolling
@@ -58,6 +45,37 @@ _(none)_
 ---
 
 ## DONE
+
+### 014 · Adaptive Height, Border Removal & Screen Centering Fix
+
+**Built:**
+- `src/shared/types.ts` — replaced `GRID_HEIGHT = 30` with `MIN_GRID_HEIGHT = 30` and `MAX_GRID_HEIGHT = 50`
+- `src/platform/dom/DOMRenderer.ts` — fixed `measureChar()` font from `VT323` to `Share Tech Mono`; added `private gridH = MIN_GRID_HEIGHT`; updated `applyScale()` to compute adaptive row count clamped to 30–50, fire `onResize` handlers when height changes; `getHeight()` now returns `this.gridH`
+- `src/platform/terminal/TerminalRenderer.ts` — `getHeight()` now reads `process.stdout.rows` clamped to `MIN_GRID_HEIGHT`/`MAX_GRID_HEIGHT`
+- `src/game/scenes/MainMenuScene.ts` — removed `drawBorder` import and call
+- `src/game/scenes/BaseMenuScene.ts` — removed `drawBorder` import and call
+- `src/game/scenes/StoryScene.ts` — removed `drawBorder` import and call; removed `FOOTER_ROW = 27` constant; footer now uses `h - 3`
+- `src/game/scenes/TraderScene.ts` — removed `drawBorder` import and call; `contentWidth` changed from `w - 3` to `w - 2`
+- `src/game/scenes/MissionBoardScene.ts` — removed `drawBorder` import and call; `contentWidth` changed from `w - 3` to `w - 2`
+- `src/platform/dom/DOMRenderer.test.ts` — updated import to `MIN_GRID_HEIGHT`; `getHeight()` assertion uses `MIN_GRID_HEIGHT`
+- `src/platform/terminal/TerminalRenderer.test.ts` — same import and assertion update
+- All 5 scene test files — replaced `'renders a border…'` tests with `'does not render a border'` negative assertions
+- `src/game/scenes/story-scene.test.ts` — footer row assertions now use `h - 3`; retitled `tap on row 0 (border)` → `tap on row 0 (empty row)`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 156/156 tests passed (10 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 17.41 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 10 test files, 156 tests passed
+3. **Browser centering**: `npm run dev` — open browser; `<pre>` should have equal space on both sides at any viewport width
+4. **Adaptive height**: resize DevTools to tall narrow shape (~375×812 px) — grid should have more than 30 rows of content area
+5. **No borders**: navigate all scenes (main menu, story, station, trader, mission board, ship) — no `+`/`-`/`|` frame on any screen
+
+---
 
 ### 011 · Game Scenes — Trader, Mission Board, Ship
 

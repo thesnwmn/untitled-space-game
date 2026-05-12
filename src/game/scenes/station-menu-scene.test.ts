@@ -61,17 +61,13 @@ function makeScene(
 
 describe('StationMenuScene', () => {
   describe('render — layout', () => {
-    it('renders a border on rows 0 and 29', () => {
+    it('does not render a border', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][0].char).toBe('+');
-      expect(buf[0][39].char).toBe('+');
-      expect(buf[29][0].char).toBe('+');
-      expect(buf[29][39].char).toBe('+');
-      expect(buf[0][1].char).toBe('-');
-      expect(buf[15][0].char).toBe('|');
+      expect(buf[0][0].char).toBe(' ');
+      expect(buf[0][0].fg).toBe('black');
     });
 
     it('renders station title ELYSIUM STATION at row 2 in bright-cyan', () => {

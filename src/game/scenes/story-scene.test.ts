@@ -55,17 +55,13 @@ describe('StoryScene', () => {
       expect(buf[20][15]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
     });
 
-    it('renders a border on rows 0 and 29', () => {
+    it('does not render a border', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][0].char).toBe('+');
-      expect(buf[0][39].char).toBe('+');
-      expect(buf[29][0].char).toBe('+');
-      expect(buf[29][39].char).toBe('+');
-      expect(buf[0][1].char).toBe('-');
-      expect(buf[15][0].char).toBe('|');
+      expect(buf[0][0].char).toBe(' ');
+      expect(buf[0][0].fg).toBe('black');
     });
 
     it('renders YEAR header centred in bright-yellow on row 2', () => {
@@ -118,21 +114,23 @@ describe('StoryScene', () => {
       expect(rowText(buf, 17)).toContain('Whatever comes next is up to him.');
     });
 
-    it('renders keyboard footer hint on row 27 in bright-black', () => {
+    it('renders keyboard footer hint near bottom in bright-black', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 27)).toContain('PRESS ENTER TO CONTINUE');
-      expect(buf[27].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-black');
+      const h = buf.length;
+      expect(rowText(buf, h - 3)).toContain('PRESS ENTER TO CONTINUE');
+      expect(buf[h - 3].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-black');
     });
 
-    it('renders touch footer hint on row 27 for touch context', () => {
+    it('renders touch footer hint near bottom for touch context', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, touchContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 27)).toContain('TAP TO CONTINUE');
+      const h = buf.length;
+      expect(rowText(buf, h - 3)).toContain('TAP TO CONTINUE');
     });
 
     it('story text lines do not exceed column 37 (max 36 chars from col 2)', () => {
@@ -177,7 +175,7 @@ describe('StoryScene', () => {
       expect(onContinue).toHaveBeenCalledTimes(1);
     });
 
-    it('tap on row 0 (border) also triggers onContinue', () => {
+    it('tap on row 0 (empty row) triggers onContinue', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
       new StoryScene(input, keyboardContext, onContinue);
