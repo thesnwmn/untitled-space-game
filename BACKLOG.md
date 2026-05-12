@@ -18,6 +18,18 @@ Add three new scenes accessible from the station menu: Trader (with buy/sell tab
 
 ---
 
+### 012 · Animated Starfield — Ship Scene
+
+Replace the static dot pattern in ShipScene with a three-layer parallax scrolling
+starfield. Stars (18 distant `.`, 10 mid `*`, 5 near `+`) drift downward at different
+speeds, wrapping back to the top with a new column. An occasional per-star twinkle
+briefly upgrades its colour. Deterministic LCG seeding keeps tests reproducible.
+See `docs/features/012-animated-starfield.md` for full spec.
+
+**Depends on:** 011
+
+---
+
 ## NEEDS SPEC
 
 _(none)_
