@@ -3,6 +3,7 @@ import { DOMRenderer } from './platform/dom/DOMRenderer';
 import { DOMInputHandler } from './platform/dom/DOMInputHandler';
 import { MainMenuScene } from './game/scenes/MainMenuScene';
 import { StoryScene } from './game/scenes/StoryScene';
+import { StationMenuScene } from './game/scenes/StationMenuScene';
 import type { CharBuffer, Color, GameContext, Scene } from './shared/types';
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
@@ -20,10 +21,16 @@ input.connect();
 
 let currentScene: Scene;
 
+const goToMainMenu = () => {
+  currentScene = new MainMenuScene(input, context, goToStory);
+};
+
+const goToStation = () => {
+  currentScene = new StationMenuScene(input, context, goToMainMenu);
+};
+
 const goToStory = () => {
-  currentScene = new StoryScene(input, context, () => {
-    console.log('[Story] Arriving at Elysium Station…');
-  });
+  currentScene = new StoryScene(input, context, goToStation);
 };
 
 currentScene = new MainMenuScene(input, context, goToStory);
