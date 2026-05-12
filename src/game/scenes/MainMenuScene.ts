@@ -1,49 +1,16 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
+import { writeText, writeCentered, drawBorder } from '../../shared/buffer-utils';
 
 const TITLE_LINES = ['UNTITLED', 'SPACE GAME'];
-const TITLE_ROW_START = 4;  // 0-indexed; rows 4 and 7 in a 40-row grid
+const TITLE_ROW_START = 4;
 const TITLE_ROW_STEP = 3;
 const TAGLINE = '- An ASCII space adventure -';
-const TAGLINE_ROW = 11;     // 0-indexed; 3 rows below second title line
-const MENU_ROW_START = 16;  // 0-indexed; 4 rows below tagline
-// Footer is pinned 3 rows from the bottom (row 37 in a 40-row grid).
+const TAGLINE_ROW = 11;
+const MENU_ROW_START = 16;
 
 interface MenuItem {
   label: string;
   action: () => void;
-}
-
-function writeText(buffer: CharBuffer, row: number, col: number, text: string, fg: Color, bg: Color): void {
-  if (row < 0 || row >= buffer.length) return;
-  const rowCells = buffer[row];
-  for (let i = 0; i < text.length; i++) {
-    const c = col + i;
-    if (c >= 0 && c < rowCells.length) {
-      rowCells[c] = { char: text[i], fg, bg };
-    }
-  }
-}
-
-function writeCentered(buffer: CharBuffer, row: number, text: string, fg: Color, bg: Color): void {
-  if (row < 0 || row >= buffer.length) return;
-  const w = buffer[row].length;
-  const col = Math.max(0, Math.floor((w - text.length) / 2));
-  writeText(buffer, row, col, text, fg, bg);
-}
-
-function drawBorder(buffer: CharBuffer, fg: Color, bg: Color): void {
-  const h = buffer.length;
-  const w = h > 0 ? buffer[0].length : 0;
-  if (h < 2 || w < 2) return;
-  for (let c = 0; c < w; c++) {
-    const isCorner = c === 0 || c === w - 1;
-    buffer[0][c]     = { char: isCorner ? '+' : '-', fg, bg };
-    buffer[h - 1][c] = { char: isCorner ? '+' : '-', fg, bg };
-  }
-  for (let r = 1; r < h - 1; r++) {
-    buffer[r][0]     = { char: '|', fg, bg };
-    buffer[r][w - 1] = { char: '|', fg, bg };
-  }
 }
 
 export class MainMenuScene implements Scene {
@@ -52,15 +19,15 @@ export class MainMenuScene implements Scene {
   private cursorIdx = 0;
   private activated = false;
 
-  constructor(inputHandler: InputHandler, context: GameContext) {
+  constructor(inputHandler: InputHandler, context: GameContext, onNewGame: () => void) {
     this.context = context;
 
     this.items = [
       {
         label: 'NEW GAME',
         action: () => {
-          console.log('[MainMenu] Starting game…');
           this.activated = true;
+          onNewGame();
         },
       },
     ];

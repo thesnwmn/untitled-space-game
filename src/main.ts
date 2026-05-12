@@ -2,7 +2,8 @@ import './platform/dom/colors.css';
 import { DOMRenderer } from './platform/dom/DOMRenderer';
 import { DOMInputHandler } from './platform/dom/DOMInputHandler';
 import { MainMenuScene } from './game/scenes/MainMenuScene';
-import type { CharBuffer, Color, GameContext } from './shared/types';
+import { StoryScene } from './game/scenes/StoryScene';
+import type { CharBuffer, Color, GameContext, Scene } from './shared/types';
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
 
@@ -15,7 +16,15 @@ const renderer = new DOMRenderer();
 const input = new DOMInputHandler();
 input.connect();
 
-const scene = new MainMenuScene(input, context);
+let currentScene: Scene;
+
+const goToStory = () => {
+  currentScene = new StoryScene(input, context, () => {
+    console.log('[Story] Arriving at Elysium Station…');
+  });
+};
+
+currentScene = new MainMenuScene(input, context, goToStory);
 
 let lastTime = 0;
 
@@ -32,8 +41,8 @@ function loop(timestamp: number): void {
   lastTime = timestamp;
 
   const buffer = makeBuffer();
-  scene.update(dt);
-  scene.render(buffer);
+  currentScene.update(dt);
+  currentScene.render(buffer);
   renderer.drawBuffer(buffer);
 
   requestAnimationFrame(loop);
