@@ -99,23 +99,15 @@ describe('DOMInputHandler', () => {
 describe('DOMInputHandler — touch', () => {
   let mockPre: HTMLElement;
 
-  function fireTouchStart(touches: Array<{ identifier: number; clientX: number; clientY: number }>): TouchEvent {
-    const event = new TouchEvent('touchstart', {
-      bubbles: true,
-      cancelable: true,
-      changedTouches: touches.map(t => ({ ...t, target: document.body })) as unknown as Touch[],
-    });
-    document.body.dispatchEvent(event);
+  function firePointerDown(id: number, clientX: number, clientY: number): PointerEvent {
+    const event = new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerId: id, clientX, clientY });
+    window.dispatchEvent(event);
     return event;
   }
 
-  function fireTouchEnd(touches: Array<{ identifier: number; clientX: number; clientY: number }>): TouchEvent {
-    const event = new TouchEvent('touchend', {
-      bubbles: true,
-      cancelable: true,
-      changedTouches: touches.map(t => ({ ...t, target: document.body })) as unknown as Touch[],
-    });
-    document.body.dispatchEvent(event);
+  function firePointerUp(id: number, clientX: number, clientY: number): PointerEvent {
+    const event = new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: id, clientX, clientY });
+    window.dispatchEvent(event);
     return event;
   }
 
@@ -143,9 +135,9 @@ describe('DOMInputHandler — touch', () => {
     h.onTap((col, row) => taps.push([col, row]));
     h.connect();
 
-    // cell size: 400/40=10 x 600/60=10; tap end at (106,156) → col=10, row=15
-    fireTouchStart([{ identifier: 1, clientX: 105, clientY: 155 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 106, clientY: 156 }]);
+    // cell size: 400/40=10 x 600/60=10; tap starts at (105,155) → col=10, row=15
+    firePointerDown(1, 105, 155);
+    firePointerUp(1, 106, 156);
 
     h.disconnect();
     expect(taps).toEqual([[10, 15]]);
@@ -159,8 +151,8 @@ describe('DOMInputHandler — touch', () => {
     h.onTap((col, row) => r2.push([col, row]));
     h.connect();
 
-    fireTouchStart([{ identifier: 1, clientX: 50, clientY: 50 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 52, clientY: 51 }]);
+    firePointerDown(1, 50, 50);
+    firePointerUp(1, 52, 51);
 
     h.disconnect();
     expect(r1).toEqual([[5, 5]]);
@@ -173,8 +165,8 @@ describe('DOMInputHandler — touch', () => {
     h.onAction((a) => actions.push(a));
     h.connect();
 
-    fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 101, clientY: 101 }]);
+    firePointerDown(1, 100, 100);
+    firePointerUp(1, 101, 101);
 
     h.disconnect();
     expect(actions).toEqual([]);
@@ -185,8 +177,8 @@ describe('DOMInputHandler — touch', () => {
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
-    fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 160, clientY: 105 }]);
+    firePointerDown(1, 100, 100);
+    firePointerUp(1, 160, 105);
     h.disconnect();
     expect(actions).toEqual(['RIGHT']);
   });
@@ -196,8 +188,8 @@ describe('DOMInputHandler — touch', () => {
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
-    fireTouchStart([{ identifier: 1, clientX: 160, clientY: 100 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 100, clientY: 105 }]);
+    firePointerDown(1, 160, 100);
+    firePointerUp(1, 100, 105);
     h.disconnect();
     expect(actions).toEqual(['LEFT']);
   });
@@ -207,8 +199,8 @@ describe('DOMInputHandler — touch', () => {
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
-    fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 105, clientY: 160 }]);
+    firePointerDown(1, 100, 100);
+    firePointerUp(1, 105, 160);
     h.disconnect();
     expect(actions).toEqual(['DOWN']);
   });
@@ -218,8 +210,8 @@ describe('DOMInputHandler — touch', () => {
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
-    fireTouchStart([{ identifier: 1, clientX: 100, clientY: 160 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 105, clientY: 100 }]);
+    firePointerDown(1, 100, 160);
+    firePointerUp(1, 105, 100);
     h.disconnect();
     expect(actions).toEqual(['UP']);
   });
@@ -229,8 +221,8 @@ describe('DOMInputHandler — touch', () => {
     const taps: Array<[number, number]> = [];
     h.onTap((col, row) => taps.push([col, row]));
     h.connect();
-    fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 160, clientY: 105 }]);
+    firePointerDown(1, 100, 100);
+    firePointerUp(1, 160, 105);
     h.disconnect();
     expect(taps).toEqual([]);
   });
@@ -241,14 +233,10 @@ describe('DOMInputHandler — touch', () => {
     h.onAction((a) => actions.push(a));
     h.connect();
 
-    fireTouchStart([
-      { identifier: 1, clientX: 100, clientY: 100 },
-      { identifier: 2, clientX: 200, clientY: 200 },
-    ]);
-    fireTouchEnd([
-      { identifier: 1, clientX: 102, clientY: 101 },
-      { identifier: 2, clientX: 201, clientY: 202 },
-    ]);
+    // both pointers down, then first pointerup with activeCount=2 triggers BACK
+    firePointerDown(1, 100, 100);
+    firePointerDown(2, 200, 200);
+    firePointerUp(1, 102, 101);
 
     h.disconnect();
     expect(actions).toEqual(['BACK']);
@@ -263,24 +251,24 @@ describe('DOMInputHandler — touch', () => {
     h.connect();
     h.disconnect();
 
-    fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 101, clientY: 101 }]);
-    fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);
-    fireTouchEnd([{ identifier: 1, clientX: 160, clientY: 100 }]);
+    firePointerDown(1, 100, 100);
+    firePointerUp(1, 101, 101);
+    firePointerDown(1, 100, 100);
+    firePointerUp(1, 160, 100);
 
     expect(taps).toEqual([]);
     expect(actions).toEqual([]);
   });
 
-  it('calls preventDefault on touchstart and touchend', () => {
+  it('calls preventDefault on pointerdown', () => {
     const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     h.connect();
 
-    const startEvent = fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);
-    const endEvent = fireTouchEnd([{ identifier: 1, clientX: 101, clientY: 101 }]);
+    const downEvent = firePointerDown(1, 100, 100);
+    const upEvent = firePointerUp(1, 101, 101);
 
     h.disconnect();
-    expect(startEvent.defaultPrevented).toBe(true);
-    expect(endEvent.defaultPrevented).toBe(true);
+    expect(downEvent.defaultPrevented).toBe(true);
+    expect(upEvent.defaultPrevented).toBe(false);
   });
 });

@@ -39,8 +39,8 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard' };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch' };
+const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 // maxItemWidth = "MISSION BOARD".length + 2 = 15
 // menuCol = Math.floor((40 - 15) / 2) = 12
