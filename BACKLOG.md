@@ -12,8 +12,7 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 006 · Main menu screen
-See docs/features/006-main-menu-screen.md.
+_(none)_
 
 ---
 
@@ -30,6 +29,31 @@ _(none)_
 ---
 
 ## DONE
+
+### 006 · Main menu screen
+
+**Built:**
+- `src/shared/types.ts` — added `Scene` interface (`update(dt: number): void; render(buffer: CharBuffer): void`)
+- `src/game/scenes/MainMenuScene.ts` — full implementation: constructor takes `(inputHandler, context)`; registers `onAction` (UP/DOWN wrap cursor, SELECT activates) and `onTap` (direct row-to-item activation); `render` draws title block (bright-cyan, rows 4 & 7, 0-indexed), tagline (white, row 14), menu options (bright-green cursor + white unselected, starting row 21), and footer hint (bright-black, row 57 — only if grid ≥ 58 rows tall); QUIT only added in terminal context; `activated` flag silences further input after selection
+- `src/game/scenes/main-menu-scene.test.ts` — 21 tests covering: layout/clear, title & tagline rendering, cursor colour, footer hint (keyboard/touch/absent), browser vs terminal item sets, DOWN/UP/SELECT/BACK keyboard nav, wrap-around, post-activation silence, touch tap on item row, touch tap on non-item row, QUIT via touch (process.exit mocked)
+- `src/platform/terminal/process.d.ts` — extended `stdin.on` with `'close' | 'end'` overload
+- `terminal.ts` — replaced test pattern with 30fps `setInterval` game loop (MainMenuScene + buffer allocation); added `process.stdin.on('close', ...)` so process exits cleanly when stdin is piped (init.sh check)
+- `src/main.ts` — replaced test pattern with `requestAnimationFrame` game loop (MainMenuScene + buffer allocation per frame); `input.connect()` called before scene construction
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 65/65 tests passed (5 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 7.20 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 5 test files, 65 tests passed
+3. **Browser:** Run `npm run dev` — open browser; main menu should appear with "UNTITLED" and "SPACE GAME" title in cyan, tagline, and "NEW GAME" option with green cursor; press Down (no effect — single item), Enter — console logs `[MainMenu] Starting game…`; keyboard hint shows in footer
+4. **Terminal:** Run `bun terminal.ts` — main menu renders in terminal; press Down to move cursor to QUIT, Enter to quit; UP wraps back to NEW GAME
+5. On a touch-capable browser: swipe or use DevTools touch emulation — footer shows "tap an option to select"; tapping the NEW GAME row activates it immediately
+
+---
 
 ### 005 · Keyboard input handler (terminal)
 

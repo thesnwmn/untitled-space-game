@@ -10,6 +10,7 @@ declare const process: {
     setRawMode?(flag: boolean): void;
     resume(): void;
     on(event: 'data', listener: (chunk: { toString(): string }) => void): void;
+    on(event: 'close' | 'end', listener: () => void): void;
     removeListener(event: 'data', listener: (chunk: { toString(): string }) => void): void;
   };
 };
