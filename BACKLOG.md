@@ -12,6 +12,19 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 014 · Adaptive Height, Border Removal & Screen Centering Fix
+
+Three presentation fixes delivered as one item: (1) grid height adapts to the viewport
+between 30 and 50 rows by updating `DOMRenderer.applyScale()` and `TerminalRenderer`;
+(2) all five scenes that call `drawBorder()` have those calls removed; (3) the
+`measureChar()` font mismatch (VT323 measured, Share Tech Mono rendered) is fixed so
+the `<pre>` width is correct and flexbox centering works. See
+`docs/features/014-adaptive-height-border-removal-centering.md` for full spec.
+
+**Depends on:** 011
+
+---
+
 ### 012 · Animated Starfield — Ship Scene
 
 Replace the static dot pattern in ShipScene with a three-layer parallax scrolling
