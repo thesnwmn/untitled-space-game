@@ -12,9 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 005 · Keyboard input handler (terminal)
-See docs/features/005-keyboard-input-terminal.md.
-
 ### 006 · Main menu screen
 See docs/features/006-main-menu-screen.md.
 
@@ -33,6 +30,28 @@ _(none)_
 ---
 
 ## DONE
+
+### 005 · Keyboard input handler (terminal)
+
+**Built:**
+- `src/platform/terminal/process.d.ts` — extended with `exit(code?: number): never` and `stdin` shape (`isTTY?`, `setRawMode?`, `resume`, `on`, `removeListener`)
+- `src/platform/terminal/TerminalInputHandler.ts` — full implementation: `onAction(handler)` registers callbacks; `connect()` sets raw mode via optional `setRawMode?.()`, calls `resume()`, attaches `data` listener; `disconnect()` removes listener and restores cooked mode; key map covers arrow keys → UP/DOWN/LEFT/RIGHT, `\x1b[5~`/`\x1b[6~` → PAGE_UP/PAGE_DOWN, `\r`/`\n` → SELECT, bare `\x1b` → BACK, `p`/`P` → PAUSE; `q`, `Q`, `\x03` call `process.exit(0)`; constructor accepts optional `stdin` parameter for testability (defaults to `process.stdin`)
+- `src/platform/terminal/TerminalInputHandler.test.ts` — 20 tests: connect/disconnect lifecycle, all 11 key mappings, multiple handlers, no events after disconnect, unmapped keys ignored, q/Q/Ctrl+C trigger exit
+- `terminal.ts` — registers smoke-test `onAction` logger and calls `connect()`
+- `init.sh` — terminal entry check changed from `bun --check terminal.ts` to `bun terminal.ts < /dev/null` (stdin EOF causes clean exit after connect)
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 44/44 tests passed (4 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 5.75 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 4 test files, 44 tests passed
+3. Run `npm run terminal` — terminal enters raw mode; press arrow keys, Enter, Escape, P — each must log `GameAction: <ACTION>`; press `q` to quit
+
+---
 
 ### 008 · Colocate unit tests with source modules
 

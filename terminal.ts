@@ -8,7 +8,10 @@ const context: GameContext = {
 };
 
 const renderer = new TerminalRenderer();
-const _input = new TerminalInputHandler();
+const input = new TerminalInputHandler();
 
 console.log(`Space game initialised — ${context.environment}/${context.primaryInput}`);
 console.log(`Grid: ${renderer.getWidth()}×${renderer.getHeight()}`);
+
+input.onAction(action => console.log(`GameAction: ${action}`));
+input.connect();

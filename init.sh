@@ -30,7 +30,7 @@ npm run build && echo "✓ Browser build OK" || { echo "ERROR: Vite build failed
 
 # --- Terminal entry point check ---
 echo "Checking terminal entry point..."
-bun --check terminal.ts && echo "✓ Terminal entry OK" || { echo "ERROR: terminal.ts has issues."; exit 1; }
+bun terminal.ts < /dev/null && echo "✓ Terminal entry OK" || { echo "ERROR: terminal.ts has issues."; exit 1; }
 
 echo ""
 echo "=== Environment ready ==="
