@@ -91,6 +91,8 @@ export class DOMRenderer implements Renderer {
 
     this.width = cols;
     this.height = rows;
+    this.pre.dataset['gridCols'] = String(cols);
+    this.pre.dataset['gridRows'] = String(rows);
 
     for (const handler of this.resizeHandlers) {
       handler(cols, rows);
