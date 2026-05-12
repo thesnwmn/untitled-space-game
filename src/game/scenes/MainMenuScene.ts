@@ -31,6 +31,21 @@ function writeCentered(buffer: CharBuffer, row: number, text: string, fg: Color,
   writeText(buffer, row, col, text, fg, bg);
 }
 
+function drawBorder(buffer: CharBuffer, fg: Color, bg: Color): void {
+  const h = buffer.length;
+  const w = h > 0 ? buffer[0].length : 0;
+  if (h < 2 || w < 2) return;
+  for (let c = 0; c < w; c++) {
+    const isCorner = c === 0 || c === w - 1;
+    buffer[0][c]     = { char: isCorner ? '+' : '-', fg, bg };
+    buffer[h - 1][c] = { char: isCorner ? '+' : '-', fg, bg };
+  }
+  for (let r = 1; r < h - 1; r++) {
+    buffer[r][0]     = { char: '|', fg, bg };
+    buffer[r][w - 1] = { char: '|', fg, bg };
+  }
+}
+
 export class MainMenuScene implements Scene {
   private readonly items: MenuItem[];
   private readonly context: GameContext;
@@ -96,6 +111,8 @@ export class MainMenuScene implements Scene {
         buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
       }
     }
+
+    drawBorder(buffer, 'white', 'black');
 
     for (let i = 0; i < TITLE_LINES.length; i++) {
       writeCentered(buffer, TITLE_ROW_START + i * TITLE_ROW_STEP, TITLE_LINES[i], 'bright-cyan', 'black');

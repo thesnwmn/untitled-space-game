@@ -56,10 +56,28 @@ describe('MainMenuScene', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
       const buf = makeBuffer(30, 40);
-      // pre-fill with junk
-      buf[0][0] = { char: 'X', fg: 'red', bg: 'red' };
+      // pre-fill an interior cell with junk (not covered by border or content)
+      buf[20][15] = { char: 'X', fg: 'red', bg: 'red' };
       scene.render(buf);
-      expect(buf[0][0]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
+      expect(buf[20][15]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
+    });
+
+    it('renders a border around the screen edges', () => {
+      const input = new MockInputHandler();
+      const scene = new MainMenuScene(input, browserContext);
+      const buf = makeBuffer(30, 40);
+      scene.render(buf);
+      // corners
+      expect(buf[0][0].char).toBe('+');
+      expect(buf[0][29].char).toBe('+');
+      expect(buf[39][0].char).toBe('+');
+      expect(buf[39][29].char).toBe('+');
+      // top/bottom edges
+      expect(buf[0][1].char).toBe('-');
+      expect(buf[39][15].char).toBe('-');
+      // left/right edges
+      expect(buf[20][0].char).toBe('|');
+      expect(buf[20][29].char).toBe('|');
     });
 
     it('renders title lines in bright-cyan within rows 1–11', () => {
@@ -102,7 +120,8 @@ describe('MainMenuScene', () => {
       scene.render(buf);
       const footerRow = 40 - 3; // 37
       expect(rowText(buf, footerRow)).toContain('ENTER select');
-      expect(buf[footerRow].find(c => c.char !== ' ')?.fg).toBe('bright-black');
+      // skip border columns (0 and w-1) when checking footer colour
+      expect(buf[footerRow].find((c, i) => c.char !== ' ' && i > 0 && i < 29)?.fg).toBe('bright-black');
     });
 
     it('renders touch footer 3 rows from bottom for touch context', () => {
