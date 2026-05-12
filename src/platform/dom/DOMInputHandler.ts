@@ -26,6 +26,7 @@ export class DOMInputHandler implements InputHandler {
   private keyListener: ((event: KeyboardEvent) => void) | null = null;
   private touchStartListener: ((event: TouchEvent) => void) | null = null;
   private touchEndListener: ((event: TouchEvent) => void) | null = null;
+  private touchCancelListener: ((event: TouchEvent) => void) | null = null;
   private debugEl: HTMLDivElement | null = null;
   private debugLog: string[] = [];
 
@@ -78,6 +79,7 @@ export class DOMInputHandler implements InputHandler {
     this.touchEndListener = (event: TouchEvent) => {
       event.preventDefault();
       const changed = Array.from(event.changedTouches);
+      this.logDebug(`END raw: changed=${changed.length} total=${event.touches.length}`);
 
       if (changed.length === 2) {
         let allSmall = true;
@@ -132,8 +134,17 @@ export class DOMInputHandler implements InputHandler {
       }
     };
 
+    this.touchCancelListener = (event: TouchEvent) => {
+      const ids = Array.from(event.changedTouches).map(t => t.identifier).join(',');
+      this.logDebug(`CANCEL ids=${ids}`);
+      for (const touch of Array.from(event.changedTouches)) {
+        this.touchStartMap.delete(touch.identifier);
+      }
+    };
+
     document.body.addEventListener('touchstart', this.touchStartListener, { passive: false });
     document.body.addEventListener('touchend', this.touchEndListener, { passive: false });
+    document.body.addEventListener('touchcancel', this.touchCancelListener, { passive: false });
   }
 
   disconnect(): void {
@@ -148,6 +159,10 @@ export class DOMInputHandler implements InputHandler {
     if (this.touchEndListener) {
       document.body.removeEventListener('touchend', this.touchEndListener);
       this.touchEndListener = null;
+    }
+    if (this.touchCancelListener) {
+      document.body.removeEventListener('touchcancel', this.touchCancelListener);
+      this.touchCancelListener = null;
     }
     this.touchStartMap.clear();
   }
