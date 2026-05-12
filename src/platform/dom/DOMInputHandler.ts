@@ -78,6 +78,24 @@ export class DOMInputHandler implements InputHandler {
 
           if (absDx < 20 && absDy < 20) {
             const { col, row } = this.getGridCoords(touch.clientX, touch.clientY);
+            // DEBUG BEGIN
+            const pre = document.querySelector('.game-screen') as HTMLElement | null;
+            let rect, cols, rows;
+            if (pre) {
+              rect = pre.getBoundingClientRect();
+              cols = parseInt(pre.dataset['gridCols'] ?? '1');
+              rows = parseInt(pre.dataset['gridRows'] ?? '1');
+              console.log('[TouchDebug]', {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                col, row,
+                gridRect: {left: rect.left, top: rect.top, width: rect.width, height: rect.height},
+                gridCols: cols, gridRows: rows,
+              });
+            } else {
+              console.log('[TouchDebug] pre/.game-screen not found', {clientX: touch.clientX, clientY: touch.clientY, col, row});
+            }
+            // DEBUG END
             for (const handler of this.tapHandlers) handler(col, row);
           } else {
             let action: GameAction;
@@ -129,3 +147,4 @@ export class DOMInputHandler implements InputHandler {
     };
   }
 }
+
