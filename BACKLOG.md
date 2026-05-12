@@ -12,9 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 008 · Colocate unit tests with source modules
-See docs/features/008-colocate-unit-tests.md.
-
 ### 005 · Keyboard input handler (terminal)
 See docs/features/005-keyboard-input-terminal.md.
 
@@ -36,6 +33,31 @@ _(none)_
 ---
 
 ## DONE
+
+### 008 · Colocate unit tests with source modules
+
+**Built:**
+- `src/tests/scaffold.test.ts` — deleted; four describe blocks extracted into colocated files
+- `src/tests/dom-input-handler.test.ts` — deleted; content merged into colocated file below
+- `src/platform/dom/DOMRenderer.test.ts` — `describe('DOMRenderer')` block (4 tests)
+- `src/platform/terminal/TerminalRenderer.test.ts` — `describe('TerminalRenderer')` block (3 tests)
+- `src/platform/terminal/TerminalInputHandler.test.ts` — `describe('TerminalInputHandler')` block (1 test)
+- `src/platform/dom/DOMInputHandler.test.ts` — scaffold smoke-test describe plus all 16 detailed keyboard/touch tests (17 tests)
+- `vite.config.ts` — `include` pattern changed from `src/tests/**/*.test.ts` to `src/**/*.test.ts`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 25/25 tests passed (4 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 5.75 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 4 test files, 25 tests passed
+3. Confirm `src/tests/` contains only `setup.ts` (no `.test.ts` files)
+4. Confirm each colocated `.test.ts` sits next to its source module
+
+---
 
 ### 004 · Touch controls (browser)
 

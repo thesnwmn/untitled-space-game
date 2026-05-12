@@ -4,7 +4,7 @@ export default defineConfig({
   base: '/untitled-space-game/',
   test: {
     environment: 'jsdom',
-    include: ['src/tests/**/*.test.ts'],
+    include: ['src/**/*.test.ts'],
     setupFiles: ['src/tests/setup.ts'],
   },
 });
