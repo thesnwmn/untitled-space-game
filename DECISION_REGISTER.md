@@ -175,12 +175,14 @@ bun build          → Bundle terminal version to standalone binary
 
 ## Layout
 
-The game targets a responsive character grid bounded between **20–40 columns × 30–60 rows** (`MIN_GRID_WIDTH/HEIGHT` and `MAX_GRID_WIDTH/HEIGHT` in `shared/types.ts`), designed for a portrait/phone aspect ratio.
+The game uses a fixed character grid of **40 columns × 30 rows** (`GRID_WIDTH` and `GRID_HEIGHT` in `shared/types.ts`).
 
-- **Browser:** After `document.fonts.ready`, `DOMRenderer` measures the actual pixel size of a character cell. On construction and on each debounced `window.resize` event (~100ms), it computes the largest grid that fits the viewport within the min/max bounds. If the viewport is smaller than the minimum grid, the font is scaled down proportionally so the minimum grid always fits. All registered `onResize` handlers are fired with the new dimensions.
-- **Terminal:** `TerminalRenderer` reads `process.stdout.columns`/`rows` at construction and clamps them to the min/max bounds. A `SIGWINCH` listener (guarded by try/catch) recomputes dimensions and fires `onResize` handlers when the terminal is resized.
+- **Browser:** After `document.fonts.ready`, `DOMRenderer` measures the pixel size of a character cell at `BASE_FONT_SIZE = 24px`. On construction and on each debounced `window.resize` event (~100ms), it computes `scale = min(vw / (GRID_WIDTH × charW), vh / (GRID_HEIGHT × charH))` and applies it as a scaled `font-size` and explicit `<pre>` width. Grid dimensions are always 40 × 30.
+- **Terminal:** `TerminalRenderer` returns `GRID_WIDTH`/`GRID_HEIGHT` statically. No terminal dimension reading or `SIGWINCH` handling.
 
-The `Renderer` interface exposes `onResize(handler)` so game-layer code can react to dimension changes without platform knowledge. ASCII art and layouts must be designed to work within the full range of allowed grid sizes.
+The `Renderer` interface exposes `onResize(handler)` and both renderers implement it, but since the grid is fixed, registered handlers are never invoked.
+
+Scenes must be designed to work within exactly 40 × 30 cells.
 
 ## Deployment
 - Source hosted on GitHub
@@ -199,4 +201,4 @@ The `Renderer` interface exposes `onResize(handler)` so game-layer code can reac
 | Styling | CSS classes + monospace font | CRT/terminal effects achievable without Canvas; easy theming |
 | Colour palette | 16 named ANSI colours | Authentic retro feel, works in both DOM and terminal |
 | Input model | Semantic GameActions | Decouples game logic from platform-specific input events |
-| Layout | Responsive grid (20–40 × 30–60) | Fills available viewport; font scales down for small screens; fixed design target avoids per-platform layout logic |
+| Layout | Fixed 40 × 30 grid, font scales to fill viewport | Fixed canvas simplifies scene layout; scaling preserves crisp character grid at any viewport size |
