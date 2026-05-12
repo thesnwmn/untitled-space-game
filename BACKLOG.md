@@ -16,15 +16,13 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 **Spec:** `docs/features/009-story-intro-screen.md`
 
-Implement together with item 010 (they transition into each other).
-
 ---
 
 ### 010 · Space station menu screen
 
 **Spec:** `docs/features/010-space-station-menu.md`
 
-Implement together with item 009 (they transition into each other).
+**Depends on:** 009
 
 ---
 

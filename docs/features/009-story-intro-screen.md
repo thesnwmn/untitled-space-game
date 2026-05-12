@@ -2,8 +2,6 @@
 
 **Goal:** Show a short narrative screen when the player starts a new game, introducing the protagonist Hugo and his destination before landing them at the station hub.
 
-> **Note:** Items 009 and 010 are tightly coupled (they transition into each other). Implement both in the same Engineer session.
-
 ---
 
 ## Station name
@@ -105,20 +103,25 @@ All lines are left-aligned starting at column 2. The Engineer should verify each
 
 `MainMenuScene`'s NEW GAME action must call `onNewGame` (a new callback parameter) rather than just logging. The entry points supply this callback and swap the active scene.
 
-Suggested wiring in `main.ts` / `terminal.ts`:
+At this stage (009 only), `onContinue` in the entry points logs a placeholder — `StationMenuScene` does not exist yet:
 
 ```typescript
 // Pseudocode — exact implementation left to Engineer
 let currentScene: Scene;
 
-const goToStation = () => { currentScene = new StationMenuScene(..., goToMain); };
-const goToStory   = () => { currentScene = new StoryScene(..., goToStation); };
-const goToMain    = () => { currentScene = new MainMenuScene(..., goToStory); };
+const goToStory = () => {
+  currentScene = new StoryScene(inputHandler, context, () => {
+    console.log('[Story] Arriving at Elysium Station…');  // placeholder until item 010
+  });
+};
+const goToMain = () => { currentScene = new MainMenuScene(inputHandler, context, goToStory); };
 
-currentScene = new MainMenuScene(..., goToStory);
+currentScene = new MainMenuScene(inputHandler, context, goToStory);
 ```
 
-`InputHandler` is registered once at startup. Each scene re-registers its own listeners in its constructor — previous listeners remain attached unless explicitly removed. To avoid listener accumulation across scene transitions, each scene should call `inputHandler.onAction` / `inputHandler.onTap` in its constructor and rely on its own `activated` guard to become dormant. The Engineer should evaluate whether this is sufficient or whether `InputHandler` needs an `offAction` / `clearListeners` method.
+Item 010 replaces the placeholder with a real transition to `StationMenuScene`.
+
+`InputHandler` is registered once at startup. Each scene re-registers its own listeners in its constructor — previous listeners remain attached unless explicitly removed. To avoid listener accumulation across scene transitions, each scene should rely on its own `activated` guard to become dormant. The Engineer should evaluate whether this is sufficient or whether `InputHandler` needs an `offAction` / `clearListeners` method.
 
 ---
 

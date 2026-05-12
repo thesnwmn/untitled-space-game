@@ -2,8 +2,6 @@
 
 **Goal:** Land the player inside Elysium Station — their first interactive hub — with a menu offering trade, missions, and the ability to undock and return to the main menu.
 
-> **Note:** Items 009 and 010 are tightly coupled (they transition into each other). Implement both in the same Engineer session.
-
 ---
 
 ## Acceptance criteria
@@ -120,7 +118,7 @@ Both `MainMenuScene` and `StationMenuScene` import from `buffer-utils.ts`. Do no
 
 - `STATION_NAME` constant (`'Elysium Station'`) lives in `src/game/constants.ts` (introduced in item 009). `StationMenuScene` imports it from there and uses `STATION_NAME.toUpperCase()` for the title display (`ELYSIUM STATION`), so a future name change is a one-line edit.
 - The `=` rule at row 3 should have the same character count as the rendered title string (`'ELYSIUM STATION'` = 15 chars → `===============`), centred independently.
-- Entry points (`main.ts`, `terminal.ts`) wire UNDOCK → `MainMenuScene` via the `onUndock` callback (see item 009 transition pseudocode).
+- Entry points (`main.ts`, `terminal.ts`) are updated to replace the placeholder `onContinue` log (from item 009) with a real transition to `StationMenuScene`, and wire UNDOCK → `MainMenuScene` via `onUndock`. The full chain becomes: `MainMenuScene` → `StoryScene` → `StationMenuScene` → `MainMenuScene`.
 
 ---
 
@@ -153,4 +151,4 @@ If `MainMenuScene` is refactored to extend `BaseMenuScene` or to import from `bu
 ## Dependencies
 
 - 006 · Main menu screen (DONE)
-- 009 · Story intro screen (implement together in same session)
+- 009 · Story intro screen (must be DONE — introduces `STATION_NAME` constant and scene transition pattern)
