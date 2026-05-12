@@ -12,12 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 011 · Game Scenes — Trader, Mission Board, Ship
-
-Add three new scenes accessible from the station menu: Trader (with buy/sell tabs), Mission Board (list of missions), and Ship (starfield viewport + inventory status). Establish basic game loop: station → trader/missions/ship → station. See `docs/features/011-game-scenes-trader-missions-ship.md` for full spec.
-
----
-
 ### 012 · Animated Starfield — Ship Scene
 
 Replace the static dot pattern in ShipScene with a three-layer parallax scrolling
@@ -51,6 +45,36 @@ _(none)_
 ---
 
 ## DONE
+
+### 011 · Game Scenes — Trader, Mission Board, Ship
+
+**Built:**
+- `src/game/scenes/TraderScene.ts` — implements `Scene`; constructor takes `(inputHandler, context, onBack)`; data: `TRADERS` constant with one trader (MERCHANT KESS) with 6-item buy/sell lists; tab state (`BUY`/`SELL`), cursor navigation (UP/DOWN wrap, LEFT/RIGHT switches tab and resets cursor), SELECT logs item name placeholder, BACK fires `onBack()` with activated guard; `onTap` handles tab-column detection and item-row tap; `render()` clears to black, draws border, bright-cyan title, cyan rule, tab bar ([BUY]/[SELL] at cols 10/17), item list with left-aligned name + dots + right-aligned price, bright-black footer
+- `src/game/scenes/MissionBoardScene.ts` — implements `Scene`; constructor takes `(inputHandler, context, onBack)`; data: `MISSIONS` constant (7 missions, types rescue/delivery/combat/salvage); cursor navigation (UP/DOWN wrap), SELECT logs mission title placeholder, BACK fires `onBack()` with activated guard; `onTap` detects mission row taps; `render()` clears to black, draws border, bright-cyan title, cyan rule, mission rows with bright-yellow type icon `[X]`, white title, bright-green reward, dotted fill; bright-black footer
+- `src/game/scenes/ShipScene.ts` — implements `Scene`; constructor takes `(inputHandler, context, onBack)`; data: `INITIAL_STATE = { fuel:100, cargo:0, cargoCapacity:50, credits:5000 }`; deterministic LCG starfield (60 stars, seed 0xabcd1234, rows 1–24); two-button cursor (JUMP/DOCK, row 25/26) with UP/DOWN wrapping, SELECT logs `[Ship] Jumping…`/`[Ship] Docking…`, BACK fires `onBack()` with activated guard; `onTap` handles JUMP/DOCK rows; `render()` clears to black, bright-cyan status bar at row 0, starfield (bright-black `.`/`*`), centered button labels in bright-yellow with cursor prefix, footer at row 27
+- `src/game/scenes/trader-scene.test.ts` — 18 tests covering layout, tab rendering, item list, cursor navigation, tab switching, SELECT/BACK, tap on tabs, tap on items
+- `src/game/scenes/mission-board-scene.test.ts` — 17 tests covering layout, type icons, rewards, cursor navigation, SELECT/BACK, tap on missions
+- `src/game/scenes/ship-scene.test.ts` — 19 tests covering no-border layout, status bar, starfield, button layout/colours, cursor navigation, SELECT/BACK, tap on buttons
+- `src/game/scenes/StationMenuScene.ts` — updated constructor: takes `(inputHandler, context, onTrader, onMissionBoard, onShip)`; TRADER/MISSION BOARD/UNDOCK items now fire their respective callbacks instead of console.log placeholders
+- `src/game/scenes/station-menu-scene.test.ts` — updated all 18 tests to pass three callbacks; assertions changed from `consoleSpy` to `expect(onTrader/onMissionBoard/onShip).toHaveBeenCalledTimes(1)`; added `makeScene` helper
+- `src/main.ts` — added imports and `goToTrader`, `goToMissionBoard`, `goToShip` callbacks; `goToStation` now passes all three callbacks to `StationMenuScene`
+- `terminal.ts` — same scene wiring as `src/main.ts`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 154/154 tests passed (10 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 17.44 kB)
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 10 test files, 154 tests passed
+3. **Browser:** Run `npm run dev` — open browser; main menu → Enter → story → Enter → station menu (ELYSIUM STATION)
+   - Navigate to TRADER, press Enter → Trader scene with MERCHANT KESS title, [BUY]/[SELL] tabs, item list with prices; LEFT/RIGHT switches tabs; ESC returns to station
+   - From station, navigate to MISSION BOARD, press Enter → Mission Board with 7 missions, type icons [R]/[D]/[C]/[S] in bright-yellow, rewards in bright-green; ESC returns to station
+   - From station, navigate to UNDOCK, press Enter → Ship scene with status bar (FUEL:100%), starfield of dots/stars, JUMP/DOCK buttons; UP/DOWN moves cursor between buttons; Enter logs placeholder; ESC returns to station
+4. **Terminal:** Run `bun terminal.ts` — same navigation flow as browser; q to quit
+
+---
 
 ### 010 · Space station menu screen
 

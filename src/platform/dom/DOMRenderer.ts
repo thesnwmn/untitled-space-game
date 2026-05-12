@@ -31,7 +31,7 @@ export class DOMRenderer implements Renderer {
     // resolve before VT323 has downloaded on first/cache-cleared visits).
     Promise.all([
       document.fonts.ready,
-      document.fonts.load(`${BASE_FONT_SIZE}px "VT323"`).catch(() => null),
+      document.fonts.load(`${BASE_FONT_SIZE}px "Share Tech Mono"`).catch(() => null),
     ]).then(remeasure);
 
     // Re-measure after any font swap so late-arriving VT323 corrects the scale.
