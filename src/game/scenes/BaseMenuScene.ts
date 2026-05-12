@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered, drawBorder } from '../../shared/buffer-utils';
+import { writeText, writeCentered } from '../../shared/buffer-utils';
 
 export interface MenuItemDef {
   label: string;
@@ -58,8 +58,6 @@ export abstract class BaseMenuScene implements Scene {
         buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
       }
     }
-
-    drawBorder(buffer, 'white', 'black');
 
     writeCentered(buffer, 2, this.title, 'bright-cyan', 'black');
     writeCentered(buffer, 3, '='.repeat(this.title.length), 'cyan', 'black');

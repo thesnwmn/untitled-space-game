@@ -1,5 +1,5 @@
 import type { Renderer, CharBuffer } from '../../shared/types';
-import { GRID_WIDTH, GRID_HEIGHT } from '../../shared/types';
+import { GRID_WIDTH, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT } from '../../shared/types';
 
 const BASE_FONT_SIZE = 24;
 
@@ -14,6 +14,7 @@ export class DOMRenderer implements Renderer {
   private pre: HTMLPreElement;
   private charW = 0;
   private charH = 0;
+  private gridH: number = MIN_GRID_HEIGHT;
   private resizeHandlers: Array<(w: number, h: number) => void> = [];
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -21,7 +22,7 @@ export class DOMRenderer implements Renderer {
     this.pre = document.createElement('pre');
     this.pre.className = 'game-screen';
     this.pre.dataset['gridCols'] = String(GRID_WIDTH);
-    this.pre.dataset['gridRows'] = String(GRID_HEIGHT);
+    this.pre.dataset['gridRows'] = String(MIN_GRID_HEIGHT);
     document.body.appendChild(this.pre);
 
     const remeasure = () => { this.measureChar(); this.applyScale(); };
@@ -45,7 +46,7 @@ export class DOMRenderer implements Renderer {
 
   private measureChar(): void {
     const span = document.createElement('span');
-    span.style.fontFamily = "'VT323', monospace";
+    span.style.fontFamily = "'Share Tech Mono', monospace";
     span.style.fontSize = `${BASE_FONT_SIZE}px`;
     span.style.lineHeight = '1em';
     span.style.position = 'absolute';
@@ -61,11 +62,19 @@ export class DOMRenderer implements Renderer {
   private applyScale(): void {
     if (this.charW <= 0 || this.charH <= 0) return;
     const scale = Math.min(
-      window.innerWidth  / (GRID_WIDTH  * this.charW),
-      window.innerHeight / (GRID_HEIGHT * this.charH),
+      window.innerWidth  / (GRID_WIDTH       * this.charW),
+      window.innerHeight / (MIN_GRID_HEIGHT  * this.charH),
     );
+    const rows = Math.max(MIN_GRID_HEIGHT, Math.min(MAX_GRID_HEIGHT,
+      Math.floor(window.innerHeight / (this.charH * scale)),
+    ));
     this.pre.style.fontSize = `${BASE_FONT_SIZE * scale}px`;
     this.pre.style.width    = `${GRID_WIDTH * this.charW * scale}px`;
+    if (rows !== this.gridH) {
+      this.gridH = rows;
+      this.pre.dataset['gridRows'] = String(rows);
+      for (const handler of this.resizeHandlers) handler(GRID_WIDTH, rows);
+    }
   }
 
   onResize(handler: (width: number, height: number) => void): void {
@@ -89,7 +98,7 @@ export class DOMRenderer implements Renderer {
   }
 
   getWidth(): number { return GRID_WIDTH; }
-  getHeight(): number { return GRID_HEIGHT; }
+  getHeight(): number { return this.gridH; }
 
   clear(): void {
     this.pre.innerHTML = '';

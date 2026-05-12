@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered, drawBorder } from '../../shared/buffer-utils';
+import { writeText, writeCentered } from '../../shared/buffer-utils';
 
 interface TraderItem {
   name: string;
@@ -124,8 +124,6 @@ export class TraderScene implements Scene {
       }
     }
 
-    drawBorder(buffer, 'white', 'black');
-
     writeCentered(buffer, 2, this.trader.name, 'bright-cyan', 'black');
     writeCentered(buffer, 3, '='.repeat(this.trader.name.length), 'cyan', 'black');
 
@@ -134,8 +132,7 @@ export class TraderScene implements Scene {
     writeText(buffer, TAB_ROW, BUY_TAB_COL, '[BUY]', buyFg, 'black');
     writeText(buffer, TAB_ROW, SELL_TAB_COL, '[SELL]', sellFg, 'black');
 
-    // contentWidth leaves 1 gap before the right border for all grid sizes
-    const contentWidth = w - 3;
+    const contentWidth = w - 2;
     const items = this.currentItems();
     for (let i = 0; i < items.length; i++) {
       const row = ITEM_ROW_START + i;

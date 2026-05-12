@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered, drawBorder } from '../../shared/buffer-utils';
+import { writeText, writeCentered } from '../../shared/buffer-utils';
 
 const TITLE_LINES = ['UNTITLED', 'SPACE GAME'];
 const TITLE_ROW_START = 4;
@@ -78,8 +78,6 @@ export class MainMenuScene implements Scene {
         buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
       }
     }
-
-    drawBorder(buffer, 'white', 'black');
 
     for (let i = 0; i < TITLE_LINES.length; i++) {
       writeCentered(buffer, TITLE_ROW_START + i * TITLE_ROW_STEP, TITLE_LINES[i], 'bright-cyan', 'black');

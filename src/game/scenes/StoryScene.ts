@@ -1,10 +1,9 @@
 import type { InputHandler, GameContext, CharBuffer, Scene } from '../../shared/types';
-import { writeText, writeCentered, drawBorder } from '../../shared/buffer-utils';
+import { writeText, writeCentered } from '../../shared/buffer-utils';
 import { STATION_NAME } from '../constants';
 
 const YEAR_HEADER = 'YEAR  2076';
 const YEAR_ROW = 2;
-const FOOTER_ROW = 27;
 const KEYBOARD_HINT = '[ PRESS ENTER TO CONTINUE ]';
 const TOUCH_HINT = '[ TAP TO CONTINUE ]';
 
@@ -65,8 +64,6 @@ export class StoryScene implements Scene {
       }
     }
 
-    drawBorder(buffer, 'white', 'black');
-
     writeCentered(buffer, YEAR_ROW, YEAR_HEADER, 'bright-yellow', 'black');
 
     for (const line of STORY_LINES) {
@@ -74,6 +71,6 @@ export class StoryScene implements Scene {
     }
 
     const hint = this.context.primaryInput === 'touch' ? TOUCH_HINT : KEYBOARD_HINT;
-    writeCentered(buffer, FOOTER_ROW, hint, 'bright-black', 'black');
+    writeCentered(buffer, h - 3, hint, 'bright-black', 'black');
   }
 }

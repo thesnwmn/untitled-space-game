@@ -44,13 +44,13 @@ const MISSION_ROW_START = 5;
 
 describe('MissionBoardScene', () => {
   describe('render — layout', () => {
-    it('renders a border on rows 0 and 29', () => {
+    it('does not render a border', () => {
       const input = new MockInputHandler();
       const scene = new MissionBoardScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][0].char).toBe('+');
-      expect(buf[29][39].char).toBe('+');
+      expect(buf[0][0].char).toBe(' ');
+      expect(buf[0][0].fg).toBe('black');
     });
 
     it('renders MISSION BOARD title at row 2 in bright-cyan', () => {

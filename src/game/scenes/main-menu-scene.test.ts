@@ -61,19 +61,13 @@ describe('MainMenuScene', () => {
       expect(buf[20][15]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
     });
 
-    it('renders a border around the screen edges', () => {
+    it('does not render a border', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][0].char).toBe('+');
-      expect(buf[0][39].char).toBe('+');
-      expect(buf[29][0].char).toBe('+');
-      expect(buf[29][39].char).toBe('+');
-      expect(buf[0][1].char).toBe('-');
-      expect(buf[29][20].char).toBe('-');
-      expect(buf[15][0].char).toBe('|');
-      expect(buf[15][39].char).toBe('|');
+      expect(buf[0][0].char).toBe(' ');
+      expect(buf[0][0].fg).toBe('black');
     });
 
     it('renders title lines in bright-cyan within rows 1–11', () => {
