@@ -12,6 +12,9 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 008 · Colocate unit tests with source modules
+See docs/features/008-colocate-unit-tests.md.
+
 ### 004 · Touch controls (browser)
 See docs/features/004-touch-controls-browser.md.
 
