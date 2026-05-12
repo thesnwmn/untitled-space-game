@@ -28,28 +28,27 @@ export class DOMInputHandler implements InputHandler {
   private pointerDownListener: ((event: PointerEvent) => void) | null = null;
   private pointerUpListener: ((event: PointerEvent) => void) | null = null;
   private pointerCancelListener: ((event: PointerEvent) => void) | null = null;
+  private readonly debugMode = new URLSearchParams(window.location.search).has('debug');
   private debugEl: HTMLDivElement | null = null;
   private debugLog: string[] = [];
 
-  private ensureDebug(): HTMLDivElement {
-    if (this.debugEl) return this.debugEl;
-    const el = document.createElement('div');
-    el.style.cssText = [
-      'position:fixed', 'top:0', 'left:0', 'right:0',
-      'background:rgba(0,0,0,0.85)', 'color:#0f0',
-      'font-family:monospace', 'font-size:11px',
-      'padding:4px 6px', 'z-index:99999',
-      'pointer-events:none', 'white-space:pre', 'line-height:1.25',
-    ].join(';');
-    document.body.appendChild(el);
-    this.debugEl = el;
-    return el;
-  }
-
   private logDebug(line: string): void {
+    if (!this.debugMode) return;
     this.debugLog.unshift(line);
     if (this.debugLog.length > 8) this.debugLog.length = 8;
-    this.ensureDebug().textContent = this.debugLog.join('\n');
+    if (!this.debugEl) {
+      const el = document.createElement('div');
+      el.style.cssText = [
+        'position:fixed', 'top:0', 'left:0', 'right:0',
+        'background:rgba(0,0,0,0.85)', 'color:#0f0',
+        'font-family:monospace', 'font-size:11px',
+        'padding:4px 6px', 'z-index:99999',
+        'pointer-events:none', 'white-space:pre', 'line-height:1.25',
+      ].join(';');
+      document.body.appendChild(el);
+      this.debugEl = el;
+    }
+    this.debugEl.textContent = this.debugLog.join('\n');
   }
 
   onAction(handler: (action: GameAction) => void): void {
