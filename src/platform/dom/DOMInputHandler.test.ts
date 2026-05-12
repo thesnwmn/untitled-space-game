@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DOMInputHandler } from '../platform/dom/DOMInputHandler';
-import type { GameAction } from '../shared/types';
+import { DOMInputHandler } from './DOMInputHandler';
+import type { GameAction } from '../../shared/types';
+
+describe('DOMInputHandler', () => {
+  it('onAction and onTap are callable', () => {
+    const h = new DOMInputHandler();
+    expect(() => h.onAction(() => {})).not.toThrow();
+    expect(() => h.onTap?.(() => {})).not.toThrow();
+  });
+});
 
 function fireKey(key: string, cancelable = false): KeyboardEvent {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable });
