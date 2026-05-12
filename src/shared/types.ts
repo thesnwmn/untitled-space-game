@@ -31,6 +31,11 @@ export interface InputHandler {
   onTap?(handler: (col: number, row: number) => void): void;
 }
 
+export interface Scene {
+  update(dt: number): void;
+  render(buffer: CharBuffer): void;
+}
+
 export type GameAction =
   | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
   | 'SELECT' | 'BACK' | 'PAUSE'
