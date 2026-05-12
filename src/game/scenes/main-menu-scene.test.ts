@@ -46,7 +46,7 @@ const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch
 // Menu col for a 40-wide grid: Math.floor((40 - 10) / 2) = 15
 // "NEW GAME" (8 chars) + 2 prefix = 10; "QUIT" (4 chars) + 2 prefix = 6; max = 10
 const MENU_COL = 15;
-const MENU_ROW_START = 21; // 0-indexed
+const MENU_ROW_START = 16; // 0-indexed
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -56,38 +56,57 @@ describe('MainMenuScene', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
       const buf = makeBuffer(40, 30);
-      // pre-fill with junk
-      buf[0][0] = { char: 'X', fg: 'red', bg: 'red' };
+      // pre-fill an interior cell with junk (not covered by border or content)
+      buf[20][15] = { char: 'X', fg: 'red', bg: 'red' };
       scene.render(buf);
-      expect(buf[0][0]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
+      expect(buf[20][15]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
+    });
+
+    it('renders a border around the screen edges', () => {
+      const input = new MockInputHandler();
+      const scene = new MainMenuScene(input, browserContext);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // corners
+      expect(buf[0][0].char).toBe('+');
+      expect(buf[0][39].char).toBe('+');
+      expect(buf[29][0].char).toBe('+');
+      expect(buf[29][39].char).toBe('+');
+      // top/bottom edges
+      expect(buf[0][1].char).toBe('-');
+      expect(buf[29][20].char).toBe('-');
+      // left/right edges
+      expect(buf[15][0].char).toBe('|');
+      expect(buf[15][39].char).toBe('|');
     });
 
     it('renders title lines in bright-cyan within rows 1–11', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Title row 1: "UNTITLED" centred on row 4 (0-indexed)
+      // "UNTITLED" (8 chars) centred in 40 cols: col = (40-8)/2 = 16
       expect(rowText(buf, 4)).toContain('UNTITLED');
-      expect(rowFg(buf, 4, 16)).toBe('bright-cyan'); // centred col for "UNTITLED" (8 chars) in 40-wide = 16
-      // Title row 2: "SPACE GAME" on row 7 (0-indexed)
+      expect(rowFg(buf, 4, 16)).toBe('bright-cyan');
+      // "SPACE GAME" (10 chars) centred in 40 cols: col = (40-10)/2 = 15
       expect(rowText(buf, 7)).toContain('SPACE GAME');
       expect(rowFg(buf, 7, 15)).toBe('bright-cyan');
     });
 
-    it('renders tagline in white on row 14 (0-indexed)', () => {
+    it('renders tagline in white on row 11 (0-indexed)', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 14)).toContain('An ASCII space adventure');
-      expect(rowFg(buf, 14, 6)).toBe('white');
+      // "- An ASCII space adventure -" (28 chars) centred in 40 cols: col = (40-28)/2 = 6
+      expect(rowText(buf, 11)).toContain('An ASCII space adventure');
+      expect(rowFg(buf, 11, 6)).toBe('white');
     });
 
     it('renders cursor on first item in bright-green', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = rowText(buf, MENU_ROW_START);
       expect(text).toContain('> NEW GAME');
@@ -97,27 +116,28 @@ describe('MainMenuScene', () => {
     it('renders keyboard footer 3 rows from bottom in bright-black', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const footerRow = 60 - 3; // 57
+      const footerRow = 30 - 3; // 27
       expect(rowText(buf, footerRow)).toContain('ENTER select');
-      expect(buf[footerRow].find(c => c.char !== ' ')?.fg).toBe('bright-black');
+      // skip border columns (0 and w-1) when checking footer colour
+      expect(buf[footerRow].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-black');
     });
 
     it('renders touch footer 3 rows from bottom for touch context', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, touchContext);
-      const buf = makeBuffer(40, 60);
-      scene.render(buf);
-      expect(rowText(buf, 57)).toContain('tap an option to select');
-    });
-
-    it('renders footer at h-3 on a smaller grid (phone height)', () => {
-      const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const footerRow = 30 - 3; // 27
+      expect(rowText(buf, 27)).toContain('tap an option to select');
+    });
+
+    it('renders footer at h-3 on a smaller grid', () => {
+      const input = new MockInputHandler();
+      const scene = new MainMenuScene(input, browserContext);
+      const buf = makeBuffer(40, 20);
+      scene.render(buf);
+      const footerRow = 20 - 3; // 17
       expect(rowText(buf, footerRow)).toContain('ENTER select');
     });
   });
@@ -126,7 +146,7 @@ describe('MainMenuScene', () => {
     it('shows only NEW GAME in browser context', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('NEW GAME');
       expect(rowText(buf, MENU_ROW_START + 1)).not.toContain('QUIT');
@@ -135,8 +155,7 @@ describe('MainMenuScene', () => {
     it('shows NEW GAME and QUIT in terminal context', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, terminalContext);
-      // Browser col for terminal: max width = 10 (NEW GAME+2), col = 15
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('NEW GAME');
       expect(rowText(buf, MENU_ROW_START + 1)).toContain('QUIT');
@@ -145,9 +164,8 @@ describe('MainMenuScene', () => {
     it('QUIT is unselected (white) when cursor is on NEW GAME', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, terminalContext);
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // QUIT at MENU_ROW_START + 1, col MENU_COL is the space of "  QUIT"
       expect(rowFg(buf, MENU_ROW_START + 1, MENU_COL)).toBe('white');
     });
   });
@@ -157,7 +175,7 @@ describe('MainMenuScene', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, terminalContext);
       input.triggerAction('DOWN');
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).not.toContain('> ');
       expect(rowText(buf, MENU_ROW_START + 1)).toContain('> QUIT');
@@ -168,7 +186,7 @@ describe('MainMenuScene', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, terminalContext);
       input.triggerAction('UP');
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START + 1)).toContain('> QUIT');
     });
@@ -178,7 +196,7 @@ describe('MainMenuScene', () => {
       const scene = new MainMenuScene(input, terminalContext);
       input.triggerAction('DOWN'); // -> QUIT
       input.triggerAction('DOWN'); // -> NEW GAME (wrap)
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('> NEW GAME');
     });
@@ -192,7 +210,7 @@ describe('MainMenuScene', () => {
       consoleSpy.mockRestore();
       // After activation, further input is ignored (cursor stays)
       input.triggerAction('DOWN');
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('> NEW GAME');
     });
@@ -201,7 +219,7 @@ describe('MainMenuScene', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, terminalContext);
       input.triggerAction('BACK');
-      const buf = makeBuffer(40, 60);
+      const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('> NEW GAME');
     });
