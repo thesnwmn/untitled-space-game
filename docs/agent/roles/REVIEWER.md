@@ -10,7 +10,7 @@ be invoked explicitly by the manager at any time.
 
 1. Read the DONE backlog item: the spec, the evidence, and the play-test instructions.
 2. Read the implementation code for the feature.
-3. Check against docs/TECH_STACK.md — were any architectural rules broken?
+3. Check against DECISION_REGISTER.md — were any architectural rules broken?
    Also check for the following common violations:
    - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
      runtime environment guards (`typeof X === 'undefined'`, `process.platform`, etc.)

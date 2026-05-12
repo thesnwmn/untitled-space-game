@@ -4,7 +4,7 @@
 
 ## Acceptance criteria
 
-- `CharBuffer`, `Cell`, `Color` types and `GRID_WIDTH = 40`, `GRID_HEIGHT = 60` constants are exported from `src/shared/types.ts`, matching the definitions in docs/TECH_STACK.md exactly.
+- `CharBuffer`, `Cell`, `Color` types and `GRID_WIDTH = 40`, `GRID_HEIGHT = 60` constants are exported from `src/shared/types.ts`, matching the definitions in DECISION_REGISTER.md exactly.
 - `DOMRenderer` lives in `src/platform/dom/DOMRenderer.ts` and implements the `Renderer` interface.
 - `DOMRenderer.drawBuffer(buffer)` serialises the buffer into `<span class="fg-X bg-Y">char</span>` elements inside a single `<pre>` element, with a newline character between each row.
 - `src/platform/dom/colors.css` defines `.fg-*` and `.bg-*` classes for all 16 named colours plus `transparent`. Actual RGB values are held in CSS custom properties on `:root` (e.g. `--color-green: #00aa00;`), and the classes reference those variables. Swapping a colour theme requires only editing the `:root` block.
@@ -22,7 +22,7 @@
 
 ## Technical notes
 
-- The `<pre>` element should use `white-space: pre` and the VT323 monospace font. CSS should ensure it is centred and letterboxed as described in docs/TECH_STACK.md (no JavaScript layout logic needed).
+- The `<pre>` element should use `white-space: pre` and the VT323 monospace font. CSS should ensure it is centred and letterboxed as described in DECISION_REGISTER.md (no JavaScript layout logic needed).
 - Each frame, `drawBuffer` replaces the full `innerHTML` of the `<pre>`. No diffing or partial updates.
 - Consecutive cells with identical fg and bg can share a single `<span>` to reduce DOM node count — but this is an optimisation and not required for this item.
 
