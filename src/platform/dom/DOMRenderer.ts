@@ -1,7 +1,7 @@
 import type { Renderer, CharBuffer } from '../../shared/types';
 import { GRID_WIDTH, GRID_HEIGHT } from '../../shared/types';
 
-const FONT_SIZE = 24;
+const BASE_FONT_SIZE = 24;
 
 function escapeHtml(char: string): string {
   if (char === '&') return '&amp;';
@@ -12,25 +12,33 @@ function escapeHtml(char: string): string {
 
 export class DOMRenderer implements Renderer {
   private pre: HTMLPreElement;
+  private charW = 0;
+  private charH = 0;
   private resizeHandlers: Array<(w: number, h: number) => void> = [];
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.pre = document.createElement('pre');
     this.pre.className = 'game-screen';
-    this.pre.style.fontSize = `${FONT_SIZE}px`;
     this.pre.dataset['gridCols'] = String(GRID_WIDTH);
     this.pre.dataset['gridRows'] = String(GRID_HEIGHT);
     document.body.appendChild(this.pre);
 
     document.fonts.ready.then(() => {
-      this.setPreWidth();
+      this.measureChar();
+      this.applyScale();
+    });
+
+    window.addEventListener('resize', () => {
+      if (this.debounceTimer !== null) clearTimeout(this.debounceTimer);
+      this.debounceTimer = setTimeout(() => this.applyScale(), 100);
     });
   }
 
-  private setPreWidth(): void {
+  private measureChar(): void {
     const span = document.createElement('span');
     span.style.fontFamily = "'VT323', monospace";
-    span.style.fontSize = `${FONT_SIZE}px`;
+    span.style.fontSize = `${BASE_FONT_SIZE}px`;
     span.style.lineHeight = '1em';
     span.style.position = 'absolute';
     span.style.visibility = 'hidden';
@@ -38,9 +46,18 @@ export class DOMRenderer implements Renderer {
     document.body.appendChild(span);
     const rect = span.getBoundingClientRect();
     document.body.removeChild(span);
-    if (rect.width > 0) {
-      this.pre.style.width = `${GRID_WIDTH * rect.width}px`;
-    }
+    this.charW = rect.width;
+    this.charH = rect.height;
+  }
+
+  private applyScale(): void {
+    if (this.charW <= 0 || this.charH <= 0) return;
+    const scale = Math.min(
+      window.innerWidth  / (GRID_WIDTH  * this.charW),
+      window.innerHeight / (GRID_HEIGHT * this.charH),
+    );
+    this.pre.style.fontSize = `${BASE_FONT_SIZE * scale}px`;
+    this.pre.style.width    = `${GRID_WIDTH * this.charW * scale}px`;
   }
 
   onResize(handler: (width: number, height: number) => void): void {
