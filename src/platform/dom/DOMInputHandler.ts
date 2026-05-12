@@ -77,7 +77,7 @@ export class DOMInputHandler implements InputHandler {
           const absDy = Math.abs(dy);
 
           if (absDx < 20 && absDy < 20) {
-            const coords = this.getGridCoords(touch.clientX, touch.clientY);
+            const coords = this.getGridCoords(start.startX, start.startY);
             if (coords) {
               for (const handler of this.tapHandlers.slice()) handler(coords.col, coords.row);
             }
