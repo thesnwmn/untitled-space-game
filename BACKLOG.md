@@ -30,6 +30,14 @@ See `docs/features/012-animated-starfield.md` for full spec.
 
 ---
 
+### 013 · Menu Pagination
+
+Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
+
+**Depends on:** 011
+
+---
+
 ## NEEDS SPEC
 
 _(none)_
