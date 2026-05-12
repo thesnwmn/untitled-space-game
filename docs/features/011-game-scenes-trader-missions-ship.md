@@ -96,23 +96,24 @@ Hardcode 6–7 missions at the top of `MissionBoardScene.ts`.
 - Row 26–28: action buttons (centred, one per row)
   - Row 26: `[ J ] JUMP` (bright-yellow)
   - Row 27: `[ D ] DOCK` (bright-yellow)
-  - Row 28: Empty or footer hint
-- Footer at row 27/28: context-dependent hint (hidden if buttons occupy it, or shown on row 28)
+  - Cursor: green `>` prefix on selected button (starts on JUMP)
+- Footer at row 28: `[ ↑↓ navigate   ENTER select   ESC return ]` (keyboard) or `[ TAP to select   2-finger TAP to exit ]` (touch)
 
 **Data (game state stub):**
 - Player inventory: `{ fuel: 100, cargoTons: 0, credits: 5000 }`
 - These are hardcoded for now and don't update (future feature: spending credits, consuming fuel, etc.)
 
 **Behavior:**
-- Startup: displays ship scene with static starfield
-- Cursor: no cursor on this screen (not a menu; direct button selection)
+- Startup: displays ship scene with static starfield, cursor on JUMP button
+- UP/DOWN: cycle through the two buttons (wrapping)
 - SELECT on button: no-op for now (logs placeholder: `[Ship] Jumping…` or `[Ship] Docking…`)
 - BACK: return to station menu
-- Touch tap on JUMP button: no-op, log placeholder
-- Touch tap on DOCK button: no-op, log placeholder; or BACK on two-finger tap to exit
+- Touch tap on JUMP button: select it (no-op, log placeholder)
+- Touch tap on DOCK button: select it (no-op, log placeholder)
+- Two-finger tap: return to station menu
 
 **Test coverage:**
-- 8–10 tests: status bar rendering (fuel/cargo/credits), starfield rendering, button layout and colours, SELECT on buttons, BACK action, tap on buttons
+- 12–15 tests: status bar rendering (fuel/cargo/credits), starfield rendering, button layout and colours, cursor starts on JUMP, UP/DOWN cursor navigation (wrapping), SELECT on button, BACK action, tap on buttons, two-finger tap to return
 
 ---
 
@@ -276,5 +277,6 @@ const INITIAL_STATE: PlayerState = {
 - **Grid dimensions:** All scenes must fit within 40 cols × 30 rows (6 rows for title/rule + ~18 rows for content + 3–4 for footer/buttons)
 - **Touch hints:** Remember to vary footer hint text based on `context.primaryInput` (keyboard vs. touch)
 - **Tap-to-item logic:** Use row-based detection like `BaseMenuScene` does (`row === MENU_ROW_START + i`)
+- **ShipScene cursor:** Cannot extend `BaseMenuScene` (custom layout). Implement cursor state tracking manually: `cursorIdx = 0` (JUMP) or `1` (DOCK), UP/DOWN toggles it with wrapping, SELECT fires the button action. Same `activated` guard pattern as `BaseMenuScene` to silence input after first activation.
 - **Starfield:** Simple dot pattern (no animation) — safe random seed or hardcoded positions if reproducibility matters
 - **Data:** All mission/trader/player data can stay hardcoded in scene constructors; future features will externalize state management
