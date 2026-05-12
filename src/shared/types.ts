@@ -1,7 +1,5 @@
-export const MIN_GRID_WIDTH = 20;
-export const MIN_GRID_HEIGHT = 30;
-export const MAX_GRID_WIDTH = 40;
-export const MAX_GRID_HEIGHT = 60;
+export const GRID_WIDTH = 30;
+export const GRID_HEIGHT = 40;
 
 export type Color =
   | 'black' | 'red' | 'green' | 'yellow'

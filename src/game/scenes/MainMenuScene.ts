@@ -1,13 +1,12 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 
 const TITLE_LINES = ['UNTITLED', 'SPACE GAME'];
-const TITLE_ROW_START = 4;  // 0-indexed; row 5 (1-indexed), within spec rows 2–12
+const TITLE_ROW_START = 4;  // 0-indexed; rows 4 and 7 in a 40-row grid
 const TITLE_ROW_STEP = 3;
 const TAGLINE = '- An ASCII space adventure -';
-const TAGLINE_ROW = 14;     // 0-indexed; row 15 (1-indexed), within spec rows 14–16
-const MENU_ROW_START = 21;  // 0-indexed; row 22 (1-indexed), within spec rows 22–28
-// Footer is pinned 3 rows from the bottom so it tracks the actual grid height.
-// In a full 60-row grid this lands on row 57 (0-indexed), matching the spec.
+const TAGLINE_ROW = 11;     // 0-indexed; 3 rows below second title line
+const MENU_ROW_START = 16;  // 0-indexed; 4 rows below tagline
+// Footer is pinned 3 rows from the bottom (row 37 in a 40-row grid).
 
 interface MenuItem {
   label: string;
