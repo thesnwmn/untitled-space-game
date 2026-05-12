@@ -1,4 +1,4 @@
-# Tech Stack
+# Decision Register
 
 ## Rendering: DOM + `<pre>` Buffer
 

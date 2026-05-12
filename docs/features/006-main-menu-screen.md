@@ -13,7 +13,7 @@
   ```
 - `MainMenuScene` is implemented in `src/game/scenes/MainMenuScene.ts` and satisfies `Scene`.
 - `MainMenuScene` constructor signature: `constructor(inputHandler: InputHandler, context: GameContext)`.
-- The `GameContext` type (`RuntimeEnvironment`, `PrimaryInput`) is also added to `src/shared/types.ts` as specified in docs/TECH_STACK.md.
+- The `GameContext` type (`RuntimeEnvironment`, `PrimaryInput`) is also added to `src/shared/types.ts` as specified in DECISION_REGISTER.md.
 - The menu renders into the full 40×60 grid with this layout:
 
   ```
@@ -70,7 +70,7 @@
 - The footer hint row uses `bright-black` (dark grey) to keep it visually subordinate to the menu.
 - `dt` passed to `update` is milliseconds since the last frame. `MainMenuScene` does not use it at this stage (static menu), but the signature must match the interface.
 - `onTap` is optional on the `InputHandler` interface. `MainMenuScene` should guard: `if (inputHandler.onTap) inputHandler.onTap(...)`.
-- `GameContext` is constructed by the entry point (see docs/TECH_STACK.md — Runtime Context). Browser: `{ environment: 'browser', primaryInput: navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard' }`. Terminal: `{ environment: 'terminal', primaryInput: 'keyboard' }`.
+- `GameContext` is constructed by the entry point (see DECISION_REGISTER.md — Runtime Context). Browser: `{ environment: 'browser', primaryInput: navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard' }`. Terminal: `{ environment: 'terminal', primaryInput: 'keyboard' }`.
 - `MainMenuScene` must not contain any `if (typeof window !== 'undefined')` or other environment sniffing — all platform decisions are made via `GameContext`.
 
 ## Dependencies

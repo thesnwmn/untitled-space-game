@@ -6,7 +6,7 @@ single session, and clear enough that no clarifying questions are needed mid-bui
 ## Process
 
 1. Understand what the manager wants. Ask clarifying questions now, not during build.
-2. Check docs/TECH_STACK.md — any spec must fit within agreed architecture.
+2. Check DECISION_REGISTER.md — any spec must fit within agreed architecture.
 3. Check BACKLOG.md — does this feature depend on anything not yet built?
 4. Write the spec. Use the format below.
 5. Decide: is this a one-liner for BACKLOG.md, or does it need a docs/features/ doc?
