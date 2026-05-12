@@ -12,9 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 003 · Keyboard input handler (browser)
-See docs/features/003-keyboard-input-browser.md.
-
 ### 004 · Touch controls (browser)
 See docs/features/004-touch-controls-browser.md.
 
@@ -39,6 +36,27 @@ _(none)_
 ---
 
 ## DONE
+
+### 003 · Keyboard input handler (browser)
+
+**Built:**
+- `src/platform/dom/DOMInputHandler.ts` — full implementation: `onAction(handler)` registers callbacks; `connect()` attaches a `keydown` listener to `document`; `disconnect()` removes it; key map covers ArrowUp/Down/Left/Right → UP/DOWN/LEFT/RIGHT, PageUp/Down → PAGE_UP/PAGE_DOWN, Enter → SELECT, Escape → BACK, P/p → PAUSE; arrow and page keys call `event.preventDefault()`
+- `src/main.ts` — instantiates `DOMInputHandler`, registers a smoke-test `console.log` callback, and calls `connect()`
+- `src/tests/dom-input-handler.test.ts` — 5 tests: all key mappings, multiple handlers called independently, `preventDefault` behaviour, no events after `disconnect`, unmapped keys ignored
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 14/14 tests passed (2 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 3.87 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm run dev` — open browser, open DevTools console
+3. Press ArrowUp, ArrowDown, ArrowLeft, ArrowRight, PageUp, PageDown, Enter, Escape, P — each must log `GameAction: <ACTION>` in the console, and the page must not scroll on arrow/page keys
+4. No `GameAction` log on unmapped keys (e.g. A, Space)
+
+---
 
 ### 007 · Responsive screen sizing
 

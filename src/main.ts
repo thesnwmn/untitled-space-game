@@ -11,7 +11,9 @@ const context: GameContext = {
 };
 
 const renderer = new DOMRenderer();
-const _input = new DOMInputHandler();
+const input = new DOMInputHandler();
+input.onAction((action) => console.log('GameAction:', action));
+input.connect();
 
 const COLORS: Color[] = [
   'black', 'red', 'green', 'yellow',
