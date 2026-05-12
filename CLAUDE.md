@@ -1,7 +1,21 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 You are working on an ASCII terminal-style space game built with Vite + TypeScript
 for browser, and Bun for terminal. Read DECISION_REGISTER.md for full technical context.
+
+## Commands
+
+```bash
+bash init.sh                                       # full env check — run at start/end of Engineer/Debugger sessions
+npm run dev                                        # Vite dev server (browser)
+npm test                                           # run all tests (Vitest)
+npx vitest run src/path/to/file.test.ts            # run a single test file
+npx tsc --noEmit                                   # type check (must pass with zero errors)
+npm run build                                      # production browser build (output to dist/)
+npm run terminal                                   # run game in terminal via Bun
+```
 
 ## How This Project Works
 
@@ -68,6 +82,7 @@ If no instruction is given, ask.
 - BACKLOG.md — ordered feature list, implementation evidence, status
 - docs/features/ — full spec docs for complex features
 - docs/agent/roles/ — detailed instructions for each role
+- docs/implementation/ — how game systems are built (scenes, etc.)
 - init.sh — run at the start and end of every Engineer or Debugger session
 
 ## Git Workflow
