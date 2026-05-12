@@ -24,10 +24,18 @@ export class DOMRenderer implements Renderer {
     this.pre.dataset['gridRows'] = String(GRID_HEIGHT);
     document.body.appendChild(this.pre);
 
-    document.fonts.ready.then(() => {
-      this.measureChar();
-      this.applyScale();
-    });
+    const remeasure = () => { this.measureChar(); this.applyScale(); };
+
+    // Wait for fonts.ready AND explicitly load VT323 so we measure the real font,
+    // not the fallback (Google Fonts uses font-display:swap so fonts.ready can
+    // resolve before VT323 has downloaded on first/cache-cleared visits).
+    Promise.all([
+      document.fonts.ready,
+      document.fonts.load(`${BASE_FONT_SIZE}px "VT323"`).catch(() => null),
+    ]).then(remeasure);
+
+    // Re-measure after any font swap so late-arriving VT323 corrects the scale.
+    document.fonts.addEventListener('loadingdone', remeasure);
 
     window.addEventListener('resize', () => {
       if (this.debounceTimer !== null) clearTimeout(this.debounceTimer);
