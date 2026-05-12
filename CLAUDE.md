@@ -17,14 +17,6 @@ npm run build                                      # production browser build (o
 npm run terminal                                   # run game in terminal via Bun
 ```
 
-## Scene Architecture
-
-All scenes implement `Scene` (from `shared/types.ts`): `update(dt)` + `render(buffer)`. Menu scenes extend `BaseMenuScene` (`src/game/scenes/BaseMenuScene.ts`), which handles cursor navigation, tap-to-item mapping, and the `activated` guard that silences input after a selection. New menu scenes only need to pass a title, items array, and callbacks to the base constructor.
-
-Shared buffer drawing helpers live in `src/shared/buffer-utils.ts` (`writeText`, `writeCentered`, `drawBorder`). Game-wide constants (e.g. `STATION_NAME`) live in `src/game/constants.ts`.
-
-Scene wiring (creating scenes, passing callbacks between them) happens in the two entry points: `src/main.ts` (browser) and `terminal.ts` (Bun). Both must be kept in sync when adding new scenes.
-
 ## How This Project Works
 
 A human manager directs this project. Claude takes on one of six roles per session
@@ -90,6 +82,7 @@ If no instruction is given, ask.
 - BACKLOG.md — ordered feature list, implementation evidence, status
 - docs/features/ — full spec docs for complex features
 - docs/agent/roles/ — detailed instructions for each role
+- docs/implementation/ — how game systems are built (scenes, etc.)
 - init.sh — run at the start and end of every Engineer or Debugger session
 
 ## Git Workflow
