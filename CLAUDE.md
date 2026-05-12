@@ -1,7 +1,29 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 You are working on an ASCII terminal-style space game built with Vite + TypeScript
 for browser, and Bun for terminal. Read DECISION_REGISTER.md for full technical context.
+
+## Commands
+
+```bash
+bash init.sh                                       # full env check — run at start/end of Engineer/Debugger sessions
+npm run dev                                        # Vite dev server (browser)
+npm test                                           # run all tests (Vitest)
+npx vitest run src/path/to/file.test.ts            # run a single test file
+npx tsc --noEmit                                   # type check (must pass with zero errors)
+npm run build                                      # production browser build (output to dist/)
+npm run terminal                                   # run game in terminal via Bun
+```
+
+## Scene Architecture
+
+All scenes implement `Scene` (from `shared/types.ts`): `update(dt)` + `render(buffer)`. Menu scenes extend `BaseMenuScene` (`src/game/scenes/BaseMenuScene.ts`), which handles cursor navigation, tap-to-item mapping, and the `activated` guard that silences input after a selection. New menu scenes only need to pass a title, items array, and callbacks to the base constructor.
+
+Shared buffer drawing helpers live in `src/shared/buffer-utils.ts` (`writeText`, `writeCentered`, `drawBorder`). Game-wide constants (e.g. `STATION_NAME`) live in `src/game/constants.ts`.
+
+Scene wiring (creating scenes, passing callbacks between them) happens in the two entry points: `src/main.ts` (browser) and `terminal.ts` (Bun). Both must be kept in sync when adding new scenes.
 
 ## How This Project Works
 
