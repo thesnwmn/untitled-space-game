@@ -94,16 +94,17 @@ describe('MainMenuScene', () => {
       expect(rowFg(buf, MENU_ROW_START, MENU_COL)).toBe('bright-green');
     });
 
-    it('renders keyboard footer in bright-black on row 57 for keyboard context', () => {
+    it('renders keyboard footer 3 rows from bottom in bright-black', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
       const buf = makeBuffer(40, 60);
       scene.render(buf);
-      expect(rowText(buf, 57)).toContain('ENTER select');
-      expect(buf[57].find(c => c.char !== ' ')?.fg).toBe('bright-black');
+      const footerRow = 60 - 3; // 57
+      expect(rowText(buf, footerRow)).toContain('ENTER select');
+      expect(buf[footerRow].find(c => c.char !== ' ')?.fg).toBe('bright-black');
     });
 
-    it('renders touch footer on row 57 for touch context', () => {
+    it('renders touch footer 3 rows from bottom for touch context', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, touchContext);
       const buf = makeBuffer(40, 60);
@@ -111,13 +112,13 @@ describe('MainMenuScene', () => {
       expect(rowText(buf, 57)).toContain('tap an option to select');
     });
 
-    it('does not render footer when grid is shorter than 58 rows', () => {
+    it('renders footer at h-3 on a smaller grid (phone height)', () => {
       const input = new MockInputHandler();
       const scene = new MainMenuScene(input, browserContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // row 57 doesn't exist — no error, and row 29 (last) is blank
-      expect(rowText(buf, 29)).toBe('');
+      const footerRow = 30 - 3; // 27
+      expect(rowText(buf, footerRow)).toContain('ENTER select');
     });
   });
 

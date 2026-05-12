@@ -6,7 +6,8 @@ const TITLE_ROW_STEP = 3;
 const TAGLINE = '- An ASCII space adventure -';
 const TAGLINE_ROW = 14;     // 0-indexed; row 15 (1-indexed), within spec rows 14–16
 const MENU_ROW_START = 21;  // 0-indexed; row 22 (1-indexed), within spec rows 22–28
-const FOOTER_ROW = 57;      // 0-indexed; row 58 (1-indexed)
+// Footer is pinned 3 rows from the bottom so it tracks the actual grid height.
+// In a full 60-row grid this lands on row 57 (0-indexed), matching the spec.
 
 interface MenuItem {
   label: string;
@@ -115,11 +116,10 @@ export class MainMenuScene implements Scene {
       writeText(buffer, row, menuCol, prefix + this.items[i].label, fg, 'black');
     }
 
-    if (FOOTER_ROW < h) {
-      const hint = this.context.primaryInput === 'touch'
-        ? 'tap an option to select'
-        : '↑↓ navigate   ENTER select';
-      writeCentered(buffer, FOOTER_ROW, hint, 'bright-black', 'black');
-    }
+    const footerRow = h - 3;
+    const hint = this.context.primaryInput === 'touch'
+      ? 'tap an option to select'
+      : '↑↓ navigate   ENTER select';
+    writeCentered(buffer, footerRow, hint, 'bright-black', 'black');
   }
 }
