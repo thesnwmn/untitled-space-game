@@ -12,7 +12,9 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-_(none)_
+### 011 · Game Scenes — Trader, Mission Board, Ship
+
+Add three new scenes accessible from the station menu: Trader (with buy/sell tabs), Mission Board (list of missions), and Ship (starfield viewport + inventory status). Establish basic game loop: station → trader/missions/ship → station. See `docs/features/011-game-scenes-trader-missions-ship.md` for full spec.
 
 ---
 
