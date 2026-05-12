@@ -77,8 +77,10 @@ export class DOMInputHandler implements InputHandler {
           const absDy = Math.abs(dy);
 
           if (absDx < 20 && absDy < 20) {
-            const { col, row } = this.getGridCoords(touch.clientX, touch.clientY);
-            for (const handler of this.tapHandlers.slice()) handler(col, row);
+            const coords = this.getGridCoords(touch.clientX, touch.clientY);
+            if (coords) {
+              for (const handler of this.tapHandlers.slice()) handler(coords.col, coords.row);
+            }
           } else {
             let action: GameAction;
             if (absDx >= absDy) {
@@ -116,13 +118,14 @@ export class DOMInputHandler implements InputHandler {
     this.touchStartMap.clear();
   }
 
-  private getGridCoords(clientX: number, clientY: number): { col: number; row: number } {
+  private getGridCoords(clientX: number, clientY: number): { col: number; row: number } | null {
     const pre = document.querySelector('.game-screen') as HTMLElement | null;
-    if (!pre) return { col: 0, row: 0 };
+    if (!pre) return null;
     const rect = pre.getBoundingClientRect();
     const cols = parseInt(pre.dataset['gridCols'] ?? '1');
     const rows = parseInt(pre.dataset['gridRows'] ?? '1');
-    if (!cols || !rows || !rect.width || !rect.height) return { col: 0, row: 0 };
+    if (!cols || !rows || !rect.width || !rect.height) return null;
+    if (clientX < rect.left || clientX >= rect.right || clientY < rect.top || clientY >= rect.bottom) return null;
     return {
       col: Math.floor((clientX - rect.left) / (rect.width / cols)),
       row: Math.floor((clientY - rect.top) / (rect.height / rows)),
