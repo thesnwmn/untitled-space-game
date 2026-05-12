@@ -57,7 +57,8 @@ export class DOMRenderer implements Renderer {
       window.innerHeight / (GRID_HEIGHT * this.charH),
     );
     this.pre.style.fontSize = `${BASE_FONT_SIZE * scale}px`;
-    this.pre.style.width    = `${GRID_WIDTH * this.charW * scale}px`;
+    this.pre.style.width    = `${GRID_WIDTH  * this.charW * scale}px`;
+    this.pre.style.height   = `${GRID_HEIGHT * this.charH * scale}px`;
   }
 
   onResize(handler: (width: number, height: number) => void): void {

@@ -40,7 +40,7 @@ export class DOMInputHandler implements InputHandler {
       const action = KEY_MAP[event.key];
       if (!action) return;
       if (PREVENT_DEFAULT_KEYS.has(event.key)) event.preventDefault();
-      for (const handler of this.actionHandlers) handler(action);
+      for (const handler of this.actionHandlers.slice()) handler(action);
     };
     document.addEventListener('keydown', this.keyListener);
 
@@ -65,7 +65,7 @@ export class DOMInputHandler implements InputHandler {
           }
         }
         if (allSmall) {
-          for (const handler of this.actionHandlers) handler('BACK');
+          for (const handler of this.actionHandlers.slice()) handler('BACK');
         }
       } else if (changed.length >= 1) {
         const touch = changed[0];
@@ -78,7 +78,7 @@ export class DOMInputHandler implements InputHandler {
 
           if (absDx < 20 && absDy < 20) {
             const { col, row } = this.getGridCoords(touch.clientX, touch.clientY);
-            for (const handler of this.tapHandlers) handler(col, row);
+            for (const handler of this.tapHandlers.slice()) handler(col, row);
           } else {
             let action: GameAction;
             if (absDx >= absDy) {
@@ -86,7 +86,7 @@ export class DOMInputHandler implements InputHandler {
             } else {
               action = dy > 0 ? 'DOWN' : 'UP';
             }
-            for (const handler of this.actionHandlers) handler(action);
+            for (const handler of this.actionHandlers.slice()) handler(action);
           }
         }
       }
