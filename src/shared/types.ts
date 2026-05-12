@@ -45,4 +45,5 @@ export type PrimaryInput = 'keyboard' | 'touch';
 export interface GameContext {
   environment: RuntimeEnvironment;
   primaryInput: PrimaryInput;
+  debug: boolean;
 }

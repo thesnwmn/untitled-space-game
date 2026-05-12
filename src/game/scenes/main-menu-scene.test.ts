@@ -39,9 +39,9 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const browserContext: GameContext = { environment: 'browser', primaryInput: 'keyboard' };
-const terminalContext: GameContext = { environment: 'terminal', primaryInput: 'keyboard' };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch' };
+const browserContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const terminalContext: GameContext = { environment: 'terminal', primaryInput: 'keyboard', debug: false };
+const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 // Menu col for a 40-wide grid: Math.floor((40 - 10) / 2) = 15
 // "NEW GAME" (8 chars) + 2 prefix = 10; "QUIT" (4 chars) + 2 prefix = 6; max = 10

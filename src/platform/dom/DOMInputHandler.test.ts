@@ -4,7 +4,7 @@ import type { GameAction } from '../../shared/types';
 
 describe('DOMInputHandler', () => {
   it('onAction and onTap are callable', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     expect(() => h.onAction(() => {})).not.toThrow();
     expect(() => h.onTap?.(() => {})).not.toThrow();
   });
@@ -18,7 +18,7 @@ function fireKey(key: string, cancelable = false): KeyboardEvent {
 
 describe('DOMInputHandler', () => {
   it('maps all specified keys to the correct GameActions', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const received: GameAction[] = [];
     h.onAction((a) => received.push(a));
     h.connect();
@@ -42,7 +42,7 @@ describe('DOMInputHandler', () => {
   });
 
   it('calls all registered onAction handlers independently', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const r1: GameAction[] = [];
     const r2: GameAction[] = [];
     h.onAction((a) => r1.push(a));
@@ -56,7 +56,7 @@ describe('DOMInputHandler', () => {
   });
 
   it('calls preventDefault for arrow and page keys', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     h.onAction(() => {});
     h.connect();
 
@@ -71,7 +71,7 @@ describe('DOMInputHandler', () => {
   });
 
   it('does not fire actions after disconnect', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const received: GameAction[] = [];
     h.onAction((a) => received.push(a));
     h.connect();
@@ -83,7 +83,7 @@ describe('DOMInputHandler', () => {
   });
 
   it('ignores unmapped keys', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const received: GameAction[] = [];
     h.onAction((a) => received.push(a));
     h.connect();
@@ -138,7 +138,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('calls onTap handlers with correct grid coordinates on single tap', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const taps: Array<[number, number]> = [];
     h.onTap((col, row) => taps.push([col, row]));
     h.connect();
@@ -152,7 +152,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('calls all registered onTap handlers independently', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const r1: Array<[number, number]> = [];
     const r2: Array<[number, number]> = [];
     h.onTap((col, row) => r1.push([col, row]));
@@ -168,7 +168,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('tap does not fire a GameAction', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
@@ -181,7 +181,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('swipe right fires RIGHT', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
@@ -192,7 +192,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('swipe left fires LEFT', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
@@ -203,7 +203,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('swipe down fires DOWN', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
@@ -214,7 +214,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('swipe up fires UP', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
@@ -225,7 +225,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('swipe does not call onTap', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const taps: Array<[number, number]> = [];
     h.onTap((col, row) => taps.push([col, row]));
     h.connect();
@@ -236,7 +236,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('two-finger tap fires BACK', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const actions: GameAction[] = [];
     h.onAction((a) => actions.push(a));
     h.connect();
@@ -255,7 +255,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('no touch events after disconnect', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const taps: Array<[number, number]> = [];
     const actions: GameAction[] = [];
     h.onTap((col, row) => taps.push([col, row]));
@@ -273,7 +273,7 @@ describe('DOMInputHandler — touch', () => {
   });
 
   it('calls preventDefault on touchstart and touchend', () => {
-    const h = new DOMInputHandler();
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     h.connect();
 
     const startEvent = fireTouchStart([{ identifier: 1, clientX: 100, clientY: 100 }]);

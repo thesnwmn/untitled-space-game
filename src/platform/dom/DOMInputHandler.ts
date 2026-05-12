@@ -1,4 +1,4 @@
-import type { InputHandler, GameAction } from '../../shared/types';
+import type { InputHandler, GameAction, GameContext } from '../../shared/types';
 
 const KEY_MAP: Record<string, GameAction> = {
   ArrowUp: 'UP',
@@ -17,15 +17,43 @@ const PREVENT_DEFAULT_KEYS = new Set([
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown',
 ]);
 
-interface TouchPoint { startX: number; startY: number; }
+interface PointerStart { startX: number; startY: number; }
 
 export class DOMInputHandler implements InputHandler {
   private actionHandlers: ((action: GameAction) => void)[] = [];
   private tapHandlers: ((col: number, row: number) => void)[] = [];
-  private touchStartMap = new Map<number, TouchPoint>();
+  private pointerStartMap = new Map<number, PointerStart>();
+  private activePointers = new Set<number>();
   private keyListener: ((event: KeyboardEvent) => void) | null = null;
-  private touchStartListener: ((event: TouchEvent) => void) | null = null;
-  private touchEndListener: ((event: TouchEvent) => void) | null = null;
+  private pointerDownListener: ((event: PointerEvent) => void) | null = null;
+  private pointerUpListener: ((event: PointerEvent) => void) | null = null;
+  private pointerCancelListener: ((event: PointerEvent) => void) | null = null;
+  private readonly debugMode: boolean;
+  private debugEl: HTMLDivElement | null = null;
+  private debugLog: string[] = [];
+
+  constructor(context: GameContext) {
+    this.debugMode = context.debug;
+  }
+
+  private logDebug(line: string): void {
+    if (!this.debugMode) return;
+    this.debugLog.unshift(line);
+    if (this.debugLog.length > 8) this.debugLog.length = 8;
+    if (!this.debugEl) {
+      const el = document.createElement('div');
+      el.style.cssText = [
+        'position:fixed', 'top:0', 'left:0', 'right:0',
+        'background:rgba(0,0,0,0.85)', 'color:#0f0',
+        'font-family:monospace', 'font-size:11px',
+        'padding:4px 6px', 'z-index:99999',
+        'pointer-events:none', 'white-space:pre', 'line-height:1.25',
+      ].join(';');
+      document.body.appendChild(el);
+      this.debugEl = el;
+    }
+    this.debugEl.textContent = this.debugLog.join('\n');
+  }
 
   onAction(handler: (action: GameAction) => void): void {
     this.actionHandlers.push(handler);
@@ -40,64 +68,71 @@ export class DOMInputHandler implements InputHandler {
       const action = KEY_MAP[event.key];
       if (!action) return;
       if (PREVENT_DEFAULT_KEYS.has(event.key)) event.preventDefault();
-      for (const handler of this.actionHandlers) handler(action);
+      for (const handler of this.actionHandlers.slice()) handler(action);
     };
     document.addEventListener('keydown', this.keyListener);
 
-    this.touchStartListener = (event: TouchEvent) => {
+    this.pointerDownListener = (event: PointerEvent) => {
       event.preventDefault();
-      for (const touch of Array.from(event.changedTouches)) {
-        this.touchStartMap.set(touch.identifier, { startX: touch.clientX, startY: touch.clientY });
-      }
+      this.pointerStartMap.set(event.pointerId, { startX: event.clientX, startY: event.clientY });
+      this.activePointers.add(event.pointerId);
+      this.logDebug(`DOWN id=${event.pointerId} (${Math.round(event.clientX)},${Math.round(event.clientY)}) type=${event.pointerType} active=${this.activePointers.size}`);
     };
 
-    this.touchEndListener = (event: TouchEvent) => {
-      event.preventDefault();
-      const changed = Array.from(event.changedTouches);
+    this.pointerUpListener = (event: PointerEvent) => {
+      const start = this.pointerStartMap.get(event.pointerId);
+      const activeCount = this.activePointers.size;
+      this.activePointers.delete(event.pointerId);
+      this.pointerStartMap.delete(event.pointerId);
 
-      if (changed.length === 2) {
-        let allSmall = true;
-        for (const touch of changed) {
-          const start = this.touchStartMap.get(touch.identifier);
-          if (!start || Math.abs(touch.clientX - start.startX) >= 20 || Math.abs(touch.clientY - start.startY) >= 20) {
-            allSmall = false;
-            break;
-          }
-        }
-        if (allSmall) {
-          for (const handler of this.actionHandlers) handler('BACK');
-        }
-      } else if (changed.length >= 1) {
-        const touch = changed[0];
-        const start = this.touchStartMap.get(touch.identifier);
-        if (start) {
-          const dx = touch.clientX - start.startX;
-          const dy = touch.clientY - start.startY;
-          const absDx = Math.abs(dx);
-          const absDy = Math.abs(dy);
+      if (!start) {
+        this.logDebug(`UP id=${event.pointerId} NO START`);
+        return;
+      }
 
-          if (absDx < 20 && absDy < 20) {
-            const { col, row } = this.getGridCoords(touch.clientX, touch.clientY);
-            for (const handler of this.tapHandlers) handler(col, row);
+      const dx = event.clientX - start.startX;
+      const dy = event.clientY - start.startY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      if (absDx < 20 && absDy < 20) {
+        if (activeCount >= 2) {
+          // first finger of a 2-finger tap → BACK
+          this.logDebug(`UP id=${event.pointerId} 2-finger tap -> BACK`);
+          this.activePointers.clear();
+          this.pointerStartMap.clear();
+          for (const handler of this.actionHandlers.slice()) handler('BACK');
+        } else {
+          const rect = this.getRectInfo();
+          const coords = this.getGridCoords(start.startX, start.startY);
+          if (coords) {
+            this.logDebug(`TAP (${Math.round(start.startX)},${Math.round(start.startY)}) rect=${rect} -> col=${coords.col} row=${coords.row} h=${this.tapHandlers.length}`);
+            for (const handler of this.tapHandlers.slice()) handler(coords.col, coords.row);
           } else {
-            let action: GameAction;
-            if (absDx >= absDy) {
-              action = dx > 0 ? 'RIGHT' : 'LEFT';
-            } else {
-              action = dy > 0 ? 'DOWN' : 'UP';
-            }
-            for (const handler of this.actionHandlers) handler(action);
+            this.logDebug(`TAP (${Math.round(start.startX)},${Math.round(start.startY)}) rect=${rect} -> OOB`);
           }
         }
-      }
-
-      for (const touch of changed) {
-        this.touchStartMap.delete(touch.identifier);
+      } else {
+        let action: GameAction;
+        if (absDx >= absDy) {
+          action = dx > 0 ? 'RIGHT' : 'LEFT';
+        } else {
+          action = dy > 0 ? 'DOWN' : 'UP';
+        }
+        this.logDebug(`SWIPE dx=${Math.round(dx)} dy=${Math.round(dy)} -> ${action}`);
+        for (const handler of this.actionHandlers.slice()) handler(action);
       }
     };
 
-    document.body.addEventListener('touchstart', this.touchStartListener, { passive: false });
-    document.body.addEventListener('touchend', this.touchEndListener, { passive: false });
+    this.pointerCancelListener = (event: PointerEvent) => {
+      this.logDebug(`CANCEL id=${event.pointerId}`);
+      this.activePointers.delete(event.pointerId);
+      this.pointerStartMap.delete(event.pointerId);
+    };
+
+    window.addEventListener('pointerdown', this.pointerDownListener);
+    window.addEventListener('pointerup', this.pointerUpListener);
+    window.addEventListener('pointercancel', this.pointerCancelListener);
   }
 
   disconnect(): void {
@@ -105,27 +140,39 @@ export class DOMInputHandler implements InputHandler {
       document.removeEventListener('keydown', this.keyListener);
       this.keyListener = null;
     }
-    if (this.touchStartListener) {
-      document.body.removeEventListener('touchstart', this.touchStartListener);
-      this.touchStartListener = null;
+    if (this.pointerDownListener) {
+      window.removeEventListener('pointerdown', this.pointerDownListener);
+      this.pointerDownListener = null;
     }
-    if (this.touchEndListener) {
-      document.body.removeEventListener('touchend', this.touchEndListener);
-      this.touchEndListener = null;
+    if (this.pointerUpListener) {
+      window.removeEventListener('pointerup', this.pointerUpListener);
+      this.pointerUpListener = null;
     }
-    this.touchStartMap.clear();
+    if (this.pointerCancelListener) {
+      window.removeEventListener('pointercancel', this.pointerCancelListener);
+      this.pointerCancelListener = null;
+    }
+    this.pointerStartMap.clear();
+    this.activePointers.clear();
   }
 
-  private getGridCoords(clientX: number, clientY: number): { col: number; row: number } {
+  private getRectInfo(): string {
     const pre = document.querySelector('.game-screen') as HTMLElement | null;
-    if (!pre) return { col: 0, row: 0 };
+    if (!pre) return 'NO PRE';
+    const r = pre.getBoundingClientRect();
+    return `L${Math.round(r.left)},T${Math.round(r.top)},R${Math.round(r.right)},B${Math.round(r.bottom)}`;
+  }
+
+  private getGridCoords(clientX: number, clientY: number): { col: number; row: number } | null {
+    const pre = document.querySelector('.game-screen') as HTMLElement | null;
+    if (!pre) return null;
     const rect = pre.getBoundingClientRect();
     const cols = parseInt(pre.dataset['gridCols'] ?? '1');
     const rows = parseInt(pre.dataset['gridRows'] ?? '1');
-    if (!cols || !rows || !rect.width || !rect.height) return { col: 0, row: 0 };
-    return {
-      col: Math.floor((clientX - rect.left) / (rect.width / cols)),
-      row: Math.floor((clientY - rect.top) / (rect.height / rows)),
-    };
+    if (!cols || !rows || !rect.width || !rect.height) return null;
+    const col = Math.floor((clientX - rect.left) / (rect.width / cols));
+    const row = Math.floor((clientY - rect.top) / (rect.height / rows));
+    if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
+    return { col, row };
   }
 }

@@ -39,8 +39,8 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard' };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch' };
+const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 

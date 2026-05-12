@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./src/platform/dom/colors.css">
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { overflow: hidden; }
+      html, body { overflow: hidden; touch-action: none; }
       body {
         background: #000000;
         display: flex;
@@ -28,6 +28,9 @@
         color: var(--color-white, #aaa);
         display: block;
         overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
       }
     </style>
   </head>
