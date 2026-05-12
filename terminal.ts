@@ -2,6 +2,7 @@ import { TerminalRenderer } from './src/platform/terminal/TerminalRenderer';
 import { TerminalInputHandler } from './src/platform/terminal/TerminalInputHandler';
 import { MainMenuScene } from './src/game/scenes/MainMenuScene';
 import { StoryScene } from './src/game/scenes/StoryScene';
+import { StationMenuScene } from './src/game/scenes/StationMenuScene';
 import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
 
 const context: GameContext = {
@@ -14,10 +15,16 @@ const input = new TerminalInputHandler();
 
 let currentScene: Scene;
 
+const goToMainMenu = () => {
+  currentScene = new MainMenuScene(input, context, goToStory);
+};
+
+const goToStation = () => {
+  currentScene = new StationMenuScene(input, context, goToMainMenu);
+};
+
 const goToStory = () => {
-  currentScene = new StoryScene(input, context, () => {
-    console.log('[Story] Arriving at Elysium Station…');
-  });
+  currentScene = new StoryScene(input, context, goToStation);
 };
 
 currentScene = new MainMenuScene(input, context, goToStory);

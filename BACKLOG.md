@@ -12,11 +12,7 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 010 · Space station menu screen
-
-**Spec:** `docs/features/010-space-station-menu.md`
-
-**Depends on:** 009
+_(none)_
 
 ---
 
@@ -33,6 +29,30 @@ _(none)_
 ---
 
 ## DONE
+
+### 010 · Space station menu screen
+
+**Built:**
+- `src/game/scenes/BaseMenuScene.ts` — new abstract base class; constructor takes `(title, items, inputHandler, context)`; handles cursor navigation (UP/DOWN wrap-around), `activated` guard (set on SELECT or tap before calling the item action), `onTap` mapping (row → item starting from row 14), and `render()` (clear to black, white border, bright-cyan title centred at row 2, cyan `=` rule at row 3 matching title width, bright-green/white items centred from row 14, bright-black footer hint at h-3); `update()` no-op
+- `src/game/scenes/StationMenuScene.ts` — extends `BaseMenuScene`; constructor takes `(inputHandler, context, onUndock)`; passes `STATION_NAME.toUpperCase()` as title and three items: TRADER (logs placeholder), MISSION BOARD (logs placeholder), UNDOCK (calls `onUndock`)
+- `src/game/scenes/station-menu-scene.test.ts` — 18 tests: border, title row/colour, rule row/colour, items at rows 14–16, cursor starts on TRADER, DOWN cycles through all three and wraps, UP from TRADER wraps to UNDOCK, SELECT on TRADER logs placeholder, SELECT on MISSION BOARD logs placeholder, SELECT on UNDOCK calls onUndock once then silences, tap rows 14/15/16 activate correct items, tap non-item row does nothing, input silenced after any selection, keyboard footer hint, touch footer hint, update no-throw
+- `src/main.ts` — scene wiring updated: `goToStation` creates `StationMenuScene` with `goToMainMenu` as `onUndock`; `goToStory` now passes `goToStation` as `onContinue`; full chain: `MainMenuScene` → `StoryScene` → `StationMenuScene` → `MainMenuScene`
+- `terminal.ts` — same scene wiring as `src/main.ts`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 100/100 tests passed (7 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 9.74 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 7 test files, 100 tests passed
+3. **Browser:** Run `npm run dev` — open browser; main menu appears; press Enter on NEW GAME → story screen; press Enter → station menu appears with border, "ELYSIUM STATION" in cyan at top, `===============` rule below, TRADER/MISSION BOARD/UNDOCK items with green cursor on TRADER; navigate with ↑↓; press Enter on TRADER → console logs `[Station] Opening trader…`; navigate to UNDOCK and press Enter → returns to main menu
+4. **Terminal:** Run `bun terminal.ts` — main menu renders; Enter → story; Enter → station menu; navigate to UNDOCK and press Enter → returns to main menu
+5. On touch browser (DevTools emulation): tap TRADER/MISSION BOARD rows → logs placeholder; tap UNDOCK → returns to main menu; footer shows `tap an option to select`
+
+---
 
 ### 009 · Story intro screen
 
