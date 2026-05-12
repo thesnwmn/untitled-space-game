@@ -42,12 +42,15 @@ The codebase is divided into three distinct layers so that game logic is fully d
 **File structure:**
 ```
 src/
-  game/           ← all game logic, state, scenes (pure TS)
+  game/
+    constants.ts  ← game-wide constants (e.g. STATION_NAME)
+    scenes/       ← all scene implementations
   platform/
     dom/          ← DOMRenderer, DOMInputHandler
     terminal/     ← TerminalRenderer, TerminalInputHandler
   shared/
-    types.ts      ← CharBuffer, Renderer, InputHandler, Color interfaces
+    types.ts      ← CharBuffer, Renderer, InputHandler, Scene, Color interfaces
+    buffer-utils.ts ← shared drawing helpers (writeText, writeCentered, drawBorder)
 index.html        ← browser entry point (Vite)
 terminal.ts       ← terminal entry point (Bun)
 ```
@@ -89,6 +92,11 @@ export interface InputHandler {
   onTap?(handler: (col: number, row: number) => void): void;
 }
 
+export interface Scene {
+  update(dt: number): void;
+  render(buffer: CharBuffer): void;
+}
+
 export type GameAction =
   | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
   | 'SELECT' | 'BACK' | 'PAUSE'
@@ -100,8 +108,28 @@ export type PrimaryInput = 'keyboard' | 'touch';
 export interface GameContext {
   environment: RuntimeEnvironment;
   primaryInput: PrimaryInput;
+  debug: boolean;
 }
 ```
+
+## Scene System
+
+All game screens implement the `Scene` interface from `shared/types.ts`. The game loop calls `update(dt)` and `render(buffer)` on the active scene each frame.
+
+**Menu scenes** extend `BaseMenuScene` (`src/game/scenes/BaseMenuScene.ts`), which provides:
+- Cursor navigation (UP/DOWN with wrap-around)
+- Tap-to-item mapping (`onTap` row → item index)
+- `activated` guard — set on the first SELECT or tap, silences all further input
+- Standard `render()` layout: white border, bright-cyan title centred at row 2, cyan rule at row 3, bright-green/white items from row 14, bright-black footer hint at row h−3
+
+Individual menu scenes pass a title, items array, and per-item callbacks to the `BaseMenuScene` constructor. They contain no input or rendering logic of their own.
+
+**Shared drawing helpers** (`src/shared/buffer-utils.ts`):
+- `writeText(buffer, row, col, text, fg, bg)` — writes a string at a fixed position
+- `writeCentered(buffer, row, text, fg, bg)` — centres a string on a row
+- `drawBorder(buffer, fg, bg)` — draws a `+`/`-`/`|` border around the full buffer
+
+**Scene wiring** (creating scenes and passing callbacks between them) lives entirely in the two entry points — `src/main.ts` (browser) and `terminal.ts` (Bun). Both must be kept in sync when adding new scenes.
 
 ## Colour
 
@@ -202,3 +230,4 @@ Scenes must be designed to work within exactly 40 × 30 cells.
 | Colour palette | 16 named ANSI colours | Authentic retro feel, works in both DOM and terminal |
 | Input model | Semantic GameActions | Decouples game logic from platform-specific input events |
 | Layout | Fixed 40 × 30 grid, font scales to fill viewport | Fixed canvas simplifies scene layout; scaling preserves crisp character grid at any viewport size |
+| Menu scene pattern | `BaseMenuScene` abstract class | Centralises cursor navigation, tap-to-item mapping, and input-silencing logic; individual menus only configure title, items, and callbacks |
