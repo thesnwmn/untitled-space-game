@@ -3,6 +3,9 @@ import { TerminalInputHandler } from './src/platform/terminal/TerminalInputHandl
 import { MainMenuScene } from './src/game/scenes/MainMenuScene';
 import { StoryScene } from './src/game/scenes/StoryScene';
 import { StationMenuScene } from './src/game/scenes/StationMenuScene';
+import { TraderScene } from './src/game/scenes/TraderScene';
+import { MissionBoardScene } from './src/game/scenes/MissionBoardScene';
+import { ShipScene } from './src/game/scenes/ShipScene';
 import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
 
 const context: GameContext = {
@@ -19,8 +22,20 @@ const goToMainMenu = () => {
   currentScene = new MainMenuScene(input, context, goToStory);
 };
 
+const goToTrader = () => {
+  currentScene = new TraderScene(input, context, goToStation);
+};
+
+const goToMissionBoard = () => {
+  currentScene = new MissionBoardScene(input, context, goToStation);
+};
+
+const goToShip = () => {
+  currentScene = new ShipScene(input, context, goToStation);
+};
+
 const goToStation = () => {
-  currentScene = new StationMenuScene(input, context, goToMainMenu);
+  currentScene = new StationMenuScene(input, context, goToTrader, goToMissionBoard, goToShip);
 };
 
 const goToStory = () => {
