@@ -157,8 +157,19 @@ describe('TraderScene', () => {
       scene.render(buf);
       expect(rowFg(buf, TAB_ROW, SELL_TAB_COL)).toBe('bright-green');
       expect(rowFg(buf, TAB_ROW, BUY_TAB_COL)).toBe('white');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies (x5)');
       expect(rowText(buf, ITEM_ROW_START)).toContain('>');
+    });
+
+    it('sell tab displays qty for each item', () => {
+      const input = new MockInputHandler();
+      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      input.triggerAction('RIGHT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies (x5)');
+      expect(rowText(buf, ITEM_ROW_START + 1)).toContain('Oxygen Tank (x3)');
+      expect(rowText(buf, ITEM_ROW_START + 2)).toContain('Nutrient Paste (x8)');
     });
 
     it('LEFT switches back to BUY tab', () => {
@@ -193,24 +204,25 @@ describe('TraderScene', () => {
   });
 
   describe('touch navigation', () => {
-    it('tap on BUY tab switches to BUY', () => {
+    it('tap on BUY tab switches back from SELL to BUY', () => {
       const input = new MockInputHandler();
-      input.triggerAction('RIGHT' as GameAction);
       const scene = new TraderScene(input, keyboardContext, vi.fn());
-      input.triggerTap(BUY_TAB_COL, TAB_ROW);
+      input.triggerAction('RIGHT'); // switch to SELL first
+      input.triggerTap(BUY_TAB_COL, TAB_ROW); // tap BUY
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowFg(buf, TAB_ROW, BUY_TAB_COL)).toBe('bright-green');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
     });
 
-    it('tap on SELL tab switches to SELL', () => {
+    it('tap on SELL tab switches to SELL and shows qty', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, vi.fn());
       input.triggerTap(SELL_TAB_COL, TAB_ROW);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowFg(buf, TAB_ROW, SELL_TAB_COL)).toBe('bright-green');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies (x5)');
     });
 
     it('tap on item row logs placeholder', () => {

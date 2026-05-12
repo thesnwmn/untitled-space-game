@@ -4,6 +4,7 @@ import { writeText, writeCentered, drawBorder } from '../../shared/buffer-utils'
 interface TraderItem {
   name: string;
   price: number;
+  qty?: number;
 }
 
 interface Trader {
@@ -24,12 +25,12 @@ const TRADERS: Trader[] = [
       { name: 'Rare Alloy', price: 420 },
     ],
     sellList: [
-      { name: 'Water Supplies', price: 45 },
-      { name: 'Oxygen Tank', price: 60 },
-      { name: 'Nutrient Paste', price: 35 },
-      { name: 'Medical Kit', price: 200 },
-      { name: 'Armor Plating', price: 280 },
-      { name: 'Navigation Module', price: 500 },
+      { name: 'Water Supplies', price: 45,  qty: 5 },
+      { name: 'Oxygen Tank',    price: 60,  qty: 3 },
+      { name: 'Nutrient Paste', price: 35,  qty: 8 },
+      { name: 'Medical Kit',    price: 200, qty: 2 },
+      { name: 'Armor Plating',  price: 280, qty: 1 },
+      { name: 'Nav Module',     price: 500, qty: 1 },
     ],
   },
 ];
@@ -41,7 +42,6 @@ const BUY_TAB_COL = 10;
 const SELL_TAB_COL = 17;
 const ITEM_ROW_START = 7;
 const ITEM_COL = 1;
-const ITEM_CONTENT_WIDTH = 38;
 
 export class TraderScene implements Scene {
   private readonly trader: Trader;
@@ -105,6 +105,13 @@ export class TraderScene implements Scene {
     return this.activeTab === 'BUY' ? this.trader.buyList : this.trader.sellList;
   }
 
+  private displayName(item: TraderItem): string {
+    if (this.activeTab === 'SELL' && item.qty !== undefined) {
+      return `${item.name} (x${item.qty})`;
+    }
+    return item.name;
+  }
+
   update(_dt: number): void {}
 
   render(buffer: CharBuffer): void {
@@ -127,6 +134,8 @@ export class TraderScene implements Scene {
     writeText(buffer, TAB_ROW, BUY_TAB_COL, '[BUY]', buyFg, 'black');
     writeText(buffer, TAB_ROW, SELL_TAB_COL, '[SELL]', sellFg, 'black');
 
+    // contentWidth leaves 1 gap before the right border for all grid sizes
+    const contentWidth = w - 3;
     const items = this.currentItems();
     for (let i = 0; i < items.length; i++) {
       const row = ITEM_ROW_START + i;
@@ -134,9 +143,10 @@ export class TraderScene implements Scene {
       const item = items[i];
       const isCursor = i === this.cursorIdx;
       const prefix = isCursor ? '> ' : '  ';
+      const name = this.displayName(item);
       const priceStr = `${item.price} CR`;
-      const dotLen = Math.max(1, ITEM_CONTENT_WIDTH - prefix.length - item.name.length - 2 - priceStr.length);
-      const itemText = `${prefix}${item.name} ${'.'.repeat(dotLen)} ${priceStr}`;
+      const dotLen = Math.max(1, contentWidth - prefix.length - name.length - 2 - priceStr.length);
+      const itemText = `${prefix}${name} ${'.'.repeat(dotLen)} ${priceStr}`;
       const fg: Color = isCursor ? 'bright-green' : 'white';
       writeText(buffer, row, ITEM_COL, itemText, fg, 'black');
     }

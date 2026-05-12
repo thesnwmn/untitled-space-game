@@ -27,7 +27,7 @@ const TYPE_ICONS: Record<Mission['type'], string> = {
 
 const MISSION_ROW_START = 5;
 const MISSION_COL = 1;
-const MISSION_CONTENT_WIDTH = 38;
+// contentWidth is computed dynamically in render() as w - 3
 
 export class MissionBoardScene implements Scene {
   private readonly context: GameContext;
@@ -83,6 +83,7 @@ export class MissionBoardScene implements Scene {
     writeCentered(buffer, 2, 'MISSION BOARD', 'bright-cyan', 'black');
     writeCentered(buffer, 3, '=============', 'cyan', 'black');
 
+    const contentWidth = w - 3; // leaves 1 gap before right border
     for (let i = 0; i < MISSIONS.length; i++) {
       const row = MISSION_ROW_START + i;
       if (row >= h) continue;
@@ -92,7 +93,7 @@ export class MissionBoardScene implements Scene {
       const icon = TYPE_ICONS[mission.type];
       const rewardStr = `${mission.reward} CR`;
       const prefixWidth = 1 + 4; // cursor(1) + '[X] '(4)
-      const dotLen = Math.max(1, MISSION_CONTENT_WIDTH - prefixWidth - mission.title.length - 2 - rewardStr.length);
+      const dotLen = Math.max(1, contentWidth - prefixWidth - mission.title.length - 2 - rewardStr.length);
 
       const titleFg: Color = isCursor ? 'bright-green' : 'white';
       writeText(buffer, row, MISSION_COL, cursor, isCursor ? 'bright-green' : 'white', 'black');

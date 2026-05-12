@@ -11,6 +11,7 @@ import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
 const context: GameContext = {
   environment: 'terminal',
   primaryInput: 'keyboard',
+  debug: false,
 };
 
 const renderer = new TerminalRenderer();

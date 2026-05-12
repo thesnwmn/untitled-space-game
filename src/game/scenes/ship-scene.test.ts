@@ -74,13 +74,23 @@ describe('ShipScene', () => {
       expect(buf[0][1].fg).toBe('bright-cyan');
     });
 
-    it('starfield area (rows 1-24) contains star characters', () => {
+    it('renders location at row 1 with station name', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, 1)).toContain('Location:');
+      expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
+      expect(buf[1][1].fg).toBe('bright-cyan');
+    });
+
+    it('starfield area (rows 2-24) contains star characters', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       let starCount = 0;
-      for (let r = 1; r <= 24; r++) {
+      for (let r = 2; r <= 24; r++) {
         for (let c = 0; c < 40; c++) {
           if (buf[r][c].char === '.' || buf[r][c].char === '*') starCount++;
         }
@@ -93,7 +103,7 @@ describe('ShipScene', () => {
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      for (let r = 1; r <= 24; r++) {
+      for (let r = 2; r <= 24; r++) {
         for (let c = 0; c < 40; c++) {
           const cell = buf[r][c];
           if (cell.char === '.' || cell.char === '*') {
@@ -130,22 +140,23 @@ describe('ShipScene', () => {
       expect(rowText(buf, DOCK_ROW)).not.toContain('>');
     });
 
-    it('renders keyboard footer hint', () => {
+    it('renders keyboard footer hint with navigate and select (no ESC)', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, FOOTER_ROW)).toContain('ENTER select');
-      expect(rowText(buf, FOOTER_ROW)).toContain('ESC return');
+      expect(rowText(buf, FOOTER_ROW)).not.toContain('ESC');
       expect(buf[FOOTER_ROW].find(c => c.char !== ' ')?.fg).toBe('bright-black');
     });
 
-    it('renders touch footer hint for touch context', () => {
+    it('renders touch footer hint without 2-finger exit', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, touchContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, FOOTER_ROW)).toContain('TAP to select');
+      expect(rowText(buf, FOOTER_ROW)).not.toContain('2-finger');
     });
   });
 
@@ -188,24 +199,26 @@ describe('ShipScene', () => {
       consoleSpy.mockRestore();
     });
 
-    it('SELECT on DOCK logs [Ship] Docking…', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    it('SELECT on DOCK calls onDock and silences further input', () => {
+      const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, vi.fn());
+      new ShipScene(input, keyboardContext, onDock);
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
-      expect(consoleSpy).toHaveBeenCalledWith('[Ship] Docking…');
-      consoleSpy.mockRestore();
+      expect(onDock).toHaveBeenCalledTimes(1);
+      input.triggerAction('SELECT');
+      expect(onDock).toHaveBeenCalledTimes(1);
     });
 
-    it('BACK calls onBack and silences further input', () => {
-      const onBack = vi.fn();
+    it('BACK action does nothing (not applicable in ship scene)', () => {
+      const onDock = vi.fn();
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, onBack);
+      new ShipScene(input, keyboardContext, onDock);
       input.triggerAction('BACK');
-      expect(onBack).toHaveBeenCalledTimes(1);
-      input.triggerAction('BACK');
-      expect(onBack).toHaveBeenCalledTimes(1);
+      expect(onDock).not.toHaveBeenCalled();
+      expect(consoleSpy).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
   });
 
@@ -219,13 +232,12 @@ describe('ShipScene', () => {
       consoleSpy.mockRestore();
     });
 
-    it('tap on DOCK row logs placeholder', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    it('tap on DOCK row calls onDock', () => {
+      const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, vi.fn());
+      new ShipScene(input, keyboardContext, onDock);
       input.triggerTap(20, DOCK_ROW);
-      expect(consoleSpy).toHaveBeenCalledWith('[Ship] Docking…');
-      consoleSpy.mockRestore();
+      expect(onDock).toHaveBeenCalledTimes(1);
     });
   });
 

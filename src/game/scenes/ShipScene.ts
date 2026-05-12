@@ -1,5 +1,6 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
+import { STATION_NAME } from '../constants';
 
 interface PlayerState {
   fuel: number;
@@ -16,7 +17,8 @@ const INITIAL_STATE: PlayerState = {
 };
 
 const STATUS_ROW = 0;
-const STARFIELD_START = 1;
+const LOCATION_ROW = 1;
+const STARFIELD_START = 2;
 const STARFIELD_END = 24;
 const JUMP_ROW = 25;
 const DOCK_ROW = 26;
@@ -52,7 +54,7 @@ export class ShipScene implements Scene {
   private cursorIdx = 0;
   private activated = false;
 
-  constructor(inputHandler: InputHandler, context: GameContext, onBack: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, onDock: () => void) {
     this.state = { ...INITIAL_STATE };
     this.context = context;
 
@@ -66,11 +68,9 @@ export class ShipScene implements Scene {
         if (this.cursorIdx === 0) {
           console.log('[Ship] Jumping…');
         } else {
-          console.log('[Ship] Docking…');
+          this.activated = true;
+          onDock();
         }
-      } else if (action === 'BACK') {
-        this.activated = true;
-        onBack();
       }
     });
 
@@ -81,8 +81,8 @@ export class ShipScene implements Scene {
           this.cursorIdx = 0;
           console.log('[Ship] Jumping…');
         } else if (row === DOCK_ROW) {
-          this.cursorIdx = 1;
-          console.log('[Ship] Docking…');
+          this.activated = true;
+          onDock();
         }
       });
     }
@@ -103,6 +103,9 @@ export class ShipScene implements Scene {
     const statusText = `FUEL:${this.state.fuel}% | CARGO:${this.state.cargo}/${this.state.cargoCapacity}T | CR:${this.state.credits}`;
     writeText(buffer, STATUS_ROW, 1, statusText, 'bright-cyan', 'black');
 
+    const locationText = `Location: ${STATION_NAME.toUpperCase()}`;
+    writeText(buffer, LOCATION_ROW, 1, locationText, 'bright-cyan', 'black');
+
     for (const star of STARS) {
       if (star.row < h && star.col < w) {
         buffer[star.row][star.col] = { char: star.char, fg: 'bright-black', bg: 'black' };
@@ -120,8 +123,8 @@ export class ShipScene implements Scene {
     }
 
     const hint = this.context.primaryInput === 'touch'
-      ? 'TAP to select   2-finger exit'
-      : '↑↓ navigate   ENTER select   ESC return';
+      ? 'TAP to select'
+      : '↑↓ navigate   ENTER select';
     if (FOOTER_ROW < h) {
       writeCentered(buffer, FOOTER_ROW, hint, 'bright-black', 'black');
     }
