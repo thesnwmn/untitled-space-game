@@ -12,9 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 004 · Touch controls (browser)
-See docs/features/004-touch-controls-browser.md.
-
 ### 005 · Keyboard input handler (terminal)
 See docs/features/005-keyboard-input-terminal.md.
 
@@ -36,6 +33,30 @@ _(none)_
 ---
 
 ## DONE
+
+### 004 · Touch controls (browser)
+
+**Built:**
+- `src/platform/dom/DOMInputHandler.ts` — full touch implementation alongside keyboard: `onTap(handler)` registers tap callbacks; `connect()` attaches `touchstart`/`touchend` listeners to `document.body` with `{ passive: false }`; touch positions tracked per identifier; on `touchend`: single tap (delta < 20px) fires all `onTap` handlers with grid col/row; swipe (dominant axis, delta ≥ 20px) fires UP/DOWN/LEFT/RIGHT action; two-finger tap (both deltas < 20px) fires BACK; `disconnect()` removes all touch listeners and clears state; `getGridCoords()` derives cell size from `.game-screen` data attributes and `getBoundingClientRect()`
+- `src/platform/dom/DOMRenderer.ts` — `applyResize()` now writes `data-grid-cols` and `data-grid-rows` attributes on the `<pre>` element for coordinate lookup
+- `index.html` — viewport meta updated to `user-scalable=no` to suppress pinch-zoom
+- `src/tests/dom-input-handler.test.ts` — 11 new tests: correct grid coords on tap, multiple handlers, tap fires no action, all 4 swipe directions, swipe fires no tap, two-finger tap fires BACK, no events after disconnect, preventDefault on touch events
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 25/25 tests passed (2 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 5.75 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm run dev` — open in browser DevTools with mobile device simulation enabled
+3. Tap a cell — console must log `onTap: col=<N> row=<N>` (add a temp log in main.ts if needed)
+4. Swipe up/down/left/right — must log `GameAction: UP/DOWN/LEFT/RIGHT`
+5. Two-finger tap — must log `GameAction: BACK`
+6. Pinch-zoom must be suppressed (page stays fixed)
+
+---
 
 ### 003 · Keyboard input handler (browser)
 
