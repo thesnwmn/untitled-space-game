@@ -52,6 +52,13 @@ index.html        ← browser entry point (Vite)
 terminal.ts       ← terminal entry point (Bun)
 ```
 
+**Naming conventions:**
+- **Folders:** single lowercase word where possible; multi-word folders use kebab-case (e.g. `game-objects/`)
+- **Source files exporting a class:** PascalCase matching the class name (e.g. `DOMRenderer.ts`)
+- **Other source files:** lowercase or kebab-case (e.g. `main.ts`, `types.ts`)
+- **Test files:** kebab-case with `.test.ts` suffix (e.g. `dom-input-handler.test.ts`)
+- **Documentation:** SCREAMING_SNAKE_CASE for root-level docs (`BACKLOG.md`); kebab-case with numeric prefix for feature specs (`002-char-buffer-dom-renderer.md`)
+
 **Core types (`shared/types.ts`):**
 ```typescript
 export type Color =
