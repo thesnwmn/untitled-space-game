@@ -37,6 +37,7 @@ export class Starfield {
   private intRowEnd = DEFAULT_INT_ROW_END;
   private intColStart = DEFAULT_INT_COL_START;
   private intColEnd = DEFAULT_INT_COL_END;
+  private boundsSet = false;
 
   constructor(seed = 42) {
     this.rand = lcgRand(seed);
@@ -79,6 +80,22 @@ export class Starfield {
     intColStart: number,
     intColEnd: number,
   ): void {
+    // On first render, proportionally remap initial positions to actual interior bounds
+    // so a taller/wider screen is fully populated from frame one.
+    if (!this.boundsSet) {
+      this.boundsSet = true;
+      const defaultRowSpan = DEFAULT_INT_ROW_END - DEFAULT_INT_ROW_START;
+      const defaultColSpan = DEFAULT_INT_COL_END - DEFAULT_INT_COL_START;
+      if (defaultRowSpan > 0 && defaultColSpan > 0) {
+        const rowScale = (intRowEnd - intRowStart) / defaultRowSpan;
+        const colScale = (intColEnd - intColStart) / defaultColSpan;
+        for (const star of this.stars) {
+          star.y = intRowStart + (star.y - DEFAULT_INT_ROW_START) * rowScale;
+          star.col = Math.round(intColStart + (star.col - DEFAULT_INT_COL_START) * colScale);
+        }
+      }
+    }
+
     this.intRowStart = intRowStart;
     this.intRowEnd = intRowEnd;
     this.intColStart = intColStart;
