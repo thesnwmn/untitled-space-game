@@ -12,17 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 017 · Static Starfield with Twinkling — Ship Scene
-
-Replace the scrolling parallax starfield on the Ship scene with stationary stars that
-pulse through dim / normal / bright states using a per-star sinusoidal brightness cycle.
-Layer 0 (distant `.`) blinks out entirely at the bottom of its dim phase; Layer 2 (near `+`)
-twinkles fastest and most dramatically. The space station Lissajous drift is unchanged.
-Only `Starfield.ts` and its test file change. See `docs/features/017-static-starfield-twinkling.md`
-for the full spec.
-
----
-
 ### 016 · Hint Overlay
 
 Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for input hint text. Extract hint rendering from all 6 scenes via a new `Scene.getHint()` method on the `Scene` interface. Add `showHints: boolean` to `GameContext` (default `true`) and wire `H`/`h` to a new `TOGGLE_HINTS` game action so the player can hide hints. See `docs/features/016-hint-overlay.md` for the full spec.
@@ -102,6 +91,38 @@ _(none)_
 ---
 
 ## DONE
+
+### 017 · Static Starfield with Twinkling — Ship Scene
+
+**Built:**
+- `src/game/scenes/Starfield.ts` — replaced scrolling parallax model with stationary stars;
+  removed `y`, `twinkleTimer`, `twinkled` fields; added `row` (integer, fixed), `twinklePhase`
+  (radians, LCG-seeded to `[0, 2π)`), `twinklePeriod` (LCG-assigned per-layer range: L0 4000–9000 ms,
+  L1 2000–5000 ms, L2 800–2500 ms); `update()` advances phase via `(2π / period) * dt`; `render()`
+  maps `sin(phase)` to dim / normal / bright colour states (L0 dim = not rendered; L1 dim =
+  `bright-black`; L2 dim = `white`); layer counts corrected to 18/10/5; bounds remap on first
+  `render()` still scales initial positions to actual screen size
+- `src/game/scenes/Starfield.test.ts` — removed all scrolling and twinkle-timer tests; added
+  tests for integer row, twinklePhase in `[0, 2π)`, twinklePeriod in layer range, LCG
+  determinism for phases/periods, row/col unchanged after update, phase-advance formula,
+  and all three brightness state → colour mappings (bright / normal / dim) for all three layers
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 190/190 tests passed (12 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 20.28 kB)
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 12 test files, 190 tests passed
+3. **Browser:** `npm run dev` — navigate main menu → story → station → UNDOCK → Ship scene
+   - Stars are stationary — no rain/scrolling effect
+   - Over 10 s, individual stars smoothly brighten and dim; some distant `.` stars blink out
+   - Layer 2 (`+`) stars twinkle noticeably faster than layer 0 (`.`) stars
+   - Space station continues its Lissajous drift unchanged
+4. **Terminal:** `bun terminal.ts` — same navigation; observe twinkling and station drift
+
+---
 
 ### 021 · Writer Role
 
