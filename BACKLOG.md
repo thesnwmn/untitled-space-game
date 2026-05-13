@@ -12,9 +12,9 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 015 · Back Button
+### 015 · Station Nav Bar
 
-Add a reusable `BackButton` component (`src/game/ui/BackButton.ts`) that renders `< BACK` at row 0, col 0 of scenes with an `onBack` callback and free top-left space. The `<` glyph renders in `white`; ` BACK` in `bright-black`. Tapping cols 0–5 of row 0 fires `onBack()` with the standard `activated` guard. Apply to `TraderScene` and `MissionBoardScene`; `ShipScene` is excluded (row 0 is the status bar, and DOCK already provides a physical back control). ESC and two-finger-tap are unchanged. See `docs/features/015-back-button.md` for full spec.
+Add a persistent `NavBar` component (`src/game/ui/NavBar.ts`) rendered at row 0 of all station-context screens. Shows `[HUB]` (return to station menu) and `[UNDOCK]` (go to ship) in `TraderScene` and `MissionBoardScene`; shows only `[UNDOCK]` in `StationMenuScene` (no hub button when already at the hub). Tapping either button fires immediately. `TraderScene` and `MissionBoardScene` constructors gain a second callback `onUndock`; `onBack` is renamed `onHub`. `StationMenuScene` overrides `render()` and adds a second tap handler — no constructor change. ShipScene is unaffected. See `docs/features/015-nav-bar.md` for full spec.
 
 **Depends on:** 011
 
