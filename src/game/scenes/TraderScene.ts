@@ -136,8 +136,8 @@ export class TraderScene implements Scene {
 
     this.navBar.render(buffer);
 
-    writeCentered(buffer, 2, this.trader.name, 'white', 'black');
-    writeCentered(buffer, 3, '='.repeat(this.trader.name.length), 'cyan', 'black');
+    writeCentered(buffer, 3, this.trader.name, 'cyan', 'black');
+    writeCentered(buffer, 4, '='.repeat(this.trader.name.length), 'cyan', 'black');
 
     const buyFg: Color = this.activeTab === 'BUY' ? 'bright-green' : 'white';
     const sellFg: Color = this.activeTab === 'SELL' ? 'bright-green' : 'white';

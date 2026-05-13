@@ -89,8 +89,8 @@ export class MissionBoardScene implements Scene {
 
     this.navBar.render(buffer);
 
-    writeCentered(buffer, 2, 'MISSION BOARD', 'white', 'black');
-    writeCentered(buffer, 3, '=============', 'cyan', 'black');
+    writeCentered(buffer, 3, 'MISSION BOARD', 'cyan', 'black');
+    writeCentered(buffer, 4, '=============', 'cyan', 'black');
 
     const contentWidth = w - 2;
     for (let i = 0; i < MISSIONS.length; i++) {

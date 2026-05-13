@@ -76,22 +76,22 @@ describe('MissionBoardScene', () => {
       expect(rowText(buf, 1)).toContain('[HUB]');
     });
 
-    it('renders MISSION BOARD title at row 2 in white', () => {
+    it('renders MISSION BOARD title at row 3 in cyan', () => {
       const input = new MockInputHandler();
       const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 2)).toContain('MISSION BOARD');
-      expect(buf[2].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('white');
+      expect(rowText(buf, 3)).toContain('MISSION BOARD');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('cyan');
     });
 
-    it('renders rule at row 3 in cyan', () => {
+    it('renders rule at row 4 in cyan', () => {
       const input = new MockInputHandler();
       const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 3)).toContain('=============');
-      expect(buf[3].find(c => c.char === '=')?.fg).toBe('cyan');
+      expect(rowText(buf, 4)).toContain('=============');
+      expect(buf[4].find(c => c.char === '=')?.fg).toBe('cyan');
     });
 
     it('renders mission list starting at row 5', () => {

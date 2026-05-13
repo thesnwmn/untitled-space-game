@@ -59,8 +59,8 @@ export abstract class BaseMenuScene implements Scene {
       }
     }
 
-    writeCentered(buffer, 2, this.title, 'white', 'black');
-    writeCentered(buffer, 3, '='.repeat(this.title.length), 'cyan', 'black');
+    writeCentered(buffer, 3, this.title, 'cyan', 'black');
+    writeCentered(buffer, 4, '='.repeat(this.title.length), 'cyan', 'black');
 
     const maxItemWidth = this.items.reduce((max, item) => Math.max(max, item.label.length + 2), 0);
     const menuCol = Math.max(0, Math.floor((w - maxItemWidth) / 2));

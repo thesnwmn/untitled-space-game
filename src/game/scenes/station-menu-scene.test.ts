@@ -90,22 +90,22 @@ describe('StationMenuScene', () => {
       expect(rowText(buf, 1)).toContain('[UNDOCK]');
     });
 
-    it('scene title at row 2 reads HUB in white', () => {
+    it('scene title at row 3 reads HUB in cyan', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 2)).toContain('HUB');
-      expect(buf[2].find(c => c.char === 'H')?.fg).toBe('white');
+      expect(rowText(buf, 3)).toContain('HUB');
+      expect(buf[3].find(c => c.char === 'H')?.fg).toBe('cyan');
     });
 
-    it('renders title rule === at row 3 in cyan', () => {
+    it('renders title rule === at row 4 in cyan', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 3)).toContain('===');
-      expect(buf[3].find(c => c.char === '=')?.fg).toBe('cyan');
+      expect(rowText(buf, 4)).toContain('===');
+      expect(buf[4].find(c => c.char === '=')?.fg).toBe('cyan');
     });
 
     it('renders TRADER at row 14 and MISSION BOARD at row 15; no UNDOCK in items', () => {
