@@ -45,9 +45,31 @@ Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item li
 
 ---
 
+---
+
+### 019 · World Data TypeScript Types
+
+Define TypeScript interfaces for every world entity type (`StarSystem`,
+`Destination`, `JumpRoute`, `JumpDrive`, `Ship`, `Faction`, `Commodity`,
+`StoryBeat`) and expose a typed static `WorldData` module with lookup helpers
+that any game scene can import. No file I/O — seed data is hard-coded to match
+the docs written in Feature 018. See `docs/features/019-world-data-types.md`
+for the full spec.
+
+**Depends on:** 018
+
+---
+
 ## NEEDS SPEC
 
-_(none)_
+### 020 · World Data File Loader
+
+Replace the static seed data in `world-data.ts` with a runtime loader that
+parses markdown front matter and body from `docs/world/**/*.md`. Browser
+build: Vite `import.meta.glob` to bundle at compile time. Terminal build: Bun
+file reads. Both paths feed the same typed `WorldData` structure from Feature
+019. Requires a YAML front-matter parser (e.g. `gray-matter`) and a strategy
+for exposing raw markdown body text alongside structured data.
 
 ---
 
@@ -58,6 +80,44 @@ _(none)_
 ---
 
 ## DONE
+
+### 018 · World Data Schemas & Seed Content
+
+**Built:**
+- `docs/features/018-world-data-schemas.md` — full spec for all world document types
+- `docs/features/019-world-data-types.md` — full spec for TypeScript types feature
+- `docs/world/systems/` — four system docs (`sol`, `alpha-centauri`, `barnards-star`,
+  `wolf-359`) updated with `zone`, `danger_level`, `destinations` fields; typo
+  `alpha-centurai` corrected; `_template.md` updated
+- `docs/world/destinations/` — new directory (renamed from `stations/`); `_template.md`
+  with `location_type` field; ten destination docs with full amenities front matter
+  (`elysium-station`, `galileo-transfer`, `tycho-orbital`, `mars-anchor`,
+  `new-horizon-port`, `hestia-ring`, `redline-station`, `kepler-yard`, `drift-market`,
+  `blackwake-yard`)
+- `docs/world/story/` — new directory; `_template.md` for story beats; three seed
+  beats (`opening-arrival`, `first-jump`, `enter-wolf-359`)
+- `docs/world/factions/` — six faction docs (`terran-union`, `helios-directorate`,
+  `centauri-trade-league`, `independent-miners-guild`, `free-captains`,
+  `grey-market-cartel`)
+- `docs/world/ships/` — three ship docs (`freighter`, `scout`, `hauler`); `_template.md`
+  updated
+- `docs/world/commodities.md` — twelve commodities across four categories
+- `docs/world/navigation/jump-routes.md` — full five-route connected graph across
+  all four systems; broken `epsilon-eridani` reference removed
+
+**Evidence:**
+- All destination ids in system `destinations` lists resolve to docs in
+  `docs/world/destinations/`
+- All faction ids in system `major_factions` lists resolve to docs in
+  `docs/world/factions/`
+- All route endpoints reference system ids that have docs in `docs/world/systems/`
+- All ship `default_jump_drive` ids reference drives in `jump-drives.md`
+- No code changes — documentation only
+
+**Play-test instructions:**
+- Not applicable (documentation-only feature)
+
+---
 
 ### 012 · Animated Starfield & Space Station View — Ship Scene
 
