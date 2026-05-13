@@ -11,8 +11,8 @@ danger_level: medium
 player_knowledge: public
 
 map_position:
-  x: 28
-  y: 65
+  x: -22
+  y: 15
 
 economy:
   - mining

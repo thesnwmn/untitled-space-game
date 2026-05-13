@@ -59,7 +59,8 @@ properties:
   map_position:
     type: object
     description: >
-      position on the galaxy map as percentages (0–100) of the map area.
+      position on the galaxy map in light-year-scale coordinates, with Sol
+      at the origin (0, 0). Positive x is rimward, positive y is spinward.
       Set when creating a system; the Writer role maintains these.
     properties:
       x:
