@@ -18,14 +18,6 @@ Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for inpu
 
 ---
 
-### 015 · Station Nav Bar
-
-Add a two-row nav bar at rows 0–1 of every station-context screen. Row 0 shows the station name (all caps, `bright-cyan`, centered); row 1 shows centered `[LABEL]` nav buttons in `white`. Both are inputs from each scene. `StationMenuScene` shows `[UNDOCK]` only (title changes to "HUB", UNDOCK menu item removed, ESC now undocks). `TraderScene` and `MissionBoardScene` show `[UNDOCK] [HUB]` as a breadcrumb trail (outermost destination left, nearest right); tapping `[HUB]` or pressing ESC returns to hub, tapping `[UNDOCK]` goes to ship. Implement as a reusable `NavBar` component (`src/game/ui/NavBar.ts`) that caches button positions after `render()` for use in `hitTest()`. See `docs/features/015-nav-bar.md` for full spec.
-
-**Depends on:** 011
-
----
-
 ### 013 · Menu Pagination
 
 Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
@@ -91,6 +83,38 @@ _(none)_
 ---
 
 ## DONE
+
+### 015 · Station Nav Bar
+
+**Built:**
+- `src/game/ui/NavBar.ts` — new `NavBar` class; constructor takes `(stationName, options)`; `render()` writes station name centered in `bright-cyan` on row 0 and `[LABEL]` buttons centered in `white` on row 1 with one-space gaps; caches button column ranges after each render; `hitTest(col, row)` returns option id for row 1 hits, `null` for row 0, misses, or pre-render calls
+- `src/game/ui/NavBar.test.ts` — 14 tests covering: station name text/position/color, single-option centering, two-option layout and gap, button color, hitTest row 0 null, hitTest undock/hub ranges, hitTest gap and out-of-range null, single-option hitTest, pre-render null
+- `src/game/scenes/BaseMenuScene.ts` — scene title color changed from `bright-cyan` to `white`
+- `src/game/scenes/StationMenuScene.ts` — title changed to `'HUB'`; UNDOCK menu item removed; `navBar` field added (single `[UNDOCK]` option); `render()` overrides to call `super.render()` then `navBar.render()`; additional `onAction` handler: ESC sets `navActivated=true` and calls `onShip`; additional `onTap` handler: hitTest on `'undock'` → `onShip`
+- `src/game/scenes/TraderScene.ts` — constructor signature changed from `onBack` to `(onHub, onUndock)`; `navBar` field added (two options `[UNDOCK] [HUB]`); `navBar.render()` called after clear; scene title color `bright-cyan` → `white`; `onTap` checks nav hit first; BACK action calls `onHub`
+- `src/game/scenes/MissionBoardScene.ts` — identical changes to TraderScene
+- `src/game/scenes/station-menu-scene.test.ts` — rewritten: updated layout tests (HUB title/white, === rule, no UNDOCK in items); replaced UNDOCK keyboard/tap tests with ESC→onShip and nav-button tap tests; added nav bar row 0/1 assertions
+- `src/game/scenes/trader-scene.test.ts` — all constructors updated to two-callback form; trader name color updated to white; BACK test renamed onHub; added nav bar row 0/1 tests and [UNDOCK]/[HUB] tap tests
+- `src/game/scenes/mission-board-scene.test.ts` — same updates as trader scene tests
+- `src/main.ts` — `goToTrader` and `goToMissionBoard` now pass `goToShip` as second argument
+- `terminal.ts` — same wiring update as `src/main.ts`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 214/214 tests passed (13 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 21.67 kB)
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 13 test files, 214 tests passed
+3. **Browser** `npm run dev` — navigate to station:
+   - Hub: "ELYSIUM STATION" at top (bright-cyan), "[UNDOCK]" centered below (white), "HUB" scene title, two menu items (TRADER / MISSION BOARD), no UNDOCK item
+   - Press ESC at hub → goes to Ship scene; DOCK returns to hub
+   - Open TRADER: "ELYSIUM STATION" at top, "[UNDOCK] [HUB]" below; tap `[HUB]` → hub; tap `[UNDOCK]` → Ship; ESC → hub
+   - Repeat above from MISSION BOARD
+4. **Terminal** `npm run terminal`: nav bar visible at top of each station screen; ESC navigates correctly
+
+---
 
 ### 017 · Static Starfield with Twinkling — Ship Scene
 

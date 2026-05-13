@@ -1,5 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
+import { STATION_NAME } from '../constants';
+import { NavBar } from '../ui/NavBar';
 
 interface TraderItem {
   name: string;
@@ -46,13 +48,18 @@ const ITEM_COL = 1;
 export class TraderScene implements Scene {
   private readonly trader: Trader;
   private readonly context: GameContext;
+  private readonly navBar: NavBar;
   private activeTab: TabKey = 'BUY';
   private cursorIdx = 0;
   private activated = false;
 
-  constructor(inputHandler: InputHandler, context: GameContext, onBack: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, onHub: () => void, onUndock: () => void) {
     this.trader = TRADERS[0];
     this.context = context;
+    this.navBar = new NavBar(
+      STATION_NAME.toUpperCase(),
+      [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
+    );
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
@@ -72,13 +79,16 @@ export class TraderScene implements Scene {
         console.log(`[Trader] Selected ${item.name}`);
       } else if (action === 'BACK') {
         this.activated = true;
-        onBack();
+        onHub();
       }
     });
 
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
+        const navHit = this.navBar.hitTest(col, row);
+        if (navHit === 'hub')    { this.activated = true; onHub();    return; }
+        if (navHit === 'undock') { this.activated = true; onUndock(); return; }
         if (row === TAB_ROW && col >= BUY_TAB_COL && col < BUY_TAB_COL + 5) {
           this.activeTab = 'BUY';
           this.cursorIdx = 0;
@@ -124,8 +134,10 @@ export class TraderScene implements Scene {
       }
     }
 
-    writeCentered(buffer, 2, this.trader.name, 'bright-cyan', 'black');
-    writeCentered(buffer, 3, '='.repeat(this.trader.name.length), 'cyan', 'black');
+    this.navBar.render(buffer);
+
+    writeCentered(buffer, 3, this.trader.name, 'cyan', 'black');
+    writeCentered(buffer, 4, '='.repeat(this.trader.name.length), 'cyan', 'black');
 
     const buyFg: Color = this.activeTab === 'BUY' ? 'bright-green' : 'white';
     const sellFg: Color = this.activeTab === 'SELL' ? 'bright-green' : 'white';
