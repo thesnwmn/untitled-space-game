@@ -2,7 +2,7 @@ import type { InputHandler, GameContext, CharBuffer, Scene } from '../../shared/
 import { writeText, writeCentered } from '../../shared/buffer-utils';
 import { STATION_NAME } from '../constants';
 
-const YEAR_HEADER = 'YEAR  2076';
+const YEAR_HEADER = 'YEAR  2284';
 const YEAR_ROW = 2;
 const KEYBOARD_HINT = '[ PRESS ENTER TO CONTINUE ]';
 const TOUCH_HINT = '[ TAP TO CONTINUE ]';
