@@ -25,9 +25,9 @@ Row 3:  |  .          *       .         .      |  ← starfield interior
 Row 4:  |        .                  *          |
   ...   |     (stars and station here)         |
 Row 25: |     .    [*]      .       *          |
-Row 26: /______________________________________\   ← window bottom border
-Row 27:           > [ J ] JUMP                    ← JUMP button (bright-yellow)
-Row 28:             [ D ] DOCK                    ← DOCK button (bright-yellow)
+Row 26: |______________________________________|   ← window sill (underscores)
+Row 27: /                                      \   ← window bottom corners
+Row 28:    > [ J ] JUMP   [ D ] DOCK              ← buttons (bright-yellow)
 Row 29:        ↑↓ navigate   ENTER select         ← footer hint (bright-black)
 ```
 
@@ -36,34 +36,51 @@ size. All row constants below are expressed relative to `h` and `w`.
 
 ### Window border
 
+The bottom border spans two rows: a sill row (underscores capping the glass) and a
+corners row (just the outer frame slashes). This reads more naturally than combining
+them on one line.
+
 ```
 WINDOW_TOP    = 2
-WINDOW_BOTTOM = h - 4
-INT_ROW_START = WINDOW_TOP + 1          // first interior row (row 3 on 30-row grid)
-INT_ROW_END   = WINDOW_BOTTOM - 1       // last interior row  (row 25 on 30-row grid)
-INT_COL_START = 1                       // first interior col
-INT_COL_END   = w - 2                   // last interior col  (col 38 on 40-col grid)
+WINDOW_SILL   = h - 4        // |______|  underscore row
+WINDOW_BOT    = h - 3        // /      \  corner-slash row
+INT_ROW_START = WINDOW_TOP + 1    // first interior row (row 3 on 30-row grid)
+INT_ROW_END   = WINDOW_SILL - 1   // last interior row  (row 25 on 30-row grid)
+INT_COL_START = 1                 // first interior col
+INT_COL_END   = w - 2             // last interior col  (col 38 on 40-col grid)
 ```
 
 Border characters (all `bright-black` on `black`):
 
-| Position             | Char |
-|----------------------|------|
-| Top-left (WINDOW_TOP, 0)          | `\`  |
-| Top-right (WINDOW_TOP, w-1)       | `/`  |
-| Top fill (WINDOW_TOP, 1 … w-2)    | `_`  |
-| Bottom-left (WINDOW_BOTTOM, 0)    | `/`  |
-| Bottom-right (WINDOW_BOTTOM, w-1) | `\`  |
-| Bottom fill (WINDOW_BOTTOM, 1 … w-2) | `_` |
-| Left side (INT_ROW_START … INT_ROW_END, 0)   | `\|` |
-| Right side (INT_ROW_START … INT_ROW_END, w-1) | `\|` |
+| Position                                        | Char |
+|-------------------------------------------------|------|
+| Top-left (`WINDOW_TOP`, 0)                      | `\`  |
+| Top-right (`WINDOW_TOP`, w-1)                   | `/`  |
+| Top fill (`WINDOW_TOP`, 1 … w-2)                | `_`  |
+| Sill-left (`WINDOW_SILL`, 0)                    | `\|` |
+| Sill-right (`WINDOW_SILL`, w-1)                 | `\|` |
+| Sill fill (`WINDOW_SILL`, 1 … w-2)              | `_`  |
+| Corners-left (`WINDOW_BOT`, 0)                  | `/`  |
+| Corners-right (`WINDOW_BOT`, w-1)               | `\`  |
+| Corners fill (`WINDOW_BOT`, 1 … w-2)            | ` `  |
+| Left side (`INT_ROW_START` … `INT_ROW_END`, 0)  | `\|` |
+| Right side (`INT_ROW_START` … `INT_ROW_END`, w-1) | `\|` |
 
 ### Action area
 
+JUMP and DOCK appear on a single row, side by side and centred. The cursor prefix `>`
+moves to whichever button is selected.
+
 ```
-JUMP_ROW   = h - 3
-DOCK_ROW   = h - 2
-FOOTER_ROW = h - 1
+BUTTONS_ROW = h - 2
+FOOTER_ROW  = h - 1
+```
+
+Button row rendering:
+
+```
+cursor on JUMP:  "> [ J ] JUMP   [ D ] DOCK"   (centred)
+cursor on DOCK:  "  [ J ] JUMP  > [ D ] DOCK"  (centred)
 ```
 
 ---
@@ -288,10 +305,10 @@ Exposed as `lcgRand(): number` — a private helper inside `Starfield.ts` only.
 
 1. Clear buffer to `{ char: ' ', fg: 'black', bg: 'black' }`.
 2. Write status bar (row 0) and location (row 1).
-3. Draw window border (bright-black) — top, bottom, sides.
+3. Draw window border (bright-black): top, sides, sill row, corner-slash row.
 4. Draw stars (layer 0 → 1 → 2, so near overwrites far).
 5. Draw station on top of stars.
-6. Draw JUMP / DOCK buttons and cursor.
+6. Draw JUMP + DOCK on `BUTTONS_ROW` (both buttons, cursor prefix on selected one).
 7. Draw footer hint.
 
 ---
@@ -357,14 +374,14 @@ anchor and clamp without the caller passing them again at render time.
 const STATUS_ROW    = 0;
 const LOCATION_ROW  = 1;
 const WINDOW_TOP    = 2;
-// WINDOW_BOTTOM = h - 4
+// WINDOW_SILL   = h - 4   // |______|
+// WINDOW_BOT    = h - 3   // /      \
 // INT_ROW_START = WINDOW_TOP + 1
 // INT_ROW_END   = h - 5
 // INT_COL_START = 1
 // INT_COL_END   = w - 2
-// JUMP_ROW   = h - 3
-// DOCK_ROW   = h - 2
-// FOOTER_ROW = h - 1
+// BUTTONS_ROW = h - 2
+// FOOTER_ROW  = h - 1
 
 // In ShipScene constructor (after reading an initial buffer size or using defaults):
 this.starfield = new Starfield();
@@ -442,8 +459,11 @@ stored bounds and needs no extra arguments.
 - Remove assertions tied to old static starfield positions
 - Add: `update` forwarded to starfield (star y-positions advance after `scene.update(dt)`)
 - Add: `update` forwarded to station (time accumulates)
-- Add: border chars at `WINDOW_TOP` row (`\` at col 0, `_` in middle, `/` at w-1)
-- Add: `|` chars at left/right edge in interior rows
+- Add: top border row has `\` at col 0, `_` in middle, `/` at w-1
+- Add: sill row (`WINDOW_SILL`) has `|` at col 0, `_` in middle, `|` at w-1
+- Add: corners row (`WINDOW_BOT`) has `/` at col 0, `\` at w-1, spaces in middle
+- Add: `|` chars at left/right edge of interior rows
+- Add: both button labels appear on `BUTTONS_ROW`; cursor prefix on correct button
 - Add: at least one non-space cell in interior region after render
 - Existing status bar, button, navigation, input-silencing tests: unchanged
 
@@ -451,7 +471,7 @@ stored bounds and needs no extra arguments.
 
 ## Acceptance Criteria
 
-- ✓ Window border renders correctly: `\`/`/` corners, `_` top and bottom fills, `|` sides
+- ✓ Window border renders correctly: `\`/`/` top corners, `_` top fill, `|` sides, `|______|` sill row, `/      \` corner-slash row below sill
 - ✓ Stars are confined to the window interior (no star overwrites a border char)
 - ✓ Stars scroll at three distinct speeds in both browser and terminal
 - ✓ Stars wrap from bottom to top of interior with a new column
