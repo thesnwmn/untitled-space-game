@@ -12,22 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 012 · Animated Starfield & Space Station View — Ship Scene
-
-Overhaul the Ship scene viewport: a framed ASCII "cockpit window" (`\`/`/` corners,
-`_` top and bottom fills, `|` sides) fills all rows between the status/location header
-and the action buttons. Inside the window, a three-layer parallax starfield (18 distant
-`.`, 10 mid `*`, 5 near `+`) scrolls downward at different speeds with per-star twinkle.
-A space station (RELAY by default; 3×5 chars, bright-yellow) is always visible in the
-right-centre of the viewport, drifting on a slow Lissajous path and never exiting the
-window. Four built-in station types are catalogued in `station-types.ts` for future use.
-Deterministic LCG seeding keeps starfield tests reproducible.
-See `docs/features/012-animated-starfield.md` for full spec.
-
-**Depends on:** 011
-
----
-
 ### 013 · Menu Pagination
 
 Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
@@ -49,6 +33,36 @@ _(none)_
 ---
 
 ## DONE
+
+### 012 · Animated Starfield & Space Station View — Ship Scene
+
+**Built:**
+- `src/game/scenes/station-types.ts` — new file; four built-in `SpaceStationDef` constants: BEACON (2×3, bright-yellow), RELAY (3×5, bright-yellow), RING (3×3, cyan), HUB (5×5, white)
+- `src/game/scenes/Starfield.ts` — new class; 33 stars across three layers (18 `.` bright-black/1.5 r/s, 10 `*` white/4.0 r/s, 5 `+` bright-white/9.0 r/s); LCG seed 42; per-star twinkle timer [800–3000 ms]; bounds cached from `render()` call and used in `update()` for wrap; `getStars()` test accessor
+- `src/game/scenes/SpaceStation.ts` — new class; anchor placed at 50% vertical / 60% horizontal of interior; Lissajous drift (AMP_ROW=2, AMP_COL=3, periods 9 s and 12 s); clamps to interior bounds; `getDisplayPosition()` test accessor; space chars in glyph skipped during render
+- `src/game/scenes/ShipScene.ts` — new cockpit window border (row 2: `\___/`, rows 3–25: `|` sides, row 26: `|_____|` sill, row 27: `/     \` corners); buttons moved to single row `h-2` side-by-side; lazy-init of `SpaceStation` on first `render()`; `update()` forwards to starfield and station; tap detection splits row at `w/2`
+- `src/game/scenes/Starfield.test.ts` — 20 tests covering initialisation, layer distribution, LCG determinism, y/col bounds, speed advancement, wrap, twinkle timer, all three layer colours, twinkle colour overrides, draw-order overwrite
+- `src/game/scenes/SpaceStation.test.ts` — 9 tests covering anchor row at t=0, interior bounds, drift change, quarter/full-period clamping, large-dt safety, glyph render, space-skip, overwrite
+- `src/game/scenes/ship-scene.test.ts` — updated; removed old static starfield tests; added border row assertions, interior non-space check, animation forwarding tests; button tests updated to single BUTTONS_ROW; footer/touch rows updated to `h-1`/`h-2`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 190/190 tests passed (12 test files)
+- `npm run build`: ✓ Vite build OK (dist/assets/index-*.js 20.29 kB)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 12 test files, 190 tests passed
+3. **Browser:** `npm run dev` — navigate main menu → story → station → UNDOCK → Ship scene
+   - Cockpit window border visible (corners `\`/`/`, underscores top/bottom, pipes sides)
+   - Three star layers scroll downward at visibly different speeds
+   - RELAY station visible right-of-centre, drifting slowly on Lissajous path
+   - Stars twinkle (colour change) periodically over 10 s observation
+   - JUMP and DOCK buttons on single row at bottom; cursor moves with ↑↓; ENTER on DOCK returns to station
+4. **Terminal:** `bun terminal.ts` — same navigation; observe star motion and station drift
+
+---
 
 ### 014 · Adaptive Height, Border Removal & Screen Centering Fix
 

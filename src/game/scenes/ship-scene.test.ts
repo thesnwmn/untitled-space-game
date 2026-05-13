@@ -38,9 +38,14 @@ function rowText(buffer: CharBuffer, row: number): string {
 const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
 const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
-const JUMP_ROW = 25;
-const DOCK_ROW = 26;
-const FOOTER_ROW = 27;
+// Layout constants for 40×30 reference grid
+const WINDOW_TOP = 2;
+const WINDOW_SILL = 26;  // h - 4
+const WINDOW_BOT = 27;   // h - 3
+const INT_ROW_START = 3;
+const INT_ROW_END = 25;
+const BUTTONS_ROW = 28;  // h - 2
+const FOOTER_ROW = 29;   // h - 1
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -84,60 +89,79 @@ describe('ShipScene', () => {
       expect(buf[1][1].fg).toBe('bright-cyan');
     });
 
-    it('starfield area (rows 2-24) contains star characters', () => {
+    it('top border row has \\ at col 0, _ in middle, / at col w-1', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      let starCount = 0;
-      for (let r = 2; r <= 24; r++) {
-        for (let c = 0; c < 40; c++) {
-          if (buf[r][c].char === '.' || buf[r][c].char === '*') starCount++;
-        }
-      }
-      expect(starCount).toBeGreaterThan(0);
+      expect(buf[WINDOW_TOP][0].char).toBe('\\');
+      expect(buf[WINDOW_TOP][39].char).toBe('/');
+      expect(buf[WINDOW_TOP][20].char).toBe('_');
     });
 
-    it('star characters are in bright-black', () => {
+    it('interior rows have | at col 0 and col w-1', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      for (let r = 2; r <= 24; r++) {
-        for (let c = 0; c < 40; c++) {
-          const cell = buf[r][c];
-          if (cell.char === '.' || cell.char === '*') {
-            expect(cell.fg).toBe('bright-black');
-          }
-        }
+      for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
+        expect(buf[r][0].char).toBe('|');
+        expect(buf[r][39].char).toBe('|');
       }
     });
 
-    it('renders JUMP button at row 25 in bright-yellow', () => {
+    it('sill row has | at col 0, _ in middle, | at col w-1', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, JUMP_ROW)).toContain('[ J ] JUMP');
-      expect(buf[JUMP_ROW].find(c => c.char !== ' ')?.fg).toBe('bright-yellow');
+      expect(buf[WINDOW_SILL][0].char).toBe('|');
+      expect(buf[WINDOW_SILL][39].char).toBe('|');
+      expect(buf[WINDOW_SILL][20].char).toBe('_');
     });
 
-    it('renders DOCK button at row 26 in bright-yellow', () => {
+    it('corners row has / at col 0, space in middle, \\ at col w-1', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, DOCK_ROW)).toContain('[ D ] DOCK');
-      expect(buf[DOCK_ROW].find(c => c.char !== ' ')?.fg).toBe('bright-yellow');
+      expect(buf[WINDOW_BOT][0].char).toBe('/');
+      expect(buf[WINDOW_BOT][39].char).toBe('\\');
+      expect(buf[WINDOW_BOT][20].char).toBe(' ');
     });
 
-    it('cursor starts on JUMP button (row 25 has >)', () => {
+    it('interior region contains non-space cells after render (stars or station)', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, JUMP_ROW)).toContain('>');
-      expect(rowText(buf, DOCK_ROW)).not.toContain('>');
+      let nonSpace = false;
+      outer: for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
+        for (let c = 1; c <= 38; c++) {
+          if (buf[r][c].char !== ' ') { nonSpace = true; break outer; }
+        }
+      }
+      expect(nonSpace).toBe(true);
+    });
+
+    it('both JUMP and DOCK labels appear on BUTTONS_ROW', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const line = rowText(buf, BUTTONS_ROW);
+      expect(line).toContain('[ J ] JUMP');
+      expect(line).toContain('[ D ] DOCK');
+    });
+
+    it('cursor starts on JUMP (> prefix appears on BUTTONS_ROW)', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const line = rowText(buf, BUTTONS_ROW);
+      expect(line).toContain('>');
+      expect(line.indexOf('>')).toBeLessThan(line.indexOf('DOCK'));
     });
 
     it('renders keyboard footer hint with navigate and select (no ESC)', () => {
@@ -160,24 +184,68 @@ describe('ShipScene', () => {
     });
   });
 
+  describe('window border colours', () => {
+    it('all border cells are in bright-black', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Spot-check border fg colours
+      expect(buf[WINDOW_TOP][0].fg).toBe('bright-black');
+      expect(buf[WINDOW_TOP][20].fg).toBe('bright-black');
+      expect(buf[INT_ROW_START][0].fg).toBe('bright-black');
+      expect(buf[WINDOW_SILL][0].fg).toBe('bright-black');
+      expect(buf[WINDOW_BOT][0].fg).toBe('bright-black');
+    });
+  });
+
+  describe('animation forwarding', () => {
+    it('update advances starfield (interior cells differ after large dt)', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn());
+      const buf1 = makeBuffer(40, 30);
+      scene.render(buf1);
+      scene.update(5000);
+      const buf2 = makeBuffer(40, 30);
+      scene.render(buf2);
+      let changed = false;
+      outer: for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
+        for (let c = 1; c <= 38; c++) {
+          if (buf1[r][c].char !== buf2[r][c].char) { changed = true; break outer; }
+        }
+      }
+      expect(changed).toBe(true);
+    });
+
+    it('update advances station (no throw, renders after update)', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf); // lazy-init station
+      expect(() => scene.update(2250)).not.toThrow();
+      expect(() => scene.render(buf)).not.toThrow();
+    });
+  });
+
   describe('keyboard navigation', () => {
-    it('DOWN moves cursor from JUMP to DOCK', () => {
+    it('DOWN moves cursor so > appears near DOCK on BUTTONS_ROW', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, DOCK_ROW)).toContain('>');
-      expect(rowText(buf, JUMP_ROW)).not.toContain('>');
+      const line = rowText(buf, BUTTONS_ROW);
+      expect(line.indexOf('>')).toBeGreaterThan(line.indexOf('JUMP'));
     });
 
-    it('UP from JUMP wraps to DOCK', () => {
+    it('UP from JUMP wraps cursor to DOCK', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, DOCK_ROW)).toContain('>');
+      const line = rowText(buf, BUTTONS_ROW);
+      expect(line.indexOf('>')).toBeGreaterThan(line.indexOf('JUMP'));
     });
 
     it('DOWN from DOCK wraps back to JUMP', () => {
@@ -187,7 +255,8 @@ describe('ShipScene', () => {
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, JUMP_ROW)).toContain('>');
+      const line = rowText(buf, BUTTONS_ROW);
+      expect(line.indexOf('>')).toBeLessThan(line.indexOf('DOCK'));
     });
 
     it('SELECT on JUMP logs [Ship] Jumping…', () => {
@@ -223,20 +292,20 @@ describe('ShipScene', () => {
   });
 
   describe('touch navigation', () => {
-    it('tap on JUMP row logs placeholder', () => {
+    it('tap left half of BUTTONS_ROW logs [Ship] Jumping…', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
       new ShipScene(input, keyboardContext, vi.fn());
-      input.triggerTap(20, JUMP_ROW);
+      input.triggerTap(10, BUTTONS_ROW); // col 10 < 20 (w/2) → JUMP
       expect(consoleSpy).toHaveBeenCalledWith('[Ship] Jumping…');
       consoleSpy.mockRestore();
     });
 
-    it('tap on DOCK row calls onDock', () => {
+    it('tap right half of BUTTONS_ROW calls onDock', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
       new ShipScene(input, keyboardContext, onDock);
-      input.triggerTap(20, DOCK_ROW);
+      input.triggerTap(30, BUTTONS_ROW); // col 30 >= 20 (w/2) → DOCK
       expect(onDock).toHaveBeenCalledTimes(1);
     });
   });
