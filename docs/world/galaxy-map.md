@@ -1,49 +1,24 @@
-# Known Space Map
+# Galaxy Map
+
+# Core space
 
 Humanity currently occupies a loose network of connected systems known as
 the Core Routes. Most civilian traffic remains within 15 light years of Sol.
 
-Beyond the established routes lie fragmented colonies, abandoned stations,
-uncharted systems and persistent rumours of non-human signals.
+## Trade routes
 
----
+Sol - Alpha Centurai - Sirius - Tau Ceti
 
-# Jump Drive Assumptions
+# Frontier space
 
-| Drive Class | Max Range |
-|---|---|
-| Civilian Mk1 | 4 ly |
-| Civilian Mk2 | 7 ly |
-| Long Range Mk1 | 12 ly |
-| Frontier Drive | 20 ly |
+Beyond the established routes lie fragmented colonies and uncharted aystems abandoned systems ready to be exploited by the next wave kf colonists.
 
----
+Security is low and the riaks higher but the money to be made increases in return.
 
-# Core Systems
+# Outer space
 
-| System | Distance from Sol | Security | Primary Industry |
-|---|---|---|---|
-| Sol | 0.0 ly | High | Government / Industry |
-| Alpha Centauri | 4.3 ly | High | Trade |
-| Barnard's Star | 5.9 ly | Medium | Mining |
-| Sirius | 8.6 ly | Medium | Luxury Goods |
-| Tau Ceti | 11.9 ly | Medium | Agriculture |
-| Epsilon Eridani | 10.5 ly | Low | Refining |
-| Wolf 359 | 7.9 ly | Low | Salvage |
-| 61 Cygni | 11.4 ly | Low | Smuggling |
+Beyond the known frontier lie the further, minimally explored reaches of space, rarely ventured to by humans.
 
----
+But as technology improves, humanity pushes ever further in a race for knowledge, wealth and power.
 
-# Core Trade Corridor
-
-Sol → Alpha Centauri → Sirius → Tau Ceti
-
----
-
-# Frontier Notes
-
-The outer systems beyond Epsilon Eridani suffer from inconsistent
-communications and unreliable navigation data.
-
-Several exploration crews have reported unidentified signal patterns
-originating beyond mapped space, though no official confirmation exists.
+Adventure here is fraught with inconsistent communications and unreliable star charts.
