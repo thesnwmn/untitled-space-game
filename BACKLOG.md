@@ -12,6 +12,17 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 017 · Static Starfield with Twinkling — Ship Scene
+
+Replace the scrolling parallax starfield on the Ship scene with stationary stars that
+pulse through dim / normal / bright states using a per-star sinusoidal brightness cycle.
+Layer 0 (distant `.`) blinks out entirely at the bottom of its dim phase; Layer 2 (near `+`)
+twinkles fastest and most dramatically. The space station Lissajous drift is unchanged.
+Only `Starfield.ts` and its test file change. See `docs/features/017-static-starfield-twinkling.md`
+for the full spec.
+
+---
+
 ### 016 · Hint Overlay
 
 Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for input hint text. Extract hint rendering from all 6 scenes via a new `Scene.getHint()` method on the `Scene` interface. Add `showHints: boolean` to `GameContext` (default `true`) and wire `H`/`h` to a new `TOGGLE_HINTS` game action so the player can hide hints. See `docs/features/016-hint-overlay.md` for the full spec.
