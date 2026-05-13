@@ -12,6 +12,14 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 015 · Back Button
+
+Add a reusable `BackButton` component (`src/game/ui/BackButton.ts`) that renders `< BACK` at row 0, col 0 of scenes with an `onBack` callback and free top-left space. The `<` glyph renders in `white`; ` BACK` in `bright-black`. Tapping cols 0–5 of row 0 fires `onBack()` with the standard `activated` guard. Apply to `TraderScene` and `MissionBoardScene`; `ShipScene` is excluded (row 0 is the status bar, and DOCK already provides a physical back control). ESC and two-finger-tap are unchanged. See `docs/features/015-back-button.md` for full spec.
+
+**Depends on:** 011
+
+---
+
 ### 013 · Menu Pagination
 
 Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
