@@ -5,15 +5,24 @@
 
 ## Summary
 
-Add a persistent navigation bar at row 0 of every station-context screen
-(StationMenuScene, TraderScene, MissionBoardScene). The bar shows up to two
-buttons: `[HUB]` (return to StationMenuScene) and `[UNDOCK]` (go directly to
-ShipScene). `[HUB]` is omitted when the player is already at the hub. The bar
-provides a tappable physical control integrated with the world context, in
-addition to existing keyboard shortcuts.
+Add a two-row nav bar at the top of every station-context screen
+(StationMenuScene, TraderScene, MissionBoardScene):
 
-ShipScene receives no nav bar: it is already outside the station context and
-has its own DOCK/JUMP controls.
+- **Row 0** — station name (all caps, centered, `bright-cyan`)
+- **Row 1** — context-specific navigation buttons (centered, `white`)
+
+Both the station name and the set of nav buttons are provided by each scene.
+
+Additional navigation changes bundled with this feature:
+
+| Screen | ESC / BACK | Nav buttons |
+|---|---|---|
+| StationMenuScene | Undock (new) | `[UNDOCK]` |
+| TraderScene | Return to hub (unchanged) | `[HUB]  [UNDOCK]` |
+| MissionBoardScene | Return to hub (unchanged) | `[HUB]  [UNDOCK]` |
+
+StationMenuScene's scene title changes from the station name to **"HUB"**, and its
+**UNDOCK menu item is removed** — undocking is now done via ESC or the nav bar.
 
 ---
 
@@ -21,72 +30,139 @@ has its own DOCK/JUMP controls.
 
 ### File: `src/game/ui/NavBar.ts`
 
-The component is a pure rendering and hit-testing helper — scenes own all
-state, following the same pattern as the planned `Pager` component.
+Pure rendering and hit-testing helper; scenes own all state.
 
 ```typescript
+export interface NavOption {
+  id: string;
+  label: string;  // rendered as [LABEL]
+}
+
 export class NavBar {
-  constructor(showHub: boolean)
+  constructor(stationName: string, options: ReadonlyArray<NavOption>)
 
   render(buffer: CharBuffer): void
-  hitTest(col: number, row: number): 'hub' | 'undock' | null
+  // Row 0: stationName centered, bright-cyan
+  // Row 1: buttons centered, white; each button is "[LABEL]"; one space between
+  // Caches button column ranges for hitTest after every render call.
+
+  hitTest(col: number, row: number): string | null
+  // Returns the id of the tapped option, or null.
+  // Only row 1 is tappable (row 0 is informational).
+  // Uses column ranges cached by the most recent render() call.
+  // Returns null if render() has never been called.
 }
 ```
 
-`showHub` is set at construction time and does not change during a scene's
-lifetime (a scene either is or is not the hub).
-
-### Visual layout: hub + undock (sub-scenes)
+### Button layout computation
 
 ```
- [HUB] [UNDOCK]
- ^     ^
- col 1  col 7
+buttonStrings[i] = `[${options[i].label}]`
+totalWidth       = sum(buttonStrings.map(s => s.length)) + (N - 1)  // 1 space gap
+startCol         = Math.floor((w - totalWidth) / 2)
 ```
 
-- `[HUB]` — cols 1–5, row 0, color `white`
-- `[UNDOCK]` — cols 7–14, row 0, color `white`
+Each button occupies consecutive columns from `startCol` (accumulated by prior
+buttons and gaps). These ranges are stored after each `render()` call and
+reused by `hitTest()`.
 
-### Visual layout: undock only (StationMenuScene)
+---
 
-```
- [UNDOCK]
- ^
- col 1
-```
+## Visual Layout
 
-- `[UNDOCK]` — cols 1–8, row 0, color `white`
-
-### hitTest logic
+### TraderScene / MissionBoardScene (hub + undock)
 
 ```
-row !== 0                            → null
-showHub && col in [1, 5]             → 'hub'
-showHub && col in [7, 14]            → 'undock'
-!showHub && col in [1, 8]            → 'undock'
-otherwise                            → null
+        ELYSIUM STATION          ← row 0, bright-cyan, centered
+         [HUB] [UNDOCK]          ← row 1, white, centered
+                                 ← row 2 empty (was already empty)
+        MERCHANT KESS            ← row 2, scene title, unchanged
+        =============            ← row 3, rule, unchanged
+```
+
+Wait — row 2 is the scene title. Since rows 0 and 1 were previously blank,
+inserting the two-row nav bar there does not move any existing content.
+
+### StationMenuScene (undock only)
+
+```
+        ELYSIUM STATION          ← row 0, bright-cyan, centered
+           [UNDOCK]              ← row 1, white, centered
+                                 ← row 2 empty
+              HUB                ← row 2, scene title (was station name), unchanged row
+              ===                ← row 3, rule (3 chars to match "HUB")
+                                 ...
+           >  TRADER             ← items start at row 14 (unchanged)
+              MISSION BOARD
 ```
 
 ---
 
-## Row layout (all station scenes after this change)
+## Scene Changes
 
-```
-Row 0:  [HUB] [UNDOCK]  ← nav bar (or [UNDOCK] alone at hub)
-Row 1:  (empty)
-Row 2:  TITLE           ← bright-cyan, unchanged
-Row 3:  =====           ← cyan rule, unchanged
-...
+### StationMenuScene
+
+**Title passed to BaseMenuScene:** `'HUB'` (was `STATION_NAME.toUpperCase()`)
+
+**Items passed to BaseMenuScene:**
+```typescript
+[
+  { label: 'TRADER',        action: onTrader },
+  { label: 'MISSION BOARD', action: onMissionBoard },
+  // UNDOCK removed
+]
 ```
 
-Nothing below row 0 moves. The nav bar occupies a previously blank row.
+**New field:**
+```typescript
+private navActivated = false;
+private readonly navBar = new NavBar(
+  STATION_NAME.toUpperCase(),
+  [{ id: 'undock', label: 'UNDOCK' }],
+);
+```
+
+**Override render():**
+```typescript
+override render(buffer: CharBuffer): void {
+  super.render(buffer);       // clears buffer, draws HUB title, items, footer
+  this.navBar.render(buffer); // overlays nav bar on the now-blank rows 0–1
+}
+```
+
+**Additional onAction handler** (registered in StationMenuScene's constructor,
+after `super()`):
+```typescript
+inputHandler.onAction((action) => {
+  if (this.navActivated) return;
+  if (action === 'BACK') {
+    this.navActivated = true;
+    onShip();
+  }
+});
+```
+
+**Additional onTap handler:**
+```typescript
+if (inputHandler.onTap) {
+  inputHandler.onTap((col, row) => {
+    if (this.navActivated) return;
+    if (this.navBar.hitTest(col, row) === 'undock') {
+      this.navActivated = true;
+      onShip();
+    }
+  });
+}
+```
+
+**Constructor signature: unchanged.**
+`(inputHandler, context, onTrader, onMissionBoard, onShip)`
 
 ---
 
-## Integration: TraderScene
+### TraderScene
 
-### Constructor signature change
-
+**Constructor signature change:**
 ```
 before: (inputHandler, context, onBack: () => void)
 after:  (inputHandler, context, onHub: () => void, onUndock: () => void)
@@ -95,163 +171,110 @@ after:  (inputHandler, context, onHub: () => void, onUndock: () => void)
 `onBack` is renamed `onHub`; `onUndock` is added. The BACK action continues
 to call `onHub` (same behaviour, clearer name).
 
-### New field
-
+**New field:**
 ```typescript
-private readonly navBar = new NavBar(true);
+private readonly navBar = new NavBar(
+  STATION_NAME.toUpperCase(),
+  [{ id: 'hub', label: 'HUB' }, { id: 'undock', label: 'UNDOCK' }],
+);
 ```
 
-### render()
+**render():** call `this.navBar.render(buffer)` immediately after the
+buffer-clear loop.
 
-Call `this.navBar.render(buffer)` immediately after the buffer-clear loop,
-before any other draw calls.
-
-### onTap handler — check nav bar first
-
+**onTap handler — check nav bar first:**
 ```typescript
 if (this.activated) return;
-const navAction = this.navBar.hitTest(col, row);
-if (navAction === 'hub') { this.activated = true; onHub(); return; }
-if (navAction === 'undock') { this.activated = true; onUndock(); return; }
-// existing tab/item checks follow unchanged
+const navHit = this.navBar.hitTest(col, row);
+if (navHit === 'hub')    { this.activated = true; onHub();    return; }
+if (navHit === 'undock') { this.activated = true; onUndock(); return; }
+// existing tab/item checks unchanged
 ```
 
----
-
-## Integration: MissionBoardScene
-
-Identical pattern to TraderScene:
-
-- Constructor: replace `onBack` with `onHub`, add `onUndock`.
-- Field: `private readonly navBar = new NavBar(true)`.
-- `render()`: call `this.navBar.render(buffer)` after clear.
-- `onTap`: nav bar hit test before mission row checks.
-- BACK action: `onHub()` (renamed from `onBack`, same behaviour).
+**BACK action:** calls `onHub()` (renamed from `onBack`, same behavior).
 
 ---
 
-## Integration: StationMenuScene
+### MissionBoardScene
 
-StationMenuScene extends BaseMenuScene, whose constructor registers all tap
-handling. To add nav bar support without altering BaseMenuScene:
-
-1. Store `onShip` as a field (it is already passed to the constructor).
-2. Register an additional `onTap` handler in StationMenuScene's own
-   constructor, guarded by a local `navActivated` flag.
-3. Override `render()` to call `super.render()` then `this.navBar.render()`.
-
-```typescript
-export class StationMenuScene extends BaseMenuScene {
-  private navActivated = false;
-  private readonly navBar = new NavBar(false);
-
-  constructor(
-    inputHandler: InputHandler,
-    context: GameContext,
-    onTrader: () => void,
-    onMissionBoard: () => void,
-    onShip: () => void,
-  ) {
-    super(STATION_NAME.toUpperCase(), [...], inputHandler, context);
-
-    if (inputHandler.onTap) {
-      inputHandler.onTap((col, row) => {
-        if (this.navActivated) return;
-        if (this.navBar.hitTest(col, row) === 'undock') {
-          this.navActivated = true;
-          onShip();
-        }
-      });
-    }
-  }
-
-  override render(buffer: CharBuffer): void {
-    super.render(buffer);          // clears buffer, draws title/items/footer
-    this.navBar.render(buffer);    // overlays nav bar at row 0
-  }
-}
-```
-
-The constructor signature of StationMenuScene is unchanged. `navActivated` is
-separate from BaseMenuScene's private `activated`; both independently guard
-against double-fire.
+Identical changes to TraderScene.
 
 ---
 
-## main.ts and terminal.ts changes
+### main.ts and terminal.ts
 
 ```typescript
 // before
-function goToTrader()       { currentScene = new TraderScene(input, ctx, goToStation); }
-function goToMissionBoard() { currentScene = new MissionBoardScene(input, ctx, goToStation); }
+new TraderScene(input, ctx, goToStation)
+new MissionBoardScene(input, ctx, goToStation)
 
 // after
-function goToTrader()       { currentScene = new TraderScene(input, ctx, goToStation, goToShip); }
-function goToMissionBoard() { currentScene = new MissionBoardScene(input, ctx, goToStation, goToShip); }
+new TraderScene(input, ctx, goToStation, goToShip)
+new MissionBoardScene(input, ctx, goToStation, goToShip)
 ```
 
-`goToShip` already exists (wires up ShipScene). No new top-level functions needed.
-
----
-
-## Footer hints
-
-No changes. The nav bar is self-documenting by its placement. Existing keyboard
-hint (`ESC return`) and touch hint (`2-finger exit`) remain as-is.
+`goToShip` already exists in both files. No new top-level functions needed.
 
 ---
 
 ## Test Coverage
 
-### `src/game/ui/NavBar.test.ts` (12 tests)
+### `src/game/ui/NavBar.test.ts` (14 tests)
+
+Use a buffer wide enough to clearly show centering (e.g. 40 cols).
 
 | # | Description |
 |---|---|
-| 1 | `render` writes `[` at row 0, col 1 when `showHub: true` |
-| 2 | `render` writes `[` at row 0, col 7 (start of UNDOCK) when `showHub: true` |
-| 3 | `render` writes `[` at row 0, col 1 (start of UNDOCK) when `showHub: false` |
-| 4 | `render` does not write `H` at row 0, col 2 when `showHub: false` |
-| 5 | `hitTest(1, 0)` → `'hub'` when `showHub: true` |
-| 6 | `hitTest(5, 0)` → `'hub'` (last col of `[HUB]`) when `showHub: true` |
-| 7 | `hitTest(6, 0)` → `null` (gap col) when `showHub: true` |
-| 8 | `hitTest(7, 0)` → `'undock'` when `showHub: true` |
-| 9 | `hitTest(14, 0)` → `'undock'` (last col of `[UNDOCK]`) when `showHub: true` |
-| 10 | `hitTest(15, 0)` → `null` when `showHub: true` |
-| 11 | `hitTest(1, 0)` → `'undock'` when `showHub: false` |
-| 12 | `hitTest(1, 1)` → `null` (wrong row) |
+| 1 | Station name text appears on row 0 |
+| 2 | Station name is centered (first char at expected col) |
+| 3 | Station name color is `bright-cyan` |
+| 4 | Single option `[UNDOCK]` appears on row 1 centered |
+| 5 | Two options: `[HUB]` appears at computed start col on row 1 |
+| 6 | Two options: `[UNDOCK]` appears one space after `[HUB]` |
+| 7 | Button text color is `white` |
+| 8 | `hitTest` on row 0 → `null` (station name row is not interactive) |
+| 9 | `hitTest` on `[HUB]` col range, row 1 → `'hub'` |
+| 10 | `hitTest` on gap col between buttons → `null` |
+| 11 | `hitTest` on `[UNDOCK]` col range, row 1 → `'undock'` |
+| 12 | `hitTest` past last button col → `null` |
+| 13 | Single option: `hitTest` on `[UNDOCK]` col range → `'undock'` |
+| 14 | `hitTest` before render → `null` |
 
-### `TraderScene` updates (4 tests — replaces 1 existing)
-
-| # | Description |
-|---|---|
-| 1 | `render` writes `[HUB]` starting at row 0, col 1 |
-| 2 | `render` writes `[UNDOCK]` starting at row 0, col 7 |
-| 3 | Tap at (col 1, row 0) calls `onHub` and silences further input |
-| 4 | Tap at (col 7, row 0) calls `onUndock` and silences further input |
-| — | Existing ESC test updated: parameter renamed `onBack` → `onHub` |
-
-### `MissionBoardScene` updates (4 tests — replaces 1 existing)
-
-Same four tests as TraderScene.
-
-### `StationMenuScene` additions (3 tests)
+### StationMenuScene changes (6 tests: 4 new, 2 updated)
 
 | # | Description |
 |---|---|
-| 1 | `render` writes `[UNDOCK]` starting at row 0, col 1 |
-| 2 | `render` does not write `[HUB]` (row 0, col 1 is `[`, but col 2 is `U` not `H`) |
-| 3 | Tap at (col 1, row 0) calls `onShip` |
+| 1 | Nav bar row 0 contains station name text |
+| 2 | Nav bar row 1 contains `[UNDOCK]` |
+| 3 | Scene title at row 2 reads `HUB` |
+| 4 | No UNDOCK text appears in the menu item rows (14–15) |
+| 5 | ESC fires `onShip` once and silences further input |
+| 6 | Tap on `[UNDOCK]` nav button fires `onShip` |
+
+### TraderScene changes (4 new tests, 1 updated)
+
+| # | Description |
+|---|---|
+| 1 | Nav bar row 0 contains station name text |
+| 2 | Nav bar row 1 contains both `[HUB]` and `[UNDOCK]` |
+| 3 | Tap on `[HUB]` nav button fires `onHub` and silences input |
+| 4 | Tap on `[UNDOCK]` nav button fires `onUndock` and silences input |
+| — | Existing ESC test updated: callback name `onBack` → `onHub` |
+
+### MissionBoardScene changes
+
+Same four new tests and one updated test as TraderScene.
 
 ---
 
 ## Acceptance Criteria
 
 - ✓ `NavBar` component passes all unit tests
-- ✓ `StationMenuScene` shows `[UNDOCK]` at row 0; tapping it undocks
-- ✓ `TraderScene` shows `[HUB] [UNDOCK]` at row 0; tapping each fires correct callback
-- ✓ `MissionBoardScene` shows `[HUB] [UNDOCK]` at row 0; tapping each fires correct callback
-- ✓ ESC still fires `onHub` in TraderScene and MissionBoardScene (unchanged)
-- ✓ Two-finger tap still fires BACK (unchanged)
+- ✓ All station screens show station name at row 0 and nav buttons at row 1, both centered
+- ✓ StationMenuScene shows "HUB" as scene title; no UNDOCK menu item
+- ✓ ESC at hub → undocks to ship scene
+- ✓ ESC at trader / mission board → returns to hub
+- ✓ Tapping `[HUB]` returns to hub; tapping `[UNDOCK]` goes to ship
 - ✓ `tsc --noEmit` zero errors
 - ✓ All tests pass
 - ✓ `npm run build` succeeds
@@ -263,14 +286,13 @@ Same four tests as TraderScene.
 
 1. Run `bash init.sh` — must print `=== Environment ready ===`
 2. Run `npm test` — all tests pass
-3. **Browser** `npm run dev`:
-   - Navigate to station hub — `[UNDOCK]` visible at top; tap it → goes to Ship scene
-   - Navigate to TRADER — `[HUB]` and `[UNDOCK]` visible at top
-     - Tap `[HUB]` → returns to station menu
-     - Re-enter TRADER, tap `[UNDOCK]` → goes to Ship scene
+3. **Browser** `npm run dev` — navigate to station:
+   - Hub: "ELYSIUM STATION" at top, "[UNDOCK]" centered below, "HUB" scene title, two menu items (TRADER / MISSION BOARD), no UNDOCK item
+   - Press ESC at hub → goes to Ship scene; ESC / DOCK returns to hub
+   - Open TRADER: "ELYSIUM STATION" at top, "[HUB] [UNDOCK]" below
+     - Tap `[HUB]` → returns to hub
+     - Re-open TRADER, tap `[UNDOCK]` → goes to Ship scene
+     - Re-open TRADER, press ESC → returns to hub
    - Repeat above from MISSION BOARD
-   - Confirm ESC still returns to hub from TRADER and MISSION BOARD
-4. **Touch emulation** (DevTools): tap each nav button in all three scenes;
-   two-finger tap still works as before
-5. **Terminal** `npm run terminal`: nav bar visible at top of each station scene;
-   ESC navigates as before
+4. **Touch emulation** (DevTools): all nav button taps produce the same results
+5. **Terminal** `npm run terminal`: nav bar visible at top of each station screen; ESC navigates correctly throughout

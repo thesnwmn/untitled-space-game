@@ -14,7 +14,7 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ### 015 · Station Nav Bar
 
-Add a persistent `NavBar` component (`src/game/ui/NavBar.ts`) rendered at row 0 of all station-context screens. Shows `[HUB]` (return to station menu) and `[UNDOCK]` (go to ship) in `TraderScene` and `MissionBoardScene`; shows only `[UNDOCK]` in `StationMenuScene` (no hub button when already at the hub). Tapping either button fires immediately. `TraderScene` and `MissionBoardScene` constructors gain a second callback `onUndock`; `onBack` is renamed `onHub`. `StationMenuScene` overrides `render()` and adds a second tap handler — no constructor change. ShipScene is unaffected. See `docs/features/015-nav-bar.md` for full spec.
+Add a two-row nav bar at rows 0–1 of every station-context screen. Row 0 shows the station name (all caps, `bright-cyan`, centered); row 1 shows centered `[LABEL]` nav buttons in `white`. Both are inputs from each scene. `StationMenuScene` shows `[UNDOCK]` only (title changes to "HUB", UNDOCK menu item removed, ESC now undocks). `TraderScene` and `MissionBoardScene` show `[HUB]` and `[UNDOCK]`; tapping `[HUB]` or pressing ESC returns to hub, tapping `[UNDOCK]` goes to ship. Implement as a reusable `NavBar` component (`src/game/ui/NavBar.ts`) that caches button positions after `render()` for use in `hitTest()`. See `docs/features/015-nav-bar.md` for full spec.
 
 **Depends on:** 011
 
