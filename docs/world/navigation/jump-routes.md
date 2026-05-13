@@ -37,34 +37,11 @@ routes:
 # Jump Routes
 
 Established navigation corridors recognised by civilian navigation systems.
+All routes are bidirectional. Distances are in light years.
 
-All routes are bidirectional — the game treats a listed route as traversable
-in both directions. Distances are in light years. Stability affects jump
-success chance and travel time variance; security indicates patrol coverage.
+Route data lives entirely in the front matter above — the docs renderer and
+game engine read from there. Add new routes as front matter entries only;
+do not duplicate them here as tables or diagrams.
 
-## Route Network (starting systems)
-
-```
-         SOL ——(4.3)—— ALPHA CENTAURI
-          |  \              |
-        (5.9) (7.9)       (4.1)
-          |      \          |
-     BARNARD'S   WOLF 359 ——+
-      STAR  ——(3.1)——/
-```
-
-## Route Properties
-
-| From | To | Distance (LY) | Stability | Security |
-|---|---|---|---|---|
-| Sol | Alpha Centauri | 4.3 | stable | high |
-| Sol | Barnard's Star | 5.9 | stable | medium |
-| Sol | Wolf 359 | 7.9 | unstable | low |
-| Alpha Centauri | Barnard's Star | 4.1 | stable | medium |
-| Barnard's Star | Wolf 359 | 3.1 | unstable | low |
-
-## Notes
-
-Routes to undiscovered systems will be added to this file as the game world
-expands. Only systems with a doc in `docs/world/systems/` should be referenced
-here — no orphan route entries.
+Only systems with a doc in `docs/world/systems/` may be referenced. No orphan
+route entries.
