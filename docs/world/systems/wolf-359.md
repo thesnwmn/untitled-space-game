@@ -20,10 +20,6 @@ stations:
   - drift-market
   - blackwake-yard
 
-connections:
-  - sol
-  - barnards-star
-
 tags:
   - lawless
   - salvage

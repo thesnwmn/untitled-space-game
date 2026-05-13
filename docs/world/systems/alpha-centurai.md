@@ -20,11 +20,6 @@ stations:
   - new-horizon-port
   - hestia-ring
 
-connections:
-  - sol
-  - sirius
-  - tau-ceti
-
 tags:
   - trade-hub
   - wealthy
