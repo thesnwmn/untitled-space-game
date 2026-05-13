@@ -12,6 +12,14 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 015 · Station Nav Bar
+
+Add a two-row nav bar at rows 0–1 of every station-context screen. Row 0 shows the station name (all caps, `bright-cyan`, centered); row 1 shows centered `[LABEL]` nav buttons in `white`. Both are inputs from each scene. `StationMenuScene` shows `[UNDOCK]` only (title changes to "HUB", UNDOCK menu item removed, ESC now undocks). `TraderScene` and `MissionBoardScene` show `[UNDOCK] [HUB]` as a breadcrumb trail (outermost destination left, nearest right); tapping `[HUB]` or pressing ESC returns to hub, tapping `[UNDOCK]` goes to ship. Implement as a reusable `NavBar` component (`src/game/ui/NavBar.ts`) that caches button positions after `render()` for use in `hitTest()`. See `docs/features/015-nav-bar.md` for full spec.
+
+**Depends on:** 011
+
+---
+
 ### 013 · Menu Pagination
 
 Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
