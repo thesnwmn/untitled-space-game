@@ -19,11 +19,6 @@ stations:
   - redline-station
   - kepler-yard
 
-connections:
-  - sol
-  - wolf-359
-  - epsilon-eridani
-
 tags:
   - mining
   - frontier-edge

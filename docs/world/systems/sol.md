@@ -21,11 +21,6 @@ stations:
   - tycho-orbital
   - mars-anchor
 
-connections:
-  - alpha-centauri
-  - barnards-star
-  - wolf-359
-
 tags:
   - core-world
   - restricted

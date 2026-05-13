@@ -34,43 +34,9 @@ uncharted systems and persistent rumours of non-human signals.
 
 ---
 
-# Established Jump Corridors
+# Core Trade Corridor
 
-## Sol
-- Alpha Centauri
-- Barnard's Star
-- Wolf 359
-
-## Alpha Centauri
-- Sol
-- Sirius
-- Tau Ceti
-
-## Barnard's Star
-- Sol
-- Wolf 359
-- Epsilon Eridani
-
-## Sirius
-- Alpha Centauri
-- Tau Ceti
-
-## Tau Ceti
-- Alpha Centauri
-- Sirius
-- 61 Cygni
-
-## Epsilon Eridani
-- Barnard's Star
-- 61 Cygni
-
-## Wolf 359
-- Sol
-- Barnard's Star
-
-## 61 Cygni
-- Tau Ceti
-- Epsilon Eridani
+Sol → Alpha Centauri → Sirius → Tau Ceti
 
 ---
 
