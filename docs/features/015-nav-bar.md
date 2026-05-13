@@ -78,22 +78,21 @@ reused by `hitTest()`.
 ```
         ELYSIUM STATION          ← row 0, bright-cyan, centered
         [UNDOCK] [HUB]           ← row 1, white, centered (breadcrumb: outer → inner)
-        MERCHANT KESS            ← row 2, scene title, unchanged
-        =============            ← row 3, rule, unchanged
+        MERCHANT KESS            ← row 2, scene title, white
+        =============            ← row 3, rule, cyan
 ```
 
 Rows 0 and 1 were previously blank, so inserting the two-row nav bar there
-does not move any existing content.
+does not move any existing content. The title changes from `bright-cyan` to
+`white` so it is visually distinct from the station name directly above it.
 
 ### StationMenuScene (undock only)
 
 ```
         ELYSIUM STATION          ← row 0, bright-cyan, centered
            [UNDOCK]              ← row 1, white, centered
-                                 ← row 2 empty
-              HUB                ← row 2, scene title (was station name), unchanged row
-              ===                ← row 3, rule (3 chars to match "HUB")
-                                 ...
+              HUB                ← row 2, scene title, white (was bright-cyan station name)
+              ===                ← row 3, rule, cyan
            >  TRADER             ← items start at row 14 (unchanged)
               MISSION BOARD
 ```
@@ -105,6 +104,8 @@ does not move any existing content.
 ### StationMenuScene
 
 **Title passed to BaseMenuScene:** `'HUB'` (was `STATION_NAME.toUpperCase()`)
+
+**Title color in BaseMenuScene:** change `writeCentered(buffer, 2, …, 'bright-cyan', …)` to `'white'`. This affects all scenes extending `BaseMenuScene` (currently only `StationMenuScene`).
 
 **Items passed to BaseMenuScene:**
 ```typescript
@@ -181,6 +182,8 @@ private readonly navBar = new NavBar(
 );
 ```
 
+**Title color:** change `writeCentered(buffer, 2, …, 'bright-cyan', …)` to `'white'` for the scene title line.
+
 **render():** call `this.navBar.render(buffer)` immediately after the
 buffer-clear loop.
 
@@ -248,7 +251,7 @@ Use a buffer wide enough to clearly show centering (e.g. 40 cols).
 |---|---|
 | 1 | Nav bar row 0 contains station name text |
 | 2 | Nav bar row 1 contains `[UNDOCK]` |
-| 3 | Scene title at row 2 reads `HUB` |
+| 3 | Scene title at row 2 reads `HUB` in color `white` |
 | 4 | No UNDOCK text appears in the menu item rows (14–15) |
 | 5 | ESC fires `onShip` once and silences further input |
 | 6 | Tap on `[UNDOCK]` nav button fires `onShip` |
@@ -258,14 +261,15 @@ Use a buffer wide enough to clearly show centering (e.g. 40 cols).
 | # | Description |
 |---|---|
 | 1 | Nav bar row 0 contains station name text |
-| 2 | Nav bar row 1 contains both `[HUB]` and `[UNDOCK]` |
-| 3 | Tap on `[HUB]` nav button fires `onHub` and silences input |
+| 2 | Nav bar row 1 contains both `[UNDOCK]` and `[HUB]` |
+| 3 | Scene title at row 2 is in color `white` |
 | 4 | Tap on `[UNDOCK]` nav button fires `onUndock` and silences input |
+| 5 | Tap on `[HUB]` nav button fires `onHub` and silences input |
 | — | Existing ESC test updated: callback name `onBack` → `onHub` |
 
 ### MissionBoardScene changes
 
-Same four new tests and one updated test as TraderScene.
+Same new tests and one updated test as TraderScene.
 
 ---
 
