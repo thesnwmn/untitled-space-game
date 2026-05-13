@@ -12,6 +12,12 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 016 · Hint Overlay
+
+Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for input hint text. Extract hint rendering from all 6 scenes via a new `Scene.getHint()` method on the `Scene` interface. Add `showHints: boolean` to `GameContext` (default `true`) and wire `H`/`h` to a new `TOGGLE_HINTS` game action so the player can hide hints. See `docs/features/016-hint-overlay.md` for the full spec.
+
+---
+
 ### 015 · Station Nav Bar
 
 Add a two-row nav bar at rows 0–1 of every station-context screen. Row 0 shows the station name (all caps, `bright-cyan`, centered); row 1 shows centered `[LABEL]` nav buttons in `white`. Both are inputs from each scene. `StationMenuScene` shows `[UNDOCK]` only (title changes to "HUB", UNDOCK menu item removed, ESC now undocks). `TraderScene` and `MissionBoardScene` show `[UNDOCK] [HUB]` as a breadcrumb trail (outermost destination left, nearest right); tapping `[HUB]` or pressing ESC returns to hub, tapping `[UNDOCK]` goes to ship. Implement as a reusable `NavBar` component (`src/game/ui/NavBar.ts`) that caches button positions after `render()` for use in `hitTest()`. See `docs/features/015-nav-bar.md` for full spec.
