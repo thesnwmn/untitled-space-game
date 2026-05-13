@@ -60,8 +60,10 @@ function makeBuffer(): CharBuffer {
   );
 }
 
+const MAX_DT = 100; // cap large gaps caused by tab resume / background throttling
+
 function loop(timestamp: number): void {
-  const dt = timestamp - lastTime;
+  const dt = Math.min(timestamp - lastTime, MAX_DT);
   lastTime = timestamp;
 
   const buffer = makeBuffer();

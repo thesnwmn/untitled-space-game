@@ -53,7 +53,7 @@ input.connect();
 let lastTime = Date.now();
 setInterval(() => {
   const now = Date.now();
-  const dt = now - lastTime;
+  const dt = Math.min(now - lastTime, 100);
   lastTime = now;
 
   const w = renderer.getWidth();
