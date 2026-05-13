@@ -10,6 +10,10 @@ population: medium
 danger_level: medium
 player_knowledge: public
 
+map_position:
+  x: 28
+  y: 65
+
 economy:
   - mining
   - refining

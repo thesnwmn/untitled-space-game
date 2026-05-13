@@ -45,6 +45,28 @@ Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item li
 
 ---
 
+### 022 · World Docs HTML Publisher
+
+Build scripts that render all `docs/world/` markdown into a browsable HTML docs
+site published to GitHub Pages alongside the game. Includes moving the game build
+output from `dist/` root to `dist/game/` (Vite base path change), a landing page
+at `dist/index.html`, and a CI workflow update. Uses `gray-matter` + `marked` for
+parsing. See `docs/features/022-world-docs-publisher.md` for the full spec.
+
+**Depends on:** 018
+
+---
+
+### 023 · Galaxy Map
+
+Build script that reads system `map_position` fields and jump routes from
+`docs/world/` to render an interactive SVG galaxy map at `dist/map/index.html`.
+Nodes colour-coded by zone; routes by security. Hover tooltips; click to open
+system world-docs page. Updates landing page to enable the GALAXY MAP tile.
+See `docs/features/023-galaxy-map.md` for the full spec.
+
+**Depends on:** 018, 022
+
 ---
 
 ### 019 · World Data TypeScript Types
@@ -80,6 +102,24 @@ _(none)_
 ---
 
 ## DONE
+
+### 021 · Writer Role
+
+**Built:**
+- `docs/agent/roles/WRITER.md` — full role instructions: tone guide, doc type
+  responsibilities, cross-reference checklist, narrative rules
+- `CLAUDE.md` — updated to list seven roles (added Writer) and added
+  `build:docs`, `build:map`, `build:all` commands (stub entries for 022/023)
+- `docs/world/systems/` — all four system docs updated with `map_position`
+  fields (required by Feature 023); `_template.md` updated with schema entry
+- `docs/features/022-world-docs-publisher.md` — full spec (READY)
+- `docs/features/023-galaxy-map.md` — full spec (READY, depends on 022)
+
+**Evidence:** Documentation-only. No code changes; no tests required.
+
+**Play-test instructions:** Not applicable.
+
+---
 
 ### 018 · World Data Schemas & Seed Content
 

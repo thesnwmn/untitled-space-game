@@ -10,6 +10,10 @@ population: high
 danger_level: low
 player_knowledge: public
 
+map_position:
+  x: 35
+  y: 33
+
 economy:
   - trade
   - shipping

@@ -13,13 +13,16 @@ npm run dev                                        # Vite dev server (browser)
 npm test                                           # run all tests (Vitest)
 npx vitest run src/path/to/file.test.ts            # run a single test file
 npx tsc --noEmit                                   # type check (must pass with zero errors)
-npm run build                                      # production browser build (output to dist/)
+npm run build                                      # production browser build (output to dist/game/)
+npm run build:docs                                 # render world docs to dist/docs/ (after feature 022)
+npm run build:map                                  # render galaxy map to dist/map/ (after feature 023)
+npm run build:all                                  # full build: game + docs + map + landing page
 npm run terminal                                   # run game in terminal via Bun
 ```
 
 ## How This Project Works
 
-A human manager directs this project. Claude takes on one of six roles per session
+A human manager directs this project. Claude takes on one of seven roles per session
 depending on the task. Always confirm which role you're in at the start of a session.
 
 ## Roles
@@ -63,6 +66,13 @@ Activated when: the manager asks you to update documentation after a build.
 Your job: Update DECISION_REGISTER.md and any relevant docs to reflect what was built.
 Do not change code.
 See: docs/agent/roles/DOCUMENTER.md
+
+### Writer
+Activated when: the manager asks you to write or expand world content.
+Your job: Write prose for docs/world/ — system descriptions, destination flavour
+text, faction history, story beats, NPC dialogue. Fill in and verify structured
+front matter. Maintain cross-reference integrity between docs. Do not change code.
+See: docs/agent/roles/WRITER.md
 
 ## Selecting a Feature to Work On
 

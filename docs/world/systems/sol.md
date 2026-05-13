@@ -10,6 +10,10 @@ population: massive
 danger_level: low
 player_knowledge: public
 
+map_position:
+  x: 50
+  y: 50
+
 economy:
   - industrial
   - administrative

@@ -56,6 +56,19 @@ properties:
     items:
       type: string
     description: list of destination ids
+  map_position:
+    type: object
+    description: >
+      position on the galaxy map as percentages (0–100) of the map area.
+      Set when creating a system; the Writer role maintains these.
+    properties:
+      x:
+        type: number
+      y:
+        type: number
+    required:
+      - x
+      - y
   tags:
     type: array
     items:

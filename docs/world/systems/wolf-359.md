@@ -10,6 +10,10 @@ population: low
 danger_level: high
 player_knowledge: public
 
+map_position:
+  x: 18
+  y: 52
+
 economy:
   - salvage
   - black-market
