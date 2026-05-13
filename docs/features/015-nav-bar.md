@@ -13,13 +13,16 @@ Add a two-row nav bar at the top of every station-context screen
 
 Both the station name and the set of nav buttons are provided by each scene.
 
+The buttons read as a **breadcrumb trail** — outermost destination on the left,
+nearest destination on the right — so the order is always `[UNDOCK]` then `[HUB]`.
+
 Additional navigation changes bundled with this feature:
 
-| Screen | ESC / BACK | Nav buttons |
+| Screen | ESC / BACK | Nav buttons (left → right) |
 |---|---|---|
 | StationMenuScene | Undock (new) | `[UNDOCK]` |
-| TraderScene | Return to hub (unchanged) | `[HUB]  [UNDOCK]` |
-| MissionBoardScene | Return to hub (unchanged) | `[HUB]  [UNDOCK]` |
+| TraderScene | Return to hub (unchanged) | `[UNDOCK]  [HUB]` |
+| MissionBoardScene | Return to hub (unchanged) | `[UNDOCK]  [HUB]` |
 
 StationMenuScene's scene title changes from the station name to **"HUB"**, and its
 **UNDOCK menu item is removed** — undocking is now done via ESC or the nav bar.
@@ -74,14 +77,13 @@ reused by `hitTest()`.
 
 ```
         ELYSIUM STATION          ← row 0, bright-cyan, centered
-         [HUB] [UNDOCK]          ← row 1, white, centered
-                                 ← row 2 empty (was already empty)
+        [UNDOCK] [HUB]           ← row 1, white, centered (breadcrumb: outer → inner)
         MERCHANT KESS            ← row 2, scene title, unchanged
         =============            ← row 3, rule, unchanged
 ```
 
-Wait — row 2 is the scene title. Since rows 0 and 1 were previously blank,
-inserting the two-row nav bar there does not move any existing content.
+Rows 0 and 1 were previously blank, so inserting the two-row nav bar there
+does not move any existing content.
 
 ### StationMenuScene (undock only)
 
@@ -175,7 +177,7 @@ to call `onHub` (same behaviour, clearer name).
 ```typescript
 private readonly navBar = new NavBar(
   STATION_NAME.toUpperCase(),
-  [{ id: 'hub', label: 'HUB' }, { id: 'undock', label: 'UNDOCK' }],
+  [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
 );
 ```
 
@@ -229,13 +231,13 @@ Use a buffer wide enough to clearly show centering (e.g. 40 cols).
 | 2 | Station name is centered (first char at expected col) |
 | 3 | Station name color is `bright-cyan` |
 | 4 | Single option `[UNDOCK]` appears on row 1 centered |
-| 5 | Two options: `[HUB]` appears at computed start col on row 1 |
-| 6 | Two options: `[UNDOCK]` appears one space after `[HUB]` |
+| 5 | Two options: `[UNDOCK]` appears at computed start col on row 1 |
+| 6 | Two options: `[HUB]` appears one space after `[UNDOCK]` |
 | 7 | Button text color is `white` |
 | 8 | `hitTest` on row 0 → `null` (station name row is not interactive) |
-| 9 | `hitTest` on `[HUB]` col range, row 1 → `'hub'` |
+| 9 | `hitTest` on `[UNDOCK]` col range, row 1 → `'undock'` |
 | 10 | `hitTest` on gap col between buttons → `null` |
-| 11 | `hitTest` on `[UNDOCK]` col range, row 1 → `'undock'` |
+| 11 | `hitTest` on `[HUB]` col range, row 1 → `'hub'` |
 | 12 | `hitTest` past last button col → `null` |
 | 13 | Single option: `hitTest` on `[UNDOCK]` col range → `'undock'` |
 | 14 | `hitTest` before render → `null` |
@@ -289,7 +291,7 @@ Same four new tests and one updated test as TraderScene.
 3. **Browser** `npm run dev` — navigate to station:
    - Hub: "ELYSIUM STATION" at top, "[UNDOCK]" centered below, "HUB" scene title, two menu items (TRADER / MISSION BOARD), no UNDOCK item
    - Press ESC at hub → goes to Ship scene; ESC / DOCK returns to hub
-   - Open TRADER: "ELYSIUM STATION" at top, "[HUB] [UNDOCK]" below
+   - Open TRADER: "ELYSIUM STATION" at top, "[UNDOCK] [HUB]" below
      - Tap `[HUB]` → returns to hub
      - Re-open TRADER, tap `[UNDOCK]` → goes to Ship scene
      - Re-open TRADER, press ESC → returns to hub
