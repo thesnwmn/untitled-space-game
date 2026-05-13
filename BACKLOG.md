@@ -12,12 +12,16 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 012 · Animated Starfield — Ship Scene
+### 012 · Animated Starfield & Space Station View — Ship Scene
 
-Replace the static dot pattern in ShipScene with a three-layer parallax scrolling
-starfield. Stars (18 distant `.`, 10 mid `*`, 5 near `+`) drift downward at different
-speeds, wrapping back to the top with a new column. An occasional per-star twinkle
-briefly upgrades its colour. Deterministic LCG seeding keeps tests reproducible.
+Overhaul the Ship scene viewport: a framed ASCII "cockpit window" (`\`/`/` corners,
+`_` top and bottom fills, `|` sides) fills all rows between the status/location header
+and the action buttons. Inside the window, a three-layer parallax starfield (18 distant
+`.`, 10 mid `*`, 5 near `+`) scrolls downward at different speeds with per-star twinkle.
+A space station (RELAY by default; 3×5 chars, bright-yellow) is always visible in the
+right-centre of the viewport, drifting on a slow Lissajous path and never exiting the
+window. Four built-in station types are catalogued in `station-types.ts` for future use.
+Deterministic LCG seeding keeps starfield tests reproducible.
 See `docs/features/012-animated-starfield.md` for full spec.
 
 **Depends on:** 011
