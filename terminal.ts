@@ -24,11 +24,11 @@ const goToMainMenu = () => {
 };
 
 const goToTrader = () => {
-  currentScene = new TraderScene(input, context, goToStation);
+  currentScene = new TraderScene(input, context, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
-  currentScene = new MissionBoardScene(input, context, goToStation);
+  currentScene = new MissionBoardScene(input, context, goToStation, goToShip);
 };
 
 const goToShip = () => {

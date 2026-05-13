@@ -1,5 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
+import { STATION_NAME } from '../constants';
+import { NavBar } from '../ui/NavBar';
 
 interface Mission {
   id: string;
@@ -30,11 +32,16 @@ const MISSION_COL = 1;
 
 export class MissionBoardScene implements Scene {
   private readonly context: GameContext;
+  private readonly navBar: NavBar;
   private cursorIdx = 0;
   private activated = false;
 
-  constructor(inputHandler: InputHandler, context: GameContext, onBack: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, onHub: () => void, onUndock: () => void) {
     this.context = context;
+    this.navBar = new NavBar(
+      STATION_NAME.toUpperCase(),
+      [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
+    );
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
@@ -47,13 +54,16 @@ export class MissionBoardScene implements Scene {
         console.log(`[MissionBoard] Selected: ${mission.title}`);
       } else if (action === 'BACK') {
         this.activated = true;
-        onBack();
+        onHub();
       }
     });
 
     if (inputHandler.onTap) {
-      inputHandler.onTap((_col, row) => {
+      inputHandler.onTap((col, row) => {
         if (this.activated) return;
+        const navHit = this.navBar.hitTest(col, row);
+        if (navHit === 'hub')    { this.activated = true; onHub();    return; }
+        if (navHit === 'undock') { this.activated = true; onUndock(); return; }
         for (let i = 0; i < MISSIONS.length; i++) {
           if (row === MISSION_ROW_START + i) {
             this.cursorIdx = i;
@@ -77,7 +87,9 @@ export class MissionBoardScene implements Scene {
       }
     }
 
-    writeCentered(buffer, 2, 'MISSION BOARD', 'bright-cyan', 'black');
+    this.navBar.render(buffer);
+
+    writeCentered(buffer, 2, 'MISSION BOARD', 'white', 'black');
     writeCentered(buffer, 3, '=============', 'cyan', 'black');
 
     const contentWidth = w - 2;

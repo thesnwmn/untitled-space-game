@@ -47,31 +47,54 @@ const TAB_ROW = 5;
 const BUY_TAB_COL = 10;
 const SELL_TAB_COL = 17;
 
+// NavBar two options [UNDOCK][HUB] in 40-col buffer: totalWidth=14, startCol=13
+// [UNDOCK] cols 13–20, [HUB] cols 22–26
+const NAV_UNDOCK_COL = 13;
+const NAV_HUB_COL = 22;
+
 // ── tests ─────────────────────────────────────────────────────────────────────
 
 describe('TraderScene', () => {
   describe('render — layout', () => {
     it('does not render a border', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).toBe(' ');
       expect(buf[0][0].fg).toBe('black');
     });
 
-    it('renders trader name at row 2 in bright-cyan', () => {
+    it('nav bar row 0 contains station name ELYSIUM STATION', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, 0)).toContain('ELYSIUM STATION');
+      expect(buf[0].find(c => c.char !== ' ')?.fg).toBe('bright-cyan');
+    });
+
+    it('nav bar row 1 contains both [UNDOCK] and [HUB]', () => {
+      const input = new MockInputHandler();
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, 1)).toContain('[UNDOCK]');
+      expect(rowText(buf, 1)).toContain('[HUB]');
+    });
+
+    it('renders trader name at row 2 in white', () => {
+      const input = new MockInputHandler();
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 2)).toContain('MERCHANT KESS');
-      expect(buf[2].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-cyan');
+      expect(buf[2].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('white');
     });
 
     it('renders title rule at row 3 in cyan', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('=============');
@@ -80,7 +103,7 @@ describe('TraderScene', () => {
 
     it('renders [BUY] tab active (bright-green) and [SELL] inactive (white) by default', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, TAB_ROW)).toContain('[BUY]');
@@ -91,7 +114,7 @@ describe('TraderScene', () => {
 
     it('renders buy items in content area starting at row 7', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
@@ -101,7 +124,7 @@ describe('TraderScene', () => {
 
     it('cursor starts on first item in bright-green', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('>');
@@ -110,7 +133,7 @@ describe('TraderScene', () => {
 
     it('renders keyboard footer hint', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 27)).toContain('ESC return');
@@ -119,7 +142,7 @@ describe('TraderScene', () => {
 
     it('renders touch footer hint for touch context', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, touchContext, vi.fn());
+      const scene = new TraderScene(input, touchContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 27)).toContain('TAP to select');
@@ -129,7 +152,7 @@ describe('TraderScene', () => {
   describe('keyboard navigation', () => {
     it('DOWN moves cursor to next item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       input.triggerAction('DOWN');
       scene.render(buf);
@@ -139,7 +162,7 @@ describe('TraderScene', () => {
 
     it('UP from first item wraps to last item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       input.triggerAction('UP');
       scene.render(buf);
@@ -148,7 +171,7 @@ describe('TraderScene', () => {
 
     it('RIGHT switches to SELL tab and resets cursor', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
@@ -161,7 +184,7 @@ describe('TraderScene', () => {
 
     it('sell tab displays qty for each item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -172,7 +195,7 @@ describe('TraderScene', () => {
 
     it('LEFT switches back to BUY tab', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('RIGHT');
       input.triggerAction('LEFT');
       const buf = makeBuffer(40, 30);
@@ -184,27 +207,27 @@ describe('TraderScene', () => {
     it('SELECT on item logs placeholder', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, vi.fn());
+      new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('SELECT');
       expect(consoleSpy).toHaveBeenCalledWith('[Trader] Selected Iron Ore');
       consoleSpy.mockRestore();
     });
 
-    it('BACK calls onBack and silences further input', () => {
-      const onBack = vi.fn();
+    it('BACK calls onHub and silences further input', () => {
+      const onHub = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, onBack);
+      new TraderScene(input, keyboardContext, onHub, vi.fn());
       input.triggerAction('BACK');
-      expect(onBack).toHaveBeenCalledTimes(1);
+      expect(onHub).toHaveBeenCalledTimes(1);
       input.triggerAction('BACK');
-      expect(onBack).toHaveBeenCalledTimes(1);
+      expect(onHub).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('touch navigation', () => {
     it('tap on BUY tab switches back from SELL to BUY', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('RIGHT'); // switch to SELL first
       input.triggerTap(BUY_TAB_COL, TAB_ROW); // tap BUY
       const buf = makeBuffer(40, 30);
@@ -215,7 +238,7 @@ describe('TraderScene', () => {
 
     it('tap on SELL tab switches to SELL and shows qty', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerTap(SELL_TAB_COL, TAB_ROW);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -226,17 +249,41 @@ describe('TraderScene', () => {
     it('tap on item row logs placeholder', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, vi.fn());
+      new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerTap(5, ITEM_ROW_START + 2);
       expect(consoleSpy).toHaveBeenCalledWith('[Trader] Selected Refined Fuel');
       consoleSpy.mockRestore();
+    });
+
+    it('tap on [UNDOCK] nav button fires onUndock and silences input', () => {
+      const onUndock = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), onUndock);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(NAV_UNDOCK_COL, 1);
+      expect(onUndock).toHaveBeenCalledTimes(1);
+      input.triggerTap(NAV_UNDOCK_COL, 1);
+      expect(onUndock).toHaveBeenCalledTimes(1);
+    });
+
+    it('tap on [HUB] nav button fires onHub and silences input', () => {
+      const onHub = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TraderScene(input, keyboardContext, onHub, vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(NAV_HUB_COL, 1);
+      expect(onHub).toHaveBeenCalledTimes(1);
+      input.triggerTap(NAV_HUB_COL, 1);
+      expect(onHub).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, vi.fn(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });

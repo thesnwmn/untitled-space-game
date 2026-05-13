@@ -47,6 +47,9 @@ const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch
 const MENU_COL = 12;
 const MENU_ROW_START = 14;
 
+// NavBar single [UNDOCK] (8 chars) in 40-col buffer: startCol = floor((40-8)/2) = 16
+const NAV_UNDOCK_COL = 16;
+
 function makeScene(
   input: MockInputHandler,
   ctx: GameContext,
@@ -70,32 +73,50 @@ describe('StationMenuScene', () => {
       expect(buf[0][0].fg).toBe('black');
     });
 
-    it('renders station title ELYSIUM STATION at row 2 in bright-cyan', () => {
+    it('nav bar row 0 contains station name ELYSIUM STATION in bright-cyan', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 2)).toContain('ELYSIUM STATION');
-      expect(rowFg(buf, 2, 12)).toBe('bright-cyan');
+      expect(rowText(buf, 0)).toContain('ELYSIUM STATION');
+      expect(rowFg(buf, 0, 12)).toBe('bright-cyan');
     });
 
-    it('renders title rule =============== at row 3 in cyan', () => {
+    it('nav bar row 1 contains [UNDOCK]', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 3)).toContain('===============');
-      expect(rowFg(buf, 3, 12)).toBe('cyan');
+      expect(rowText(buf, 1)).toContain('[UNDOCK]');
     });
 
-    it('renders TRADER at row 14, MISSION BOARD at row 15, UNDOCK at row 16', () => {
+    it('scene title at row 2 reads HUB in white', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, keyboardContext);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, 2)).toContain('HUB');
+      expect(buf[2].find(c => c.char === 'H')?.fg).toBe('white');
+    });
+
+    it('renders title rule === at row 3 in cyan', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, keyboardContext);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, 3)).toContain('===');
+      expect(buf[3].find(c => c.char === '=')?.fg).toBe('cyan');
+    });
+
+    it('renders TRADER at row 14 and MISSION BOARD at row 15; no UNDOCK in items', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 14)).toContain('TRADER');
       expect(rowText(buf, 15)).toContain('MISSION BOARD');
-      expect(rowText(buf, 16)).toContain('UNDOCK');
+      expect(rowText(buf, 14)).not.toContain('UNDOCK');
+      expect(rowText(buf, 15)).not.toContain('UNDOCK');
     });
 
     it('cursor starts on TRADER in bright-green', () => {
@@ -126,7 +147,7 @@ describe('StationMenuScene', () => {
   });
 
   describe('keyboard navigation', () => {
-    it('DOWN moves cursor through items and wraps from UNDOCK to TRADER', () => {
+    it('DOWN moves cursor from TRADER to MISSION BOARD and wraps back to TRADER', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
@@ -137,20 +158,16 @@ describe('StationMenuScene', () => {
 
       input.triggerAction('DOWN');
       scene.render(buf);
-      expect(rowText(buf, MENU_ROW_START + 2)).toContain('> UNDOCK');
-
-      input.triggerAction('DOWN');
-      scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('> TRADER');
     });
 
-    it('UP from TRADER wraps to UNDOCK', () => {
+    it('UP from TRADER wraps to MISSION BOARD', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       input.triggerAction('UP');
       scene.render(buf);
-      expect(rowText(buf, MENU_ROW_START + 2)).toContain('> UNDOCK');
+      expect(rowText(buf, MENU_ROW_START + 1)).toContain('> MISSION BOARD');
     });
 
     it('SELECT on TRADER calls onTrader callback once', () => {
@@ -170,15 +187,13 @@ describe('StationMenuScene', () => {
       expect(onMissionBoard).toHaveBeenCalledTimes(1);
     });
 
-    it('SELECT on UNDOCK calls onShip once then silences input', () => {
+    it('ESC fires onShip once and silences further input', () => {
       const onShip = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, keyboardContext, vi.fn(), vi.fn(), onShip);
-      input.triggerAction('DOWN');
-      input.triggerAction('DOWN');
-      input.triggerAction('SELECT');
+      input.triggerAction('BACK');
       expect(onShip).toHaveBeenCalledTimes(1);
-      input.triggerAction('SELECT');
+      input.triggerAction('BACK');
       expect(onShip).toHaveBeenCalledTimes(1);
     });
 
@@ -209,11 +224,13 @@ describe('StationMenuScene', () => {
       expect(onMissionBoard).toHaveBeenCalledTimes(1);
     });
 
-    it('tap on row 16 activates UNDOCK and calls onShip', () => {
+    it('tap on [UNDOCK] nav button fires onShip', () => {
       const onShip = vi.fn();
       const input = new MockInputHandler();
-      makeScene(input, keyboardContext, vi.fn(), vi.fn(), onShip);
-      input.triggerTap(10, MENU_ROW_START + 2);
+      const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), onShip);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(NAV_UNDOCK_COL, 1);
       expect(onShip).toHaveBeenCalledTimes(1);
     });
 
