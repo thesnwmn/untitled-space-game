@@ -101,8 +101,8 @@ export class ShipScene implements Scene {
     const windowBot = h - 3;      // /     \
     const intRowStart = WINDOW_TOP + 1;
     const intRowEnd = windowSill - 1;
-    const intColStart = 1;
-    const intColEnd = w - 2;
+    const intColStart = 2;      // border at col 1; one col of padding on each side
+    const intColEnd = w - 3;    // border at col w-2
     const buttonsRow = h - 2;
     const footerRow = h - 1;
 
@@ -114,33 +114,33 @@ export class ShipScene implements Scene {
     const locationText = `Location: ${STATION_NAME.toUpperCase()}`;
     writeText(buffer, LOCATION_ROW, 1, locationText, 'bright-cyan', 'black');
 
-    // Window border — top row: \____/
-    buffer[WINDOW_TOP][0] = { char: '\\', fg: 'bright-black', bg: 'black' };
-    buffer[WINDOW_TOP][w - 1] = { char: '/', fg: 'bright-black', bg: 'black' };
-    for (let c = 1; c < w - 1; c++) {
+    // Window border — top row: \____/  (inset 1 col each side)
+    buffer[WINDOW_TOP][1] = { char: '\\', fg: 'bright-black', bg: 'black' };
+    buffer[WINDOW_TOP][w - 2] = { char: '/', fg: 'bright-black', bg: 'black' };
+    for (let c = 2; c < w - 2; c++) {
       buffer[WINDOW_TOP][c] = { char: '_', fg: 'bright-black', bg: 'black' };
     }
 
     // Window border — side columns (interior rows)
     for (let r = intRowStart; r <= intRowEnd; r++) {
-      buffer[r][0] = { char: '|', fg: 'bright-black', bg: 'black' };
-      buffer[r][w - 1] = { char: '|', fg: 'bright-black', bg: 'black' };
+      buffer[r][1] = { char: '|', fg: 'bright-black', bg: 'black' };
+      buffer[r][w - 2] = { char: '|', fg: 'bright-black', bg: 'black' };
     }
 
     // Window sill row: |_____|
     if (windowSill >= 0 && windowSill < h) {
-      buffer[windowSill][0] = { char: '|', fg: 'bright-black', bg: 'black' };
-      buffer[windowSill][w - 1] = { char: '|', fg: 'bright-black', bg: 'black' };
-      for (let c = 1; c < w - 1; c++) {
+      buffer[windowSill][1] = { char: '|', fg: 'bright-black', bg: 'black' };
+      buffer[windowSill][w - 2] = { char: '|', fg: 'bright-black', bg: 'black' };
+      for (let c = 2; c < w - 2; c++) {
         buffer[windowSill][c] = { char: '_', fg: 'bright-black', bg: 'black' };
       }
     }
 
     // Window corners row: /     \
     if (windowBot >= 0 && windowBot < h) {
-      buffer[windowBot][0] = { char: '/', fg: 'bright-black', bg: 'black' };
-      buffer[windowBot][w - 1] = { char: '\\', fg: 'bright-black', bg: 'black' };
-      for (let c = 1; c < w - 1; c++) {
+      buffer[windowBot][1] = { char: '/', fg: 'bright-black', bg: 'black' };
+      buffer[windowBot][w - 2] = { char: '\\', fg: 'bright-black', bg: 'black' };
+      for (let c = 2; c < w - 2; c++) {
         buffer[windowBot][c] = { char: ' ', fg: 'black', bg: 'black' };
       }
     }

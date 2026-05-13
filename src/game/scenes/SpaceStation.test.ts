@@ -11,11 +11,11 @@ function makeBuffer(w: number, h: number): CharBuffer {
   );
 }
 
-// Reference interior bounds for 40×30 grid
+// Reference interior bounds for 40×30 grid (border inset 1 col each side)
 const INT_ROW_START = 3;
 const INT_ROW_END = 25;
-const INT_COL_START = 1;
-const INT_COL_END = 38;
+const INT_COL_START = 2;
+const INT_COL_END = 37;
 
 function makeRelay(): SpaceStation {
   return new SpaceStation(STATION_TYPES.RELAY, INT_ROW_START, INT_ROW_END, INT_COL_START, INT_COL_END);

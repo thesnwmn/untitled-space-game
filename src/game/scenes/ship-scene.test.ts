@@ -89,44 +89,44 @@ describe('ShipScene', () => {
       expect(buf[1][1].fg).toBe('bright-cyan');
     });
 
-    it('top border row has \\ at col 0, _ in middle, / at col w-1', () => {
+    it('top border row has \\ at col 1, _ in middle, / at col w-2', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[WINDOW_TOP][0].char).toBe('\\');
-      expect(buf[WINDOW_TOP][39].char).toBe('/');
+      expect(buf[WINDOW_TOP][1].char).toBe('\\');
+      expect(buf[WINDOW_TOP][38].char).toBe('/');
       expect(buf[WINDOW_TOP][20].char).toBe('_');
     });
 
-    it('interior rows have | at col 0 and col w-1', () => {
+    it('interior rows have | at col 1 and col w-2', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
-        expect(buf[r][0].char).toBe('|');
-        expect(buf[r][39].char).toBe('|');
+        expect(buf[r][1].char).toBe('|');
+        expect(buf[r][38].char).toBe('|');
       }
     });
 
-    it('sill row has | at col 0, _ in middle, | at col w-1', () => {
+    it('sill row has | at col 1, _ in middle, | at col w-2', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[WINDOW_SILL][0].char).toBe('|');
-      expect(buf[WINDOW_SILL][39].char).toBe('|');
+      expect(buf[WINDOW_SILL][1].char).toBe('|');
+      expect(buf[WINDOW_SILL][38].char).toBe('|');
       expect(buf[WINDOW_SILL][20].char).toBe('_');
     });
 
-    it('corners row has / at col 0, space in middle, \\ at col w-1', () => {
+    it('corners row has / at col 1, space in middle, \\ at col w-2', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[WINDOW_BOT][0].char).toBe('/');
-      expect(buf[WINDOW_BOT][39].char).toBe('\\');
+      expect(buf[WINDOW_BOT][1].char).toBe('/');
+      expect(buf[WINDOW_BOT][38].char).toBe('\\');
       expect(buf[WINDOW_BOT][20].char).toBe(' ');
     });
 
@@ -191,11 +191,11 @@ describe('ShipScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // Spot-check border fg colours
-      expect(buf[WINDOW_TOP][0].fg).toBe('bright-black');
+      expect(buf[WINDOW_TOP][1].fg).toBe('bright-black');
       expect(buf[WINDOW_TOP][20].fg).toBe('bright-black');
-      expect(buf[INT_ROW_START][0].fg).toBe('bright-black');
-      expect(buf[WINDOW_SILL][0].fg).toBe('bright-black');
-      expect(buf[WINDOW_BOT][0].fg).toBe('bright-black');
+      expect(buf[INT_ROW_START][1].fg).toBe('bright-black');
+      expect(buf[WINDOW_SILL][1].fg).toBe('bright-black');
+      expect(buf[WINDOW_BOT][1].fg).toBe('bright-black');
     });
   });
 

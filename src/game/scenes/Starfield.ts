@@ -8,9 +8,9 @@ export interface Star {
   twinkled: boolean;
 }
 
-const LAYER_COUNT = [18, 10, 5] as const;
+const LAYER_COUNT = [24, 6, 3] as const;
 const LAYER_CHAR = ['.', '*', '+'] as const;
-const LAYER_SPEED = [1.5, 4.0, 9.0] as const;
+const LAYER_SPEED = [0.3, 1.0, 2.5] as const;
 const LAYER_COLOR: Color[] = ['bright-black', 'white', 'bright-white'];
 const LAYER_TWINKLE_COLOR: Color[] = ['white', 'bright-white', 'bright-cyan'];
 const TWINKLE_MIN = 800;
@@ -19,8 +19,8 @@ const TWINKLE_MAX = 3000;
 // Default interior bounds based on 40×30 reference grid
 const DEFAULT_INT_ROW_START = 3;
 const DEFAULT_INT_ROW_END = 25;
-const DEFAULT_INT_COL_START = 1;
-const DEFAULT_INT_COL_END = 38;
+const DEFAULT_INT_COL_START = 2;
+const DEFAULT_INT_COL_END = 37;
 
 function lcgRand(seed: number): () => number {
   let s = seed >>> 0;

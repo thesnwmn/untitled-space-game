@@ -10,11 +10,11 @@ function makeBuffer(w: number, h: number): CharBuffer {
   );
 }
 
-// Reference interior bounds for 40×30 grid
+// Reference interior bounds for 40×30 grid (border inset 1 col each side)
 const INT_ROW_START = 3;
 const INT_ROW_END = 25;
-const INT_COL_START = 1;
-const INT_COL_END = 38;
+const INT_COL_START = 2;
+const INT_COL_END = 37;
 
 function renderBuf(sf: Starfield): CharBuffer {
   const buf = makeBuffer(40, 30);
@@ -31,12 +31,12 @@ describe('Starfield', () => {
       expect(sf.getStars().length).toBe(33);
     });
 
-    it('layer distribution is exactly 18/10/5', () => {
+    it('layer distribution is exactly 24/6/3', () => {
       const sf = new Starfield(42);
       const stars = sf.getStars();
       const counts = [0, 0, 0];
       for (const s of stars) counts[s.layer]++;
-      expect(counts).toEqual([18, 10, 5]);
+      expect(counts).toEqual([24, 6, 3]);
     });
 
     it('all stars have y within interior row range', () => {
@@ -68,28 +68,28 @@ describe('Starfield', () => {
   });
 
   describe('update(dt)', () => {
-    it('layer 0 stars advance y by 1.5 * dt/1000 per update', () => {
+    it('layer 0 stars advance y by 0.3 * dt/1000 per update', () => {
       const sf = new Starfield(42);
       const star = sf.getStars()[0]; // layer 0
       star.y = 5.0;
       sf.update(100);
-      expect(star.y).toBeCloseTo(5.0 + 1.5 * 0.1, 10);
+      expect(star.y).toBeCloseTo(5.0 + 0.3 * 0.1, 10);
     });
 
-    it('layer 1 stars advance y by 4.0 * dt/1000 per update', () => {
+    it('layer 1 stars advance y by 1.0 * dt/1000 per update', () => {
       const sf = new Starfield(42);
-      const star = sf.getStars()[18]; // first layer 1 star
+      const star = sf.getStars()[24]; // first layer 1 star
       star.y = 5.0;
       sf.update(100);
-      expect(star.y).toBeCloseTo(5.0 + 4.0 * 0.1, 10);
+      expect(star.y).toBeCloseTo(5.0 + 1.0 * 0.1, 10);
     });
 
-    it('layer 2 stars advance y by 9.0 * dt/1000 per update', () => {
+    it('layer 2 stars advance y by 2.5 * dt/1000 per update', () => {
       const sf = new Starfield(42);
-      const star = sf.getStars()[28]; // first layer 2 star
+      const star = sf.getStars()[30]; // first layer 2 star
       star.y = 5.0;
       sf.update(100);
-      expect(star.y).toBeCloseTo(5.0 + 9.0 * 0.1, 10);
+      expect(star.y).toBeCloseTo(5.0 + 2.5 * 0.1, 10);
     });
 
     it('star at y = INT_ROW_END wraps to INT_ROW_START', () => {
@@ -191,7 +191,7 @@ describe('Starfield', () => {
 
     it('twinkled layer 1 star renders in bright-white', () => {
       const sf = new Starfield(42);
-      const star = sf.getStars()[18]; // layer 1
+      const star = sf.getStars()[24]; // first layer 1 star
       star.y = 6.0;
       star.col = 15;
       star.twinkleTimer = 0;
@@ -203,7 +203,7 @@ describe('Starfield', () => {
 
     it('twinkled layer 2 star renders in bright-cyan', () => {
       const sf = new Starfield(42);
-      const star = sf.getStars()[28]; // layer 2
+      const star = sf.getStars()[30]; // first layer 2 star
       star.y = 7.0;
       star.col = 20;
       star.twinkleTimer = 0;
@@ -219,8 +219,8 @@ describe('Starfield', () => {
       // Put a layer 0 and layer 2 star at the exact same cell
       stars[0].y = 10.0;
       stars[0].col = 20;
-      stars[28].y = 10.0;
-      stars[28].col = 20;
+      stars[30].y = 10.0;
+      stars[30].col = 20;
       const buf = renderBuf(sf);
       // Layer 2 ('+', bright-white) should win
       expect(buf[10][20].char).toBe('+');
