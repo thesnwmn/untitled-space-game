@@ -69,8 +69,8 @@ describe('StoryScene', () => {
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 2)).toContain('YEAR  2076');
-      // "YEAR  2076" is 10 chars; centred in 40: col = 15
+      expect(rowText(buf, 2)).toContain('YEAR  2284');
+      // "YEAR  2284" is 10 chars; centred in 40: col = 15
       expect(rowFg(buf, 2, 15)).toBe('bright-yellow');
     });
 
