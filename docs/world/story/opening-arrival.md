@@ -8,7 +8,7 @@ skippable: true
 player_knowledge: public
 ---
 
-YEAR  2076
+YEAR  2284
 
 The war ended six years ago.
 

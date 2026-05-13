@@ -279,7 +279,7 @@ _(none)_
 **Built:**
 - `src/game/constants.ts` — new file; exports `STATION_NAME = 'Elysium Station'` as the single source of truth for the station name
 - `src/shared/buffer-utils.ts` — new file; exports `writeText`, `writeCentered`, `drawBorder` extracted from `MainMenuScene` so all scenes share the same helpers
-- `src/game/scenes/StoryScene.ts` — full implementation: constructor takes `(inputHandler, context, onContinue)`; registers `onAction` (SELECT fires `onContinue` once then sets `activated`) and `onTap` (any tap fires `onContinue` once); BACK is ignored; `render` clears buffer to black, draws white border, renders `YEAR  2076` centred in bright-yellow on row 2, all 11 story text lines in white at col 2, keyboard or touch footer hint in bright-black at row 27
+- `src/game/scenes/StoryScene.ts` — full implementation: constructor takes `(inputHandler, context, onContinue)`; registers `onAction` (SELECT fires `onContinue` once then sets `activated`) and `onTap` (any tap fires `onContinue` once); BACK is ignored; `render` clears buffer to black, draws white border, renders `YEAR  2284` centred in bright-yellow on row 2, all 11 story text lines in white at col 2, keyboard or touch footer hint in bright-black at row 27
 - `src/game/scenes/story-scene.test.ts` — 17 tests: layout/clear, border, year header colour/position, all three story paragraphs at correct rows, closing line, keyboard footer, touch footer, line-length bound, SELECT fires once, second SELECT ignored, tap fires once, tap on any row fires, second tap ignored, BACK no effect, update no throw
 - `src/game/scenes/MainMenuScene.ts` — updated to import helpers from `buffer-utils`; constructor signature changed from `(inputHandler, context)` to `(inputHandler, context, onNewGame: () => void)`; NEW GAME action now calls `onNewGame()` instead of logging
 - `src/game/scenes/main-menu-scene.test.ts` — updated all 22 tests to pass `onNewGame` as `vi.fn()` or a named mock; assertions changed from `consoleSpy` to `expect(onNewGame).toHaveBeenCalledTimes(1)`
@@ -295,7 +295,7 @@ _(none)_
 **Play-test instructions:**
 1. Run `bash init.sh` — must print `=== Environment ready ===`
 2. Run `npm test` — must show 6 test files, 82 tests passed
-3. **Browser:** Run `npm run dev` — open browser; main menu appears; press Enter on NEW GAME — story screen appears with border, "YEAR  2076" in yellow, story text in white, keyboard footer at bottom; press Enter — console logs `[Story] Arriving at Elysium Station…`
+3. **Browser:** Run `npm run dev` — open browser; main menu appears; press Enter on NEW GAME — story screen appears with border, "YEAR  2284" in yellow, story text in white, keyboard footer at bottom; press Enter — console logs `[Story] Arriving at Elysium Station…`
 4. **Terminal:** Run `bun terminal.ts` — main menu renders; press Enter → story screen renders with the same layout; press Enter again → logs `[Story] Arriving at Elysium Station…`
 5. On touch browser (DevTools emulation): tap NEW GAME → story screen; tap anywhere → logs `[Story] Arriving at Elysium Station…`; footer shows `[ TAP TO CONTINUE ]`
 

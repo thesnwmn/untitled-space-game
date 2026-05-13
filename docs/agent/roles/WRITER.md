@@ -27,7 +27,7 @@ note it in your session summary for the manager.
 
 ## Narrative tone
 
-The game is set in 2076. Humanity has expanded to nearby star systems.
+The game is set in 2284. Humanity has expanded to nearby star systems.
 The Consolidation Wars ended six years ago. Corporations and governments
 divided the spoils. Independent pilots scrape by on freight runs and
 odd jobs.
