@@ -11,8 +11,8 @@ danger_level: low
 player_knowledge: public
 
 map_position:
-  x: 35
-  y: 33
+  x: -15
+  y: -17
 
 economy:
   - trade

@@ -11,8 +11,8 @@ danger_level: high
 player_knowledge: public
 
 map_position:
-  x: 18
-  y: 52
+  x: -32
+  y: 2
 
 economy:
   - salvage
