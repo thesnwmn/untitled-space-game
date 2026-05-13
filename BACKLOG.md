@@ -45,9 +45,53 @@ Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item li
 
 ---
 
+### 022 · World Docs HTML Publisher
+
+Build scripts that render all `docs/world/` markdown into a browsable HTML docs
+site published to GitHub Pages alongside the game. Includes moving the game build
+output from `dist/` root to `dist/game/` (Vite base path change), a landing page
+at `dist/index.html`, and a CI workflow update. Uses `gray-matter` + `marked` for
+parsing. See `docs/features/022-world-docs-publisher.md` for the full spec.
+
+**Depends on:** 018
+
+---
+
+### 023 · Galaxy Map
+
+Build script that reads system `map_position` fields and jump routes from
+`docs/world/` to render an interactive SVG galaxy map at `dist/map/index.html`.
+Nodes colour-coded by zone; routes by security. Hover tooltips; click to open
+system world-docs page. Updates landing page to enable the GALAXY MAP tile.
+See `docs/features/023-galaxy-map.md` for the full spec.
+
+**Depends on:** 018, 022
+
+---
+
+### 019 · World Data TypeScript Types
+
+Define TypeScript interfaces for every world entity type (`StarSystem`,
+`Destination`, `JumpRoute`, `JumpDrive`, `Ship`, `Faction`, `Commodity`,
+`StoryBeat`) and expose a typed static `WorldData` module with lookup helpers
+that any game scene can import. No file I/O — seed data is hard-coded to match
+the docs written in Feature 018. See `docs/features/019-world-data-types.md`
+for the full spec.
+
+**Depends on:** 018
+
+---
+
 ## NEEDS SPEC
 
-_(none)_
+### 020 · World Data File Loader
+
+Replace the static seed data in `world-data.ts` with a runtime loader that
+parses markdown front matter and body from `docs/world/**/*.md`. Browser
+build: Vite `import.meta.glob` to bundle at compile time. Terminal build: Bun
+file reads. Both paths feed the same typed `WorldData` structure from Feature
+019. Requires a YAML front-matter parser (e.g. `gray-matter`) and a strategy
+for exposing raw markdown body text alongside structured data.
 
 ---
 
@@ -58,6 +102,62 @@ _(none)_
 ---
 
 ## DONE
+
+### 021 · Writer Role
+
+**Built:**
+- `docs/agent/roles/WRITER.md` — full role instructions: tone guide, doc type
+  responsibilities, cross-reference checklist, narrative rules
+- `CLAUDE.md` — updated to list seven roles (added Writer) and added
+  `build:docs`, `build:map`, `build:all` commands (stub entries for 022/023)
+- `docs/world/systems/` — all four system docs updated with `map_position`
+  fields (required by Feature 023); `_template.md` updated with schema entry
+- `docs/features/022-world-docs-publisher.md` — full spec (READY)
+- `docs/features/023-galaxy-map.md` — full spec (READY, depends on 022)
+
+**Evidence:** Documentation-only. No code changes; no tests required.
+
+**Play-test instructions:** Not applicable.
+
+---
+
+### 018 · World Data Schemas & Seed Content
+
+**Built:**
+- `docs/features/018-world-data-schemas.md` — full spec for all world document types
+- `docs/features/019-world-data-types.md` — full spec for TypeScript types feature
+- `docs/world/systems/` — four system docs (`sol`, `alpha-centauri`, `barnards-star`,
+  `wolf-359`) updated with `zone`, `danger_level`, `destinations` fields; typo
+  `alpha-centurai` corrected; `_template.md` updated
+- `docs/world/destinations/` — new directory (renamed from `stations/`); `_template.md`
+  with `location_type` field; ten destination docs with full amenities front matter
+  (`elysium-station`, `galileo-transfer`, `tycho-orbital`, `mars-anchor`,
+  `new-horizon-port`, `hestia-ring`, `redline-station`, `kepler-yard`, `drift-market`,
+  `blackwake-yard`)
+- `docs/world/story/` — new directory; `_template.md` for story beats; three seed
+  beats (`opening-arrival`, `first-jump`, `enter-wolf-359`)
+- `docs/world/factions/` — six faction docs (`terran-union`, `helios-directorate`,
+  `centauri-trade-league`, `independent-miners-guild`, `free-captains`,
+  `grey-market-cartel`)
+- `docs/world/ships/` — three ship docs (`freighter`, `scout`, `hauler`); `_template.md`
+  updated
+- `docs/world/commodities.md` — twelve commodities across four categories
+- `docs/world/navigation/jump-routes.md` — full five-route connected graph across
+  all four systems; broken `epsilon-eridani` reference removed
+
+**Evidence:**
+- All destination ids in system `destinations` lists resolve to docs in
+  `docs/world/destinations/`
+- All faction ids in system `major_factions` lists resolve to docs in
+  `docs/world/factions/`
+- All route endpoints reference system ids that have docs in `docs/world/systems/`
+- All ship `default_jump_drive` ids reference drives in `jump-drives.md`
+- No code changes — documentation only
+
+**Play-test instructions:**
+- Not applicable (documentation-only feature)
+
+---
 
 ### 012 · Animated Starfield & Space Station View — Ship Scene
 
@@ -179,7 +279,7 @@ _(none)_
 **Built:**
 - `src/game/constants.ts` — new file; exports `STATION_NAME = 'Elysium Station'` as the single source of truth for the station name
 - `src/shared/buffer-utils.ts` — new file; exports `writeText`, `writeCentered`, `drawBorder` extracted from `MainMenuScene` so all scenes share the same helpers
-- `src/game/scenes/StoryScene.ts` — full implementation: constructor takes `(inputHandler, context, onContinue)`; registers `onAction` (SELECT fires `onContinue` once then sets `activated`) and `onTap` (any tap fires `onContinue` once); BACK is ignored; `render` clears buffer to black, draws white border, renders `YEAR  2076` centred in bright-yellow on row 2, all 11 story text lines in white at col 2, keyboard or touch footer hint in bright-black at row 27
+- `src/game/scenes/StoryScene.ts` — full implementation: constructor takes `(inputHandler, context, onContinue)`; registers `onAction` (SELECT fires `onContinue` once then sets `activated`) and `onTap` (any tap fires `onContinue` once); BACK is ignored; `render` clears buffer to black, draws white border, renders `YEAR  2284` centred in bright-yellow on row 2, all 11 story text lines in white at col 2, keyboard or touch footer hint in bright-black at row 27
 - `src/game/scenes/story-scene.test.ts` — 17 tests: layout/clear, border, year header colour/position, all three story paragraphs at correct rows, closing line, keyboard footer, touch footer, line-length bound, SELECT fires once, second SELECT ignored, tap fires once, tap on any row fires, second tap ignored, BACK no effect, update no throw
 - `src/game/scenes/MainMenuScene.ts` — updated to import helpers from `buffer-utils`; constructor signature changed from `(inputHandler, context)` to `(inputHandler, context, onNewGame: () => void)`; NEW GAME action now calls `onNewGame()` instead of logging
 - `src/game/scenes/main-menu-scene.test.ts` — updated all 22 tests to pass `onNewGame` as `vi.fn()` or a named mock; assertions changed from `consoleSpy` to `expect(onNewGame).toHaveBeenCalledTimes(1)`
@@ -195,7 +295,7 @@ _(none)_
 **Play-test instructions:**
 1. Run `bash init.sh` — must print `=== Environment ready ===`
 2. Run `npm test` — must show 6 test files, 82 tests passed
-3. **Browser:** Run `npm run dev` — open browser; main menu appears; press Enter on NEW GAME — story screen appears with border, "YEAR  2076" in yellow, story text in white, keyboard footer at bottom; press Enter — console logs `[Story] Arriving at Elysium Station…`
+3. **Browser:** Run `npm run dev` — open browser; main menu appears; press Enter on NEW GAME — story screen appears with border, "YEAR  2284" in yellow, story text in white, keyboard footer at bottom; press Enter — console logs `[Story] Arriving at Elysium Station…`
 4. **Terminal:** Run `bun terminal.ts` — main menu renders; press Enter → story screen renders with the same layout; press Enter again → logs `[Story] Arriving at Elysium Station…`
 5. On touch browser (DevTools emulation): tap NEW GAME → story screen; tap anywhere → logs `[Story] Arriving at Elysium Station…`; footer shows `[ TAP TO CONTINUE ]`
 

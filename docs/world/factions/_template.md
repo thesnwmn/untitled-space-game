@@ -3,34 +3,29 @@ type: object
 properties:
   id:
     type: string
+    description: kebab-case identifier, matches filename
   name:
     type: string
-  leaders:
-    type: array
-    items:
-      type: string
+  type:
+    enum:
+      - government
+      - corporation
+      - criminal
+      - guild
+      - independent
   home_system:
     type: string
+    description: system id — must resolve to a system doc
   size:
     enum:
       - small
       - medium
       - large
-  danger_level:
-    enum:
-      - none
-      - low
-      - medium
-      - high
-      - extreme
-  player_knowledge:
-    enum:
-      - public
-      - private
-  economy:
+  influence:
     type: array
     items:
       type: string
+    description: system ids where this faction operates
   tags:
     type: array
     items:
@@ -38,20 +33,24 @@ properties:
 required:
   - id
   - name
+  - type
+  - home_system
+  - size
 ---
 
 # Faction Name
 
-_Short summary of the faction. One paragraph._
-
-## Notable events (optional)
-
-_Major events in their history like wars, systems they took over, business deals, etc._
+_Short summary paragraph. What does this faction do? Who does it serve?_
 
 ## Governance (optional)
 
-_How the faction is run_
+_How decisions get made. One paragraph._
+
+## Notable Events (optional)
+
+_Things a pilot would know about — not deep history, just events relevant to
+doing business with or around this faction._
 
 ## Reputation (optional)
 
-_Summary of what others think of them._
+_What independent pilots actually think. First-person flavour is fine here._

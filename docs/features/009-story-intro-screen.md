@@ -32,7 +32,7 @@ export const STATION_NAME = 'Elysium Station';
 ```
 +--------------------------------------+   row  0   border (white on black)
 |                                      |   row  1
-|              YEAR  2076              |   row  2   bright-yellow, centred
+|              YEAR  2284              |   row  2   bright-yellow, centred
 |                                      |   row  3
 |  Hugo poured his last credits into   |   row  4   white on black, col 2
 |  a battered freighter — barely       |   row  5
@@ -65,7 +65,7 @@ Touch variant footer (when `context.primaryInput === 'touch'`):
 ## Story text (exact, col 2 start, max 36 chars per line)
 
 ```
-YEAR  2076                              ← centred, bright-yellow
+YEAR  2284                              ← centred, bright-yellow
 
 Hugo poured his last credits into       ← 33 chars
 a battered freighter — barely           ← 29 chars
@@ -143,7 +143,7 @@ Item 010 replaces the placeholder with a real transition to `StationMenuScene`.
 ## Technical notes
 
 - Story text is a constant array of `{ text: string; row: number }` objects in `StoryScene.ts`. Do not build a text-wrapping algorithm — the text is pre-wrapped.
-- The year header `"YEAR  2076"` uses two spaces between YEAR and 2076 for visual spacing. Render it centred.
+- The year header `"YEAR  2284"` uses two spaces between YEAR and 2284 for visual spacing. Render it centred.
 - The `onContinue` callback replaces the current `console.log` placeholder in `MainMenuScene`. `MainMenuScene`'s NEW GAME action must be updated to call `onContinue()` instead of (or in addition to) logging.
 
 ---
