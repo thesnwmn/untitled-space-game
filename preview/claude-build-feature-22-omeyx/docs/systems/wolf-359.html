@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wolf 359 — Untitled Space Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --black: #000000;
+    --white: #ffffff;
+    --cyan: #00ffff;
+    --bright-black: #555555;
+    --green: #00ff00;
+    --yellow: #ffff00;
+    --red: #ff0000;
+    --blue: #0000ff;
+    --magenta: #ff00ff;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Share Tech Mono', 'VT323', monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 1rem 2rem 3rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header {
+    color: var(--cyan);
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--bright-black);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+  }
+  footer {
+    color: var(--bright-black);
+    border-top: 1px solid var(--bright-black);
+    margin-top: 2rem;
+    padding-top: 0.75rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+  h1, h2, h3 { color: var(--cyan); margin: 1.5rem 0 0.5rem; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.2rem; }
+  h3 { font-size: 1rem; }
+  p { margin: 0.5rem 0; }
+  ul, ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+  li { margin: 0.25rem 0; }
+  table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid var(--bright-black);
+    padding: 0.4rem 0.75rem;
+    text-align: left;
+  }
+  th { color: var(--cyan); background: #111; }
+  tr:nth-child(even) td { background: #0a0a0a; }
+  .tag {
+    display: inline-block;
+    color: var(--bright-black);
+    border: 1px solid var(--bright-black);
+    padding: 0 0.4rem;
+    margin: 0.1rem;
+    font-size: 0.8rem;
+  }
+  .dimmed { color: var(--bright-black); }
+  .legal-true { color: var(--green); }
+  .legal-false { color: var(--red); }
+</style>
+</head>
+<body>
+  <header><a href="../../index.html">[ UNTITLED SPACE GAME ]</a> &gt; <a href="../index.html">[ DOCS ]</a> &gt; <a href="index.html">[ SYSTEMS ]</a> &gt; <span>[ Wolf 359 ]</span></header>
+  <main>
+      <h1>Wolf 359</h1>
+      <table><tr><th>name</th><td>Wolf 359</td></tr>
+<tr><th>star type</th><td>M6V</td></tr>
+<tr><th>distance from sol</th><td>7.9</td></tr>
+<tr><th>zone</th><td>frontier</td></tr>
+<tr><th>security</th><td>low</td></tr>
+<tr><th>population</th><td>low</td></tr>
+<tr><th>danger level</th><td>high</td></tr>
+<tr><th>player knowledge</th><td>public</td></tr>
+<tr><th>map position</th><td><pre>{
+  "x": -32,
+  "y": 2
+}</pre></td></tr>
+<tr><th>economy</th><td><pre>[
+  "salvage",
+  "black-market",
+  "scavenging"
+]</pre></td></tr>
+<tr><th>major factions</th><td><a href="../factions/free-captains.html">free-captains</a> <a href="../factions/grey-market-cartel.html">grey-market-cartel</a></td></tr>
+<tr><th>destinations</th><td><a href="../destinations/drift-market.html">drift-market</a> <a href="../destinations/blackwake-yard.html">blackwake-yard</a></td></tr>
+<tr><th>tags</th><td><span class="tag">lawless</span> <span class="tag">salvage</span> <span class="tag">pirate-activity</span></td></tr></table>
+      <h1>Wolf 359</h1>
+<p>Wolf 359 sits on the edge of regulated space and attracts scavengers,
+smugglers and opportunists from across nearby systems.</p>
+<p>Many ships arriving here never appear on official registries. The Terran
+Union ceased patrol operations in the system in 2068 after losing three
+enforcement vessels in eighteen months — a fact that the Grey Market
+Cartel has exploited ever since.</p>
+<h2>Major Bodies</h2>
+<h3>The Scatter</h3>
+<p>A broad debris field — remnants of a failed colony ship that attempted
+landfall in the 2040s. The wreckage is continuously picked over by
+salvagers and occasionally yields valuable cargo containers still sealed
+against vacuum.</p>
+<h2>Major Stations</h2>
+<h3>Drift Market</h3>
+<p>A sprawling patchwork station assembled from salvaged hull sections,
+docking clamps and repurposed orbital platforms. Almost anything can
+be purchased here for the right price, no questions asked.</p>
+<h3>Blackwake Yard</h3>
+<p>Illegal modification facility specialising in reactor tampering and
+military surplus retrofits. Officially does not exist. The Grey Market
+Cartel provides security in exchange for a cut of every transaction.</p>
+<h2>Governance</h2>
+<p>The Free Captains maintain a loose democratic council that theoretically
+governs the system. In practice, the Grey Market Cartel holds effective
+control of both stations. The council exists mainly to negotiate with
+external parties when needed.</p>
+<h2>History</h2>
+<p>Wolf 359 became notable after the failed Proxima Colonisation Wave of
+2041, when dozens of damaged ships sought shelter here and their crews
+never left. A salvage economy grew around the wrecks and never stopped.</p>
+<h2>Local Reputation</h2>
+<p>Most authorities officially discourage travel to Wolf 359, which only
+increases its popularity among independent pilots. Profitable and
+genuinely dangerous — insurance companies refuse to write policies
+covering hull damage sustained here.</p>
+
+    </main>
+  <footer>UNTITLED SPACE GAME — WORLD DOCS</footer>
+</body>
+</html>
