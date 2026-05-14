@@ -12,6 +12,19 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 025 · Randomise Station Star Patterns
+
+Each visit to a destination generates a new random `Starfield` seed, producing a
+unique star layout. The seed is preserved across dock/undock cycles at the same
+destination and only cleared when the player fully navigates away (main menu, story
+screen, or future jump). `ShipScene` gains a required `starfieldSeed: number`
+constructor parameter. The orchestrators (`main.ts`, `terminal.ts`) hold a
+`destinationSeed` variable: generated fresh on first `goToShip` when null, reused
+on subsequent undocks, cleared on `goToMainMenu` / `goToStory`.
+See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
+
+---
+
 ### 016 · Hint Overlay
 
 Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for input hint text. Extract hint rendering from all 6 scenes via a new `Scene.getHint()` method on the `Scene` interface. Add `showHints: boolean` to `GameContext` (default `true`) and wire `H`/`h` to a new `TOGGLE_HINTS` game action so the player can hide hints. See `docs/features/016-hint-overlay.md` for the full spec.
