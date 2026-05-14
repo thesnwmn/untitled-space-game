@@ -44,6 +44,18 @@ See `docs/features/030-fuel-management.md` for the full spec.
 
 ---
 
+### 031 · Cargo Trading
+
+Introduce a persistent cargo hold, live trading (buy/sell) at any trader, and a
+read-only Cargo scene accessible from the Ship screen. Trader stock is randomly
+generated on first visit and refreshes every 2 minutes. Buying transfers the entire
+available lot to the hold; selling transfers all held units of a type back to the
+trader. Prices are fixed at commodity base prices for now.
+See `docs/features/031-cargo-trading.md` for the full spec.
+
+**Depends on:** 029, 030
+
+---
 
 ### 020 · World Data File Loader
 
