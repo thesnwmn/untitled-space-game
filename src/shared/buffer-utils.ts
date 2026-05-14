@@ -18,6 +18,24 @@ export function writeCentered(buffer: CharBuffer, row: number, text: string, fg:
   writeText(buffer, row, col, text, fg, bg);
 }
 
+export function wrapText(text: string, maxWidth: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    if (current.length === 0) {
+      current = word;
+    } else if (current.length + 1 + word.length <= maxWidth) {
+      current += ' ' + word;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+  if (current.length > 0) lines.push(current);
+  return lines;
+}
+
 export function drawBorder(buffer: CharBuffer, fg: Color, bg: Color): void {
   const h = buffer.length;
   const w = h > 0 ? buffer[0].length : 0;

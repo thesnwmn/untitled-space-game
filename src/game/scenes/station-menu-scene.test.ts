@@ -57,7 +57,7 @@ function makeScene(
   onMissionBoard = vi.fn(),
   onShip = vi.fn(),
 ): StationMenuScene {
-  return new StationMenuScene(input, ctx, onTrader, onMissionBoard, onShip);
+  return new StationMenuScene(input, ctx, 'elysium-station', onTrader, onMissionBoard, onShip);
 }
 
 // ── tests ─────────────────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ describe('StationMenuScene', () => {
       expect(buf[4].find(c => c.char === '=')?.fg).toBe('cyan');
     });
 
-    it('renders TRADER at row 14 and MISSION BOARD at row 15; no UNDOCK in items', () => {
+    it('renders TRADER at row 14 and MISSION BOARD at row 15 for elysium-station; no UNDOCK in items', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
@@ -126,6 +126,37 @@ describe('StationMenuScene', () => {
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('> TRADER');
       expect(rowFg(buf, MENU_ROW_START, MENU_COL)).toBe('bright-green');
+    });
+
+    it('renders description lines at row 5 in bright-black', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, keyboardContext);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const text = rowText(buf, 5);
+      expect(text.trim().length).toBeGreaterThan(0);
+      expect(buf[5].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-black');
+    });
+
+    it('renders DANGER: line below description in bright-black', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, keyboardContext);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // elysium-station description wraps to 3 lines; DANGER at row 5+3+1=9
+      const dangerRow = rowText(buf, 9);
+      expect(dangerRow).toContain('DANGER:');
+      expect(buf[9].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-black');
+    });
+
+    it('does not show TRADER item when amenities.trader is false', () => {
+      const input = new MockInputHandler();
+      const scene = new StationMenuScene(input, keyboardContext, 'tycho-orbital', vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // tycho-orbital has trader=false; only MISSION BOARD should appear at row 14
+      expect(rowText(buf, 14)).toContain('MISSION BOARD');
+      expect(rowText(buf, 14)).not.toContain('TRADER');
     });
 
     it('renders keyboard footer hint at row 27 in bright-black', () => {

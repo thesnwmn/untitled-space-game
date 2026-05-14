@@ -8,6 +8,7 @@ import { TraderScene } from './game/scenes/TraderScene';
 import { MissionBoardScene } from './game/scenes/MissionBoardScene';
 import { ShipScene } from './game/scenes/ShipScene';
 import type { CharBuffer, Color, GameContext, Scene } from './shared/types';
+import { getGameSettings } from './game/world/world-data';
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
 const debug = new URLSearchParams(window.location.search).has('debug');
@@ -22,6 +23,8 @@ const renderer = new DOMRenderer();
 const input = new DOMInputHandler(context);
 input.connect();
 
+const STARTING_DESTINATION = getGameSettings().startingLocation.destination;
+
 let currentScene: Scene;
 
 const goToMainMenu = () => {
@@ -29,19 +32,19 @@ const goToMainMenu = () => {
 };
 
 const goToTrader = () => {
-  currentScene = new TraderScene(input, context, goToStation, goToShip);
+  currentScene = new TraderScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
-  currentScene = new MissionBoardScene(input, context, goToStation, goToShip);
+  currentScene = new MissionBoardScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
 };
 
 const goToShip = () => {
-  currentScene = new ShipScene(input, context, goToStation);
+  currentScene = new ShipScene(input, context, STARTING_DESTINATION, goToStation);
 };
 
 const goToStation = () => {
-  currentScene = new StationMenuScene(input, context, goToTrader, goToMissionBoard, goToShip);
+  currentScene = new StationMenuScene(input, context, STARTING_DESTINATION, goToTrader, goToMissionBoard, goToShip);
 };
 
 const goToStory = () => {

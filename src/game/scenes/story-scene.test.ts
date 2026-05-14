@@ -50,9 +50,9 @@ describe('StoryScene', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
-      buf[20][15] = { char: 'X', fg: 'red', bg: 'red' };
+      buf[1][5] = { char: 'X', fg: 'red', bg: 'red' };
       scene.render(buf);
-      expect(buf[20][15]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
+      expect(buf[1][5]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
     });
 
     it('does not render a border', () => {
@@ -64,7 +64,7 @@ describe('StoryScene', () => {
       expect(buf[0][0].fg).toBe('black');
     });
 
-    it('renders YEAR header centred in bright-yellow on row 2', () => {
+    it('renders YEAR header from world data centred in bright-yellow on row 2', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
@@ -74,44 +74,23 @@ describe('StoryScene', () => {
       expect(rowFg(buf, 2, 15)).toBe('bright-yellow');
     });
 
-    it('renders first story paragraph on rows 4–6 starting at col 2', () => {
+    it('renders at least one body line from world data below row 4 in white', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 4)).toContain('Hugo poured his last credits into');
-      expect(rowText(buf, 5)).toContain('a battered freighter');
-      expect(rowText(buf, 6)).toContain('spaceworthy, but entirely his.');
-      expect(rowFg(buf, 4, 2)).toBe('white');
+      const text = rowText(buf, 4);
+      expect(text.trim().length).toBeGreaterThan(0);
+      expect(buf[4].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
     });
 
-    it('renders second story paragraph on rows 8–12', () => {
+    it('does not render "Hugo poured" anywhere in the buffer', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 8)).toContain('Stories pulled him outward:');
-      expect(rowText(buf, 9)).toContain('Elysium Station, drifting in');
-      expect(rowText(buf, 10)).toContain("Jupiter's long shadow");
-      expect(rowText(buf, 11)).toContain('traders, chancers and fortune-');
-      expect(rowText(buf, 12)).toContain('seekers converge.');
-    });
-
-    it('renders third story paragraph on rows 14–15', () => {
-      const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 14)).toContain('Hugo eases into the docking bay,');
-      expect(rowText(buf, 15)).toContain('locks the clamps, steps aboard.');
-    });
-
-    it('renders closing line on row 17', () => {
-      const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 17)).toContain('Whatever comes next is up to him.');
+      const allText = buf.map(row => row.map(c => c.char).join('')).join('');
+      expect(allText).not.toContain('Hugo poured');
     });
 
     it('renders keyboard footer hint near bottom in bright-black', () => {
@@ -133,14 +112,12 @@ describe('StoryScene', () => {
       expect(rowText(buf, h - 3)).toContain('TAP TO CONTINUE');
     });
 
-    it('story text lines do not exceed column 37 (max 36 chars from col 2)', () => {
+    it('story text lines do not exceed 36 chars from col 2', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const storyRows = [4, 5, 6, 8, 9, 10, 11, 12, 14, 15, 17];
-      for (const row of storyRows) {
-        // Measure only columns 2–37 (the text area, excluding borders at 0 and 39)
+      for (let row = 4; row < buf.length - 4; row++) {
         const textContent = buf[row].slice(2, 38).map(c => c.char).join('').trimEnd();
         expect(textContent.length).toBeLessThanOrEqual(36);
       }

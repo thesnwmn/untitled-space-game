@@ -1,6 +1,6 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
-import { STATION_NAME } from '../constants';
+import { getDestination } from '../world/world-data';
 import { NavBar } from '../ui/NavBar';
 
 interface TraderItem {
@@ -47,17 +47,20 @@ const ITEM_COL = 1;
 
 export class TraderScene implements Scene {
   private readonly trader: Trader;
+  private readonly traderName: string;
   private readonly context: GameContext;
   private readonly navBar: NavBar;
   private activeTab: TabKey = 'BUY';
   private cursorIdx = 0;
   private activated = false;
 
-  constructor(inputHandler: InputHandler, context: GameContext, onHub: () => void, onUndock: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, destinationId: string, onHub: () => void, onUndock: () => void) {
+    const dest = getDestination(destinationId)!;
+    this.traderName = dest.npcs.trader?.toUpperCase() ?? 'TRADER';
     this.trader = TRADERS[0];
     this.context = context;
     this.navBar = new NavBar(
-      STATION_NAME.toUpperCase(),
+      dest.name.toUpperCase(),
       [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
     );
 
@@ -136,8 +139,8 @@ export class TraderScene implements Scene {
 
     this.navBar.render(buffer);
 
-    writeCentered(buffer, 3, this.trader.name, 'cyan', 'black');
-    writeCentered(buffer, 4, '='.repeat(this.trader.name.length), 'cyan', 'black');
+    writeCentered(buffer, 3, this.traderName, 'cyan', 'black');
+    writeCentered(buffer, 4, '='.repeat(this.traderName.length), 'cyan', 'black');
 
     const buyFg: Color = this.activeTab === 'BUY' ? 'bright-green' : 'white';
     const sellFg: Color = this.activeTab === 'SELL' ? 'bright-green' : 'white';

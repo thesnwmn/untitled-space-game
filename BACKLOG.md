@@ -12,25 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 027 · World-Driven Story, Station, and System Display
-
-Make every scene a generic renderer — no world content hardcoded in source.
-`StoryScene` renders the `opening-arrival` beat from world data. `StationMenuScene`
-builds its hub menu from `destination.amenities` (only showing items the
-station actually has), plus description and danger level. `ShipScene` shows
-`<DESTINATION>  ·  <SYSTEM>` and selects the station glyph from
-`destination.type` (`civilian`→HUB, `military`→RELAY, `research`→RING,
-`black-market`→BEACON). `TraderScene` shows the NPC name from
-`destination.npcs.trader`. All five scene files drop the `STATION_NAME`
-import in favour of a `destinationId: string` constructor parameter. Adds
-`wrapText` utility to `src/shared/buffer-utils.ts`. Deletes `STATION_NAME`
-from `src/game/constants.ts`. See
-`docs/features/027-world-driven-story-station-system.md` for the full spec.
-
-**Depends on:** 019
-
----
-
 ### 026 · Jump System
 
 Allow the player to jump between star systems via a three-screen flow: a jump
@@ -122,6 +103,38 @@ _(none)_
 ---
 
 ## DONE
+
+### 027 · World-Driven Story, Station, and System Display
+
+**Built:**
+- `src/shared/buffer-utils.ts` — added `wrapText(text, maxWidth): string[]` utility
+- `src/shared/buffer-utils.test.ts` — 5 tests covering empty string, single word, over-length word, multi-word wrap, exact-fill
+- `src/game/scenes/StoryScene.ts` — removed `STORY_LINES`, `YEAR_HEADER`, `STATION_NAME` import; reads `opening-arrival` beat via `getStoryBeatsByTrigger('game-start')[0]`; splits on `\n\n`, extracts year header, wraps body paragraphs at 36 chars with blank separators
+- `src/game/scenes/StationMenuScene.ts` — added `destinationId: string` param; menu items built from `destination.amenities`; NavBar title from `dest.name`; description (3 lines) and `DANGER: <level>` rendered at rows 5+
+- `src/game/scenes/ShipScene.ts` — added `destinationId: string` param; location row shows `<DEST>  ·  <SYSTEM>`; station glyph mapped from `destination.type` via `DESTINATION_TYPE_TO_STATION`
+- `src/game/scenes/TraderScene.ts` — added `destinationId: string` param; trader name from `destination.npcs.trader`; NavBar title from `dest.name`
+- `src/game/scenes/MissionBoardScene.ts` — added `destinationId: string` param; NavBar title from `dest.name`
+- `src/game/constants.ts` — `STATION_NAME` export deleted
+- `src/main.ts` / `terminal.ts` — added `STARTING_DESTINATION = 'elysium-station'`; passed to all scene constructors
+- All 5 scene test files updated; `story-scene.test.ts` replaces Hugo-text paragraph checks with world-data assertions
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 238/238 tests passed (15 test files)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 15 test files, 238 tests passed
+3. **Browser** `npm run dev` — main menu → NEW GAME:
+   - Story screen: new third-person corporate-war text (no Hugo); `YEAR  2284` header in yellow; text wraps to 36 chars
+   - Station hub: `ELYSIUM STATION` in NavBar; description snippet in dim text; `DANGER: LOW` below; TRADER and MISSION BOARD items visible
+   - Ship: location bar shows `ELYSIUM STATION  ·  SOL`; HUB-type station glyph (white `[H]` cross) visible in window
+   - Trader: `MERCHANT KESS` title (from world data); nav bar shows `ELYSIUM STATION`
+   - Mission Board: nav bar shows `ELYSIUM STATION`
+4. **Terminal** `npm run terminal` — same navigation; verify location and trader name
+
+---
 
 ### 019 · World Data TypeScript Types
 

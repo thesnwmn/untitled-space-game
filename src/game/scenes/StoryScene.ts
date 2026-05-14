@@ -1,39 +1,42 @@
 import type { InputHandler, GameContext, CharBuffer, Scene } from '../../shared/types';
-import { writeText, writeCentered } from '../../shared/buffer-utils';
-import { STATION_NAME } from '../constants';
+import { writeText, writeCentered, wrapText } from '../../shared/buffer-utils';
+import { getStoryBeatsByTrigger } from '../world/world-data';
 
-const YEAR_HEADER = 'YEAR  2284';
 const YEAR_ROW = 2;
 const KEYBOARD_HINT = '[ PRESS ENTER TO CONTINUE ]';
 const TOUCH_HINT = '[ TAP TO CONTINUE ]';
-
-interface StoryLine {
-  text: string;
-  row: number;
-}
-
-const STORY_LINES: StoryLine[] = [
-  { text: 'Hugo poured his last credits into', row: 4 },
-  { text: 'a battered freighter — barely', row: 5 },
-  { text: 'spaceworthy, but entirely his.', row: 6 },
-  { text: 'Stories pulled him outward:', row: 8 },
-  { text: `${STATION_NAME}, drifting in`, row: 9 },
-  { text: "Jupiter's long shadow — where", row: 10 },
-  { text: 'traders, chancers and fortune-', row: 11 },
-  { text: 'seekers converge.', row: 12 },
-  { text: 'Hugo eases into the docking bay,', row: 14 },
-  { text: 'locks the clamps, steps aboard.', row: 15 },
-  { text: 'Whatever comes next is up to him.', row: 17 },
-];
 
 export class StoryScene implements Scene {
   private readonly context: GameContext;
   private readonly onContinue: () => void;
   private activated = false;
+  private readonly yearHeader: string;
+  private readonly bodyLines: string[];
 
   constructor(inputHandler: InputHandler, context: GameContext, onContinue: () => void) {
     this.context = context;
     this.onContinue = onContinue;
+
+    const beat = getStoryBeatsByTrigger('game-start')[0];
+    const paragraphs = beat.text.split('\n\n');
+    const firstPara = paragraphs[0].trim();
+    let bodyParagraphs: string[];
+    if (/^YEAR\s+\d{4}$/.test(firstPara)) {
+      this.yearHeader = firstPara;
+      bodyParagraphs = paragraphs.slice(1);
+    } else {
+      this.yearHeader = '';
+      bodyParagraphs = paragraphs;
+    }
+
+    const allLines: string[] = [];
+    for (let i = 0; i < bodyParagraphs.length; i++) {
+      const normalized = bodyParagraphs[i].replace(/\n/g, ' ');
+      const wrapped = wrapText(normalized, 36);
+      if (i > 0) allLines.push('');
+      allLines.push(...wrapped);
+    }
+    this.bodyLines = allLines;
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
@@ -64,10 +67,19 @@ export class StoryScene implements Scene {
       }
     }
 
-    writeCentered(buffer, YEAR_ROW, YEAR_HEADER, 'bright-yellow', 'black');
+    if (this.yearHeader) {
+      writeCentered(buffer, YEAR_ROW, this.yearHeader, 'bright-yellow', 'black');
+    }
 
-    for (const line of STORY_LINES) {
-      writeText(buffer, line.row, 2, line.text, 'white', 'black');
+    let row = 4;
+    for (const line of this.bodyLines) {
+      if (row >= h - 4) break;
+      if (line === '') {
+        row++;
+      } else {
+        writeText(buffer, row, 2, line, 'white', 'black');
+        row++;
+      }
     }
 
     const hint = this.context.primaryInput === 'touch' ? TOUCH_HINT : KEYBOARD_HINT;

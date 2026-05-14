@@ -51,7 +51,7 @@ describe('MissionBoardScene', () => {
   describe('render — layout', () => {
     it('does not render a border', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).toBe(' ');
@@ -60,7 +60,7 @@ describe('MissionBoardScene', () => {
 
     it('nav bar row 0 contains station name ELYSIUM STATION', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 0)).toContain('ELYSIUM STATION');
@@ -69,7 +69,7 @@ describe('MissionBoardScene', () => {
 
     it('nav bar row 1 contains both [UNDOCK] and [HUB]', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 1)).toContain('[UNDOCK]');
@@ -78,7 +78,7 @@ describe('MissionBoardScene', () => {
 
     it('renders MISSION BOARD title at row 3 in cyan', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MISSION BOARD');
@@ -87,7 +87,7 @@ describe('MissionBoardScene', () => {
 
     it('renders rule at row 4 in cyan', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 4)).toContain('=============');
@@ -96,7 +96,7 @@ describe('MissionBoardScene', () => {
 
     it('renders mission list starting at row 5', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MISSION_ROW_START)).toContain('Find the Lost Crew');
@@ -106,7 +106,7 @@ describe('MissionBoardScene', () => {
 
     it('renders type icons in bright-yellow', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // [R] icon at row 5, col 2 (after cursor at col 1)
@@ -118,7 +118,7 @@ describe('MissionBoardScene', () => {
 
     it('renders rewards in bright-green', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // First mission reward "500 CR" should appear somewhere on row 5
@@ -131,7 +131,7 @@ describe('MissionBoardScene', () => {
 
     it('cursor starts on first mission', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[MISSION_ROW_START][1].char).toBe('>');
@@ -140,7 +140,7 @@ describe('MissionBoardScene', () => {
 
     it('renders keyboard footer hint', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 27)).toContain('ESC return');
@@ -149,7 +149,7 @@ describe('MissionBoardScene', () => {
 
     it('renders touch footer hint for touch context', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, touchContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, touchContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 27)).toContain('TAP to select');
@@ -159,7 +159,7 @@ describe('MissionBoardScene', () => {
   describe('keyboard navigation', () => {
     it('DOWN moves cursor to next mission', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -168,7 +168,7 @@ describe('MissionBoardScene', () => {
 
     it('UP from first mission wraps to last', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -177,7 +177,7 @@ describe('MissionBoardScene', () => {
 
     it('DOWN wraps from last mission back to first', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       for (let i = 0; i < 7; i++) input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -187,7 +187,7 @@ describe('MissionBoardScene', () => {
     it('SELECT on mission logs placeholder with title', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('SELECT');
       expect(consoleSpy).toHaveBeenCalledWith('[MissionBoard] Selected: Find the Lost Crew');
       consoleSpy.mockRestore();
@@ -196,7 +196,7 @@ describe('MissionBoardScene', () => {
     it('BACK calls onHub and silences further input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, onHub, vi.fn());
+      new MissionBoardScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
       input.triggerAction('BACK');
       expect(onHub).toHaveBeenCalledTimes(1);
       input.triggerAction('BACK');
@@ -208,7 +208,7 @@ describe('MissionBoardScene', () => {
     it('tap on mission row selects it and logs placeholder', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       input.triggerTap(5, MISSION_ROW_START + 2);
       expect(consoleSpy).toHaveBeenCalledWith('[MissionBoard] Selected: Clear Pirate Outpost');
       consoleSpy.mockRestore();
@@ -217,7 +217,7 @@ describe('MissionBoardScene', () => {
     it('tap on [UNDOCK] nav button fires onUndock and silences input', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), onUndock);
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), onUndock);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_UNDOCK_COL, 1);
@@ -229,7 +229,7 @@ describe('MissionBoardScene', () => {
     it('tap on [HUB] nav button fires onHub and silences input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, onHub, vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_HUB_COL, 1);
@@ -242,7 +242,7 @@ describe('MissionBoardScene', () => {
       const onHub = vi.fn();
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, onHub, vi.fn());
+      new MissionBoardScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
       input.triggerTap(5, 0);
       input.triggerTap(5, 29);
       expect(onHub).not.toHaveBeenCalled();
@@ -254,7 +254,7 @@ describe('MissionBoardScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, vi.fn(), vi.fn());
+      const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
