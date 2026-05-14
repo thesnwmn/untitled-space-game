@@ -46,7 +46,7 @@ export class InSystemTravelAnimationScene implements Scene {
     writeCentered(buffer, mid - 1, 'HEADING TO:', 'bright-black', 'black');
     writeCentered(buffer, mid, this.destinationName, 'bright-white', 'black');
     writeCentered(buffer, mid + 2, ELLIPSIS_FRAMES[frameIdx], 'bright-black', 'black');
-    const footer = this.footerText ?? `DOCKING IN ${countdown}S`;
+    const footer = this.footerText ?? `ARRIVING IN ${countdown}S`;
     writeCentered(buffer, mid + 4, footer, 'bright-black', 'black');
   }
 }

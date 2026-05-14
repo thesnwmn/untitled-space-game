@@ -59,12 +59,12 @@ describe('InSystemTravelAnimationScene', () => {
       expect(text).toContain('GALILEO TRANSFER');
     });
 
-    it('renders DOCKING IN countdown text', () => {
+    it('renders ARRIVING IN countdown text', () => {
       const scene = new InSystemTravelAnimationScene('Galileo Transfer', vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = buf.map(row => row.map(c => c.char).join('')).join('\n');
-      expect(text).toMatch(/DOCKING IN \dS/);
+      expect(text).toMatch(/ARRIVING IN \dS/);
     });
   });
 });

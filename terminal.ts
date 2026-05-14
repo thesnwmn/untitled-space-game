@@ -48,9 +48,8 @@ const goToStation = () => {
 };
 
 const onDestinationSelected = (destinationId: string) => {
-  const destName = getDestination(destinationId)!.name;
   currentDestinationId = destinationId;
-  currentScene = new InSystemTravelAnimationScene(destName, goToStation);
+  currentScene = new InSystemTravelAnimationScene(getDestination(destinationId)!.name, goToShip);
 };
 
 const goToFlyIntoSpace = () => {
