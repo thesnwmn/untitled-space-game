@@ -14,6 +14,7 @@ amenities:
 
 npcs:
   trader: The Quartermaster
+  ship_dealer: The Fence
 
 goods_bias:
   - salvage

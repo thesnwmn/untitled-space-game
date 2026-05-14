@@ -14,6 +14,7 @@ amenities:
 
 npcs:
   trader: Factor Orin
+  ship_dealer: Agent Farris
 
 goods_bias:
   - industrial

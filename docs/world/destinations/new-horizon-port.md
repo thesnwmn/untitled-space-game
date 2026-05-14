@@ -14,6 +14,7 @@ amenities:
 
 npcs:
   trader: Syndic Marelle
+  ship_dealer: Broker Cassel
 
 goods_bias:
   - trade
