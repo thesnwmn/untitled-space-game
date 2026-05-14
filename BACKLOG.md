@@ -27,6 +27,23 @@ See `docs/features/029-freighter-starting-ship.md` for the full spec.
 
 ---
 
+### 030 · Fuel Management
+
+Track fuel in litres. Deduct fuel on every jump using the formula
+`Math.ceil(FUEL_PER_LY × distance × drive.fuelEfficiency)` where `FUEL_PER_LY = 5`.
+Lift `PlayerState` from `ShipScene` to module level in both orchestrators so fuel
+persists across scene transitions. Update the Ship screen status bar to show `FUEL:x/yL`
+instead of a percentage. Grey out jump routes the player lacks fuel to reach. Add a
+`BUY FUEL` option to `StationMenuScene` when the destination has `amenities.fuel: true`
+and the tank is not already full; the option refills to max and charges
+`(fuelCapacityL − fuelL) × 10 CR`. Add `getShip` and `getRoute` helpers to
+`world-data.ts`. Add `FUEL_PER_LY` and `FUEL_PRICE_PER_L` constants to `constants.ts`.
+See `docs/features/030-fuel-management.md` for the full spec.
+
+**Depends on:** 029
+
+---
+
 ### 028 · Common Screen Layout
 
 Introduce a `ScreenChrome` component that renders a 2-row header (`:: SYSTEM :: … :: [M] MENU ::` / `:: DESTINATION :: … :: credits CR ::`) and a 1-row footer nav (`:: [1] NAV1 :: [2] NAV2 ::::`) into every scene's buffer. Exports layout constants (`CONTENT_TOP`, `contentBottom(h, showFooter)`) so scenes no longer hard-code row numbers. Updates `BaseMenuScene` with left-aligned titles, backtick underlines, and richer `MenuItemDef` (simple / info / multi-line). Story screen suppresses both zones; Ship screen keeps header only. Replaces the existing `NavBar` component. Also removes all per-scene hint text permanently (supersedes 016). Includes digit-key nav shortcuts (supersedes 024): adds `NAV_1`–`NAV_9` to `GameAction` and wires digit keys in both input handlers so `1` activates the leftmost footer button, `2` the next, etc.
