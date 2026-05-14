@@ -24,7 +24,9 @@ const STATUS_ROW = 0;
 const LOCATION_ROW = 1;
 const WINDOW_TOP = 2;
 
-const BUTTONS = ['[ J ] JUMP', '[ D ] DOCK'];
+// Button text widths: TRAVEL part = 14 chars, DOCK part = 12 chars, gap = 2 → total 28
+const TRAVEL_PART_WIDTH = 14; // '> [ T ] TRAVEL' or '  [ T ] TRAVEL'
+const GAP_WIDTH = 2;
 
 const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
   civilian:       STATION_TYPES.HUB,
@@ -33,15 +35,10 @@ const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
   'black-market': STATION_TYPES.BEACON,
 };
 
-function buildButtonLine(cursorIdx: number): string {
-  return cursorIdx === 0
-    ? '> [ J ] JUMP   [ D ] DOCK'
-    : '  [ J ] JUMP  > [ D ] DOCK';
-}
-
 export class ShipScene implements Scene {
   private readonly state: PlayerState;
   private readonly context: GameContext;
+  private readonly inSpace: boolean;
   private cursorIdx = 0;
   private activated = false;
   private h = 30;
@@ -49,28 +46,44 @@ export class ShipScene implements Scene {
   private readonly starfield: Starfield;
   private station: SpaceStation | null = null;
   private readonly locationLabel: string;
-  private readonly stationType: SpaceStationDef;
+  private readonly stationType: SpaceStationDef | null;
 
-  constructor(inputHandler: InputHandler, context: GameContext, destinationId: string, onDock: () => void) {
+  constructor(
+    inputHandler: InputHandler,
+    context: GameContext,
+    systemId: string,
+    destinationId: string | null,
+    onTravel: () => void,
+    onDock: () => void,
+  ) {
     this.state = { ...INITIAL_STATE };
     this.context = context;
     this.starfield = new Starfield();
+    this.inSpace = destinationId === null;
 
-    const dest = getDestination(destinationId)!;
-    const sys = getSystem(dest.system)!;
-    this.locationLabel = `${dest.name.toUpperCase()}  ·  ${sys.name.toUpperCase()}`;
-    this.stationType = DESTINATION_TYPE_TO_STATION[dest.type] ?? STATION_TYPES.RELAY;
+    const sys = getSystem(systemId)!;
+    if (destinationId !== null) {
+      const dest = getDestination(destinationId)!;
+      this.locationLabel = `${dest.name.toUpperCase()}  ·  ${sys.name.toUpperCase()}`;
+      this.stationType = DESTINATION_TYPE_TO_STATION[dest.type] ?? STATION_TYPES.RELAY;
+    } else {
+      this.locationLabel = `IN SPACE  ·  ${sys.name.toUpperCase()}`;
+      this.stationType = null;
+    }
+
+    const navCount = () => this.inSpace ? 1 : 2;
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
       if (action === 'UP') {
-        this.cursorIdx = (this.cursorIdx - 1 + BUTTONS.length) % BUTTONS.length;
+        this.cursorIdx = (this.cursorIdx - 1 + navCount()) % navCount();
       } else if (action === 'DOWN') {
-        this.cursorIdx = (this.cursorIdx + 1) % BUTTONS.length;
+        this.cursorIdx = (this.cursorIdx + 1) % navCount();
       } else if (action === 'SELECT') {
         if (this.cursorIdx === 0) {
-          console.log('[Ship] Jumping…');
-        } else {
+          this.activated = true;
+          onTravel();
+        } else if (!this.inSpace) {
           this.activated = true;
           onDock();
         }
@@ -82,9 +95,9 @@ export class ShipScene implements Scene {
         if (this.activated) return;
         if (row === this.h - 2) {
           if (col < this.w / 2) {
-            this.cursorIdx = 0;
-            console.log('[Ship] Jumping…');
-          } else {
+            this.activated = true;
+            onTravel();
+          } else if (!this.inSpace) {
             this.activated = true;
             onDock();
           }
@@ -151,7 +164,7 @@ export class ShipScene implements Scene {
       }
     }
 
-    if (!this.station) {
+    if (this.stationType && !this.station) {
       this.station = new SpaceStation(
         this.stationType,
         intRowStart, intRowEnd, intColStart, intColEnd,
@@ -159,9 +172,17 @@ export class ShipScene implements Scene {
     }
 
     this.starfield.render(buffer, intRowStart, intRowEnd, intColStart, intColEnd);
-    this.station.render(buffer);
+    if (this.station) this.station.render(buffer);
 
-    writeCentered(buffer, buttonsRow, buildButtonLine(this.cursorIdx), 'bright-yellow', 'black');
+    // Render TRAVEL and DOCK as separate parts so DOCK can be greyed when in space
+    const travelText = (this.cursorIdx === 0 ? '> ' : '  ') + '[ T ] TRAVEL';
+    const dockText = (this.cursorIdx === 1 && !this.inSpace ? '> ' : '  ')
+      + (this.inSpace ? '[ - ] DOCK' : '[ D ] DOCK');
+    const totalWidth = TRAVEL_PART_WIDTH + GAP_WIDTH + dockText.length;
+    const startCol = Math.max(0, Math.floor((w - totalWidth) / 2));
+    writeText(buffer, buttonsRow, startCol, travelText, 'bright-yellow', 'black');
+    writeText(buffer, buttonsRow, startCol + TRAVEL_PART_WIDTH + GAP_WIDTH, dockText,
+      this.inSpace ? 'bright-black' : 'bright-yellow', 'black');
 
     const hint = this.context.primaryInput === 'touch'
       ? 'TAP to select'

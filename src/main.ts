@@ -7,8 +7,11 @@ import { StationMenuScene } from './game/scenes/StationMenuScene';
 import { TraderScene } from './game/scenes/TraderScene';
 import { MissionBoardScene } from './game/scenes/MissionBoardScene';
 import { ShipScene } from './game/scenes/ShipScene';
+import { TravelMenuScene } from './game/scenes/TravelMenuScene';
+import { JumpAnimationScene } from './game/scenes/JumpAnimationScene';
+import { InSystemTravelAnimationScene } from './game/scenes/InSystemTravelAnimationScene';
 import type { CharBuffer, Color, GameContext, Scene } from './shared/types';
-import { getGameSettings } from './game/world/world-data';
+import { getGameSettings, getSystem, getDestination } from './game/world/world-data';
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
 const debug = new URLSearchParams(window.location.search).has('debug');
@@ -23,7 +26,9 @@ const renderer = new DOMRenderer();
 const input = new DOMInputHandler(context);
 input.connect();
 
-const STARTING_DESTINATION = getGameSettings().startingLocation.destination;
+const startingLocation = getGameSettings().startingLocation;
+let currentSystemId = startingLocation.system;
+let currentDestinationId: string | null = startingLocation.destination;
 
 let currentScene: Scene;
 
@@ -32,19 +37,50 @@ const goToMainMenu = () => {
 };
 
 const goToTrader = () => {
-  currentScene = new TraderScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
+  currentScene = new TraderScene(input, context, currentDestinationId!, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
-  currentScene = new MissionBoardScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
+  currentScene = new MissionBoardScene(input, context, currentDestinationId!, goToStation, goToShip);
 };
 
 const goToShip = () => {
-  currentScene = new ShipScene(input, context, STARTING_DESTINATION, goToStation);
+  currentScene = new ShipScene(input, context, currentSystemId, currentDestinationId, goToTravelMenu, goToStation);
 };
 
 const goToStation = () => {
-  currentScene = new StationMenuScene(input, context, STARTING_DESTINATION, goToTrader, goToMissionBoard, goToShip);
+  currentScene = new StationMenuScene(input, context, currentDestinationId!, goToTrader, goToMissionBoard, goToShip);
+};
+
+const onDestinationSelected = (destinationId: string) => {
+  currentDestinationId = destinationId;
+  currentScene = new InSystemTravelAnimationScene(getDestination(destinationId)!.name, goToShip);
+};
+
+const goToFlyIntoSpace = () => {
+  currentDestinationId = null;
+  currentScene = new InSystemTravelAnimationScene('OPEN SPACE', goToShip, 'LAUNCHING...');
+};
+
+const onJumpSelected = (targetSystemId: string) => {
+  currentSystemId = targetSystemId;
+  const targetName = getSystem(targetSystemId)!.name;
+  currentScene = new JumpAnimationScene(targetName, goToArrival);
+};
+
+const goToTravelMenu = () => {
+  currentScene = new TravelMenuScene(
+    input, context, currentSystemId, currentDestinationId,
+    onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
+  );
+};
+
+const goToArrival = () => {
+  currentDestinationId = null;
+  currentScene = new TravelMenuScene(
+    input, context, currentSystemId, null,
+    onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
+  );
 };
 
 const goToStory = () => {
@@ -63,7 +99,7 @@ function makeBuffer(): CharBuffer {
   );
 }
 
-const MAX_DT = 100; // cap large gaps caused by tab resume / background throttling
+const MAX_DT = 100;
 
 function loop(timestamp: number): void {
   const dt = Math.min(timestamp - lastTime, MAX_DT);

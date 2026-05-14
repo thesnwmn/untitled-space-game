@@ -12,23 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 026 · Jump System
-
-Allow the player to jump between star systems via a three-screen flow: a jump
-destination menu (routes from the current system), a 5-second jump animation
-screen (auto-advances, no input), and a system arrival screen (list of
-destinations in the new system — selecting one docks and opens the station
-hub). `ShipScene` gains `destinationId` and `onJump` constructor params;
-`StationMenuScene`, `TraderScene`, and `MissionBoardScene` replace the
-hardcoded `STATION_NAME` import with a `destinationName: string` param.
-Orchestrators gain `currentSystemId` / `currentDestinationId` state.
-All data fed by `getRoutesFrom`, `getSystem`, `getDestination` from the world
-data module. See `docs/features/026-jump-system.md` for the full spec.
-
-**Depends on:** 019, 027
-
----
-
 ### 025 · Randomise Station Star Patterns
 
 Each visit to a destination generates a new random `Starfield` seed, producing a
@@ -103,6 +86,22 @@ _(none)_
 ---
 
 ## DONE
+
+### 026 · Jump System
+
+**Built:**
+- `src/game/scenes/TravelMenuScene.ts` — unified two-tab scene (DESTINATIONS / JUMPS) for both in-system travel and inter-system jumps; NavBar with SHIP button; current destination greyed out (`bright-black`); FLY INTO SPACE as final DESTINATIONS item (greyed when already in space); arrival mode (no greyed destination) when `currentDestinationId === null`
+- `src/game/scenes/JumpAnimationScene.ts` — 5-second auto-advancing jump animation; animated ellipsis and countdown; fires `onArrival` exactly once
+- `src/game/scenes/InSystemTravelAnimationScene.ts` — 2-second auto-advancing in-system travel animation; fires callback on completion
+- `src/game/scenes/ShipScene.ts` — added `systemId: string` param and `destinationId: string | null`; "in space" mode shows `IN SPACE · <SYSTEM>`, greys DOCK button, suppresses station glyph, constrains UP/DOWN to one item; `[ T ] TRAVEL` button replaces `[ J ] JUMP`
+- `src/main.ts` / `terminal.ts` — `currentSystemId` and `currentDestinationId: string | null` state; `goToTravelMenu`, `goToArrival`, `goToFlyIntoSpace`, `onDestinationSelected`, `onJumpSelected` wired up
+- `src/game/scenes/travel-menu-scene.test.ts` — 18 tests covering render, DESTINATIONS/JUMPS tab keyboard, NavBar SHIP tap, FLY INTO SPACE behaviour
+- `src/game/scenes/ship-scene.test.ts` — updated for new signature; 5 new "in space" tests
+- `src/game/scenes/jump-animation-scene.test.ts` — 3 tests; `src/game/scenes/in-system-travel-animation-scene.test.ts` — 3 tests
+
+**Evidence:** 281 tests, 0 TypeScript errors. Branch: `claude/implement-jump-system-EYxJj`.
+
+---
 
 ### 027 · World-Driven Story, Station, and System Display
 
