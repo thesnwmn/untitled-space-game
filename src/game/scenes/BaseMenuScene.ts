@@ -120,8 +120,8 @@ export abstract class BaseMenuScene implements Scene {
     const config = this.buildChromeConfig();
     this.chrome.render(buffer, config);
 
-    writeText(buffer, CONTENT_TOP, 2, this.title, 'white', 'black');
-    writeText(buffer, CONTENT_TOP + 1, 2, '`'.repeat(this.title.length), 'bright-black', 'black');
+    writeText(buffer, CONTENT_TOP, 2, this.title, 'bright-blue', 'black');
+    writeText(buffer, CONTENT_TOP + 1, 2, "'".repeat(this.title.length), 'bright-black', 'black');
 
     for (let i = 0; i < this.infoLines.length; i++) {
       writeText(buffer, CONTENT_TOP + 2 + i, 2, this.infoLines[i], 'bright-black', 'black');
@@ -164,22 +164,23 @@ export abstract class BaseMenuScene implements Scene {
       const prefix = isCursor ? '> ' : '  ';
       const cursorFg: Color = isCursor ? 'bright-green' : 'white';
 
+      const maxWidth = w - 4; // 2-char gutter on each side
       if (item.info !== undefined) {
-        const dotLen = Math.max(1, (w - 2) - 2 - item.label.length - item.info.length - 2);
+        const dotLen = Math.max(1, (w - 4) - 2 - item.label.length - item.info.length - 2);
         writeText(buffer, row, 2, prefix + item.label + ' ', cursorFg, 'black');
         writeText(buffer, row, 2 + prefix.length + item.label.length + 1,
           '.'.repeat(dotLen), 'bright-black', 'black');
         writeText(buffer, row, 2 + prefix.length + item.label.length + 1 + dotLen + 1,
           item.info, cursorFg, 'black');
       } else if (item.details !== undefined && item.details.length > 0) {
-        writeText(buffer, row, 2, prefix + item.label, cursorFg, 'black');
+        writeText(buffer, row, 2, (prefix + item.label).slice(0, maxWidth), cursorFg, 'black');
         for (let d = 0; d < item.details.length; d++) {
           if (row + 1 + d <= lastContentRow) {
-            writeText(buffer, row + 1 + d, 2, '  ' + item.details[d], 'bright-black', 'black');
+            writeText(buffer, row + 1 + d, 2, ('  ' + item.details[d]).slice(0, maxWidth), 'bright-black', 'black');
           }
         }
       } else {
-        writeText(buffer, row, 2, prefix + item.label, cursorFg, 'black');
+        writeText(buffer, row, 2, (prefix + item.label).slice(0, maxWidth), cursorFg, 'black');
       }
       row += 1 + (item.details?.length ?? 0);
     }

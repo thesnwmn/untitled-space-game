@@ -150,17 +150,16 @@ export class TraderScene implements Scene {
     });
 
     // Title + underline
-    writeText(buffer, CONTENT_TOP, 2, this.traderName, 'white', 'black');
-    writeText(buffer, CONTENT_TOP + 1, 2, '`'.repeat(this.traderName.length), 'bright-black', 'black');
+    writeText(buffer, CONTENT_TOP, 2, this.traderName, 'bright-blue', 'black');
+    writeText(buffer, CONTENT_TOP + 1, 2, "'".repeat(this.traderName.length), 'bright-black', 'black');
 
-    // Tab bar: [ BUY | SELL ] centered
+    // Tab bar: | BUY | SELL | left-aligned
     const buyLabel = ' BUY ';
     const sellLabel = ' SELL ';
-    const tabBar = `[${buyLabel}|${sellLabel}]`;
-    const tabStartCol = Math.floor((w - tabBar.length) / 2);
+    const tabStartCol = 2;
 
-    // Draw bracket chars
-    buffer[TAB_ROW][tabStartCol] = { char: '[', fg: 'bright-black', bg: 'black' };
+    // Draw pipe chars
+    buffer[TAB_ROW][tabStartCol] = { char: '|', fg: 'bright-black', bg: 'black' };
 
     let tc = tabStartCol + 1;
     this.buyTabStart = tc;
@@ -184,7 +183,7 @@ export class TraderScene implements Scene {
     }
     this.sellTabEnd = tc;
 
-    buffer[TAB_ROW][tc] = { char: ']', fg: 'bright-black', bg: 'black' };
+    buffer[TAB_ROW][tc] = { char: '|', fg: 'bright-black', bg: 'black' };
 
     const contentEnd = contentBottom(h, true);
     const items = this.currentItems();
@@ -196,7 +195,7 @@ export class TraderScene implements Scene {
       const prefix = isCursor ? '> ' : '  ';
       const name = this.displayName(item);
       const priceStr = `${item.price} CR`;
-      const dotLen = Math.max(1, (w - 2) - prefix.length - name.length - 2 - priceStr.length);
+      const dotLen = Math.max(1, (w - 4) - prefix.length - name.length - 2 - priceStr.length);
       const fg: Color = isCursor ? 'bright-green' : 'white';
       writeText(buffer, row, ITEM_COL, prefix + name + ' ', fg, 'black');
       writeText(buffer, row, ITEM_COL + prefix.length + name.length + 1,

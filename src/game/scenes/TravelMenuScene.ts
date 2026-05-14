@@ -180,13 +180,12 @@ export class TravelMenuScene implements Scene {
     writeText(buffer, TITLE_ROW, 2, 'TRAVEL', 'white', 'black');
     writeText(buffer, TITLE_ROW + 1, 2, '``````', 'bright-black', 'black');
 
-    // Tab bar: [ DESTINATIONS | JUMPS ] centered
+    // Tab bar: | DESTINATIONS | JUMPS | left-aligned
     const destTabContent = ` ${DEST_TAB_TEXT} `;
     const jumpTabContent = ` ${JUMP_TAB_TEXT} `;
-    const tabBarWidth = 1 + destTabContent.length + 1 + jumpTabContent.length + 1;
-    const tabStartCol = Math.floor((w - tabBarWidth) / 2);
+    const tabStartCol = 2;
 
-    buffer[TAB_ROW][tabStartCol] = { char: '[', fg: 'bright-black', bg: 'black' };
+    buffer[TAB_ROW][tabStartCol] = { char: '|', fg: 'bright-black', bg: 'black' };
     let tc = tabStartCol + 1;
 
     this.destTabStart = tc;
@@ -210,7 +209,7 @@ export class TravelMenuScene implements Scene {
     }
     this.jumpTabEnd = tc;
 
-    buffer[TAB_ROW][tc] = { char: ']', fg: 'bright-black', bg: 'black' };
+    buffer[TAB_ROW][tc] = { char: '|', fg: 'bright-black', bg: 'black' };
 
     if (this.activeTab === 'DESTINATIONS') {
       for (let i = 0; i < this.destinations.length; i++) {

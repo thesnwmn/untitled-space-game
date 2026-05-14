@@ -96,8 +96,8 @@ export class MissionBoardScene implements Scene {
       navOptions: [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
     });
 
-    writeText(buffer, CONTENT_TOP, 2, 'MISSION BOARD', 'white', 'black');
-    writeText(buffer, CONTENT_TOP + 1, 2, '`'.repeat('MISSION BOARD'.length), 'bright-black', 'black');
+    writeText(buffer, CONTENT_TOP, 2, 'MISSION BOARD', 'bright-blue', 'black');
+    writeText(buffer, CONTENT_TOP + 1, 2, "'".repeat('MISSION BOARD'.length), 'bright-black', 'black');
 
     const contentEnd = contentBottom(h, true);
     for (let i = 0; i < MISSIONS.length; i++) {
@@ -109,7 +109,7 @@ export class MissionBoardScene implements Scene {
       const icon = TYPE_ICONS[mission.type];
       const rewardStr = `${mission.reward} CR`;
       const prefixWidth = 1 + 4; // cursor(1) + '[X] '(4)
-      const dotLen = Math.max(1, (w - 2) - prefixWidth - mission.title.length - 2 - rewardStr.length);
+      const dotLen = Math.max(1, (w - 4) - prefixWidth - mission.title.length - 2 - rewardStr.length);
 
       const titleFg: Color = isCursor ? 'bright-green' : 'white';
       writeText(buffer, row, MISSION_COL, cursor, titleFg, 'black');

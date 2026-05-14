@@ -61,16 +61,16 @@ export class ScreenChrome {
     const sys = getSystem(this.context.systemId);
     const sysName = sys ? sys.name.toUpperCase() : this.context.systemId.toUpperCase();
 
-    // Left prefix: ":: " (bright-black)
-    const prefix = ':: ';
+    // Left prefix: "::" (bright-black)
+    const prefix = '::';
     writeText(buffer, 0, 0, prefix, 'bright-black', 'black');
 
-    // System name (bright-white)
-    writeText(buffer, 0, prefix.length, sysName, 'bright-white', 'black');
+    // System name (bright-cyan)
+    writeText(buffer, 0, prefix.length, sysName, 'bright-cyan', 'black');
 
-    // Right zone: " [M] MENU ::" (12 chars)
-    // [M] is bright-green, " MENU " is bright-white, "::" is bright-black
-    const rightZoneWidth = 12;
+    // Right zone: "[M] MENU ::" (10 chars)
+    // [M] is bright-green, " MENU" is bright-white, "::" is bright-black
+    const rightZoneWidth = 10;
     const fillCount = w - prefix.length - sysName.length - rightZoneWidth;
     let col = prefix.length + sysName.length;
 
@@ -80,13 +80,11 @@ export class ScreenChrome {
     }
     col += fillCount;
 
-    // " [M] MENU ::"
-    writeText(buffer, 0, col, ' ', 'bright-black', 'black');
-    col += 1;
+    // "[M] MENU ::"
     writeText(buffer, 0, col, '[M]', 'bright-green', 'black');
     col += 3;
-    writeText(buffer, 0, col, ' MENU ', 'bright-white', 'black');
-    col += 6;
+    writeText(buffer, 0, col, ' MENU', 'bright-white', 'black');
+    col += 5;
     writeText(buffer, 0, col, '::', 'bright-black', 'black');
   }
 
@@ -97,12 +95,12 @@ export class ScreenChrome {
     const destName = dest ? dest.name.toUpperCase() : 'IN SPACE';
     const creditsStr = formatCredits(this.context.credits);
 
-    // Right zone width = creditsStr.length + 6 (" CR ::")
-    const rightZoneWidth = creditsStr.length + 6;
+    // Right zone width = creditsStr.length + 5 (" CR::")
+    const rightZoneWidth = creditsStr.length + 5;
 
-    const prefix = ':: ';
+    const prefix = '::';
     writeText(buffer, 1, 0, prefix, 'bright-black', 'black');
-    writeText(buffer, 1, prefix.length, destName, 'bright-white', 'black');
+    writeText(buffer, 1, prefix.length, destName, 'cyan', 'black');
 
     const fillCount = w - prefix.length - destName.length - rightZoneWidth;
     let col = prefix.length + destName.length;
@@ -112,11 +110,11 @@ export class ScreenChrome {
     }
     col += fillCount;
 
-    // Credits (bright-green) + " CR " (bright-white) + "::" (bright-black)
+    // Credits (bright-green) + " CR" (bright-white) + "::" (bright-black)
     writeText(buffer, 1, col, creditsStr, 'bright-green', 'black');
     col += creditsStr.length;
-    writeText(buffer, 1, col, ' CR ', 'bright-white', 'black');
-    col += 4;
+    writeText(buffer, 1, col, ' CR', 'bright-white', 'black');
+    col += 3;
     writeText(buffer, 1, col, '::', 'bright-black', 'black');
   }
 
@@ -137,14 +135,14 @@ export class ScreenChrome {
       return;
     }
 
-    // ":: " prefix
-    writeText(buffer, row, 0, ':: ', 'bright-black', 'black');
-    let col = 3;
+    // "::" prefix
+    writeText(buffer, row, 0, '::', 'bright-black', 'black');
+    let col = 2;
 
     for (let i = 0; i < navOptions.length; i++) {
       if (i > 0) {
-        writeText(buffer, row, col, ' :: ', 'bright-black', 'black');
-        col += 4;
+        writeText(buffer, row, col, '::', 'bright-black', 'black');
+        col += 2;
       }
       const opt = navOptions[i];
       const bracketLabel = `[${i + 1}]`;

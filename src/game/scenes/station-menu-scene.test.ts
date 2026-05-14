@@ -105,22 +105,22 @@ describe('StationMenuScene', () => {
       expect(rowText(buf, FOOTER_ROW)).toContain('UNDOCK');
     });
 
-    it('scene title at row 3 reads HUB in white', () => {
+    it('scene title at row 3 reads HUB in bright-blue', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('HUB');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-blue');
     });
 
-    it('renders backtick underline at row 4 in bright-black', () => {
+    it("renders ' underline at row 4 in bright-black", () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 4)).toContain('`');
-      expect(buf[4].find(c => c.char === '`')?.fg).toBe('bright-black');
+      expect(rowText(buf, 4)).toContain("'");
+      expect(buf[4].find(c => c.char === "'")?.fg).toBe('bright-black');
     });
 
     it('renders TRADER at row 10 and MISSION BOARD at row 11', () => {

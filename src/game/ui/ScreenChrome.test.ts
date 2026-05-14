@@ -43,14 +43,22 @@ describe('ScreenChrome', () => {
     expect(rowText(buf, 0)).toContain('MENU');
   });
 
+  it('row 0 system name is bright-cyan', () => {
+    const chrome = new ScreenChrome(baseContext);
+    const buf = makeBuffer(40, 30);
+    chrome.render(buf, defaultConfig);
+    // SOL starts at col 2 (after "::" prefix)
+    expect(buf[0][2].fg).toBe('bright-cyan');
+  });
+
   it('row 0 fill cells between name and right zone are :', () => {
     const chrome = new ScreenChrome(baseContext);
     const buf = makeBuffer(40, 30);
     chrome.render(buf, defaultConfig);
-    // ":: SOL" = 6 chars; right zone " [M] MENU ::" = 12 chars; fill from col 6 to 27
-    const prefixAndName = ':: SOL';
+    // "::SOL" = 5 chars; right zone "[M] MENU::" = 10 chars; fill from col 5 to 30
+    const prefixAndName = '::SOL';
     const fillStart = prefixAndName.length;
-    const fillEnd = 40 - 12; // 28
+    const fillEnd = 40 - 10; // 30
     for (let c = fillStart; c < fillEnd; c++) {
       expect(buf[0][c].char).toBe(':');
       expect(buf[0][c].fg).toBe('bright-black');
@@ -62,6 +70,14 @@ describe('ScreenChrome', () => {
     const buf = makeBuffer(40, 30);
     chrome.render(buf, defaultConfig);
     expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
+  });
+
+  it('row 1 destination name is cyan', () => {
+    const chrome = new ScreenChrome(baseContext);
+    const buf = makeBuffer(40, 30);
+    chrome.render(buf, defaultConfig);
+    // ELYSIUM STATION starts at col 2 (after "::" prefix)
+    expect(buf[1][2].fg).toBe('cyan');
   });
 
   it('row 1 shows IN SPACE when context.destinationId is null', () => {
@@ -140,9 +156,9 @@ describe('ScreenChrome', () => {
     const chrome = new ScreenChrome(baseContext);
     const buf = makeBuffer(40, 30);
     chrome.render(buf, { ...defaultConfig, navOptions: [{ id: 'undock', label: 'UNDOCK' }] });
-    // ":: [1] UNDOCK" — button starts at col 3 ("[1]") length 3 + " UNDOCK" length 7 = endCol 13
-    expect(chrome.hitTestNav(3, 29)).toBe('undock');
-    expect(chrome.hitTestNav(12, 29)).toBe('undock');
+    // "::[1] UNDOCK" — button starts at col 2 ("[1]") length 3 + " UNDOCK" length 7 = endCol 12
+    expect(chrome.hitTestNav(2, 29)).toBe('undock');
+    expect(chrome.hitTestNav(11, 29)).toBe('undock');
   });
 
   it('hitTestNav returns null before render() and for non-footer rows', () => {

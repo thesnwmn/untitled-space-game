@@ -40,11 +40,11 @@ const context: GameContext = {
 };
 
 // TAB_ROW = CONTENT_TOP + 3 = 6
-// Tab layout: "[ DESTINATIONS | JUMPS ]" centered in 40 (24 chars wide, start col 8)
-// DESTINATIONS area: cols 9–22; JUMPS area: cols 24–30
+// Tab layout: "| DESTINATIONS | JUMPS |" left-aligned at col 2
+// | at 2, DESTINATIONS area: cols 3–16, | at 17, JUMPS area: cols 18–24, | at 25
 const TAB_ROW = 6;
-const DEST_TAB_COL = 15; // middle of DESTINATIONS area
-const JUMP_TAB_COL = 27; // middle of JUMPS area
+const DEST_TAB_COL = 10; // middle of DESTINATIONS area (cols 3-16)
+const JUMP_TAB_COL = 21; // middle of JUMPS area (cols 18-24)
 
 // ITEM_ROW_START = CONTENT_TOP + 5 = 8
 const ITEM_ROW_START = 8;

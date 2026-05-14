@@ -54,22 +54,22 @@ const ITEM_ROW_START = 5;
 
 describe('BaseMenuScene', () => {
   describe('render — title and underline', () => {
-    it('renders title at CONTENT_TOP (row 3) col 2 in white', () => {
+    it('renders title at CONTENT_TOP (row 3) col 2 in bright-blue', () => {
       const input = new MockInputHandler();
       const scene = new TestMenuScene([{ label: 'ALPHA', action: vi.fn() }], input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('TEST MENU');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-blue');
     });
 
-    it('renders backtick underline at row 4 in bright-black', () => {
+    it("renders ' underline at row 4 in bright-black", () => {
       const input = new MockInputHandler();
       const scene = new TestMenuScene([{ label: 'ALPHA', action: vi.fn() }], input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 4)).toContain('`');
-      expect(buf[4].find(c => c.char === '`')?.fg).toBe('bright-black');
+      expect(rowText(buf, 4)).toContain("'");
+      expect(buf[4].find(c => c.char === "'")?.fg).toBe('bright-black');
     });
   });
 

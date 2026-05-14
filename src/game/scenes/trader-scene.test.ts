@@ -52,10 +52,10 @@ const touchContext: GameContext = {
 const ITEM_ROW_START = 7;
 const TAB_ROW = 5;
 
-// Tab bar "[ BUY | SELL ]" (14 chars) centered in 40: start = 13
-// [ at 13, ' BUY ' at 14-18, | at 19, ' SELL ' at 20-25, ] at 26
-const BUY_TAB_COL = 15;   // middle of ' BUY ' (col 14-18)
-const SELL_TAB_COL = 22;  // middle of ' SELL ' (col 20-25)
+// Tab bar "| BUY | SELL |" left-aligned at col 2
+// | at 2, ' BUY ' at 3-7, | at 8, ' SELL ' at 9-14, | at 15
+const BUY_TAB_COL = 5;    // middle of ' BUY ' (cols 3-7)
+const SELL_TAB_COL = 12;  // middle of ' SELL ' (cols 9-14)
 
 // Footer at row 29 (h-1 for 40×30): ":: [1] UNDOCK :: [2] HUB :::..."
 // [1] UNDOCK: button cols 3-12; [2] HUB: button cols 17-23
@@ -94,25 +94,25 @@ describe('TraderScene', () => {
       expect(rowText(buf, FOOTER_ROW)).toContain('HUB');
     });
 
-    it('renders trader name at row 3 in white', () => {
+    it('renders trader name at row 3 in bright-blue', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MERCHANT KESS');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-blue');
     });
 
-    it('renders backtick underline at row 4 in bright-black', () => {
+    it("renders ' underline at row 4 in bright-black", () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 4)).toContain('`');
-      expect(buf[4].find(c => c.char === '`')?.fg).toBe('bright-black');
+      expect(rowText(buf, 4)).toContain("'");
+      expect(buf[4].find(c => c.char === "'")?.fg).toBe('bright-black');
     });
 
-    it('renders [ BUY | SELL ] tab bar at tab row', () => {
+    it('renders | BUY | SELL | tab bar at tab row', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
