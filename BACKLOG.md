@@ -67,16 +67,18 @@ for the full spec.
 
 ### 027 · World-Driven Story, Station, and System Display
 
-Replace hardcoded world content (story intro text, station name, location
-label) with live lookups from the world data module. `StoryScene` renders the
-`opening-arrival` beat from `getStoryBeatsByTrigger('game-start')`. `StationMenuScene`
-shows the destination description and danger level. `ShipScene` shows
-`<DESTINATION>  ·  <SYSTEM>` on the location row. All five scene files
-(`StoryScene`, `StationMenuScene`, `ShipScene`, `TraderScene`,
-`MissionBoardScene`) drop the `STATION_NAME` import in favour of a
-`destinationId: string` constructor parameter. Adds `wrapText` utility to
-`src/shared/buffer-utils.ts`. See `docs/features/027-world-driven-story-station-system.md`
-for the full spec.
+Make every scene a generic renderer — no world content hardcoded in source.
+`StoryScene` renders the `opening-arrival` beat from world data. `StationMenuScene`
+builds its hub menu from `destination.amenities` (only showing items the
+station actually has), plus description and danger level. `ShipScene` shows
+`<DESTINATION>  ·  <SYSTEM>` and selects the station glyph from
+`destination.type` (`civilian`→HUB, `military`→RELAY, `research`→RING,
+`black-market`→BEACON). `TraderScene` shows the NPC name from
+`destination.npcs.trader`. All five scene files drop the `STATION_NAME`
+import in favour of a `destinationId: string` constructor parameter. Adds
+`wrapText` utility to `src/shared/buffer-utils.ts`. Deletes `STATION_NAME`
+from `src/game/constants.ts`. See
+`docs/features/027-world-driven-story-station-system.md` for the full spec.
 
 **Depends on:** 019
 

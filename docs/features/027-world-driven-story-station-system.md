@@ -2,10 +2,11 @@
 
 ## Goal
 
-Replace all hardcoded world content — story intro text, station name, and
-location label — with live lookups from the world data module, so that every
-piece of text the player sees is authored in `docs/world/` rather than scattered
-across scene source files.
+Make every scene a generic renderer: no world content is hardcoded in scene
+source files. All text, names, menus, visuals, and NPC references that vary
+by destination come from `getDestination(id)` and related world data helpers.
+The orchestrator chooses which destination to show; scenes just render what
+the data says.
 
 ---
 
@@ -13,27 +14,36 @@ across scene source files.
 
 | Screen | Before | After |
 |---|---|---|
-| Story intro | Hardcoded Hugo text | `opening-arrival` beat from `getStoryBeatsByTrigger('game-start')` |
-| Station hub | "ELYSIUM STATION" constant | `getDestination(id).name` + description + danger level |
-| Ship exterior | "Location: ELYSIUM STATION" | "ELYSIUM STATION  ·  SOL" — destination + system name |
-| Trader / Mission Board NavBar | "ELYSIUM STATION" constant | `getDestination(id).name` |
+| Story intro | Hardcoded third-person Hugo text | `opening-arrival` beat from `getStoryBeatsByTrigger('game-start')` |
+| Station hub title | `ELYSIUM STATION` constant | `destination.name` |
+| Station hub menu | Always TRADER + MISSION BOARD | Only items whose `destination.amenities` flag is `true` |
+| Station hub body | Empty space | `destination.description` + `DANGER: <level>` |
+| Ship exterior location | `Location: ELYSIUM STATION` | `<DESTINATION>  ·  <SYSTEM>` |
+| Ship exterior glyph | Always `RELAY` | Mapped from `destination.type` |
+| Trader title | Hardcoded `MERCHANT KESS` | `destination.npcs.trader` |
+| Trader / Mission Board NavBar | `ELYSIUM STATION` constant | `destination.name` |
 
 ---
 
 ## Acceptance criteria
 
-- `StoryScene` renders the text body of the `opening-arrival` story beat. The
-  hardcoded Hugo lines are gone.
-- The year header `"YEAR  2284"` still appears centred in `bright-yellow` at
-  row 2, sourced from the first paragraph of the beat text.
-- `StationMenuScene` shows the destination's description (2–3 wrapped lines)
-  below the `===` rule and a `DANGER: <LEVEL>` indicator below that.
-- `ShipScene` row 1 shows `<DESTINATION NAME>  ·  <SYSTEM NAME>` in
-  `bright-cyan`, sourced from world data.
+- `StoryScene` renders text from the `opening-arrival` world beat. Hardcoded
+  Hugo lines are gone from the source.
+- Year header `"YEAR  2284"` appears centred in `bright-yellow` at row 2,
+  extracted from the beat text.
+- `StationMenuScene` hub menu shows only the amenities available at the
+  destination — if `amenities.trader` is false, TRADER does not appear.
+- `StationMenuScene` shows a wrapped description snippet and danger level
+  sourced from world data.
+- `ShipScene` row 1 shows `<DESTINATION>  ·  <SYSTEM>` from world data.
+- `ShipScene` station glyph is chosen by `destination.type` via the mapping
+  table below.
+- `TraderScene` scene title shows the NPC name from `destination.npcs.trader`.
 - `TraderScene` and `MissionBoardScene` NavBar titles come from
-  `getDestination(id).name` — no `STATION_NAME` import.
-- `STATION_NAME` is no longer imported by any scene file.
-- `wrapText(text: string, maxWidth: number): string[]` is exported from
+  `destination.name`.
+- `STATION_NAME` is no longer imported by any scene file and is deleted from
+  `src/game/constants.ts`.
+- `wrapText(text: string, maxWidth: number): string[]` exported from
   `src/shared/buffer-utils.ts`.
 - All updated scene tests pass. `tsc --noEmit` zero errors. `npm test` passes.
 
@@ -75,188 +85,269 @@ In the constructor:
 
 1. Call `getStoryBeatsByTrigger('game-start')` and take index `[0]`.
 2. Split `beat.text` on `\n\n` to get raw paragraphs.
-3. If the first paragraph matches `/^YEAR\s+\d{4}$/` (trimmed), store it as
-   `yearHeader: string` and skip it in body rendering. Otherwise
+3. If the first paragraph (trimmed) matches `/^YEAR\s+\d{4}$/`, store it as
+   `yearHeader: string` and exclude it from body rendering. Otherwise
    `yearHeader = ''`.
 4. For each remaining paragraph: normalise internal newlines to spaces
-   (`paragraph.replace(/\n/g, ' ')`), then call `wrapText(paragraph, 36)` to
-   get an array of lines. Collect all lines, inserting one blank string `''`
-   between paragraph groups.
+   (`paragraph.replace(/\n/g, ' ')`), then call `wrapText(paragraph, 36)`.
+   Collect all lines, inserting one blank string `''` between paragraph groups.
 5. Store the result as `bodyLines: string[]`.
 
 In `render()`:
 
-- Write `yearHeader` centred in `bright-yellow` at row 2 (same position as
-  today). If `yearHeader` is empty, skip.
-- Starting at `row = 4`, iterate `bodyLines`. For `''` entries advance the row
-  counter. For non-empty entries call `writeText(buffer, row, 2, line, 'white',
-  'black')` and advance. Stop if `row` would reach `h - 4` (leave space for the
-  hint).
+- Write `yearHeader` centred in `bright-yellow` at row 2. Skip if empty.
+- Starting at `row = 4`, iterate `bodyLines`. Blank strings advance the row
+  counter. Non-blank strings call `writeText(buffer, row, 2, line, 'white',
+  'black')`. Stop before `h - 4` to preserve hint space.
 
-The hint line stays at `h - 3`, unchanged.
+Hint line stays at `h - 3`, unchanged.
+
+---
 
 ### StationMenuScene (`src/game/scenes/StationMenuScene.ts`)
 
-Change the constructor signature:
+New constructor signature:
 
 ```typescript
 constructor(
   inputHandler: InputHandler,
   context: GameContext,
-  destinationId: string,      // ← replaces implicit STATION_NAME
+  destinationId: string,
   onTrader: () => void,
   onMissionBoard: () => void,
   onShip: () => void,
 )
 ```
 
-Inside the constructor:
+Menu items are built from `destination.amenities` at construction time:
 
 ```typescript
 const dest = getDestination(destinationId)!;
-// NavBar title uses dest.name.toUpperCase() instead of STATION_NAME.toUpperCase()
-// Store for render:
-this.descLines = wrapText(dest.description, 36).slice(0, 3);
-this.dangerLevel = dest.dangerLevel;
+const items: MenuItemDef[] = [];
+if (dest.amenities.trader)       items.push({ label: 'TRADER',        action: onTrader });
+if (dest.amenities.missionBoard) items.push({ label: 'MISSION BOARD', action: onMissionBoard });
 ```
+
+Future amenities (`shipRepair`, `fuel`, `shipDealer`) are silently ignored
+until their scenes exist — they will slot in here as new `if` branches with
+no other changes.
+
+The NavBar title uses `dest.name.toUpperCase()`.
 
 In `render()` (after `super.render()`):
 
-- Write `this.descLines` starting at row 5, col 2, fg `bright-black`.
-- Write `DANGER: ${this.dangerLevel.toUpperCase()}` at row `5 + this.descLines.length + 1`,
-  col 2, fg `bright-black`.
+```typescript
+this.descLines = wrapText(dest.description, 36).slice(0, 3);
+// write descLines starting at row 5, col 2, fg 'bright-black'
+// write `DANGER: ${dest.dangerLevel.toUpperCase()}` at row 5 + descLines.length + 1, col 2, fg 'bright-black'
+```
 
 Remove the `STATION_NAME` import.
 
+---
+
 ### ShipScene (`src/game/scenes/ShipScene.ts`)
 
-Change the constructor signature:
+New constructor signature:
 
 ```typescript
 constructor(
   inputHandler: InputHandler,
   context: GameContext,
-  destinationId: string,      // ← new required param
+  destinationId: string,
   onDock: () => void,
 )
 ```
 
-Inside the constructor:
+At construction time:
 
 ```typescript
 const dest = getDestination(destinationId)!;
 const sys  = getSystem(dest.system)!;
 this.locationLabel = `${dest.name.toUpperCase()}  ·  ${sys.name.toUpperCase()}`;
+this.stationType   = DESTINATION_TYPE_TO_STATION[dest.type] ?? STATION_TYPES.RELAY;
 ```
 
-In `render()`, replace the hardcoded location line:
+Station type mapping:
 
 ```typescript
-// was: `Location: ${STATION_NAME.toUpperCase()}`
+const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
+  civilian:     STATION_TYPES.HUB,
+  military:     STATION_TYPES.RELAY,
+  research:     STATION_TYPES.RING,
+  'black-market': STATION_TYPES.BEACON,
+};
+```
+
+In `render()`:
+
+```typescript
+// row 1 — replace hardcoded location string
 writeText(buffer, LOCATION_ROW, 1, this.locationLabel, 'bright-cyan', 'black');
+
+// station glyph — replace STATION_TYPES.RELAY with this.stationType
+if (!this.station) {
+  this.station = new SpaceStation(
+    this.stationType,
+    intRowStart, intRowEnd, intColStart, intColEnd,
+  );
+}
 ```
 
 Remove the `STATION_NAME` import.
 
+---
+
 ### TraderScene (`src/game/scenes/TraderScene.ts`)
 
-Replace the `STATION_NAME` import with a `destinationId: string` constructor
-parameter. Use `getDestination(destinationId)!.name.toUpperCase()` as the
-NavBar title string.
+New constructor signature (add `destinationId: string` before `onHub`):
+
+```typescript
+constructor(
+  inputHandler: InputHandler,
+  context: GameContext,
+  destinationId: string,
+  onHub: () => void,
+  onUndock: () => void,
+)
+```
+
+At construction time:
+
+```typescript
+const dest = getDestination(destinationId)!;
+this.traderName = dest.npcs.trader?.toUpperCase() ?? 'TRADER';
+// NavBar title: dest.name.toUpperCase()
+```
+
+Replace the hardcoded `this.trader = TRADERS[0]` — the trader name is now
+`this.traderName`; the buy/sell lists remain the hardcoded `TRADERS[0]` data
+for now (commodity wiring is a future feature). The scene title (`writeCentered`
+at row 3) and its underline use `this.traderName` instead of `this.trader.name`.
+
+Remove the `STATION_NAME` import.
+
+---
 
 ### MissionBoardScene (`src/game/scenes/MissionBoardScene.ts`)
 
-Same change as TraderScene.
+New constructor signature (add `destinationId: string`):
+
+```typescript
+constructor(
+  inputHandler: InputHandler,
+  context: GameContext,
+  destinationId: string,
+  onHub: () => void,
+  onUndock: () => void,
+)
+```
+
+Use `getDestination(destinationId)!.name.toUpperCase()` as the NavBar title.
+
+Mission list stays hardcoded — no world data for missions exists yet.
+
+Remove the `STATION_NAME` import.
+
+---
 
 ### `src/game/constants.ts`
 
-After verifying no scene imports `STATION_NAME`, remove the export entirely.
-Any remaining orchestrator use (if any) must be replaced with the world data
-lookup before removal.
+Delete the `STATION_NAME` export once all scene files are updated.
 
 ---
 
 ## Orchestrator changes (`src/main.ts` and `src/terminal.ts`)
 
-Add a constant:
+Add:
 
 ```typescript
 const STARTING_DESTINATION = 'elysium-station';
 ```
 
-Pass it wherever these scenes are constructed:
+Pass `STARTING_DESTINATION` as `destinationId` to every scene construction:
 
 - `new ShipScene(inputHandler, context, STARTING_DESTINATION, onDock)`
 - `new StationMenuScene(inputHandler, context, STARTING_DESTINATION, onTrader, onMissionBoard, onShip)`
 - `new TraderScene(inputHandler, context, STARTING_DESTINATION, onHub, onUndock)`
 - `new MissionBoardScene(inputHandler, context, STARTING_DESTINATION, onHub, onUndock)`
 
-`StoryScene` needs no parameter — it reads `getStoryBeatsByTrigger('game-start')[0]`
-directly, requiring no caller input.
+`StoryScene` needs no parameter — it calls `getStoryBeatsByTrigger('game-start')`
+directly.
 
-Both orchestrator files must be updated in sync.
+Both orchestrator files must be updated and kept in sync.
 
 ---
 
 ## Tests required
 
-### `src/shared/buffer-utils.test.ts` (new tests, same file)
+### `src/shared/buffer-utils.test.ts` (additions to existing file)
 
 - `wrapText('', 36)` returns `[]`.
 - `wrapText('hello', 36)` returns `['hello']`.
-- Single long word returns that word on its own line (no truncation).
-- Multiple words wrapping correctly at the boundary.
-- A word sequence that exactly fills `maxWidth` fits on one line.
+- Single word longer than `maxWidth` returns that word alone (no truncation).
+- Multi-word string wraps at word boundary within `maxWidth`.
+- Words that exactly fill `maxWidth` stay on one line.
 
 ### `src/game/scenes/story-scene.test.ts` (updated)
 
-- Renders year header from world data at row 2 (bright-yellow, centred).
-- Renders at least one body line from world data below row 4.
-- Does **not** render the hardcoded Hugo string `"Hugo poured"` anywhere.
-- `onContinue` / tap behaviour tests unchanged.
+- Year header from world data renders at row 2 in `bright-yellow` centred.
+- At least one body line from world data appears below row 4 in `white`.
+- The string `"Hugo poured"` does not appear anywhere in the buffer.
+- `onContinue` and tap behaviour tests unchanged.
 
 ### `src/game/scenes/station-menu-scene.test.ts` (updated)
 
-- Constructor accepts `destinationId` string.
-- NavBar title row shows `"ELYSIUM STATION"` (from `getDestination` not from constant).
+- Constructor accepts `destinationId`.
+- NavBar title is `"ELYSIUM STATION"` from `getDestination`, not the deleted constant.
+- When `amenities.trader === true`, a TRADER item appears in the menu.
+- When `amenities.missionBoard === true`, a MISSION BOARD item appears.
 - Description lines appear at row 5 in `bright-black`.
 - `DANGER:` line appears below description in `bright-black`.
+- A destination with `amenities.trader === false` does **not** show a TRADER item.
 
 ### `src/game/scenes/ship-scene.test.ts` (updated)
 
-- Constructor accepts `destinationId` string.
-- Row 1 contains both the destination name and the system name.
+- Constructor accepts `destinationId`.
+- Row 1 contains destination name and system name from world data.
+- A `civilian` destination produces a `HUB` station glyph; a `military`
+  destination produces a `RELAY` glyph.
 
-### `src/game/scenes/trader-scene.test.ts` and `mission-board-scene.test.ts` (updated)
+### `src/game/scenes/trader-scene.test.ts` (updated)
 
-- Constructor accepts `destinationId` string.
-- NavBar title matches destination name from world data, not the old constant.
+- Constructor accepts `destinationId`.
+- Scene title row shows NPC name from `destination.npcs.trader`.
+- NavBar title shows destination name.
+
+### `src/game/scenes/mission-board-scene.test.ts` (updated)
+
+- Constructor accepts `destinationId`.
+- NavBar title shows destination name from world data.
 
 ---
 
 ## Out of scope
 
-- `station-arrive` story beats (need game state tracking — future feature).
-- Any system or faction data displayed beyond the name (economy, factions, tags).
-- `first-jump` beat rendering (belongs to the jump animation flow in Feature 026).
-- Loading markdown at runtime (Feature 020).
+- Commodity buy/sell lists sourced from world data (future trading feature).
+- `station-arrive` story beats (need game-state tracking).
+- `first-jump` beat (belongs to jump animation in Feature 026).
+- System economy, faction, or tag data displayed in-scene.
+- Loading world docs from markdown at runtime (Feature 020).
 - Dynamic destination selection (Feature 026 — Jump System).
 
 ---
 
 ## Interaction with Feature 026
 
-Feature 026 (Jump System) planned to add `destinationName: string` parameters
-to `StationMenuScene`, `TraderScene`, and `MissionBoardScene`. This feature
-supersedes that plan: the scenes receive `destinationId: string` instead, which
-is richer. When Feature 026 is implemented, the Engineer must update the
-orchestrators to pass `currentDestinationId` (the dynamic variable) in place of
-the hardcoded `STARTING_DESTINATION` constant — no scene constructor signatures
-need to change.
+Feature 026 (Jump System) planned `destinationName: string` parameters on
+`StationMenuScene`, `TraderScene`, and `MissionBoardScene`. This feature
+supersedes that: scenes receive `destinationId: string` instead. When Feature
+026 ships, the Engineer replaces `STARTING_DESTINATION` in the orchestrators
+with `currentDestinationId` — no scene constructor signatures change.
 
 ---
 
 ## Dependencies
 
 - **019 · World Data TypeScript Types** — `getDestination`, `getSystem`,
-  `getStoryBeatsByTrigger` must be available before this feature can be built.
+  `getStoryBeatsByTrigger` must exist before implementation begins.
