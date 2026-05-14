@@ -1,6 +1,6 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
-import { STATION_NAME } from '../constants';
+import { getDestination } from '../world/world-data';
 import { NavBar } from '../ui/NavBar';
 
 interface Mission {
@@ -36,10 +36,11 @@ export class MissionBoardScene implements Scene {
   private cursorIdx = 0;
   private activated = false;
 
-  constructor(inputHandler: InputHandler, context: GameContext, onHub: () => void, onUndock: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, destinationId: string, onHub: () => void, onUndock: () => void) {
+    const dest = getDestination(destinationId)!;
     this.context = context;
     this.navBar = new NavBar(
-      STATION_NAME.toUpperCase(),
+      dest.name.toUpperCase(),
       [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
     );
 

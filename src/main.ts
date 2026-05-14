@@ -22,6 +22,8 @@ const renderer = new DOMRenderer();
 const input = new DOMInputHandler(context);
 input.connect();
 
+const STARTING_DESTINATION = 'elysium-station';
+
 let currentScene: Scene;
 
 const goToMainMenu = () => {
@@ -29,19 +31,19 @@ const goToMainMenu = () => {
 };
 
 const goToTrader = () => {
-  currentScene = new TraderScene(input, context, goToStation, goToShip);
+  currentScene = new TraderScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
-  currentScene = new MissionBoardScene(input, context, goToStation, goToShip);
+  currentScene = new MissionBoardScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
 };
 
 const goToShip = () => {
-  currentScene = new ShipScene(input, context, goToStation);
+  currentScene = new ShipScene(input, context, STARTING_DESTINATION, goToStation);
 };
 
 const goToStation = () => {
-  currentScene = new StationMenuScene(input, context, goToTrader, goToMissionBoard, goToShip);
+  currentScene = new StationMenuScene(input, context, STARTING_DESTINATION, goToTrader, goToMissionBoard, goToShip);
 };
 
 const goToStory = () => {
