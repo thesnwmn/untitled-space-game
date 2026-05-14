@@ -163,21 +163,30 @@ constructor(
 
 ### StationMenuScene, TraderScene, MissionBoardScene
 
-All three currently import `STATION_NAME` and pass it to `NavBar`.
+> **Note:** Feature 027 (World-Driven Story, Station, and System Display) adds
+> `destinationId: string` constructor parameters to all three scenes and removes
+> the `STATION_NAME` import. If 027 is merged before this feature, these scenes
+> already accept `destinationId`; the Engineer must pass `currentDestinationId`
+> from the orchestrator state rather than a static constant. No constructor
+> signature changes are needed.
+
+If 027 has **not** shipped, the Engineer should apply the following changes
+(otherwise skip them — they are already done):
 
 - **Remove** the `STATION_NAME` import from each.
-- **Add** `destinationName: string` as the first constructor parameter of each
+- **Add** `destinationId: string` as the first constructor parameter of each
   scene (before `inputHandler`).
-- Pass `destinationName` into `NavBar` in place of `STATION_NAME`.
+- Use `getDestination(destinationId)!.name` in place of `STATION_NAME` for the
+  NavBar title.
 
-Updated constructor signatures:
+Updated constructor signatures (post-027):
 
 ```typescript
 // StationMenuScene
 constructor(
-  destinationName: string,
   inputHandler: InputHandler,
   context: GameContext,
+  destinationId: string,
   onTrader: () => void,
   onMissionBoard: () => void,
   onShip: () => void,
@@ -185,18 +194,18 @@ constructor(
 
 // TraderScene
 constructor(
-  destinationName: string,
   inputHandler: InputHandler,
   context: GameContext,
+  destinationId: string,
   onStation: () => void,
   onShip: () => void,
 )
 
 // MissionBoardScene
 constructor(
-  destinationName: string,
   inputHandler: InputHandler,
   context: GameContext,
+  destinationId: string,
   onStation: () => void,
   onShip: () => void,
 )
@@ -281,4 +290,7 @@ function goToMissionBoard(): void {
 
 **019 · World Data TypeScript Types** — this feature imports `getRoutesFrom`,
 `getSystem`, and `getDestination` from `src/game/world/world-data.ts`.
-Feature 019 must be complete before implementation begins.
+
+**027 · World-Driven Story, Station, and System Display** — adds `destinationId`
+constructor parameters to the scenes this feature also modifies. Build 027 first
+to avoid conflicting changes to the same scene files.

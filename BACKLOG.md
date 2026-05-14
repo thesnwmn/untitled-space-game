@@ -12,42 +12,22 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 025 · Randomise Station Star Patterns
+### 027 · World-Driven Story, Station, and System Display
 
-Each visit to a destination generates a new random `Starfield` seed, producing a
-unique star layout. The seed is preserved across dock/undock cycles at the same
-destination and only cleared when the player fully navigates away (main menu, story
-screen, or future jump). `ShipScene` gains a required `starfieldSeed: number`
-constructor parameter. The orchestrators (`main.ts`, `terminal.ts`) hold a
-`destinationSeed` variable: generated fresh on first `goToShip` when null, reused
-on subsequent undocks, cleared on `goToMainMenu` / `goToStory`.
-See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
+Make every scene a generic renderer — no world content hardcoded in source.
+`StoryScene` renders the `opening-arrival` beat from world data. `StationMenuScene`
+builds its hub menu from `destination.amenities` (only showing items the
+station actually has), plus description and danger level. `ShipScene` shows
+`<DESTINATION>  ·  <SYSTEM>` and selects the station glyph from
+`destination.type` (`civilian`→HUB, `military`→RELAY, `research`→RING,
+`black-market`→BEACON). `TraderScene` shows the NPC name from
+`destination.npcs.trader`. All five scene files drop the `STATION_NAME`
+import in favour of a `destinationId: string` constructor parameter. Adds
+`wrapText` utility to `src/shared/buffer-utils.ts`. Deletes `STATION_NAME`
+from `src/game/constants.ts`. See
+`docs/features/027-world-driven-story-station-system.md` for the full spec.
 
----
-
-### 016 · Hint Overlay
-
-Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for input hint text. Extract hint rendering from all 6 scenes via a new `Scene.getHint()` method on the `Scene` interface. Add `showHints: boolean` to `GameContext` (default `true`) and wire `H`/`h` to a new `TOGGLE_HINTS` game action so the player can hide hints. See `docs/features/016-hint-overlay.md` for the full spec.
-
----
-
-### 024 · NavBar Keyboard Shortcuts
-
-Make NavBar buttons (`[UNDOCK]`, `[HUB]`) reachable by number keys: `1` activates
-the leftmost button, `2` the next, etc. Applies in terminal and browser keyboard
-mode. `NavOption` gains an `action` callback; `NavBar` takes `inputHandler` in its
-constructor and self-registers `onAction`/`onTap` — scenes need no nav input code.
-In keyboard mode buttons render as `[1:UNDOCK]` / `[2:HUB]` so the shortcut is
-self-documenting. Adds `NAV_1`–`NAV_9` to `GameAction`; wires digit keys in both
-input handlers. See `docs/features/024-navbar-keyboard-shortcuts.md` for the full spec.
-
----
-
-### 013 · Menu Pagination
-
-Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
-
-**Depends on:** 011
+**Depends on:** 019
 
 ---
 
@@ -64,7 +44,46 @@ Orchestrators gain `currentSystemId` / `currentDestinationId` state.
 All data fed by `getRoutesFrom`, `getSystem`, `getDestination` from the world
 data module. See `docs/features/026-jump-system.md` for the full spec.
 
-**Depends on:** 019
+**Depends on:** 019, 027
+
+---
+
+### 025 · Randomise Station Star Patterns
+
+Each visit to a destination generates a new random `Starfield` seed, producing a
+unique star layout. The seed is preserved across dock/undock cycles at the same
+destination and only cleared when the player fully navigates away (main menu, story
+screen, or future jump). `ShipScene` gains a required `starfieldSeed: number`
+constructor parameter. The orchestrators (`main.ts`, `terminal.ts`) hold a
+`destinationSeed` variable: generated fresh on first `goToShip` when null, reused
+on subsequent undocks, cleared on `goToMainMenu` / `goToStory`.
+See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
+
+---
+
+### 024 · NavBar Keyboard Shortcuts
+
+Make NavBar buttons (`[UNDOCK]`, `[HUB]`) reachable by number keys: `1` activates
+the leftmost button, `2` the next, etc. Applies in terminal and browser keyboard
+mode. `NavOption` gains an `action` callback; `NavBar` takes `inputHandler` in its
+constructor and self-registers `onAction`/`onTap` — scenes need no nav input code.
+In keyboard mode buttons render as `[1:UNDOCK]` / `[2:HUB]` so the shortcut is
+self-documenting. Adds `NAV_1`–`NAV_9` to `GameAction`; wires digit keys in both
+input handlers. See `docs/features/024-navbar-keyboard-shortcuts.md` for the full spec.
+
+---
+
+### 016 · Hint Overlay
+
+Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for input hint text. Extract hint rendering from all 6 scenes via a new `Scene.getHint()` method on the `Scene` interface. Add `showHints: boolean` to `GameContext` (default `true`) and wire `H`/`h` to a new `TOGGLE_HINTS` game action so the player can hide hints. See `docs/features/016-hint-overlay.md` for the full spec.
+
+---
+
+### 013 · Menu Pagination
+
+Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
+
+**Depends on:** 011
 
 ---
 
@@ -78,6 +97,21 @@ build: Vite `import.meta.glob` to bundle at compile time. Terminal build: Bun
 file reads. Both paths feed the same typed `WorldData` structure from Feature
 019. Requires a YAML front-matter parser (e.g. `gray-matter`) and a strategy
 for exposing raw markdown body text alongside structured data.
+
+---
+
+### 028 · Common Screen Layout
+
+Define a shared layout chrome that wraps all scenes. The chrome has three zones:
+a status bar at the top (current system name and location from world data), a
+main content area in the middle (where each scene renders its own content), and
+a navigation bar at the bottom (player actions, context-sensitive). Each zone
+occupies a fixed number of rows so every scene knows its exact content bounds
+(`contentTop`, `contentBottom`) without hard-coding magic row numbers. Individual
+scenes can opt out of any zone — for example the story screen and jump animation
+suppress the status bar; the ship view suppresses the nav zone in favour of its
+own controls. All existing scenes are updated to render within the content area
+bounds rather than the full buffer.
 
 ---
 
