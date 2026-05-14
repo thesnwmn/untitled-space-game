@@ -52,18 +52,6 @@ Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item li
 ---
 
 
-### 023 · Galaxy Map
-
-Build script that reads system `map_position` fields and jump routes from
-`docs/world/` to render an interactive SVG galaxy map at `dist/map/index.html`.
-Nodes colour-coded by zone; routes by security. Hover tooltips; click to open
-system world-docs page. Updates landing page to enable the GALAXY MAP tile.
-See `docs/features/023-galaxy-map.md` for the full spec.
-
-**Depends on:** 018, 022
-
----
-
 ### 019 · World Data TypeScript Types
 
 Define TypeScript interfaces for every world entity type (`StarSystem`,
@@ -97,6 +85,39 @@ _(none)_
 ---
 
 ## DONE
+
+### 023 · Galaxy Map
+
+**Built:**
+- `scripts/build-map.ts` — replaces Feature 022 stub; reads all `docs/world/systems/*.md` (skipping `_template.md`) via `gray-matter`; normalises `map_position` light-year coordinates to a 0–100 SVG viewBox with 8-unit padding; reads `docs/world/navigation/jump-routes.md`; generates an inline SVG with `<line>` route elements (stroke-dasharray for unstable routes) and `<g class="system">` node elements (`<circle r="1.2">` + `<text dy="2.5">`) colour-coded by zone/security; wraps in `html-template.ts` `page()`; writes `dist/map/index.html`
+- `scripts/lib/html-template.ts` — added `--bright-cyan: #55ffff`, `--bright-yellow: #ffff55`, `--bright-magenta: #ff55ff` to `:root` CSS variable block
+- `scripts/build-landing.ts` — GALAXY MAP tile changed from disabled span to active `<a href="map/index.html">` link
+
+**Colour coding:**
+- Zones: core → `--bright-cyan`, frontier → `--bright-yellow`, outer → `--bright-magenta`
+- Routes: high → `--green`, medium → `--yellow`, low → `--red`, none → `--bright-black`; unstable routes dashed
+
+**Interactive features:**
+- Hover tooltip (follows cursor, clamped to viewport) shows system name, zone, security, danger level, destination count in terminal box-drawing style
+- Click any node navigates to `/untitled-space-game/docs/systems/<id>.html`
+- Legend panel (zone colours + route security colours) rendered alongside the SVG
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 214/214 tests passed (13 test files)
+- `npm run build:map`: ✓ `dist/map/index.html` written (8 systems, 5 routes)
+- `npm run build:all`: ✓ game + docs + map + landing page all written
+
+**Play-test instructions:**
+1. `bash init.sh` — must print `=== Environment ready ===`
+2. `npm run build:all` — must complete with no errors
+3. Open `dist/index.html` — GALAXY MAP tile is now an active link (not dimmed)
+4. Click GALAXY MAP → `dist/map/index.html`: SVG renders 8 labelled system nodes and 5 route lines
+5. Hover a system node — tooltip appears with system details in box-drawing style; moves with cursor
+6. Verify colour coding: Sol node is bright-cyan (core), routes vary green/yellow/red; wolf-359 routes are dashed (unstable)
+7. Click a node — navigates to its world docs page
+
+---
 
 ### 015 · Station Nav Bar
 
