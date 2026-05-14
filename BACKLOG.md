@@ -12,6 +12,15 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 028 · Common Screen Layout
+
+Introduce a `ScreenChrome` component that renders a 2-row header (`:: SYSTEM :: … :: [M] MENU ::` / `:: DESTINATION :: … :: credits CR ::`) and a 1-row footer nav (`:: [1] NAV1 :: [2] NAV2 ::::`) into every scene's buffer. Exports layout constants (`CONTENT_TOP`, `contentBottom(h, showFooter)`) so scenes no longer hard-code row numbers. Updates `BaseMenuScene` with left-aligned titles, backtick underlines, and richer `MenuItemDef` (simple / info / multi-line). Story screen suppresses both zones; Ship screen keeps header only. Replaces the existing `NavBar` component. Also removes all per-scene hint text permanently (supersedes 016). Includes digit-key nav shortcuts (supersedes 024): adds `NAV_1`–`NAV_9` to `GameAction` and wires digit keys in both input handlers so `1` activates the leftmost footer button, `2` the next, etc.
+See `docs/features/028-common-screen-layout.md` for the full spec.
+
+**Depends on:** 011, 015
+
+---
+
 ### 020 · World Data File Loader
 
 Replace the static `WORLD` object in `world-data.ts` with a loader that parses
@@ -40,38 +49,9 @@ See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
 
 ---
 
-### 024 · NavBar Keyboard Shortcuts
-
-Make NavBar buttons (`[UNDOCK]`, `[HUB]`) reachable by number keys: `1` activates
-the leftmost button, `2` the next, etc. Applies in terminal and browser keyboard
-mode. `NavOption` gains an `action` callback; `NavBar` takes `inputHandler` in its
-constructor and self-registers `onAction`/`onTap` — scenes need no nav input code.
-In keyboard mode buttons render as `[1:UNDOCK]` / `[2:HUB]` so the shortcut is
-self-documenting. Adds `NAV_1`–`NAV_9` to `GameAction`; wires digit keys in both
-input handlers. See `docs/features/024-navbar-keyboard-shortcuts.md` for the full spec.
-
----
-
 ### ~~016 · Hint Overlay~~ — CANCELLED
 
 Superseded by 028. Hint text is removed entirely. If hints return they will be part of `ScreenChrome` and togglable.
-
----
-
-### 013 · Menu Pagination
-
-Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
-
-**Depends on:** 011
-
----
-
-### 028 · Common Screen Layout
-
-Introduce a `ScreenChrome` component that renders a 2-row header (`:: SYSTEM :: … :: [M] MENU ::` / `:: DESTINATION :: … :: credits CR ::`) and a 1-row footer nav (`:: [1] NAV1 :: [2] NAV2 ::::`) into every scene's buffer. Exports layout constants (`CONTENT_TOP`, `contentBottom(h, showFooter)`) so scenes no longer hard-code row numbers. Updates `BaseMenuScene` with left-aligned titles, backtick underlines, and richer `MenuItemDef` (simple / info / multi-line). Story screen suppresses both zones; Ship screen keeps header only. Replaces the existing `NavBar` component. Also removes all per-scene hint text permanently (supersedes 016).
-See `docs/features/028-common-screen-layout.md` for the full spec.
-
-**Depends on:** 011, 015
 
 ---
 
