@@ -12,6 +12,21 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
+### 029 · Freighter as Starting Ship
+
+Add `starting_ship: freighter` to `docs/world/game-settings.md`. Extend
+`GameSettings` with `startingShip: string` and propagate it into the hardcoded
+`WORLD.settings`. Add `getShip(id)` to `world-data.ts`. Replace the hardcoded
+`INITIAL_STATE` in `ShipScene.ts` with values derived from the ship record:
+`cargoCapacity` from `ship.cargoCapacityKg`, `credits` from
+`settings.player.startingCredits`, fuel starts at 100%. Update the status bar
+unit from `T` to `KG`. Update the corresponding test expectations.
+See `docs/features/029-freighter-starting-ship.md` for the full spec.
+
+**Depends on:** 011, 019
+
+---
+
 ### 028 · Common Screen Layout
 
 Introduce a `ScreenChrome` component that renders a 2-row header (`:: SYSTEM :: … :: [M] MENU ::` / `:: DESTINATION :: … :: credits CR ::`) and a 1-row footer nav (`:: [1] NAV1 :: [2] NAV2 ::::`) into every scene's buffer. Exports layout constants (`CONTENT_TOP`, `contentBottom(h, showFooter)`) so scenes no longer hard-code row numbers. Updates `BaseMenuScene` with left-aligned titles, backtick underlines, and richer `MenuItemDef` (simple / info / multi-line). Story screen suppresses both zones; Ship screen keeps header only. Replaces the existing `NavBar` component. Also removes all per-scene hint text permanently (supersedes 016). Includes digit-key nav shortcuts (supersedes 024): adds `NAV_1`–`NAV_9` to `GameAction` and wires digit keys in both input handlers so `1` activates the leftmost footer button, `2` the next, etc.
