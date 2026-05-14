@@ -52,6 +52,9 @@ properties:
       trader:
         type: string
         description: display name of the trader NPC
+      ship_dealer:
+        type: string
+        description: display name of the ship dealer NPC
   goods_bias:
     type: array
     items:

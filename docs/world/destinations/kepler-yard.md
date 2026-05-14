@@ -12,6 +12,9 @@ amenities:
   fuel: true
   ship_dealer: true
 
+npcs:
+  ship_dealer: Dealer Mast
+
 goods_bias:
   - mining
   - salvage
