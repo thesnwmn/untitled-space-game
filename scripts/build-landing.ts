@@ -105,10 +105,9 @@ const html = `<!DOCTYPE html>
     <a class="tile" href="docs/index.html">
       <span class="tile-label">[ WORLD DOCS ]</span>
     </a>
-    <span class="tile disabled">
+    <a class="tile" href="map/index.html">
       <span class="tile-label">[ GALAXY MAP ]</span>
-      <span class="tile-sub">(coming soon)</span>
-    </span>
+    </a>
   </div>
   <footer>UNTITLED SPACE GAME</footer>
 </body>

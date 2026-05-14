@@ -14,6 +14,9 @@ const STYLE = `
     --red: #ff0000;
     --blue: #0000ff;
     --magenta: #ff00ff;
+    --bright-cyan: #55ffff;
+    --bright-yellow: #ffff55;
+    --bright-magenta: #ff55ff;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
