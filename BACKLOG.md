@@ -22,12 +22,11 @@ Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for inpu
 
 Make NavBar buttons (`[UNDOCK]`, `[HUB]`) reachable by number keys: `1` activates
 the leftmost button, `2` the next, etc. Applies in terminal and browser keyboard
-mode. In keyboard mode the buttons render as `[1:UNDOCK]` / `[2:HUB]` so the
-shortcut is self-documenting. Adds `NAV_1`–`NAV_9` to `GameAction`; wires digit
-keys in both input handlers; adds `showIndices` param to `NavBar.render()` and a
-new `getOptionId()` method; updates `StationMenuScene`, `TraderScene`, and
-`MissionBoardScene` handlers and keyboard hints. See
-`docs/features/024-navbar-keyboard-shortcuts.md` for the full spec.
+mode. `NavOption` gains an `action` callback; `NavBar` takes `inputHandler` in its
+constructor and self-registers `onAction`/`onTap` — scenes need no nav input code.
+In keyboard mode buttons render as `[1:UNDOCK]` / `[2:HUB]` so the shortcut is
+self-documenting. Adds `NAV_1`–`NAV_9` to `GameAction`; wires digit keys in both
+input handlers. See `docs/features/024-navbar-keyboard-shortcuts.md` for the full spec.
 
 ---
 
