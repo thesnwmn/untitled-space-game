@@ -227,8 +227,6 @@ Format: `[ Tab 1 | Tab 2 | Tab 3 ]`
 - Outer `[` and `]` — `bright-black`
 - Separator `|` — `bright-black`
 - **Active tab**: space + label + space — `black` fg, `green` bg (inverted).
-  In terminal environments where background colour cannot be set, use `bright-green`
-  fg on `black` bg instead.
 - **Inactive tab**: space + label + space — `white` fg, `black` bg
 
 Tab bar is centered in the content zone width. LEFT/RIGHT keys switch tabs.
