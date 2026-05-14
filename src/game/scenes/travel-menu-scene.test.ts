@@ -34,7 +34,20 @@ function allText(buffer: CharBuffer): string {
   return buffer.map(row => row.map(c => c.char).join('')).join('\n');
 }
 
-const context: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const context: GameContext = {
+  environment: 'browser', primaryInput: 'keyboard', debug: false,
+  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
+};
+
+// TAB_ROW = CONTENT_TOP + 3 = 6
+// Tab layout: "| DESTINATIONS | JUMPS |" left-aligned at col 2
+// | at 2, DESTINATIONS area: cols 3–16, | at 17, JUMPS area: cols 18–24, | at 25
+const TAB_ROW = 6;
+const DEST_TAB_COL = 10; // middle of DESTINATIONS area (cols 3-16)
+const JUMP_TAB_COL = 21; // middle of JUMPS area (cols 18-24)
+
+// ITEM_ROW_START = CONTENT_TOP + 4 = 7
+const ITEM_ROW_START = 7;
 
 // ── render ───────────────────────────────────────────────────────────────────
 
@@ -73,22 +86,17 @@ describe('TravelMenuScene render', () => {
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     const text = allText(buf);
-    expect(text).toContain('[DESTINATIONS]');
-    expect(text).toContain('[JUMPS]');
+    expect(text).toContain('DESTINATIONS');
+    expect(text).toContain('JUMPS');
   });
 
-  it('DESTINATIONS is highlighted on initial render', () => {
+  it('DESTINATIONS is highlighted (bg green) on initial render', () => {
     const input = new MockInputHandler();
     const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // Find the row containing [DESTINATIONS] — it should be bright-green
-    const tabRow = buf[6];
-    const destIdx = tabRow.findIndex((_, i) =>
-      tabRow.slice(i, i + 14).map(c => c.char).join('') === '[DESTINATIONS]'
-    );
-    expect(destIdx).toBeGreaterThanOrEqual(0);
-    expect(tabRow[destIdx].fg).toBe('bright-green');
+    expect(buf[TAB_ROW][DEST_TAB_COL].bg).toBe('green');
+    expect(buf[TAB_ROW][JUMP_TAB_COL].bg).toBe('black');
   });
 
   it('shows destinations from the current system in DESTINATIONS tab', () => {
@@ -104,13 +112,13 @@ describe('TravelMenuScene render', () => {
     const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // Find cell that starts the label "ELYSIUM STATION" — should be bright-black
+    // Search only item rows (ITEM_ROW_START+) to avoid the chrome header which also shows the name
     let found = false;
-    for (const row of buf) {
-      const text = row.map(c => c.char).join('');
+    for (let r = ITEM_ROW_START; r < buf.length; r++) {
+      const text = buf[r].map(c => c.char).join('');
       const idx = text.indexOf('ELYSIUM STATION');
       if (idx >= 0) {
-        expect(row[idx].fg).toBe('bright-black');
+        expect(buf[r][idx].fg).toBe('bright-black');
         found = true;
         break;
       }
@@ -123,11 +131,9 @@ describe('TravelMenuScene render', () => {
     const scene = new TravelMenuScene(input, context, 'alpha-centauri', null, vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // All item rows at ITEM_ROW_START+ should not be bright-black
     const system = getSystem('alpha-centauri')!;
     for (let i = 0; i < system.destinations.length; i++) {
-      const row = buf[8 + i];
-      // the item text starts at col 2; check the label chars
+      const row = buf[ITEM_ROW_START + i];
       const labelChars = row.slice(2).filter(c => c.char !== ' ');
       for (const cell of labelChars) {
         expect(cell.fg).not.toBe('bright-black');
@@ -142,9 +148,7 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
   it('SELECT on a non-current destination calls onDestinationSelected', () => {
     const onDest = vi.fn();
     const input = new MockInputHandler();
-    // Sol destinations: elysium-station(0,greyed), galileo-transfer(1), ...
     new TravelMenuScene(input, context, 'sol', 'elysium-station', onDest, vi.fn(), vi.fn(), vi.fn());
-    // Move down to second item (galileo-transfer)
     input.triggerAction('DOWN');
     input.triggerAction('SELECT');
     expect(onDest).toHaveBeenCalledTimes(1);
@@ -156,7 +160,6 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
     const onDest = vi.fn();
     const input = new MockInputHandler();
     new TravelMenuScene(input, context, 'sol', 'elysium-station', onDest, vi.fn(), vi.fn(), vi.fn());
-    // Cursor starts at 0 (elysium-station, greyed)
     input.triggerAction('SELECT');
     expect(onDest).not.toHaveBeenCalled();
   });
@@ -174,19 +177,14 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
 // ── JUMPS tab keyboard ────────────────────────────────────────────────────────
 
 describe('TravelMenuScene JUMPS tab', () => {
-  it('RIGHT switches to JUMPS tab', () => {
+  it('RIGHT switches to JUMPS tab (bg green on JUMPS area)', () => {
     const input = new MockInputHandler();
     const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // JUMPS tab should now be bright-green
-    const tabRow = buf[6];
-    const jumpsIdx = tabRow.findIndex((_, i) =>
-      tabRow.slice(i, i + 7).map(c => c.char).join('') === '[JUMPS]'
-    );
-    expect(jumpsIdx).toBeGreaterThanOrEqual(0);
-    expect(tabRow[jumpsIdx].fg).toBe('bright-green');
+    expect(buf[TAB_ROW][JUMP_TAB_COL].bg).toBe('green');
+    expect(buf[TAB_ROW][DEST_TAB_COL].bg).toBe('black');
   });
 
   it('RIGHT then render shows jump routes', () => {
@@ -212,18 +210,15 @@ describe('TravelMenuScene JUMPS tab', () => {
     expect(getSystem(calledId)).toBeDefined();
   });
 
-  it('LEFT from JUMPS switches back to DESTINATIONS', () => {
+  it('LEFT from JUMPS switches back to DESTINATIONS (bg green on DESTINATIONS area)', () => {
     const input = new MockInputHandler();
     const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     input.triggerAction('LEFT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    const tabRow = buf[6];
-    const destIdx = tabRow.findIndex((_, i) =>
-      tabRow.slice(i, i + 14).map(c => c.char).join('') === '[DESTINATIONS]'
-    );
-    expect(tabRow[destIdx].fg).toBe('bright-green');
+    expect(buf[TAB_ROW][DEST_TAB_COL].bg).toBe('green');
+    expect(buf[TAB_ROW][JUMP_TAB_COL].bg).toBe('black');
   });
 });
 
@@ -245,25 +240,6 @@ describe('TravelMenuScene SHIP navigation', () => {
     input.triggerAction('BACK');
     expect(onShip).toHaveBeenCalledTimes(1);
   });
-
-  it('renders [SHIP] NavBar button', () => {
-    const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), vi.fn(), vi.fn());
-    const buf = makeBuffer(40, 30);
-    scene.render(buf);
-    expect(allText(buf)).toContain('[SHIP]');
-  });
-
-  it('NavBar tap on [SHIP] calls onShip', () => {
-    const onShip = vi.fn();
-    const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), vi.fn(), onShip);
-    // NavBar builds hit ranges during render — must render before tapping
-    scene.render(makeBuffer(40, 30));
-    // [SHIP] is 6 chars centred on w=40: startCol=17, so col 18 is inside it
-    input.triggerTap(18, 1);
-    expect(onShip).toHaveBeenCalledTimes(1);
-  });
 });
 
 // ── FLY INTO SPACE ────────────────────────────────────────────────────────────
@@ -281,7 +257,6 @@ describe('TravelMenuScene FLY INTO SPACE', () => {
     const onFlyIntoSpace = vi.fn();
     const input = new MockInputHandler();
     const system = getSystem('sol')!;
-    // Navigate to the last item (FLY INTO SPACE = after all real destinations)
     new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn());
     for (let i = 0; i < system.destinations.length; i++) input.triggerAction('DOWN');
     input.triggerAction('SELECT');
@@ -309,7 +284,6 @@ describe('TravelMenuScene FLY INTO SPACE', () => {
     const system = getSystem('sol')!;
     const input = new MockInputHandler();
     new TravelMenuScene(input, context, 'sol', null, vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn());
-    // Navigate to FLY INTO SPACE (last item)
     for (let i = 0; i < system.destinations.length; i++) input.triggerAction('DOWN');
     input.triggerAction('SELECT');
     expect(onFlyIntoSpace).not.toHaveBeenCalled();

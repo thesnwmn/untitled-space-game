@@ -1,7 +1,6 @@
-import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered } from '../../shared/buffer-utils';
+import type { InputHandler, GameContext } from '../../shared/types';
 import { getDestination } from '../world/world-data';
-import { NavBar } from '../ui/NavBar';
+import { BaseMenuScene, type MenuItemDef, type TabDef } from './BaseMenuScene';
 
 interface TraderItem {
   name: string;
@@ -37,136 +36,77 @@ const TRADERS: Trader[] = [
   },
 ];
 
-type TabKey = 'BUY' | 'SELL';
+export class TraderScene extends BaseMenuScene {
+  private readonly onHub: () => void;
+  private readonly onUndock: () => void;
 
-const TAB_ROW = 5;
-const BUY_TAB_COL = 10;
-const SELL_TAB_COL = 17;
-const ITEM_ROW_START = 7;
-const ITEM_COL = 1;
-
-export class TraderScene implements Scene {
-  private readonly trader: Trader;
-  private readonly traderName: string;
-  private readonly context: GameContext;
-  private readonly navBar: NavBar;
-  private activeTab: TabKey = 'BUY';
-  private cursorIdx = 0;
-  private activated = false;
-
-  constructor(inputHandler: InputHandler, context: GameContext, destinationId: string, onHub: () => void, onUndock: () => void) {
+  constructor(
+    inputHandler: InputHandler,
+    context: GameContext,
+    destinationId: string,
+    onHub: () => void,
+    onUndock: () => void,
+  ) {
     const dest = getDestination(destinationId)!;
-    this.traderName = dest.npcs.trader?.toUpperCase() ?? 'TRADER';
-    this.trader = TRADERS[0];
-    this.context = context;
-    this.navBar = new NavBar(
-      dest.name.toUpperCase(),
-      [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
-    );
+    const traderName = dest.npcs.trader?.toUpperCase() ?? 'TRADER';
+    const trader = TRADERS[0];
 
-    inputHandler.onAction((action) => {
-      if (this.activated) return;
-      const items = this.currentItems();
-      if (action === 'UP') {
-        this.cursorIdx = (this.cursorIdx - 1 + items.length) % items.length;
-      } else if (action === 'DOWN') {
-        this.cursorIdx = (this.cursorIdx + 1) % items.length;
-      } else if (action === 'LEFT') {
-        this.activeTab = 'BUY';
-        this.cursorIdx = 0;
-      } else if (action === 'RIGHT') {
-        this.activeTab = 'SELL';
-        this.cursorIdx = 0;
-      } else if (action === 'SELECT') {
-        const item = this.currentItems()[this.cursorIdx];
-        console.log(`[Trader] Selected ${item.name}`);
-      } else if (action === 'BACK') {
-        this.activated = true;
-        onHub();
-      }
+    const toMenuItem = (item: TraderItem, label: string): MenuItemDef => ({
+      label,
+      info: `${item.price} CR`,
+      action: () => console.log(`[Trader] Selected ${item.name}`),
     });
 
-    if (inputHandler.onTap) {
-      inputHandler.onTap((col, row) => {
-        if (this.activated) return;
-        const navHit = this.navBar.hitTest(col, row);
-        if (navHit === 'hub')    { this.activated = true; onHub();    return; }
-        if (navHit === 'undock') { this.activated = true; onUndock(); return; }
-        if (row === TAB_ROW && col >= BUY_TAB_COL && col < BUY_TAB_COL + 5) {
-          this.activeTab = 'BUY';
-          this.cursorIdx = 0;
-          return;
-        }
-        if (row === TAB_ROW && col >= SELL_TAB_COL && col < SELL_TAB_COL + 6) {
-          this.activeTab = 'SELL';
-          this.cursorIdx = 0;
-          return;
-        }
-        const items = this.currentItems();
-        for (let i = 0; i < items.length; i++) {
-          if (row === ITEM_ROW_START + i) {
-            this.cursorIdx = i;
-            console.log(`[Trader] Selected ${items[i].name}`);
-            return;
-          }
-        }
-      });
+    const buyItems: MenuItemDef[] = trader.buyList.map(item =>
+      toMenuItem(item, item.name)
+    );
+    const sellItems: MenuItemDef[] = trader.sellList.map(item =>
+      toMenuItem(item, item.qty !== undefined ? `${item.name} (x${item.qty})` : item.name)
+    );
+
+    const tabs: TabDef[] = [
+      { label: 'BUY', items: buyItems },
+      { label: 'SELL', items: sellItems },
+    ];
+
+    super(
+      traderName,
+      [],
+      [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
+      inputHandler,
+      context,
+      [],
+      tabs,
+    );
+
+    this.onHub = onHub;
+    this.onUndock = onUndock;
+  }
+
+  protected override activateCurrent(): void {
+    if (this.items.length === 0) return;
+    const item = this.items[this.cursorIdx];
+    if (item.disabled) return;
+    item.action();
+  }
+
+  protected override handleNavAction(action: string): void {
+    if ((action === 'BACK' || action === 'NAV_2') && !this.activated) {
+      this.activated = true;
+      this.onHub();
+    } else if (action === 'NAV_1' && !this.activated) {
+      this.activated = true;
+      this.onUndock();
     }
   }
 
-  private currentItems(): TraderItem[] {
-    return this.activeTab === 'BUY' ? this.trader.buyList : this.trader.sellList;
-  }
-
-  private displayName(item: TraderItem): string {
-    if (this.activeTab === 'SELL' && item.qty !== undefined) {
-      return `${item.name} (x${item.qty})`;
+  protected override handleNavTap(navId: string): void {
+    if (navId === 'hub' && !this.activated) {
+      this.activated = true;
+      this.onHub();
+    } else if (navId === 'undock' && !this.activated) {
+      this.activated = true;
+      this.onUndock();
     }
-    return item.name;
-  }
-
-  update(_dt: number): void {}
-
-  render(buffer: CharBuffer): void {
-    const h = buffer.length;
-    const w = h > 0 ? buffer[0].length : 0;
-
-    for (let r = 0; r < h; r++) {
-      for (let c = 0; c < w; c++) {
-        buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-      }
-    }
-
-    this.navBar.render(buffer);
-
-    writeCentered(buffer, 3, this.traderName, 'cyan', 'black');
-    writeCentered(buffer, 4, '='.repeat(this.traderName.length), 'cyan', 'black');
-
-    const buyFg: Color = this.activeTab === 'BUY' ? 'bright-green' : 'white';
-    const sellFg: Color = this.activeTab === 'SELL' ? 'bright-green' : 'white';
-    writeText(buffer, TAB_ROW, BUY_TAB_COL, '[BUY]', buyFg, 'black');
-    writeText(buffer, TAB_ROW, SELL_TAB_COL, '[SELL]', sellFg, 'black');
-
-    const contentWidth = w - 2;
-    const items = this.currentItems();
-    for (let i = 0; i < items.length; i++) {
-      const row = ITEM_ROW_START + i;
-      if (row >= h) continue;
-      const item = items[i];
-      const isCursor = i === this.cursorIdx;
-      const prefix = isCursor ? '> ' : '  ';
-      const name = this.displayName(item);
-      const priceStr = `${item.price} CR`;
-      const dotLen = Math.max(1, contentWidth - prefix.length - name.length - 2 - priceStr.length);
-      const itemText = `${prefix}${name} ${'.'.repeat(dotLen)} ${priceStr}`;
-      const fg: Color = isCursor ? 'bright-green' : 'white';
-      writeText(buffer, row, ITEM_COL, itemText, fg, 'black');
-    }
-
-    const footerRow = h - 3;
-    const hint = this.context.primaryInput === 'touch'
-      ? 'TAP to select   2-finger exit'
-      : '↑↓ navigate   ESC return';
-    writeCentered(buffer, footerRow, hint, 'bright-black', 'black');
   }
 }

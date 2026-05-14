@@ -7,10 +7,21 @@ const KEY_MAP: Record<string, GameAction> = {
   ArrowRight: 'RIGHT',
   PageUp: 'PAGE_UP',
   PageDown: 'PAGE_DOWN',
+  '[': 'PAGE_UP',
+  ']': 'PAGE_DOWN',
   Enter: 'SELECT',
   Escape: 'BACK',
   p: 'PAUSE',
   P: 'PAUSE',
+  '1': 'NAV_1',
+  '2': 'NAV_2',
+  '3': 'NAV_3',
+  '4': 'NAV_4',
+  '5': 'NAV_5',
+  '6': 'NAV_6',
+  '7': 'NAV_7',
+  '8': 'NAV_8',
+  '9': 'NAV_9',
 };
 
 const PREVENT_DEFAULT_KEYS = new Set([

@@ -38,7 +38,9 @@ export interface Scene {
 export type GameAction =
   | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
   | 'SELECT' | 'BACK' | 'PAUSE'
-  | 'PAGE_UP' | 'PAGE_DOWN';
+  | 'PAGE_UP' | 'PAGE_DOWN'
+  | 'NAV_1' | 'NAV_2' | 'NAV_3' | 'NAV_4' | 'NAV_5'
+  | 'NAV_6' | 'NAV_7' | 'NAV_8' | 'NAV_9';
 
 export type RuntimeEnvironment = 'browser' | 'terminal';
 export type PrimaryInput = 'keyboard' | 'touch';
@@ -47,4 +49,7 @@ export interface GameContext {
   environment: RuntimeEnvironment;
   primaryInput: PrimaryInput;
   debug: boolean;
+  systemId: string;
+  destinationId: string | null;
+  credits: number;
 }

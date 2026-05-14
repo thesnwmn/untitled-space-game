@@ -44,14 +44,6 @@ See `docs/features/030-fuel-management.md` for the full spec.
 
 ---
 
-### 028 · Common Screen Layout
-
-Introduce a `ScreenChrome` component that renders a 2-row header (`:: SYSTEM :: … :: [M] MENU ::` / `:: DESTINATION :: … :: credits CR ::`) and a 1-row footer nav (`:: [1] NAV1 :: [2] NAV2 ::::`) into every scene's buffer. Exports layout constants (`CONTENT_TOP`, `contentBottom(h, showFooter)`) so scenes no longer hard-code row numbers. Updates `BaseMenuScene` with left-aligned titles, backtick underlines, and richer `MenuItemDef` (simple / info / multi-line). Story screen suppresses both zones; Ship screen keeps header only. Replaces the existing `NavBar` component. Also removes all per-scene hint text permanently (supersedes 016). Includes digit-key nav shortcuts (supersedes 024): adds `NAV_1`–`NAV_9` to `GameAction` and wires digit keys in both input handlers so `1` activates the leftmost footer button, `2` the next, etc.
-See `docs/features/028-common-screen-layout.md` for the full spec.
-
-**Depends on:** 011, 015
-
----
 
 ### 020 · World Data File Loader
 
@@ -100,6 +92,44 @@ _(none)_
 ---
 
 ## DONE
+
+### 028 · Common Screen Layout
+
+**Built:**
+- `src/shared/types.ts` — added `NAV_1`–`NAV_9` to `GameAction`; added `systemId: string`, `destinationId: string | null`, `credits: number` to `GameContext`
+- `src/game/ui/ScreenChrome.ts` — new component; 2-row header (system name row 0, destination/credits row 1) and 1-row footer nav (`:: [1] LABEL :: [2] LABEL ::::`); exports `CONTENT_TOP = 3`, `CONTENT_TOP_NO_HEADER`, `contentBottom(h, showFooter)`; `hitTestNav(col, row)` returns nav id or null
+- `src/game/ui/ScreenChrome.test.ts` — 14 tests covering header rows, credits formatting, footer nav, hitTestNav
+- `src/platform/dom/DOMInputHandler.ts` — added digit keys `1`–`9` → `NAV_1`–`NAV_9`; `[`/`]` → `PAGE_UP`/`PAGE_DOWN`
+- `src/platform/terminal/TerminalInputHandler.ts` — same key mappings
+- `src/game/scenes/BaseMenuScene.ts` — rewritten; `MenuItemDef` gains optional `info?` and `details?`; ScreenChrome integration; left-aligned title at CONTENT_TOP row 2 in white; backtick underline; `infoLines` parameter shifts item rows; pagination with `|<|` / `|>|` indicator
+- `src/game/scenes/StationMenuScene.ts` — removed NavBar; passes infoLines (3 desc + danger) and `[{ id: 'undock', label: 'UNDOCK' }]` navOptions; BACK/NAV_1 → onShip
+- `src/game/scenes/TraderScene.ts` — removed NavBar; ScreenChrome directly; `[ BUY | SELL ]` tab bar with bg-color highlight; NAV_1 → undock, NAV_2 → hub
+- `src/game/scenes/MissionBoardScene.ts` — removed NavBar; ScreenChrome; NAV_1 → undock, NAV_2 → hub
+- `src/game/scenes/TravelMenuScene.ts` — removed NavBar; ScreenChrome with empty navOptions; `[ DESTINATIONS | JUMPS ]` tab bar with bg-color highlight; BACK → onShip
+- `src/game/scenes/MainMenuScene.ts` — removed hint text rendering
+- `src/game/scenes/StoryScene.ts` — removed hint text; added LEFT/RIGHT paging; `< n/n >` indicator when multi-page
+- `src/game/scenes/ShipScene.ts` — dropped `systemId`/`destinationId` constructor params (now from context); ScreenChrome header-only; fuel/cargo at CONTENT_TOP; viewport CONTENT_TOP+1 to h-4; separator h-3; buttons h-2; no window border; no footer hint
+- `src/main.ts` / `terminal.ts` — context gains `systemId`, `destinationId`, `credits`; ShipScene constructor updated
+- `src/game/ui/NavBar.ts`, `src/game/ui/NavBar.test.ts` — deleted
+- All test files updated for new context shape, new row constants, removed hint assertions
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 280/280 tests passed (19 test files)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. `bash init.sh` → must print `=== Environment ready ===`
+2. `npm test` → 19 test files, 280 tests passed
+3. **Browser** `npm run dev` → NEW GAME:
+   - All screens show `:: SOL ::::::: [M] MENU ::` at row 0 and `:: ELYSIUM STATION :::: 5,000 CR ::` at row 1
+   - Station Hub footer: `:: [1] UNDOCK ::::::::::::::::::::`
+   - Trader footer: `:: [1] UNDOCK :: [2] HUB ::::::::`; tab bar `[ BUY | SELL ]` with green-highlight active tab
+   - Mission Board footer: `:: [1] UNDOCK :: [2] HUB ::::::::`
+   - Ship screen: header only (no footer); fuel/cargo row below header; no window border frame
+   - Story screen: no footer hint; left/right paging works if multiple pages; `< 1/2 >` indicator shown
+
+---
 
 ### 026 · Jump System
 

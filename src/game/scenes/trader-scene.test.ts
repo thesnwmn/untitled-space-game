@@ -39,18 +39,29 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
+const keyboardContext: GameContext = {
+  environment: 'browser', primaryInput: 'keyboard', debug: false,
+  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
+};
+const touchContext: GameContext = {
+  environment: 'browser', primaryInput: 'touch', debug: false,
+  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
+};
 
+// CONTENT_TOP = 3; tab row = CONTENT_TOP+3 = 6; item row start = CONTENT_TOP+4 = 7
 const ITEM_ROW_START = 7;
-const TAB_ROW = 5;
-const BUY_TAB_COL = 10;
-const SELL_TAB_COL = 17;
+const TAB_ROW = 6;
 
-// NavBar two options [UNDOCK][HUB] in 40-col buffer: totalWidth=14, startCol=13
-// [UNDOCK] cols 13–20, [HUB] cols 22–26
-const NAV_UNDOCK_COL = 13;
-const NAV_HUB_COL = 22;
+// Tab bar "| BUY | SELL |" left-aligned at col 2
+// | at 2, ' BUY ' at 3-7, | at 8, ' SELL ' at 9-14, | at 15
+const BUY_TAB_COL = 5;    // middle of ' BUY ' (cols 3-7)
+const SELL_TAB_COL = 12;  // middle of ' SELL ' (cols 9-14)
+
+// Footer at row 29 (h-1 for 40×30): ":: [1] UNDOCK :: [2] HUB :::..."
+// [1] UNDOCK: button cols 3-12; [2] HUB: button cols 17-23
+const FOOTER_ROW = 29;
+const NAV_UNDOCK_COL = 3;
+const NAV_HUB_COL = 17;
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -61,55 +72,59 @@ describe('TraderScene', () => {
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][0].char).toBe(' ');
-      expect(buf[0][0].fg).toBe('black');
+      expect(buf[0][0].char).not.toBe('+');
     });
 
-    it('nav bar row 0 contains station name ELYSIUM STATION', () => {
+    it('chrome header row 0 contains system name SOL', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 0)).toContain('ELYSIUM STATION');
-      expect(buf[0].find(c => c.char !== ' ')?.fg).toBe('bright-cyan');
+      expect(rowText(buf, 0)).toContain('SOL');
     });
 
-    it('nav bar row 1 contains both [UNDOCK] and [HUB]', () => {
+    it('chrome footer row h-1 contains [1] UNDOCK and [2] HUB', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 1)).toContain('[UNDOCK]');
-      expect(rowText(buf, 1)).toContain('[HUB]');
+      expect(rowText(buf, FOOTER_ROW)).toContain('[1]');
+      expect(rowText(buf, FOOTER_ROW)).toContain('UNDOCK');
+      expect(rowText(buf, FOOTER_ROW)).toContain('[2]');
+      expect(rowText(buf, FOOTER_ROW)).toContain('HUB');
     });
 
-    it('renders trader name at row 3 in cyan', () => {
+    it('renders trader name at row 3 in bright-white', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MERCHANT KESS');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('cyan');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-white');
     });
 
-    it('renders title rule at row 4 in cyan', () => {
+    it("renders ' underline at row 4 in bright-black", () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 4)).toContain('=============');
-      expect(buf[4].find(c => c.char === '=')?.fg).toBe('cyan');
+      expect(rowText(buf, 4)).toContain("'");
+      expect(buf[4].find(c => c.char === "'")?.fg).toBe('bright-black');
     });
 
-    it('renders [BUY] tab active (bright-green) and [SELL] inactive (white) by default', () => {
+    it('renders | BUY | SELL | tab bar at tab row', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, TAB_ROW)).toContain('[BUY]');
-      expect(rowText(buf, TAB_ROW)).toContain('[SELL]');
-      expect(rowFg(buf, TAB_ROW, BUY_TAB_COL)).toBe('bright-green');
-      expect(rowFg(buf, TAB_ROW, SELL_TAB_COL)).toBe('white');
+      const text = rowText(buf, TAB_ROW);
+      expect(text).toContain('BUY');
+      expect(text).toContain('SELL');
+      // Active BUY tab has green background
+      expect(buf[TAB_ROW][BUY_TAB_COL].bg).toBe('green');
+      expect(buf[TAB_ROW][BUY_TAB_COL].fg).toBe('black');
+      // Inactive SELL tab has black background
+      expect(buf[TAB_ROW][SELL_TAB_COL].bg).toBe('black');
     });
 
     it('renders buy items in content area starting at row 7', () => {
@@ -128,24 +143,7 @@ describe('TraderScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('>');
-      expect(rowFg(buf, ITEM_ROW_START, 1)).toBe('bright-green');
-    });
-
-    it('renders keyboard footer hint', () => {
-      const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 27)).toContain('ESC return');
-      expect(buf[27].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-black');
-    });
-
-    it('renders touch footer hint for touch context', () => {
-      const input = new MockInputHandler();
-      const scene = new TraderScene(input, touchContext, 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 27)).toContain('TAP to select');
+      expect(rowFg(buf, ITEM_ROW_START, 2)).toBe('bright-green');
     });
   });
 
@@ -157,7 +155,7 @@ describe('TraderScene', () => {
       input.triggerAction('DOWN');
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START + 1)).toContain('>');
-      expect(rowFg(buf, ITEM_ROW_START + 1, 1)).toBe('bright-green');
+      expect(rowFg(buf, ITEM_ROW_START + 1, 2)).toBe('bright-green');
     });
 
     it('UP from first item wraps to last item', () => {
@@ -176,8 +174,8 @@ describe('TraderScene', () => {
       input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowFg(buf, TAB_ROW, SELL_TAB_COL)).toBe('bright-green');
-      expect(rowFg(buf, TAB_ROW, BUY_TAB_COL)).toBe('white');
+      expect(buf[TAB_ROW][SELL_TAB_COL].bg).toBe('green');
+      expect(buf[TAB_ROW][BUY_TAB_COL].bg).toBe('black');
       expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies (x5)');
       expect(rowText(buf, ITEM_ROW_START)).toContain('>');
     });
@@ -200,7 +198,7 @@ describe('TraderScene', () => {
       input.triggerAction('LEFT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowFg(buf, TAB_ROW, BUY_TAB_COL)).toBe('bright-green');
+      expect(buf[TAB_ROW][BUY_TAB_COL].bg).toBe('green');
       expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
     });
 
@@ -222,28 +220,48 @@ describe('TraderScene', () => {
       input.triggerAction('BACK');
       expect(onHub).toHaveBeenCalledTimes(1);
     });
+
+    it('NAV_2 calls onHub', () => {
+      const onHub = vi.fn();
+      const input = new MockInputHandler();
+      new TraderScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
+      input.triggerAction('NAV_2');
+      expect(onHub).toHaveBeenCalledTimes(1);
+    });
+
+    it('NAV_1 calls onUndock', () => {
+      const onUndock = vi.fn();
+      const input = new MockInputHandler();
+      new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), onUndock);
+      input.triggerAction('NAV_1');
+      expect(onUndock).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('touch navigation', () => {
-    it('tap on BUY tab switches back from SELL to BUY', () => {
+    it('tap on BUY tab area switches back from SELL to BUY', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('RIGHT'); // switch to SELL first
-      input.triggerTap(BUY_TAB_COL, TAB_ROW); // tap BUY
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowFg(buf, TAB_ROW, BUY_TAB_COL)).toBe('bright-green');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
+      input.triggerTap(BUY_TAB_COL, TAB_ROW);
+      const buf2 = makeBuffer(40, 30);
+      scene.render(buf2);
+      expect(buf2[TAB_ROW][BUY_TAB_COL].bg).toBe('green');
+      expect(rowText(buf2, ITEM_ROW_START)).toContain('Iron Ore');
     });
 
-    it('tap on SELL tab switches to SELL and shows qty', () => {
+    it('tap on SELL tab area switches to SELL and shows qty', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
-      input.triggerTap(SELL_TAB_COL, TAB_ROW);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowFg(buf, TAB_ROW, SELL_TAB_COL)).toBe('bright-green');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies (x5)');
+      input.triggerTap(SELL_TAB_COL, TAB_ROW);
+      const buf2 = makeBuffer(40, 30);
+      scene.render(buf2);
+      expect(buf2[TAB_ROW][SELL_TAB_COL].bg).toBe('green');
+      expect(rowText(buf2, ITEM_ROW_START)).toContain('Water Supplies (x5)');
     });
 
     it('tap on item row logs placeholder', () => {
@@ -255,27 +273,27 @@ describe('TraderScene', () => {
       consoleSpy.mockRestore();
     });
 
-    it('tap on [UNDOCK] nav button fires onUndock and silences input', () => {
+    it('tap on footer UNDOCK button fires onUndock and silences input', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), onUndock);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(NAV_UNDOCK_COL, 1);
+      input.triggerTap(NAV_UNDOCK_COL, FOOTER_ROW);
       expect(onUndock).toHaveBeenCalledTimes(1);
-      input.triggerTap(NAV_UNDOCK_COL, 1);
+      input.triggerTap(NAV_UNDOCK_COL, FOOTER_ROW);
       expect(onUndock).toHaveBeenCalledTimes(1);
     });
 
-    it('tap on [HUB] nav button fires onHub and silences input', () => {
+    it('tap on footer HUB button fires onHub and silences input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(NAV_HUB_COL, 1);
+      input.triggerTap(NAV_HUB_COL, FOOTER_ROW);
       expect(onHub).toHaveBeenCalledTimes(1);
-      input.triggerTap(NAV_HUB_COL, 1);
+      input.triggerTap(NAV_HUB_COL, FOOTER_ROW);
       expect(onHub).toHaveBeenCalledTimes(1);
     });
   });
