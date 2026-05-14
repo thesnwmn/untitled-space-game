@@ -12,7 +12,11 @@ Introduce a `ScreenChrome` component that renders a consistent 2-row header and
 within a well-defined zone defined by exported layout constants, so changing the
 chrome component updates every screen automatically.
 
+Also removes all per-scene hint text permanently. Hints are gone entirely; if
+they return in future they will be part of screen chrome and togglable.
+
 Replaces the existing `NavBar` component (feature 015).
+Supersedes feature 016 (Hint Overlay) — that feature is cancelled.
 
 ---
 
@@ -263,6 +267,7 @@ Wrapping: page 1 → last page → page 1.
 - Subclasses supply `navOptions` and optional `infoLines: string[]` at construction.
 - `MenuItemDef` updated as described above; item height accounting updated for
   multi-line items.
+- **Remove** hint `writeCentered` call and any `KEYBOARD_HINT`/`TOUCH_HINT` constants.
 
 ### `StationMenuScene`
 
@@ -277,19 +282,23 @@ Wrapping: page 1 → last page → page 1.
 - Tab bar shifts to `CONTENT_TOP + 2` (was row 5).
 - Item list starts at `CONTENT_TOP + 4` (was row 7).
 - Footer hit test via `this.chrome.hitTestNav(col, row)`.
+- **Remove** hint `writeCentered` call and hint constants.
 
 ### `MissionBoardScene`
 
 - Identical changes to `TraderScene`.
+- **Remove** hint `writeCentered` call and hint constants.
 
 ### `TravelMenuScene`
 
 - `navOptions`: `[]` (empty → footer is all `:` chars).
 - Render chrome; content within zone.
+- **Remove** hint `writeCentered` call and hint constants.
 
 ### `MainMenuScene`
 
 - `showHeader: false`, `showFooter: false` (full-screen title card, unchanged).
+- **Remove** hint `writeCentered` call and hint constants.
 
 ### `StoryScene`
 
@@ -298,6 +307,7 @@ Wrapping: page 1 → last page → page 1.
 - **Paging**: when wrapped text exceeds available rows, render `< n/n >` at
   bottom-right (col `w - 9`, row `h - 1`), color `bright-black`. LEFT/RIGHT
   navigate pages.
+- **Remove** `KEYBOARD_HINT`/`TOUCH_HINT` constants and hint `writeCentered` call.
 
 ### `ShipScene`
 
@@ -313,7 +323,7 @@ Wrapping: page 1 → last page → page 1.
 - **Action buttons**: row `h - 2`. Left half: cursor + `[ T ] TRAVEL`,
   right half: cursor + `[ D ] DOCK` (greyed when in space). Layout unchanged
   from current implementation.
-- **Hint**: row `h - 1`, centered, `bright-black`.
+- Row `h - 1` is empty. **Remove** hint `writeCentered` call and hint constants.
 
 ---
 
@@ -326,14 +336,14 @@ Wrapping: page 1 → last page → page 1.
 | `src/game/ui/ScreenChrome.test.ts` | **New** — unit tests |
 | `src/game/ui/NavBar.ts` | **Deleted** — superseded by ScreenChrome |
 | `src/game/ui/NavBar.test.ts` | **Deleted** |
-| `src/game/scenes/BaseMenuScene.ts` | Updated `MenuItemDef`, title style, chrome wiring |
+| `src/game/scenes/BaseMenuScene.ts` | Updated `MenuItemDef`, title style, chrome wiring, remove hint |
 | `src/game/scenes/StationMenuScene.ts` | Remove NavBar, use chrome |
-| `src/game/scenes/TraderScene.ts` | Remove NavBar, use chrome; shift tab/item rows |
-| `src/game/scenes/MissionBoardScene.ts` | Remove NavBar, use chrome; shift tab/item rows |
-| `src/game/scenes/TravelMenuScene.ts` | Use chrome |
-| `src/game/scenes/MainMenuScene.ts` | Pass `showHeader/Footer: false` (no visual change) |
-| `src/game/scenes/StoryScene.ts` | Suppress chrome; add paging |
-| `src/game/scenes/ShipScene.ts` | Header chrome only; drop location params; new viewport/button layout |
+| `src/game/scenes/TraderScene.ts` | Remove NavBar, use chrome; shift tab/item rows; remove hint |
+| `src/game/scenes/MissionBoardScene.ts` | Remove NavBar, use chrome; shift tab/item rows; remove hint |
+| `src/game/scenes/TravelMenuScene.ts` | Use chrome; remove hint |
+| `src/game/scenes/MainMenuScene.ts` | Pass `showHeader/Footer: false`; remove hint |
+| `src/game/scenes/StoryScene.ts` | Suppress chrome; add paging; remove hint |
+| `src/game/scenes/ShipScene.ts` | Header chrome only; drop location params; new viewport/button layout; remove hint |
 | `main.ts` | Populate new context fields; update scene construction |
 | `terminal.ts` | Same as `main.ts` |
 
@@ -371,6 +381,18 @@ Wrapping: page 1 → last page → page 1.
 | 5 | Multi-line item: label white, details `bright-black` below |
 | 6 | Multi-line item cursor on label row only |
 
+### All scene test files — hint tests removed
+
+Existing keyboard/touch hint assertions (`renders keyboard footer hint`, `renders touch footer hint`) are deleted from:
+
+- `station-menu-scene.test.ts`
+- `trader-scene.test.ts`
+- `mission-board-scene.test.ts`
+- `ship-scene.test.ts`
+- `story-scene.test.ts`
+
+No replacement hint tests are added — hints no longer exist.
+
 ---
 
 ## Acceptance Criteria
@@ -385,6 +407,7 @@ Wrapping: page 1 → last page → page 1.
 - ✓ Menu titles are left-aligned with backtick underline
 - ✓ Active tab: green background, black text (or bright-green text on terminal fallback)
 - ✓ Pager appears only when items exceed visible rows; PAGE_UP/PAGE_DOWN and `[`/`]` work
+- ✓ No hint text appears on any screen
 - ✓ All existing keyboard and touch navigation behaves as before
 - ✓ `tsc --noEmit` — zero errors
 - ✓ All tests pass
