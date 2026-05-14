@@ -41,7 +41,7 @@ export abstract class BaseMenuScene implements Scene {
   private readonly navOptions: ReadonlyArray<NavOption>;
   protected readonly infoLines: string[];
   protected readonly itemStartRow: number;
-  protected cursorIdx = 0;
+  protected cursorIdx = -1;
   private pageIndex = 0;
   private lastPageCount = 1;
   protected activated = false;
@@ -74,22 +74,24 @@ export abstract class BaseMenuScene implements Scene {
         this.moveCursor(1);
       } else if (action === 'LEFT' && this.tabs !== null) {
         this.activeTabIdx = Math.max(0, this.activeTabIdx - 1);
-        this.cursorIdx = 0;
+        this.resetCursor();
       } else if (action === 'RIGHT' && this.tabs !== null) {
         this.activeTabIdx = Math.min(this.tabs.length - 1, this.activeTabIdx + 1);
-        this.cursorIdx = 0;
+        this.resetCursor();
       } else if (action === 'PAGE_UP') {
         this.pageIndex = (this.pageIndex - 1 + this.lastPageCount) % this.lastPageCount;
-        this.cursorIdx = 0;
+        this.resetCursor();
       } else if (action === 'PAGE_DOWN') {
         this.pageIndex = (this.pageIndex + 1) % this.lastPageCount;
-        this.cursorIdx = 0;
+        this.resetCursor();
       } else if (action === 'SELECT') {
         this.activateCurrent();
       } else {
         this.handleNavAction(action);
       }
     });
+
+    this.resetCursor();
 
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
@@ -106,14 +108,14 @@ export abstract class BaseMenuScene implements Scene {
             const len = this.tabs[i].label.length + 2; // ' LABEL '
             if (col >= c && col < c + len) {
               this.activeTabIdx = i;
-              this.cursorIdx = 0;
+              this.resetCursor();
               return;
             }
             c += len + 1; // +1 for | separator
           }
         }
         const itemIdx = this.rowToVisibleItemIndex(row);
-        if (itemIdx !== null) {
+        if (itemIdx !== null && !this.items[itemIdx].disabled) {
           this.cursorIdx = itemIdx;
           this.activateCurrent();
         }
@@ -129,13 +131,23 @@ export abstract class BaseMenuScene implements Scene {
   }
 
   private moveCursor(delta: number): void {
-    const n = this.items.length;
+    const items = this.items;
+    const n = items.length;
     if (n === 0) return;
-    this.cursorIdx = (this.cursorIdx + delta + n) % n;
+    const start = this.cursorIdx === -1
+      ? (delta > 0 ? n - 1 : 0)
+      : this.cursorIdx;
+    for (let tries = 0; tries < n; tries++) {
+      const next = ((start + delta * (tries + 1)) % n + n) % n;
+      if (!items[next].disabled) {
+        this.cursorIdx = next;
+        return;
+      }
+    }
   }
 
   protected activateCurrent(): void {
-    if (this.items.length === 0) return;
+    if (this.items.length === 0 || this.cursorIdx === -1) return;
     const item = this.items[this.cursorIdx];
     if (item.disabled) return;
     this.activated = true;
@@ -151,6 +163,17 @@ export abstract class BaseMenuScene implements Scene {
       r += itemHeight;
     }
     return null;
+  }
+
+  private resetCursor(): void {
+    const items = this.items;
+    for (let i = 0; i < items.length; i++) {
+      if (!items[i].disabled) {
+        this.cursorIdx = i;
+        return;
+      }
+    }
+    this.cursorIdx = -1;
   }
 
   protected handleNavAction(_action: string): void {}

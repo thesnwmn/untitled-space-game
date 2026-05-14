@@ -149,18 +149,19 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
     const onDest = vi.fn();
     const input = new MockInputHandler();
     new TravelMenuScene(input, context, 'sol', 'elysium-station', onDest, vi.fn(), vi.fn(), vi.fn());
-    input.triggerAction('DOWN');
+    // cursor starts on first enabled item (index 1, since index 0 is the current destination)
     input.triggerAction('SELECT');
     expect(onDest).toHaveBeenCalledTimes(1);
     const system = getSystem('sol')!;
     expect(onDest).toHaveBeenCalledWith(system.destinations[1]);
   });
 
-  it('SELECT on the greyed-out current destination does NOT call onDestinationSelected', () => {
+  it('tapping the greyed-out current destination does NOT call onDestinationSelected', () => {
     const onDest = vi.fn();
     const input = new MockInputHandler();
     new TravelMenuScene(input, context, 'sol', 'elysium-station', onDest, vi.fn(), vi.fn(), vi.fn());
-    input.triggerAction('SELECT');
+    // elysium-station is destinations[0] and renders at ITEM_ROW_START
+    input.triggerTap(10, ITEM_ROW_START);
     expect(onDest).not.toHaveBeenCalled();
   });
 
@@ -258,7 +259,8 @@ describe('TravelMenuScene FLY INTO SPACE', () => {
     const input = new MockInputHandler();
     const system = getSystem('sol')!;
     new TravelMenuScene(input, context, 'sol', 'elysium-station', vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn());
-    for (let i = 0; i < system.destinations.length; i++) input.triggerAction('DOWN');
+    // cursor starts at index 1 (first enabled item), so need destinations.length-1 DOWNs to reach FLY INTO SPACE
+    for (let i = 0; i < system.destinations.length - 1; i++) input.triggerAction('DOWN');
     input.triggerAction('SELECT');
     expect(onFlyIntoSpace).toHaveBeenCalledTimes(1);
   });

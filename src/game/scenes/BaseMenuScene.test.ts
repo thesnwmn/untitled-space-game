@@ -179,6 +179,64 @@ describe('BaseMenuScene', () => {
     });
   });
 
+  describe('disabled items', () => {
+    it('cursor skips disabled first item on init and lands on first enabled', () => {
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([
+        { label: 'ALPHA', disabled: true, action: vi.fn() },
+        { label: 'BETA', action: vi.fn() },
+      ], input);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START)).not.toContain('> ALPHA');
+      expect(rowText(buf, ITEM_ROW_START + 1)).toContain('> BETA');
+    });
+
+    it('no cursor shown when all items are disabled', () => {
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([
+        { label: 'ALPHA', disabled: true, action: vi.fn() },
+        { label: 'BETA', disabled: true, action: vi.fn() },
+      ], input);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START)).not.toContain('>');
+      expect(rowText(buf, ITEM_ROW_START + 1)).not.toContain('>');
+    });
+
+    it('SELECT does nothing when all items are disabled', () => {
+      const action = vi.fn();
+      const input = new MockInputHandler();
+      new TestMenuScene([{ label: 'ALPHA', disabled: true, action }], input);
+      input.triggerAction('SELECT');
+      expect(action).not.toHaveBeenCalled();
+    });
+
+    it('DOWN skips disabled items', () => {
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([
+        { label: 'ALPHA', action: vi.fn() },
+        { label: 'BETA', disabled: true, action: vi.fn() },
+        { label: 'GAMMA', action: vi.fn() },
+      ], input);
+      input.triggerAction('DOWN');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START + 2)).toContain('> GAMMA');
+    });
+
+    it('tap on disabled item row does nothing', () => {
+      const action = vi.fn();
+      const input = new MockInputHandler();
+      new TestMenuScene([
+        { label: 'ALPHA', disabled: true, action },
+        { label: 'BETA', action: vi.fn() },
+      ], input);
+      input.triggerTap(10, ITEM_ROW_START);
+      expect(action).not.toHaveBeenCalled();
+    });
+  });
+
   describe('infoLines', () => {
     it('renders infoLines below underline and shifts itemStartRow', () => {
       const input = new MockInputHandler();
