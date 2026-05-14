@@ -51,6 +51,22 @@ Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item li
 
 ---
 
+### 026 · Jump System
+
+Allow the player to jump between star systems via a three-screen flow: a jump
+destination menu (routes from the current system), a 5-second jump animation
+screen (auto-advances, no input), and a system arrival screen (list of
+destinations in the new system — selecting one docks and opens the station
+hub). `ShipScene` gains `destinationId` and `onJump` constructor params;
+`StationMenuScene`, `TraderScene`, and `MissionBoardScene` replace the
+hardcoded `STATION_NAME` import with a `destinationName: string` param.
+Orchestrators gain `currentSystemId` / `currentDestinationId` state.
+All data fed by `getRoutesFrom`, `getSystem`, `getDestination` from the world
+data module. See `docs/features/026-jump-system.md` for the full spec.
+
+**Depends on:** 019
+
+---
 
 ## NEEDS SPEC
 
