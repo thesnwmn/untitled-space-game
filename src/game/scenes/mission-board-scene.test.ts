@@ -40,8 +40,8 @@ const keyboardContext: GameContext = {
   systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 
-// CONTENT_TOP = 3; MISSION_ROW_START = CONTENT_TOP + 2 = 5
-const MISSION_ROW_START = 5;
+// CONTENT_TOP = 3; MISSION_ROW_START = CONTENT_TOP + 3 = 6
+const MISSION_ROW_START = 6;
 
 // Footer at row 29 (h-1 for 40×30)
 const FOOTER_ROW = 29;
@@ -81,13 +81,13 @@ describe('MissionBoardScene', () => {
       expect(rowText(buf, FOOTER_ROW)).toContain('HUB');
     });
 
-    it('renders MISSION BOARD title at row 3 in bright-blue', () => {
+    it('renders MISSION BOARD title at row 3 in bright-white', () => {
       const input = new MockInputHandler();
       const scene = new MissionBoardScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MISSION BOARD');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-blue');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-white');
     });
 
     it("renders ' underline at row 4 in bright-black", () => {

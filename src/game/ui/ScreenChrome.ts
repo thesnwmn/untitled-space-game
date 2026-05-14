@@ -81,9 +81,9 @@ export class ScreenChrome {
     col += fillCount;
 
     // "[M] MENU ::"
-    writeText(buffer, 0, col, '[M]', 'bright-green', 'black');
+    writeText(buffer, 0, col, '[M]', 'white', 'black');
     col += 3;
-    writeText(buffer, 0, col, ' MENU', 'bright-white', 'black');
+    writeText(buffer, 0, col, ' MENU', 'white', 'black');
     col += 5;
     writeText(buffer, 0, col, '::', 'bright-black', 'black');
   }
@@ -110,10 +110,10 @@ export class ScreenChrome {
     }
     col += fillCount;
 
-    // Credits (bright-green) + " CR" (bright-white) + "::" (bright-black)
-    writeText(buffer, 1, col, creditsStr, 'bright-green', 'black');
+    // Credits (green) + " CR" (white) + "::" (bright-black)
+    writeText(buffer, 1, col, creditsStr, 'green', 'black');
     col += creditsStr.length;
-    writeText(buffer, 1, col, ' CR', 'bright-white', 'black');
+    writeText(buffer, 1, col, ' CR', 'white', 'black');
     col += 3;
     writeText(buffer, 1, col, '::', 'bright-black', 'black');
   }
@@ -149,9 +149,9 @@ export class ScreenChrome {
       const labelText = ` ${opt.label}`;
 
       const btnStart = col;
-      writeText(buffer, row, col, bracketLabel, 'bright-green', 'black');
+      writeText(buffer, row, col, bracketLabel, 'white', 'black');
       col += bracketLabel.length;
-      writeText(buffer, row, col, labelText, 'bright-white', 'black');
+      writeText(buffer, row, col, labelText, 'white', 'black');
       col += labelText.length;
 
       ranges.push({ id: opt.id, startCol: btnStart, endCol: col });

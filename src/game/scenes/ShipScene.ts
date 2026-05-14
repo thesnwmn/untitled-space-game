@@ -4,7 +4,7 @@ import type { DestinationType } from '../world/types';
 import { Starfield } from './Starfield';
 import { SpaceStation } from './SpaceStation';
 import { STATION_TYPES, type SpaceStationDef } from './station-types';
-import { ScreenChrome, CONTENT_TOP } from '../ui/ScreenChrome';
+import { ScreenChrome } from '../ui/ScreenChrome';
 
 interface PlayerState {
   fuel: number;
@@ -18,6 +18,7 @@ const INITIAL_STATE: PlayerState = {
   cargoCapacity: 50,
 };
 
+// Center text in a fixed-width field; truncates if too long.
 function pad(text: string, width: number): string {
   if (text.length >= width) return text.slice(0, width);
   const total = width - text.length;
@@ -86,7 +87,7 @@ export class ShipScene implements Scene {
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
-        if (row === this.h - 2) {
+        if (row === this.h - 1) {
           if (col < this.w / 2) {
             this.activated = true;
             onTravel();
@@ -116,13 +117,27 @@ export class ShipScene implements Scene {
 
     this.chrome.render(buffer, { showHeader: true, showFooter: false, navOptions: [] });
 
-    const half = Math.floor(w / 2);  // 20 for w=40
-    const inner = half - 2;          // 18 interior chars per panel
+    // Layout: half = w/2 panels; inner = 17 interior chars per panel
+    // Angled rows have space at col 0 and col w-1; content at cols 1–(w-2).
+    // Interior rows have | at col 0 and col w-1.
+    const half = Math.floor(w / 2);   // 20 for w=40
+    const inner = half - 3;           // 17 interior chars per panel
 
-    const viewTop = CONTENT_TOP + 2; // row 5 — interior start (after top border)
-    const viewBot = h - 4;           // row 26
-    const viewLeft = 1;
-    const viewRight = w - 2;         // col 38
+    // Row layout (h=30):
+    //  2: stat panels    \  Fuel  /\  Cargo  /
+    //  3: arch top       /¯¯¯¯¯  ¯¯¯¯¯\
+    //  4–27: interior    |  starfield  |
+    //  28: bottom sill   \______  ______/
+    //  29: action btns   /  [T]  \/  [D]  \
+    const statRow    = 2;
+    const topRow     = 3;
+    const viewTop    = 4;
+    const viewBot    = h - 3;   // 27
+    const sillRow    = h - 2;   // 28
+    const buttonsRow = h - 1;   // 29
+
+    const viewLeft  = 1;
+    const viewRight = w - 2;    // 38
 
     if (this.stationType && !this.station) {
       this.station = new SpaceStation(this.stationType, viewTop, viewBot, viewLeft, viewRight);
@@ -131,59 +146,56 @@ export class ShipScene implements Scene {
     const dim = (char: string): { char: string; fg: Color; bg: Color } =>
       ({ char, fg: 'bright-black', bg: 'black' });
 
-    // ── Stat panels (CONTENT_TOP = row 3) ─────────────────────────────────────
-    // \    FUEL: 100%    /\    CARGO: 0/50T   /
-    const leftStat = pad(`FUEL: ${this.state.fuel}%`, inner);
+    // ── Stat panels (row 2) ────────────────────────────────────────────────────
+    //  \    FUEL: 100%   /\   CARGO: 0/50T  /
+    const leftStat  = pad(`FUEL: ${this.state.fuel}%`, inner);
     const rightStat = pad(`CARGO: ${this.state.cargo}/${this.state.cargoCapacity}T`, inner);
 
-    buffer[CONTENT_TOP][0] = dim('\\');
+    buffer[statRow][1] = dim('\\');
     for (let c = 0; c < inner; c++)
-      buffer[CONTENT_TOP][1 + c] = dim(leftStat[c]);
-    buffer[CONTENT_TOP][half - 1] = dim('/');
-    buffer[CONTENT_TOP][half] = dim('\\');
+      buffer[statRow][2 + c] = dim(leftStat[c]);
+    buffer[statRow][half - 1] = dim('/');
+    buffer[statRow][half]     = dim('\\');
     for (let c = 0; c < inner; c++)
-      buffer[CONTENT_TOP][half + 1 + c] = dim(rightStat[c]);
-    buffer[CONTENT_TOP][w - 1] = dim('/');
+      buffer[statRow][half + 1 + c] = dim(rightStat[c]);
+    buffer[statRow][half + inner + 1] = dim('/');
 
-    // ── Viewport top border (CONTENT_TOP+1 = row 4) ───────────────────────────
-    // /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯  ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
-    const topRow = CONTENT_TOP + 1;
-    buffer[topRow][0] = dim('/');
+    // ── Viewport arch top (row 3) ──────────────────────────────────────────────
+    //  /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯  ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
+    buffer[topRow][1] = dim('/');
     for (let c = 0; c < inner; c++)
-      buffer[topRow][1 + c] = dim('¯');
-    // cols half-1 and half remain blank (the gap between the arches)
+      buffer[topRow][2 + c] = dim('¯');
+    // cols half-1 and half are the gap (remain blank)
     for (let c = 0; c < inner; c++)
       buffer[topRow][half + 1 + c] = dim('¯');
-    buffer[topRow][w - 1] = dim('\\');
+    buffer[topRow][half + inner + 1] = dim('\\');
 
     // ── Interior | borders ─────────────────────────────────────────────────────
     for (let r = viewTop; r <= viewBot; r++) {
-      buffer[r][0] = dim('|');
+      buffer[r][0]     = dim('|');
       buffer[r][w - 1] = dim('|');
     }
 
     this.starfield.render(buffer, viewTop, viewBot, viewLeft, viewRight);
     if (this.station) this.station.render(buffer);
 
-    // ── Viewport bottom sill (h-3 = row 27) ───────────────────────────────────
-    // \__________________  __________________/
-    const sillRow = h - 3;
-    buffer[sillRow][0] = dim('\\');
+    // ── Viewport bottom sill (h-2) ─────────────────────────────────────────────
+    //  \__________________  __________________/
+    buffer[sillRow][1] = dim('\\');
     for (let c = 0; c < inner; c++)
-      buffer[sillRow][1 + c] = dim('_');
-    // gap cols half-1 and half remain blank
+      buffer[sillRow][2 + c] = dim('_');
+    // gap remains blank
     for (let c = 0; c < inner; c++)
       buffer[sillRow][half + 1 + c] = dim('_');
-    buffer[sillRow][w - 1] = dim('/');
+    buffer[sillRow][half + inner + 1] = dim('/');
 
-    // ── Action buttons (h-2 = row 28) ─────────────────────────────────────────
-    // /   [T] TRAVEL     \/    [D] DOCK      \
-    const buttonsRow = h - 2;
+    // ── Action buttons (h-1) ──────────────────────────────────────────────────
+    //  /   [T] TRAVEL    \/    [D] DOCK     \
     const travelLabel = '[T] TRAVEL';
-    const dockLabel = this.inSpace ? '[ - ] DOCK' : '[D] DOCK';
+    const dockLabel   = this.inSpace ? '[ - ] DOCK' : '[D] DOCK';
 
     let travelContent = pad(travelLabel, inner);
-    let dockContent = pad(dockLabel, inner);
+    let dockContent   = pad(dockLabel, inner);
 
     if (this.cursorIdx === 0) {
       travelContent = '>' + travelContent.slice(1);
@@ -191,17 +203,17 @@ export class ShipScene implements Scene {
       dockContent = '>' + dockContent.slice(1);
     }
 
-    buffer[buttonsRow][0] = dim('/');
+    buffer[buttonsRow][1] = dim('/');
     for (let c = 0; c < inner; c++) {
       const ch = travelContent[c];
-      buffer[buttonsRow][1 + c] = {
+      buffer[buttonsRow][2 + c] = {
         char: ch,
         fg: ch === '>' ? 'bright-green' : 'bright-yellow',
         bg: 'black',
       };
     }
     buffer[buttonsRow][half - 1] = dim('\\');
-    buffer[buttonsRow][half] = dim('/');
+    buffer[buttonsRow][half]     = dim('/');
     for (let c = 0; c < inner; c++) {
       const ch = dockContent[c];
       buffer[buttonsRow][half + 1 + c] = {
@@ -210,6 +222,6 @@ export class ShipScene implements Scene {
         bg: 'black',
       };
     }
-    buffer[buttonsRow][w - 1] = dim('\\');
+    buffer[buttonsRow][half + inner + 1] = dim('\\');
   }
 }

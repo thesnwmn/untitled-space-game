@@ -48,9 +48,9 @@ const touchContext: GameContext = {
   systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 
-// CONTENT_TOP = 3; tab row = CONTENT_TOP+2 = 5; item row start = CONTENT_TOP+4 = 7
+// CONTENT_TOP = 3; tab row = CONTENT_TOP+3 = 6; item row start = CONTENT_TOP+4 = 7
 const ITEM_ROW_START = 7;
-const TAB_ROW = 5;
+const TAB_ROW = 6;
 
 // Tab bar "| BUY | SELL |" left-aligned at col 2
 // | at 2, ' BUY ' at 3-7, | at 8, ' SELL ' at 9-14, | at 15
@@ -94,13 +94,13 @@ describe('TraderScene', () => {
       expect(rowText(buf, FOOTER_ROW)).toContain('HUB');
     });
 
-    it('renders trader name at row 3 in bright-blue', () => {
+    it('renders trader name at row 3 in bright-white', () => {
       const input = new MockInputHandler();
       const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MERCHANT KESS');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-blue');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-white');
     });
 
     it("renders ' underline at row 4 in bright-black", () => {

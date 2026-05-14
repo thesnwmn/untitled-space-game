@@ -53,14 +53,23 @@ const militaryContext: GameContext = {
   systemId: 'sol', destinationId: 'tycho-orbital', credits: 5000,
 };
 
-// Layout constants for 40×30 reference grid
-// Row 0–1: ScreenChrome header; row 2: gap
-const STAT_ROW = 3;       // CONTENT_TOP — stat panels (\ FUEL / \ CARGO /)
-const TOP_BORDER_ROW = 4; // CONTENT_TOP+1 — viewport arch top
-const VIEW_TOP = 5;       // CONTENT_TOP+2 — viewport interior start
-const VIEW_BOT = 26;      // h - 4 — viewport interior end
-const SILL_ROW = 27;      // h - 3 — viewport bottom sill
-const BUTTONS_ROW = 28;   // h - 2 — action buttons row
+// Layout constants for 40×30 reference grid.
+// Rows 0-1: ScreenChrome header; row 2 onwards is the ship window.
+//
+//  Row 2:    stat panels  \  Fuel  /\  Cargo  /
+//  Row 3:    arch top     /¯¯¯  ¯¯¯\
+//  Rows 4-27: viewport interior  |  ...  |
+//  Row 28:   bottom sill  \___  ___/
+//  Row 29:   action btns  /  [T]  \/  [D]  \
+//
+// Angled rows: space at col 0 and col 39; content cols 1-38.
+// half=20, inner=17; left content cols 2-18, right content cols 21-37.
+const STAT_ROW       = 2;
+const TOP_BORDER_ROW = 3;
+const VIEW_TOP       = 4;
+const VIEW_BOT       = 27;   // h - 3
+const SILL_ROW       = 28;   // h - 2
+const BUTTONS_ROW    = 29;   // h - 1
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -99,28 +108,34 @@ describe('ShipScene', () => {
       const text = rowText(buf, STAT_ROW);
       expect(text).toContain('FUEL: 100%');
       expect(text).toContain('CARGO: 0/50T');
-      expect(buf[STAT_ROW][0].fg).toBe('bright-black');
-      // Border chars frame each panel
-      expect(buf[STAT_ROW][0].char).toBe('\\');
+      // col 0 is space on angled rows; col 1 is first border char
+      expect(buf[STAT_ROW][0].char).toBe(' ');
+      expect(buf[STAT_ROW][1].char).toBe('\\');
+      expect(buf[STAT_ROW][1].fg).toBe('bright-black');
+      // centre junction: / at 19, \ at 20
       expect(buf[STAT_ROW][19].char).toBe('/');
       expect(buf[STAT_ROW][20].char).toBe('\\');
-      expect(buf[STAT_ROW][39].char).toBe('/');
+      // right closing / at col 38, col 39 is space
+      expect(buf[STAT_ROW][38].char).toBe('/');
+      expect(buf[STAT_ROW][39].char).toBe(' ');
     });
 
-    it('renders viewport top border at TOP_BORDER_ROW with arch chars', () => {
+    it('renders viewport arch top at TOP_BORDER_ROW', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[TOP_BORDER_ROW][0].char).toBe('/');
-      expect(buf[TOP_BORDER_ROW][1].char).toBe('¯');
-      expect(buf[TOP_BORDER_ROW][39].char).toBe('\\');
+      expect(buf[TOP_BORDER_ROW][0].char).toBe(' ');
+      expect(buf[TOP_BORDER_ROW][1].char).toBe('/');
+      expect(buf[TOP_BORDER_ROW][2].char).toBe('¯');
+      expect(buf[TOP_BORDER_ROW][38].char).toBe('\\');
+      expect(buf[TOP_BORDER_ROW][39].char).toBe(' ');
       // gap in the centre
       expect(buf[TOP_BORDER_ROW][19].char).toBe(' ');
       expect(buf[TOP_BORDER_ROW][20].char).toBe(' ');
     });
 
-    it('interior region (rows VIEW_TOP to VIEW_BOT) has | borders at edges', () => {
+    it('interior region (rows VIEW_TOP to VIEW_BOT) has | borders at col 0 and col 39', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
@@ -131,7 +146,7 @@ describe('ShipScene', () => {
       }
     });
 
-    it('interior region (rows VIEW_TOP to VIEW_BOT) contains non-space cells', () => {
+    it('interior region contains non-space cells (starfield)', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
@@ -150,10 +165,12 @@ describe('ShipScene', () => {
       const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[SILL_ROW][0].char).toBe('\\');
-      expect(buf[SILL_ROW][1].char).toBe('_');
-      expect(buf[SILL_ROW][39].char).toBe('/');
-      // gap in the centre
+      expect(buf[SILL_ROW][0].char).toBe(' ');
+      expect(buf[SILL_ROW][1].char).toBe('\\');
+      expect(buf[SILL_ROW][2].char).toBe('_');
+      expect(buf[SILL_ROW][38].char).toBe('/');
+      expect(buf[SILL_ROW][39].char).toBe(' ');
+      // gap in centre
       expect(buf[SILL_ROW][19].char).toBe(' ');
       expect(buf[SILL_ROW][20].char).toBe(' ');
     });
@@ -210,14 +227,6 @@ describe('ShipScene', () => {
       const line = rowText(buf, BUTTONS_ROW);
       expect(line).toContain('>');
       expect(line.indexOf('>')).toBeLessThan(line.indexOf('DOCK'));
-    });
-
-    it('footer row (h-1) is empty — no hint text', () => {
-      const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 29)).toBe('');
     });
   });
 

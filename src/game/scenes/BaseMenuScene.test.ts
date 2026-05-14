@@ -47,20 +47,20 @@ class TestMenuScene extends BaseMenuScene {
   }
 }
 
-// itemStartRow = CONTENT_TOP(3) + 2 = 5 (when no infoLines)
-const ITEM_ROW_START = 5;
+// itemStartRow = CONTENT_TOP(3) + 3 = 6 (when no infoLines)
+const ITEM_ROW_START = 6;
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
 describe('BaseMenuScene', () => {
   describe('render — title and underline', () => {
-    it('renders title at CONTENT_TOP (row 3) col 2 in bright-blue', () => {
+    it('renders title at CONTENT_TOP (row 3) col 2 in bright-white', () => {
       const input = new MockInputHandler();
       const scene = new TestMenuScene([{ label: 'ALPHA', action: vi.fn() }], input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('TEST MENU');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-blue');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-white');
     });
 
     it("renders ' underline at row 4 in bright-black", () => {
@@ -189,7 +189,7 @@ describe('BaseMenuScene', () => {
       // infoLines render at rows CONTENT_TOP+2 and CONTENT_TOP+3 (rows 5 and 6)
       expect(rowText(buf, 5)).toContain('Line one');
       expect(rowText(buf, 6)).toContain('Line two');
-      // item start row = CONTENT_TOP + 2 + infoLines.length + 1 = 3 + 2 + 2 + 1 = 8
+      // item start row = CONTENT_TOP + 3 + infoLines.length = 3 + 3 + 2 = 8
       expect(rowText(buf, 8)).toContain('> ITEM');
     });
   });

@@ -105,13 +105,13 @@ describe('StationMenuScene', () => {
       expect(rowText(buf, FOOTER_ROW)).toContain('UNDOCK');
     });
 
-    it('scene title at row 3 reads HUB in bright-blue', () => {
+    it('scene title at row 3 reads HUB in bright-white', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('HUB');
-      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-blue');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-white');
     });
 
     it("renders ' underline at row 4 in bright-black", () => {

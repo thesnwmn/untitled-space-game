@@ -46,8 +46,8 @@ const TAB_ROW = 6;
 const DEST_TAB_COL = 10; // middle of DESTINATIONS area (cols 3-16)
 const JUMP_TAB_COL = 21; // middle of JUMPS area (cols 18-24)
 
-// ITEM_ROW_START = CONTENT_TOP + 5 = 8
-const ITEM_ROW_START = 8;
+// ITEM_ROW_START = CONTENT_TOP + 4 = 7
+const ITEM_ROW_START = 7;
 
 // ── render ───────────────────────────────────────────────────────────────────
 
