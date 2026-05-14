@@ -24,7 +24,7 @@ const STATUS_ROW = 0;
 const LOCATION_ROW = 1;
 const WINDOW_TOP = 2;
 
-const BUTTONS = ['[ J ] JUMP', '[ D ] DOCK'];
+const BUTTONS = ['[ T ] TRAVEL', '[ D ] DOCK'];
 
 const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
   civilian:       STATION_TYPES.HUB,
@@ -35,8 +35,8 @@ const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
 
 function buildButtonLine(cursorIdx: number): string {
   return cursorIdx === 0
-    ? '> [ J ] JUMP   [ D ] DOCK'
-    : '  [ J ] JUMP  > [ D ] DOCK';
+    ? '> [ T ] TRAVEL   [ D ] DOCK'
+    : '  [ T ] TRAVEL  > [ D ] DOCK';
 }
 
 export class ShipScene implements Scene {

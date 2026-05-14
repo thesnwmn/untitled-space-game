@@ -6,9 +6,8 @@ import { StationMenuScene } from './src/game/scenes/StationMenuScene';
 import { TraderScene } from './src/game/scenes/TraderScene';
 import { MissionBoardScene } from './src/game/scenes/MissionBoardScene';
 import { ShipScene } from './src/game/scenes/ShipScene';
-import { JumpMenuScene } from './src/game/scenes/JumpMenuScene';
+import { TravelMenuScene } from './src/game/scenes/TravelMenuScene';
 import { JumpAnimationScene } from './src/game/scenes/JumpAnimationScene';
-import { SystemArrivalScene } from './src/game/scenes/SystemArrivalScene';
 import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
 import { getGameSettings, getSystem } from './src/game/world/world-data';
 
@@ -40,30 +39,36 @@ const goToMissionBoard = () => {
 };
 
 const goToShip = () => {
-  currentScene = new ShipScene(input, context, currentDestinationId, goToJumpMenu, goToStation);
+  currentScene = new ShipScene(input, context, currentDestinationId, goToTravelMenu, goToStation);
 };
 
 const goToStation = () => {
   currentScene = new StationMenuScene(input, context, currentDestinationId, goToTrader, goToMissionBoard, goToShip);
 };
 
-const goToJumpMenu = () => {
-  currentScene = new JumpMenuScene(input, context, currentSystemId, onJumpSelected, goToShip);
+const onDestinationSelected = (destinationId: string) => {
+  currentDestinationId = destinationId;
+  goToStation();
 };
 
 const onJumpSelected = (targetSystemId: string) => {
   currentSystemId = targetSystemId;
   const targetName = getSystem(targetSystemId)!.name;
-  currentScene = new JumpAnimationScene(targetName, goToSystemArrival);
+  currentScene = new JumpAnimationScene(targetName, goToArrival);
 };
 
-const goToSystemArrival = () => {
-  currentScene = new SystemArrivalScene(input, context, currentSystemId, onDockSelected);
+const goToTravelMenu = () => {
+  currentScene = new TravelMenuScene(
+    input, context, currentSystemId, currentDestinationId,
+    onDestinationSelected, onJumpSelected, goToShip,
+  );
 };
 
-const onDockSelected = (destinationId: string) => {
-  currentDestinationId = destinationId;
-  goToStation();
+const goToArrival = () => {
+  currentScene = new TravelMenuScene(
+    input, context, currentSystemId, null,
+    onDestinationSelected, onJumpSelected, null,
+  );
 };
 
 const goToStory = () => {

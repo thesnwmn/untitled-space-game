@@ -181,17 +181,17 @@ describe('ShipScene', () => {
       expect(relayFound).toBe(true);
     });
 
-    it('both JUMP and DOCK labels appear on BUTTONS_ROW', () => {
+    it('both TRAVEL and DOCK labels appear on BUTTONS_ROW', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
-      expect(line).toContain('[ J ] JUMP');
+      expect(line).toContain('[ T ] TRAVEL');
       expect(line).toContain('[ D ] DOCK');
     });
 
-    it('cursor starts on JUMP (> prefix appears on BUTTONS_ROW)', () => {
+    it('cursor starts on TRAVEL (> prefix appears on BUTTONS_ROW)', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
@@ -271,20 +271,20 @@ describe('ShipScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
-      expect(line.indexOf('>')).toBeGreaterThan(line.indexOf('JUMP'));
+      expect(line.indexOf('>')).toBeGreaterThan(line.indexOf('TRAVEL'));
     });
 
-    it('UP from JUMP wraps cursor to DOCK', () => {
+    it('UP from TRAVEL wraps cursor to DOCK', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
-      expect(line.indexOf('>')).toBeGreaterThan(line.indexOf('JUMP'));
+      expect(line.indexOf('>')).toBeGreaterThan(line.indexOf('TRAVEL'));
     });
 
-    it('DOWN from DOCK wraps back to JUMP', () => {
+    it('DOWN from DOCK wraps back to TRAVEL', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('DOWN');
@@ -295,7 +295,7 @@ describe('ShipScene', () => {
       expect(line.indexOf('>')).toBeLessThan(line.indexOf('DOCK'));
     });
 
-    it('SELECT on JUMP calls onJump', () => {
+    it('SELECT on TRAVEL calls onJump', () => {
       const onJump = vi.fn();
       const input = new MockInputHandler();
       new ShipScene(input, keyboardContext, 'elysium-station', onJump, vi.fn());
@@ -330,7 +330,7 @@ describe('ShipScene', () => {
       const onJump = vi.fn();
       const input = new MockInputHandler();
       new ShipScene(input, keyboardContext, 'elysium-station', onJump, vi.fn());
-      input.triggerTap(10, BUTTONS_ROW); // col 10 < 20 (w/2) → JUMP
+      input.triggerTap(10, BUTTONS_ROW); // col 10 < 20 (w/2) → TRAVEL
       expect(onJump).toHaveBeenCalledTimes(1);
     });
 
