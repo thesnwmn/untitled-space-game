@@ -9,8 +9,9 @@ import { MissionBoardScene } from './game/scenes/MissionBoardScene';
 import { ShipScene } from './game/scenes/ShipScene';
 import { TravelMenuScene } from './game/scenes/TravelMenuScene';
 import { JumpAnimationScene } from './game/scenes/JumpAnimationScene';
+import { InSystemTravelAnimationScene } from './game/scenes/InSystemTravelAnimationScene';
 import type { CharBuffer, Color, GameContext, Scene } from './shared/types';
-import { getGameSettings, getSystem } from './game/world/world-data';
+import { getGameSettings, getSystem, getDestination } from './game/world/world-data';
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
 const debug = new URLSearchParams(window.location.search).has('debug');
@@ -52,8 +53,9 @@ const goToStation = () => {
 };
 
 const onDestinationSelected = (destinationId: string) => {
+  const destName = getDestination(destinationId)!.name;
   currentDestinationId = destinationId;
-  goToStation();
+  currentScene = new InSystemTravelAnimationScene(destName, goToStation);
 };
 
 const onJumpSelected = (targetSystemId: string) => {

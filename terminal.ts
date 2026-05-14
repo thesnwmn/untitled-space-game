@@ -8,8 +8,9 @@ import { MissionBoardScene } from './src/game/scenes/MissionBoardScene';
 import { ShipScene } from './src/game/scenes/ShipScene';
 import { TravelMenuScene } from './src/game/scenes/TravelMenuScene';
 import { JumpAnimationScene } from './src/game/scenes/JumpAnimationScene';
+import { InSystemTravelAnimationScene } from './src/game/scenes/InSystemTravelAnimationScene';
 import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
-import { getGameSettings, getSystem } from './src/game/world/world-data';
+import { getGameSettings, getSystem, getDestination } from './src/game/world/world-data';
 
 const context: GameContext = {
   environment: 'terminal',
@@ -47,8 +48,9 @@ const goToStation = () => {
 };
 
 const onDestinationSelected = (destinationId: string) => {
+  const destName = getDestination(destinationId)!.name;
   currentDestinationId = destinationId;
-  goToStation();
+  currentScene = new InSystemTravelAnimationScene(destName, goToStation);
 };
 
 const onJumpSelected = (targetSystemId: string) => {
