@@ -65,6 +65,25 @@ for the full spec.
 
 ---
 
+### 027 · World-Driven Story, Station, and System Display
+
+Make every scene a generic renderer — no world content hardcoded in source.
+`StoryScene` renders the `opening-arrival` beat from world data. `StationMenuScene`
+builds its hub menu from `destination.amenities` (only showing items the
+station actually has), plus description and danger level. `ShipScene` shows
+`<DESTINATION>  ·  <SYSTEM>` and selects the station glyph from
+`destination.type` (`civilian`→HUB, `military`→RELAY, `research`→RING,
+`black-market`→BEACON). `TraderScene` shows the NPC name from
+`destination.npcs.trader`. All five scene files drop the `STATION_NAME`
+import in favour of a `destinationId: string` constructor parameter. Adds
+`wrapText` utility to `src/shared/buffer-utils.ts`. Deletes `STATION_NAME`
+from `src/game/constants.ts`. See
+`docs/features/027-world-driven-story-station-system.md` for the full spec.
+
+**Depends on:** 019
+
+---
+
 ### 026 · Jump System
 
 Allow the player to jump between star systems via a three-screen flow: a jump
@@ -78,7 +97,7 @@ Orchestrators gain `currentSystemId` / `currentDestinationId` state.
 All data fed by `getRoutesFrom`, `getSystem`, `getDestination` from the world
 data module. See `docs/features/026-jump-system.md` for the full spec.
 
-**Depends on:** 019
+**Depends on:** 019, 027
 
 ---
 
