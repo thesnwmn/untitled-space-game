@@ -25,7 +25,8 @@ export interface TabDef {
 // Row CONTENT_TOP+2 (5): blank (separator)
 // If tabs:
 //   Row CONTENT_TOP+3 (6): tab bar
-//   Row CONTENT_TOP+4 (7): items start
+//   Row CONTENT_TOP+4 (7): blank (separator below tabs)
+//   Row CONTENT_TOP+5 (8): items start
 // Else:
 //   Row CONTENT_TOP+3+infoLines.length (6+): items start
 //   (infoLines at CONTENT_TOP+2 … CONTENT_TOP+1+n, then implicit blank)
@@ -62,7 +63,7 @@ export abstract class BaseMenuScene implements Scene {
     this.navOptions = navOptions;
     this.infoLines = infoLines;
     this.itemStartRow = tabs !== null
-      ? CONTENT_TOP + 4          // tab bar at CONTENT_TOP+3, items at +4
+      ? CONTENT_TOP + 5          // tab bar at CONTENT_TOP+3, blank at +4, items at +5
       : CONTENT_TOP + 3 + infoLines.length;
 
     inputHandler.onAction((action) => {
