@@ -23,7 +23,7 @@ const input = new TerminalInputHandler();
 
 const startingLocation = getGameSettings().startingLocation;
 let currentSystemId = startingLocation.system;
-let currentDestinationId = startingLocation.destination;
+let currentDestinationId: string | null = startingLocation.destination;
 
 let currentScene: Scene;
 
@@ -32,25 +32,30 @@ const goToMainMenu = () => {
 };
 
 const goToTrader = () => {
-  currentScene = new TraderScene(input, context, currentDestinationId, goToStation, goToShip);
+  currentScene = new TraderScene(input, context, currentDestinationId!, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
-  currentScene = new MissionBoardScene(input, context, currentDestinationId, goToStation, goToShip);
+  currentScene = new MissionBoardScene(input, context, currentDestinationId!, goToStation, goToShip);
 };
 
 const goToShip = () => {
-  currentScene = new ShipScene(input, context, currentDestinationId, goToTravelMenu, goToStation);
+  currentScene = new ShipScene(input, context, currentSystemId, currentDestinationId, goToTravelMenu, goToStation);
 };
 
 const goToStation = () => {
-  currentScene = new StationMenuScene(input, context, currentDestinationId, goToTrader, goToMissionBoard, goToShip);
+  currentScene = new StationMenuScene(input, context, currentDestinationId!, goToTrader, goToMissionBoard, goToShip);
 };
 
 const onDestinationSelected = (destinationId: string) => {
   const destName = getDestination(destinationId)!.name;
   currentDestinationId = destinationId;
   currentScene = new InSystemTravelAnimationScene(destName, goToStation);
+};
+
+const goToFlyIntoSpace = () => {
+  currentDestinationId = null;
+  goToShip();
 };
 
 const onJumpSelected = (targetSystemId: string) => {
@@ -62,14 +67,15 @@ const onJumpSelected = (targetSystemId: string) => {
 const goToTravelMenu = () => {
   currentScene = new TravelMenuScene(
     input, context, currentSystemId, currentDestinationId,
-    onDestinationSelected, onJumpSelected, goToShip,
+    onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
   );
 };
 
 const goToArrival = () => {
+  currentDestinationId = null;
   currentScene = new TravelMenuScene(
     input, context, currentSystemId, null,
-    onDestinationSelected, onJumpSelected, null,
+    onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
   );
 };
 

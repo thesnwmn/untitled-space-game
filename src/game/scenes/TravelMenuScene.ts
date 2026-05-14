@@ -1,6 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
 import { getSystem, getDestination, getRoutesFrom } from '../world/world-data';
+import { NavBar } from '../ui/NavBar';
 
 type TabKey = 'DESTINATIONS' | 'JUMPS';
 
@@ -16,21 +17,23 @@ interface JumpItem {
 }
 
 const TITLE_ROW = 3;
-const INFO_ROW = 5;
-const TAB_ROW = 7;
-const ITEM_ROW_START = 9;
+const TAB_ROW = 6;
+const ITEM_ROW_START = 8;
 const ITEM_COL = 2;
 
 const DEST_TAB_TEXT = '[DESTINATIONS]';
 const JUMP_TAB_TEXT = '[JUMPS]';
-// Offset from the centered tab group start
 const JUMP_TAB_OFFSET = DEST_TAB_TEXT.length + 2;
+
+// Sentinel id for the "fly into space" pseudo-destination
+const FLY_INTO_SPACE_ID = '__space__';
 
 export class TravelMenuScene implements Scene {
   private readonly context: GameContext;
   private readonly systemName: string;
   private readonly destinations: DestItem[];
   private readonly jumps: JumpItem[];
+  private readonly navBar: NavBar;
   private readonly destTabCol: number;
   private readonly jumpTabCol: number;
   private activeTab: TabKey = 'DESTINATIONS';
@@ -44,17 +47,27 @@ export class TravelMenuScene implements Scene {
     currentDestinationId: string | null,
     onDestinationSelected: (destinationId: string) => void,
     onJumpSelected: (targetSystemId: string) => void,
-    onBack: (() => void) | null,
+    onFlyIntoSpace: () => void,
+    onShip: () => void,
   ) {
     this.context = context;
     const system = getSystem(systemId)!;
     this.systemName = system.name.toUpperCase();
 
-    this.destinations = system.destinations.map((destId) => ({
-      id: destId,
-      label: getDestination(destId)!.name.toUpperCase(),
-      disabled: destId === currentDestinationId,
-    }));
+    this.navBar = new NavBar(this.systemName, [{ id: 'ship', label: 'SHIP' }]);
+
+    this.destinations = [
+      ...system.destinations.map((destId) => ({
+        id: destId,
+        label: getDestination(destId)!.name.toUpperCase(),
+        disabled: destId === currentDestinationId,
+      })),
+      {
+        id: FLY_INTO_SPACE_ID,
+        label: 'FLY INTO SPACE',
+        disabled: currentDestinationId === null,
+      },
+    ];
 
     this.jumps = getRoutesFrom(systemId).map((route) => {
       const targetId = route.from === systemId ? route.to : route.from;
@@ -66,8 +79,6 @@ export class TravelMenuScene implements Scene {
       };
     });
 
-    // Tab column positions — computed once assuming w=40; render re-derives these
-    // but we also need them for tap hit-testing before the first render.
     this.destTabCol = Math.floor((40 - JUMP_TAB_OFFSET - JUMP_TAB_TEXT.length) / 2);
     this.jumpTabCol = this.destTabCol + JUMP_TAB_OFFSET;
 
@@ -85,16 +96,22 @@ export class TravelMenuScene implements Scene {
         this.activeTab = 'JUMPS';
         this.cursorIdx = 0;
       } else if (action === 'SELECT') {
-        this.handleSelect(onDestinationSelected, onJumpSelected);
-      } else if (action === 'BACK' && onBack) {
+        this.handleSelect(onDestinationSelected, onFlyIntoSpace, onJumpSelected);
+      } else if (action === 'BACK') {
         this.activated = true;
-        onBack();
+        onShip();
       }
     });
 
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
+
+        if (this.navBar.hitTest(col, row) === 'ship') {
+          this.activated = true;
+          onShip();
+          return;
+        }
 
         if (row === TAB_ROW) {
           if (col >= this.destTabCol && col < this.destTabCol + DEST_TAB_TEXT.length) {
@@ -113,7 +130,7 @@ export class TravelMenuScene implements Scene {
         for (let i = 0; i < itemCount; i++) {
           if (row === ITEM_ROW_START + i) {
             this.cursorIdx = i;
-            this.handleSelect(onDestinationSelected, onJumpSelected);
+            this.handleSelect(onDestinationSelected, onFlyIntoSpace, onJumpSelected);
             return;
           }
         }
@@ -123,13 +140,18 @@ export class TravelMenuScene implements Scene {
 
   private handleSelect(
     onDestinationSelected: (id: string) => void,
+    onFlyIntoSpace: () => void,
     onJumpSelected: (id: string) => void,
   ): void {
     if (this.activeTab === 'DESTINATIONS') {
       const item = this.destinations[this.cursorIdx];
       if (item && !item.disabled) {
         this.activated = true;
-        onDestinationSelected(item.id);
+        if (item.id === FLY_INTO_SPACE_ID) {
+          onFlyIntoSpace();
+        } else {
+          onDestinationSelected(item.id);
+        }
       }
     } else {
       const item = this.jumps[this.cursorIdx];
@@ -152,9 +174,10 @@ export class TravelMenuScene implements Scene {
       }
     }
 
+    this.navBar.render(buffer);
+
     writeCentered(buffer, TITLE_ROW, 'TRAVEL', 'cyan', 'black');
     writeCentered(buffer, TITLE_ROW + 1, '======', 'cyan', 'black');
-    writeText(buffer, INFO_ROW, ITEM_COL, this.systemName, 'bright-black', 'black');
 
     const tabGroupWidth = DEST_TAB_TEXT.length + 2 + JUMP_TAB_TEXT.length;
     const destTabCol = Math.floor((w - tabGroupWidth) / 2);
