@@ -45,13 +45,20 @@ export class TravelMenuScene extends BaseMenuScene {
       { label: 'JUMPS', items: jumpItems },
     ];
 
-    super('TRAVEL', [], [], inputHandler, context, [], tabs);
+    super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, [], tabs);
 
     this.onShip = onShip;
   }
 
   protected override handleNavAction(action: string): void {
-    if (action === 'BACK' && !this.activated) {
+    if ((action === 'BACK' || action === 'NAV_1') && !this.activated) {
+      this.activated = true;
+      this.onShip();
+    }
+  }
+
+  protected override handleNavTap(navId: string): void {
+    if (navId === 'ship' && !this.activated) {
       this.activated = true;
       this.onShip();
     }
