@@ -95,6 +95,25 @@
     align-self:flex-start;
     flex-shrink:0;
   }
+  #galaxy-map { cursor:grab; display:block; user-select:none; }
+  #galaxy-map.dragging { cursor:grabbing; }
+  .map-controls {
+    text-align:center;
+    margin-top:0.5rem;
+    font-size:0.75rem;
+    color:var(--bright-black);
+  }
+  .map-controls button {
+    background:none;
+    border:1px solid var(--bright-black);
+    color:var(--bright-black);
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.75rem;
+    padding:0.2rem 0.6rem;
+    cursor:pointer;
+    letter-spacing:0.05em;
+  }
+  .map-controls button:hover { border-color:var(--cyan); color:var(--cyan); }
   #tooltip {
     display:none;
     position:fixed;
@@ -160,6 +179,10 @@
     <text x="15.64" y="52.50" text-anchor="middle" font-size="2.5" fill="var(--white)" font-family="'Share Tech Mono',monospace">Wolf 359</text>
   </g>
 </svg>
+    <div class="map-controls">
+      <button id="map-reset">[ RESET VIEW ]</button>
+      &nbsp; scroll to zoom &middot; drag to pan
+    </div>
   </div>
   <div class="legend-panel"><div style="font-size:0.75rem;color:var(--white);line-height:1.4">
   <div style="color:var(--cyan);margin-bottom:0.4rem">ZONE</div>
@@ -201,35 +224,105 @@
 <div id="tooltip"></div>
 <script>
   (function() {
+    var map     = document.getElementById('galaxy-map');
     var tooltip = document.getElementById('tooltip');
+
+    // ViewBox state — matches initial viewBox="0 0 100 100"
+    var vx = 0, vy = 0, vw = 100, vh = 100;
+    var MIN_SIZE = 12, MAX_SIZE = 100, MARGIN = 8;
+
+    function applyViewBox() {
+      map.setAttribute('viewBox', vx.toFixed(2)+' '+vy.toFixed(2)+' '+vw.toFixed(2)+' '+vh.toFixed(2));
+    }
+
+    function clampViewBox() {
+      vx = Math.max(-MARGIN, Math.min(100 + MARGIN - vw, vx));
+      vy = Math.max(-MARGIN, Math.min(100 + MARGIN - vh, vy));
+    }
+
+    // Mouse-wheel zoom, centred on cursor
+    map.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      var factor = e.deltaY > 0 ? 1.15 : (1 / 1.15);
+      var newVw = Math.max(MIN_SIZE, Math.min(MAX_SIZE, vw * factor));
+      var newVh = Math.max(MIN_SIZE, Math.min(MAX_SIZE, vh * factor));
+      var rect = map.getBoundingClientRect();
+      var px = (e.clientX - rect.left)  / rect.width;
+      var py = (e.clientY - rect.top)   / rect.height;
+      vx += (vw - newVw) * px;
+      vy += (vh - newVh) * py;
+      vw = newVw; vh = newVh;
+      clampViewBox();
+      applyViewBox();
+    }, { passive: false });
+
+    // Drag-to-pan
+    var dragging = false, dragMoved = false;
+    var startX = 0, startY = 0, startVx = 0, startVy = 0;
+
+    map.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      dragging  = true;
+      dragMoved = false;
+      startX = e.clientX; startY = e.clientY;
+      startVx = vx;       startVy = vy;
+      map.classList.add('dragging');
+      tooltip.style.display = 'none';
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+      var rect = map.getBoundingClientRect();
+      vx = startVx - dx / rect.width  * vw;
+      vy = startVy - dy / rect.height * vh;
+      clampViewBox();
+      applyViewBox();
+    });
+
+    window.addEventListener('mouseup', function() {
+      dragging = false;
+      map.classList.remove('dragging');
+    });
+
+    // Reset button
+    document.getElementById('map-reset').addEventListener('click', function() {
+      vx = 0; vy = 0; vw = 100; vh = 100;
+      applyViewBox();
+    });
+
+    // System node interactivity
     document.querySelectorAll('.system').forEach(function(g) {
       g.addEventListener('click', function() {
+        if (dragMoved) return;
         window.location.href = '/untitled-space-game/docs/systems/' + g.dataset.id + '.html';
       });
       g.addEventListener('mousemove', function(e) {
-        var name    = g.dataset.name    || '';
-        var zone    = g.dataset.zone    || '';
-        var sec     = g.dataset.sec     || '';
-        var danger  = g.dataset.danger  || '';
-        var dests   = g.dataset.dests   || '0';
+        if (dragging) return;
+        var name   = g.dataset.name   || '';
+        var zone   = g.dataset.zone   || '';
+        var sec    = g.dataset.sec    || '';
+        var danger = g.dataset.danger || '';
+        var dests  = g.dataset.dests  || '0';
         var w = 23;
         function pad(label, value) {
           var line = label + value;
-          return '║ ' + line + ' '.repeat(Math.max(0, w - line.length)) + ' ║';
+          return '\u2551 ' + line + ' '.repeat(Math.max(0, w - line.length)) + ' \u2551';
         }
-        var bar = '═'.repeat(w + 2);
+        var bar = '\u2550'.repeat(w + 2);
         var lines = [
-          '╔' + bar + '╗',
-          '║ ' + name.toUpperCase().substring(0,w).padEnd(w) + ' ║',
-          '║ ' + ' '.repeat(w) + ' ║',
+          '\u2554' + bar + '\u2557',
+          '\u2551 ' + name.toUpperCase().substring(0, w).padEnd(w) + ' \u2551',
+          '\u2551 ' + ' '.repeat(w) + ' \u2551',
           pad('Zone:         ', zone),
           pad('Security:     ', sec),
           pad('Danger:       ', danger),
           pad('Destinations: ', dests),
-          '╚' + bar + '╝',
+          '\u255a' + bar + '\u255d',
         ];
-        tooltip.textContent = lines.join('
-');
+        tooltip.textContent = lines.join('\n');
         var x = Math.min(e.clientX + 14, window.innerWidth  - tooltip.offsetWidth  - 8);
         var y = Math.min(e.clientY + 14, window.innerHeight - tooltip.offsetHeight - 8);
         tooltip.style.left    = x + 'px';
