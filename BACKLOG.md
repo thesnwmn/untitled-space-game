@@ -57,6 +57,19 @@ See `docs/features/031-cargo-trading.md` for the full spec.
 
 ---
 
+### 032 · Modal Input Dialog
+
+Introduce a `ModalInputDialog` component that overlays a numeric-input form on any
+`BaseMenuScene` subclass. Replace the one-shot buy-all/sell-all mechanic (031) and
+the full-refuel mechanic (030) with dialogs that let the player choose an exact quantity
+or litre count. Add `TAB` to `GameAction` and `onCharInput` to `InputHandler` to support
+typed digit entry and Tab-key focus cycling in both platform handlers.
+See `docs/features/032-modal-input-dialog.md` for the full spec.
+
+**Depends on:** 031
+
+---
+
 ### 020 · World Data File Loader
 
 Replace the static `WORLD` object in `world-data.ts` with a loader that parses
