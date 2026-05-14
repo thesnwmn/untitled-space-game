@@ -6,8 +6,11 @@ import { StationMenuScene } from './src/game/scenes/StationMenuScene';
 import { TraderScene } from './src/game/scenes/TraderScene';
 import { MissionBoardScene } from './src/game/scenes/MissionBoardScene';
 import { ShipScene } from './src/game/scenes/ShipScene';
+import { JumpMenuScene } from './src/game/scenes/JumpMenuScene';
+import { JumpAnimationScene } from './src/game/scenes/JumpAnimationScene';
+import { SystemArrivalScene } from './src/game/scenes/SystemArrivalScene';
 import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
-import { getGameSettings } from './src/game/world/world-data';
+import { getGameSettings, getSystem } from './src/game/world/world-data';
 
 const context: GameContext = {
   environment: 'terminal',
@@ -18,7 +21,9 @@ const context: GameContext = {
 const renderer = new TerminalRenderer();
 const input = new TerminalInputHandler();
 
-const STARTING_DESTINATION = getGameSettings().startingLocation.destination;
+const startingLocation = getGameSettings().startingLocation;
+let currentSystemId = startingLocation.system;
+let currentDestinationId = startingLocation.destination;
 
 let currentScene: Scene;
 
@@ -27,19 +32,38 @@ const goToMainMenu = () => {
 };
 
 const goToTrader = () => {
-  currentScene = new TraderScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
+  currentScene = new TraderScene(input, context, currentDestinationId, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
-  currentScene = new MissionBoardScene(input, context, STARTING_DESTINATION, goToStation, goToShip);
+  currentScene = new MissionBoardScene(input, context, currentDestinationId, goToStation, goToShip);
 };
 
 const goToShip = () => {
-  currentScene = new ShipScene(input, context, STARTING_DESTINATION, goToStation);
+  currentScene = new ShipScene(input, context, currentDestinationId, goToJumpMenu, goToStation);
 };
 
 const goToStation = () => {
-  currentScene = new StationMenuScene(input, context, STARTING_DESTINATION, goToTrader, goToMissionBoard, goToShip);
+  currentScene = new StationMenuScene(input, context, currentDestinationId, goToTrader, goToMissionBoard, goToShip);
+};
+
+const goToJumpMenu = () => {
+  currentScene = new JumpMenuScene(input, context, currentSystemId, onJumpSelected, goToShip);
+};
+
+const onJumpSelected = (targetSystemId: string) => {
+  currentSystemId = targetSystemId;
+  const targetName = getSystem(targetSystemId)!.name;
+  currentScene = new JumpAnimationScene(targetName, goToSystemArrival);
+};
+
+const goToSystemArrival = () => {
+  currentScene = new SystemArrivalScene(input, context, currentSystemId, onDockSelected);
+};
+
+const onDockSelected = (destinationId: string) => {
+  currentDestinationId = destinationId;
+  goToStation();
 };
 
 const goToStory = () => {

@@ -51,7 +51,7 @@ export class ShipScene implements Scene {
   private readonly locationLabel: string;
   private readonly stationType: SpaceStationDef;
 
-  constructor(inputHandler: InputHandler, context: GameContext, destinationId: string, onDock: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, destinationId: string, onJump: () => void, onDock: () => void) {
     this.state = { ...INITIAL_STATE };
     this.context = context;
     this.starfield = new Starfield();
@@ -69,7 +69,8 @@ export class ShipScene implements Scene {
         this.cursorIdx = (this.cursorIdx + 1) % BUTTONS.length;
       } else if (action === 'SELECT') {
         if (this.cursorIdx === 0) {
-          console.log('[Ship] Jumping…');
+          this.activated = true;
+          onJump();
         } else {
           this.activated = true;
           onDock();
@@ -82,8 +83,8 @@ export class ShipScene implements Scene {
         if (this.activated) return;
         if (row === this.h - 2) {
           if (col < this.w / 2) {
-            this.cursorIdx = 0;
-            console.log('[Ship] Jumping…');
+            this.activated = true;
+            onJump();
           } else {
             this.activated = true;
             onDock();
