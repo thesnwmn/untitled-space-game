@@ -283,6 +283,84 @@ const script = `<script>
       map.classList.remove('dragging');
     });
 
+    // Touch support — single-finger pan, two-finger pinch zoom
+    var touching = false, pinching = false;
+    var touchStartX = 0, touchStartY = 0, touchStartVx = 0, touchStartVy = 0;
+    var pinchMidVx = 0, pinchMidVy = 0, pinchStartDist = 0, pinchStartVw = 0, pinchStartVh = 0;
+
+    function touchDist(a, b) {
+      var dx = b.clientX - a.clientX, dy = b.clientY - a.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    map.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      tooltip.style.display = 'none';
+      var rect = map.getBoundingClientRect();
+      if (e.touches.length === 1) {
+        pinching  = false;
+        touching  = true;
+        dragMoved = false;
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+        touchStartVx = vx;                  touchStartVy = vy;
+      } else if (e.touches.length === 2) {
+        touching = false;
+        pinching = true;
+        pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+        pinchStartVw = vw; pinchStartVh = vh;
+        var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        pinchMidVx = vx + (midX - rect.left) / rect.width  * vw;
+        pinchMidVy = vy + (midY - rect.top)  / rect.height * vh;
+      }
+    }, { passive: false });
+
+    map.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+      var rect = map.getBoundingClientRect();
+      if (e.touches.length === 1 && touching) {
+        var dx = e.touches[0].clientX - touchStartX;
+        var dy = e.touches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+        vx = touchStartVx - dx / rect.width  * vw;
+        vy = touchStartVy - dy / rect.height * vh;
+        clampViewBox(); applyViewBox();
+      } else if (e.touches.length === 2 && pinching) {
+        var dist  = touchDist(e.touches[0], e.touches[1]);
+        var scale = pinchStartDist / dist;
+        vw = Math.max(MIN_SIZE, Math.min(MAX_SIZE, pinchStartVw * scale));
+        vh = Math.max(MIN_SIZE, Math.min(MAX_SIZE, pinchStartVh * scale));
+        var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        vx = pinchMidVx - (midX - rect.left) / rect.width  * vw;
+        vy = pinchMidVy - (midY - rect.top)  / rect.height * vh;
+        clampViewBox(); applyViewBox();
+      }
+    }, { passive: false });
+
+    map.addEventListener('touchend', function(e) {
+      // Tap: navigate to system docs if finger didn't move
+      if (touching && !dragMoved && e.touches.length === 0) {
+        var touch = e.changedTouches[0];
+        var el = document.elementFromPoint(touch.clientX, touch.clientY);
+        while (el && el !== map) {
+          if (el.classList && el.classList.contains('system')) {
+            window.location.href = '/untitled-space-game/docs/systems/' + el.dataset.id + '.html';
+            break;
+          }
+          el = el.parentElement;
+        }
+      }
+      if (e.touches.length === 0) {
+        touching = false; pinching = false;
+      } else if (e.touches.length === 1 && pinching) {
+        // Lift one finger after pinch — restart pan without triggering a tap
+        pinching = false; touching = true; dragMoved = true;
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+        touchStartVx = vx;                  touchStartVy = vy;
+      }
+    }, { passive: false });
+
     // Reset button
     document.getElementById('map-reset').addEventListener('click', function() {
       vx = 0; vy = 0; vw = 100; vh = 100;
@@ -338,7 +416,7 @@ const body = `${mapStyle}
     ${svgEl}
     <div class="map-controls">
       <button id="map-reset">[ RESET VIEW ]</button>
-      &nbsp; scroll to zoom &middot; drag to pan
+      &nbsp; scroll / pinch to zoom &middot; drag to pan
     </div>
   </div>
   <div class="legend-panel">${legendHtml}</div>
