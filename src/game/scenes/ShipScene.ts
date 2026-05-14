@@ -1,5 +1,4 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText } from '../../shared/buffer-utils';
 import { getDestination } from '../world/world-data';
 import type { DestinationType } from '../world/types';
 import { Starfield } from './Starfield';
@@ -19,9 +18,12 @@ const INITIAL_STATE: PlayerState = {
   cargoCapacity: 50,
 };
 
-// Button text widths: TRAVEL part = 14 chars, DOCK part = 12 chars, gap = 2 → total 28
-const TRAVEL_PART_WIDTH = 14; // '> [ T ] TRAVEL' or '  [ T ] TRAVEL'
-const GAP_WIDTH = 2;
+function pad(text: string, width: number): string {
+  if (text.length >= width) return text.slice(0, width);
+  const total = width - text.length;
+  const left = Math.floor(total / 2);
+  return ' '.repeat(left) + text + ' '.repeat(total - left);
+}
 
 const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
   civilian:       STATION_TYPES.HUB,
@@ -108,57 +110,106 @@ export class ShipScene implements Scene {
     this.h = h;
     this.w = w;
 
-    for (let r = 0; r < h; r++) {
-      for (let c = 0; c < w; c++) {
+    for (let r = 0; r < h; r++)
+      for (let c = 0; c < w; c++)
         buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-      }
-    }
 
     this.chrome.render(buffer, { showHeader: true, showFooter: false, navOptions: [] });
 
-    // Fuel/cargo info at CONTENT_TOP
-    const infoText = `FUEL: ${this.state.fuel}%   CARGO: ${this.state.cargo}/${this.state.cargoCapacity}T`;
-    writeText(buffer, CONTENT_TOP, 2, infoText, 'bright-black', 'black');
+    const half = Math.floor(w / 2);  // 20 for w=40
+    const inner = half - 2;          // 18 interior chars per panel
 
-    // Viewport: rows CONTENT_TOP+1 to h-4
-    const viewTop = CONTENT_TOP + 1;
-    const viewBot = h - 4; // inclusive
-    const viewLeft = 2;
-    const viewRight = w - 3;
+    const viewTop = CONTENT_TOP + 2; // row 5 — interior start (after top border)
+    const viewBot = h - 4;           // row 26
+    const viewLeft = 1;
+    const viewRight = w - 2;         // col 38
 
     if (this.stationType && !this.station) {
-      this.station = new SpaceStation(
-        this.stationType,
-        viewTop, viewBot, viewLeft, viewRight,
-      );
+      this.station = new SpaceStation(this.stationType, viewTop, viewBot, viewLeft, viewRight);
+    }
+
+    const dim = (char: string): { char: string; fg: Color; bg: Color } =>
+      ({ char, fg: 'bright-black', bg: 'black' });
+
+    // ── Stat panels (CONTENT_TOP = row 3) ─────────────────────────────────────
+    // \    FUEL: 100%    /\    CARGO: 0/50T   /
+    const leftStat = pad(`FUEL: ${this.state.fuel}%`, inner);
+    const rightStat = pad(`CARGO: ${this.state.cargo}/${this.state.cargoCapacity}T`, inner);
+
+    buffer[CONTENT_TOP][0] = dim('\\');
+    for (let c = 0; c < inner; c++)
+      buffer[CONTENT_TOP][1 + c] = dim(leftStat[c]);
+    buffer[CONTENT_TOP][half - 1] = dim('/');
+    buffer[CONTENT_TOP][half] = dim('\\');
+    for (let c = 0; c < inner; c++)
+      buffer[CONTENT_TOP][half + 1 + c] = dim(rightStat[c]);
+    buffer[CONTENT_TOP][w - 1] = dim('/');
+
+    // ── Viewport top border (CONTENT_TOP+1 = row 4) ───────────────────────────
+    // /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯  ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
+    const topRow = CONTENT_TOP + 1;
+    buffer[topRow][0] = dim('/');
+    for (let c = 0; c < inner; c++)
+      buffer[topRow][1 + c] = dim('¯');
+    // cols half-1 and half remain blank (the gap between the arches)
+    for (let c = 0; c < inner; c++)
+      buffer[topRow][half + 1 + c] = dim('¯');
+    buffer[topRow][w - 1] = dim('\\');
+
+    // ── Interior | borders ─────────────────────────────────────────────────────
+    for (let r = viewTop; r <= viewBot; r++) {
+      buffer[r][0] = dim('|');
+      buffer[r][w - 1] = dim('|');
     }
 
     this.starfield.render(buffer, viewTop, viewBot, viewLeft, viewRight);
     if (this.station) this.station.render(buffer);
 
-    // Separator at h-3: "--- … --- | --- … ---"
-    const sepRow = h - 3;
-    if (sepRow >= 0 && sepRow < h) {
-      const midCol = Math.floor(w / 2);
-      for (let c = 0; c < w; c++) {
-        let ch: string;
-        if (c === midCol - 1) ch = ' ';
-        else if (c === midCol) ch = '|';
-        else if (c === midCol + 1) ch = ' ';
-        else ch = '-';
-        buffer[sepRow][c] = { char: ch, fg: 'bright-black', bg: 'black' };
-      }
+    // ── Viewport bottom sill (h-3 = row 27) ───────────────────────────────────
+    // \__________________  __________________/
+    const sillRow = h - 3;
+    buffer[sillRow][0] = dim('\\');
+    for (let c = 0; c < inner; c++)
+      buffer[sillRow][1 + c] = dim('_');
+    // gap cols half-1 and half remain blank
+    for (let c = 0; c < inner; c++)
+      buffer[sillRow][half + 1 + c] = dim('_');
+    buffer[sillRow][w - 1] = dim('/');
+
+    // ── Action buttons (h-2 = row 28) ─────────────────────────────────────────
+    // /   [T] TRAVEL     \/    [D] DOCK      \
+    const buttonsRow = h - 2;
+    const travelLabel = '[T] TRAVEL';
+    const dockLabel = this.inSpace ? '[ - ] DOCK' : '[D] DOCK';
+
+    let travelContent = pad(travelLabel, inner);
+    let dockContent = pad(dockLabel, inner);
+
+    if (this.cursorIdx === 0) {
+      travelContent = '>' + travelContent.slice(1);
+    } else if (!this.inSpace) {
+      dockContent = '>' + dockContent.slice(1);
     }
 
-    // Action buttons at h-2
-    const buttonsRow = h - 2;
-    const travelText = (this.cursorIdx === 0 ? '> ' : '  ') + '[ T ] TRAVEL';
-    const dockText = (this.cursorIdx === 1 && !this.inSpace ? '> ' : '  ')
-      + (this.inSpace ? '[ - ] DOCK' : '[ D ] DOCK');
-    const totalWidth = TRAVEL_PART_WIDTH + GAP_WIDTH + dockText.length;
-    const startCol = Math.max(0, Math.floor((w - totalWidth) / 2));
-    writeText(buffer, buttonsRow, startCol, travelText, 'bright-yellow', 'black');
-    writeText(buffer, buttonsRow, startCol + TRAVEL_PART_WIDTH + GAP_WIDTH, dockText,
-      this.inSpace ? 'bright-black' : 'bright-yellow', 'black');
+    buffer[buttonsRow][0] = dim('/');
+    for (let c = 0; c < inner; c++) {
+      const ch = travelContent[c];
+      buffer[buttonsRow][1 + c] = {
+        char: ch,
+        fg: ch === '>' ? 'bright-green' : 'bright-yellow',
+        bg: 'black',
+      };
+    }
+    buffer[buttonsRow][half - 1] = dim('\\');
+    buffer[buttonsRow][half] = dim('/');
+    for (let c = 0; c < inner; c++) {
+      const ch = dockContent[c];
+      buffer[buttonsRow][half + 1 + c] = {
+        char: ch,
+        fg: ch === '>' ? 'bright-green' : (this.inSpace ? 'bright-black' : 'bright-yellow'),
+        bg: 'black',
+      };
+    }
+    buffer[buttonsRow][w - 1] = dim('\\');
   }
 }

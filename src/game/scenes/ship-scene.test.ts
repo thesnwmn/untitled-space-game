@@ -35,7 +35,7 @@ function rowText(buffer: CharBuffer, row: number): string {
   return buffer[row].map(c => c.char).join('').trimEnd();
 }
 
-// Contexts — systemId/destinationId now live in context, not constructor args
+// Contexts
 const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
   systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
@@ -55,11 +55,12 @@ const militaryContext: GameContext = {
 
 // Layout constants for 40×30 reference grid
 // Row 0–1: ScreenChrome header; row 2: gap
-const FUEL_ROW = 3;      // CONTENT_TOP
-const VIEW_TOP = 4;      // CONTENT_TOP + 1
-const VIEW_BOT = 26;     // h - 4
-const SEP_ROW = 27;      // h - 3
-const BUTTONS_ROW = 28;  // h - 2
+const STAT_ROW = 3;       // CONTENT_TOP — stat panels (\ FUEL / \ CARGO /)
+const TOP_BORDER_ROW = 4; // CONTENT_TOP+1 — viewport arch top
+const VIEW_TOP = 5;       // CONTENT_TOP+2 — viewport interior start
+const VIEW_BOT = 26;      // h - 4 — viewport interior end
+const SILL_ROW = 27;      // h - 3 — viewport bottom sill
+const BUTTONS_ROW = 28;   // h - 2 — action buttons row
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -90,15 +91,44 @@ describe('ShipScene', () => {
       expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
     });
 
-    it('renders fuel/cargo info at FUEL_ROW in bright-black', () => {
+    it('renders stat panels at STAT_ROW with fuel and cargo text in bright-black', () => {
       const input = new MockInputHandler();
       const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const text = rowText(buf, FUEL_ROW);
+      const text = rowText(buf, STAT_ROW);
       expect(text).toContain('FUEL: 100%');
       expect(text).toContain('CARGO: 0/50T');
-      expect(buf[FUEL_ROW].find(c => c.char !== ' ')?.fg).toBe('bright-black');
+      expect(buf[STAT_ROW][0].fg).toBe('bright-black');
+      // Border chars frame each panel
+      expect(buf[STAT_ROW][0].char).toBe('\\');
+      expect(buf[STAT_ROW][19].char).toBe('/');
+      expect(buf[STAT_ROW][20].char).toBe('\\');
+      expect(buf[STAT_ROW][39].char).toBe('/');
+    });
+
+    it('renders viewport top border at TOP_BORDER_ROW with arch chars', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(buf[TOP_BORDER_ROW][0].char).toBe('/');
+      expect(buf[TOP_BORDER_ROW][1].char).toBe('¯');
+      expect(buf[TOP_BORDER_ROW][39].char).toBe('\\');
+      // gap in the centre
+      expect(buf[TOP_BORDER_ROW][19].char).toBe(' ');
+      expect(buf[TOP_BORDER_ROW][20].char).toBe(' ');
+    });
+
+    it('interior region (rows VIEW_TOP to VIEW_BOT) has | borders at edges', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      for (let r = VIEW_TOP; r <= VIEW_BOT; r++) {
+        expect(buf[r][0].char).toBe('|');
+        expect(buf[r][39].char).toBe('|');
+      }
     });
 
     it('interior region (rows VIEW_TOP to VIEW_BOT) contains non-space cells', () => {
@@ -113,6 +143,19 @@ describe('ShipScene', () => {
         }
       }
       expect(nonSpace).toBe(true);
+    });
+
+    it('renders viewport bottom sill at SILL_ROW', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(buf[SILL_ROW][0].char).toBe('\\');
+      expect(buf[SILL_ROW][1].char).toBe('_');
+      expect(buf[SILL_ROW][39].char).toBe('/');
+      // gap in the centre
+      expect(buf[SILL_ROW][19].char).toBe(' ');
+      expect(buf[SILL_ROW][20].char).toBe(' ');
     });
 
     it('civilian destination produces HUB station glyph ([H]) in interior', () => {
@@ -155,8 +198,8 @@ describe('ShipScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
-      expect(line).toContain('[ T ] TRAVEL');
-      expect(line).toContain('[ D ] DOCK');
+      expect(line).toContain('[T] TRAVEL');
+      expect(line).toContain('[D] DOCK');
     });
 
     it('cursor starts on TRAVEL (> prefix left of DOCK)', () => {
