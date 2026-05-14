@@ -7,6 +7,8 @@ size: large
 influence:
   - sol
   - alpha-centauri
+  - sirius
+  - epsilon-eridani
 tags:
   - energy
   - fuel-monopoly

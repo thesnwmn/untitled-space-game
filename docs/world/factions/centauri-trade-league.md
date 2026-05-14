@@ -8,6 +8,7 @@ influence:
   - alpha-centauri
   - sol
   - barnards-star
+  - sirius
 tags:
   - trade
   - finance

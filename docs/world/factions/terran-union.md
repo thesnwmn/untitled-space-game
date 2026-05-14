@@ -8,6 +8,10 @@ influence:
   - sol
   - alpha-centauri
   - barnards-star
+  - sirius
+  - procyon
+  - tau-ceti
+  - epsilon-eridani
 tags:
   - bureaucratic
   - military
