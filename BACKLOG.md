@@ -10,7 +10,7 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ---
 
-## READY
+## IN PROGRESS
 
 ### 026 · Jump System
 
@@ -27,7 +27,13 @@ data module. See `docs/features/026-jump-system.md` for the full spec.
 
 **Depends on:** 019, 027
 
+**Implementation:** `src/game/scenes/JumpMenuScene.ts`, `JumpAnimationScene.ts`,
+`SystemArrivalScene.ts`; updated `ShipScene.ts`, `src/main.ts`, `terminal.ts`;
+3 new test files (20 tests). Branch: `claude/implement-jump-system-EYxJj`.
+
 ---
+
+## READY
 
 ### 025 · Randomise Station Star Patterns
 
