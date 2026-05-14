@@ -51,17 +51,6 @@ Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item li
 
 ---
 
-### 022 · World Docs HTML Publisher
-
-Build scripts that render all `docs/world/` markdown into a browsable HTML docs
-site published to GitHub Pages alongside the game. Includes moving the game build
-output from `dist/` root to `dist/game/` (Vite base path change), a landing page
-at `dist/index.html`, and a CI workflow update. Uses `gray-matter` + `marked` for
-parsing. See `docs/features/022-world-docs-publisher.md` for the full spec.
-
-**Depends on:** 018
-
----
 
 ### 023 · Galaxy Map
 
@@ -188,6 +177,35 @@ _(none)_
 **Evidence:** Documentation-only. No code changes; no tests required.
 
 **Play-test instructions:** Not applicable.
+
+---
+
+### 022 · World Docs HTML Publisher
+
+**Built:**
+- `scripts/lib/parse-world.ts` — walks `docs/world/**/*.md`, skips `_template.md` files, parses front matter + body via `gray-matter`; returns `WorldDoc[]` with `{ path, category, id, data, content }`
+- `scripts/lib/html-template.ts` — `page(title, breadcrumbs, body)` helper; inline CSS with black background, Share Tech Mono / VT323 fonts, 16-colour palette matching `colors.css`; breadcrumb header in bright-cyan; footer in dim
+- `scripts/build-docs.ts` — renders all world docs to `dist/docs/`: category index pages with sortable tables, detail pages with front-matter table + rendered markdown body, `dist/docs/index.html` listing all categories; cross-reference fields (`major_factions`, `destinations`, `system`, `home_system`, `influence`) rendered as hyperlinks; `dist/docs/commodities.html` as a table from front-matter list
+- `scripts/build-landing.ts` — writes `dist/index.html` with game title, tagline, and three tiles: `[PLAY GAME]`, `[WORLD DOCS]`, `[GALAXY MAP]` (dimmed, "coming soon" until Feature 023)
+- `scripts/build-map.ts` — stub; no-op until Feature 023
+- `vite.config.ts` — `base` changed to `/untitled-space-game/game/`; `build.outDir` set to `dist/game`; game assets no longer overwrite landing page
+- `package.json` — added `build:docs`, `build:map`, `build:landing`, `build:all` scripts
+- `.github/workflows/deploy.yml` — added `oven-sh/setup-bun@v2` step; `npm run build` → `npm run build:all`; deploys entire `dist/` tree
+- `gray-matter ^4.0.3` and `marked ^18.0.3` added as `devDependencies`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 214/214 tests passed (13 test files)
+- `npm run build`: ✓ Vite build → `dist/game/` (21.66 kB JS)
+- `npm run build:all`: ✓ game + 51 docs HTML pages + stub map + landing page; all cross-reference links resolve correctly
+
+**Play-test instructions:**
+1. `bash init.sh` — must print `=== Environment ready ===`
+2. `npm run build:all` — must complete with no errors
+3. Verify `dist/` tree: `index.html`, `game/index.html`, `docs/index.html`, `docs/systems/sol.html`, `docs/destinations/elysium-station.html`, `docs/factions/terran-union.html`, `docs/ships/scout.html`, `docs/story/first-jump.html`, `docs/commodities.html`
+4. Open `dist/index.html` in browser: landing page shows three tiles; GALAXY MAP is dimmed
+5. Click WORLD DOCS → `dist/docs/index.html`: six category links; click Systems → sol detail page; verify faction/destination links work
+6. Click PLAY GAME → game loads correctly from `dist/game/`
 
 ---
 
