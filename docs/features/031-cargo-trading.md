@@ -55,8 +55,11 @@ no goodsBias filtering in this feature). Assign each a qty of 1–8 units.
 ### Accessing cargo from the Ship screen
 
 A new `CARGO` game action is added, mapped to the `c` / `C` keys. In `ShipScene`,
-`CARGO` action (keyboard) or tapping row 0 (the status bar row, touch) opens
-`CargoScene`. The footer hint updates to show the `C cargo` shortcut.
+`CARGO` action (keyboard) or tapping the cargo panel (touch) opens `CargoScene`.
+
+The ship status bar is split into two panels at `statRow = 2`. The right panel
+(`col >= Math.floor(w / 2)`) displays the cargo reading. Touch must hit that
+panel specifically — tapping the fuel panel (left) does nothing.
 
 ---
 
@@ -420,20 +423,22 @@ In `inputHandler.onAction`:
 }
 ```
 
-#### d) Add status bar tap for touch
+#### d) Add cargo panel tap for touch
 
-In `inputHandler.onTap`, add a handler for status bar row before the existing
-button-row check:
+In `inputHandler.onTap`, add a handler that fires only when the tap lands in the
+right (cargo) panel of the stat bar. The stat bar lives at `statRow = 2`; the
+right panel begins at `col = Math.floor(this.w / 2)`.
 
 ```typescript
-if (row === STATUS_ROW) {
+const half = Math.floor(this.w / 2);
+if (row === 2 && col >= half) {
   this.activated = true;
   onCargo();
   return;
 }
 ```
 
-`STATUS_ROW` is already defined as `0`.
+Tapping the left (fuel) panel or any other row does not open CargoScene.
 
 #### e) Update status bar rendering
 
@@ -447,7 +452,7 @@ const statusText = `FUEL:${playerState.fuelL}/${playerState.fuelCapacityL}L | CA
 
 ```typescript
 const hint = this.context.primaryInput === 'touch'
-  ? 'TAP status for cargo'
+  ? 'TAP cargo panel for hold'
   : '↑↓ navigate   ENTER select   C cargo';
 ```
 
@@ -601,6 +606,8 @@ Update constructor call to include `onCargo` callback and pass `cargoWeightKg` i
 | 1 | Status bar renders `CARGO:0/2000KG` for empty hold |
 | 2 | Status bar renders correct weight when cargoWeightKg > 0 |
 | 3 | CARGO action fires onCargo callback |
+| 4 | Tap on cargo panel (row 2, col >= half) fires onCargo callback |
+| 5 | Tap on fuel panel (row 2, col < half) does NOT fire onCargo |
 
 ### `src/game/world/world-data.test.ts` (update, ~3 tests)
 
@@ -630,7 +637,7 @@ Update constructor call to include `onCargo` callback and pass `cargoWeightKg` i
 ## Play-test checklist
 
 1. Start game → Ship screen shows `CARGO:0/2000KG` in status bar.
-2. Press `C` (keyboard) or tap status bar (touch) → CargoScene opens, shows "CARGO HOLD EMPTY".
+2. Press `C` (keyboard) → CargoScene opens, shows "CARGO HOLD EMPTY". Close with ESC.
 3. Press ESC → back to Ship screen.
 4. Dock at any station → open Trader → BUY tab shows 4–6 randomly generated items.
 5. Select an item on BUY tab → item disappears from BUY tab, credits decrease,
