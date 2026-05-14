@@ -10,9 +10,12 @@ export class InSystemTravelAnimationScene implements Scene {
   private elapsed = 0;
   private arrived = false;
 
-  constructor(destinationName: string, onArrival: () => void) {
+  private readonly footerText: string | null;
+
+  constructor(destinationName: string, onArrival: () => void, footerText?: string) {
     this.destinationName = destinationName.toUpperCase();
     this.onArrival = onArrival;
+    this.footerText = footerText ?? null;
   }
 
   update(dt: number): void {
@@ -43,6 +46,7 @@ export class InSystemTravelAnimationScene implements Scene {
     writeCentered(buffer, mid - 1, 'HEADING TO:', 'bright-black', 'black');
     writeCentered(buffer, mid, this.destinationName, 'bright-white', 'black');
     writeCentered(buffer, mid + 2, ELLIPSIS_FRAMES[frameIdx], 'bright-black', 'black');
-    writeCentered(buffer, mid + 4, `DOCKING IN ${countdown}S`, 'bright-black', 'black');
+    const footer = this.footerText ?? `DOCKING IN ${countdown}S`;
+    writeCentered(buffer, mid + 4, footer, 'bright-black', 'black');
   }
 }

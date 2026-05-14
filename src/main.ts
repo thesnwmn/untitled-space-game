@@ -60,7 +60,7 @@ const onDestinationSelected = (destinationId: string) => {
 
 const goToFlyIntoSpace = () => {
   currentDestinationId = null;
-  goToShip();
+  currentScene = new InSystemTravelAnimationScene('OPEN SPACE', goToShip, 'LAUNCHING...');
 };
 
 const onJumpSelected = (targetSystemId: string) => {
