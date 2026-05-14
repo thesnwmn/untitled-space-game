@@ -12,19 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 019 · World Data TypeScript Types
-
-Define TypeScript interfaces for every world entity type (`StarSystem`,
-`Destination`, `JumpRoute`, `JumpDrive`, `Ship`, `Faction`, `Commodity`,
-`StoryBeat`) and expose a typed static `WorldData` module with lookup helpers
-that any game scene can import. No file I/O — seed data is hard-coded to match
-the docs written in Feature 018. See `docs/features/019-world-data-types.md`
-for the full spec.
-
-**Depends on:** 018
-
----
-
 ### 027 · World-Driven Story, Station, and System Display
 
 Make every scene a generic renderer — no world content hardcoded in source.
@@ -135,6 +122,25 @@ _(none)_
 ---
 
 ## DONE
+
+### 019 · World Data TypeScript Types
+
+**Built:**
+- `src/game/world/types.ts` — exports all type aliases and interfaces: `SecurityLevel`, `DangerLevel`, `PopulationLevel`, `KnowledgeLevel`, `Zone`, `LocationType`, `DestinationType`, `StoryBeatType`, `FactionType`, `FactionSize`, `CommodityCategory`, `ShipClass`, `RouteStability`, `StarSystem`, `DestinationAmenities`, `Destination`, `StoryBeat`, `JumpRoute`, `JumpDrive`, `Ship`, `Faction`, `Commodity`, `WorldData`
+- `src/game/world/world-data.ts` — exports `WORLD: WorldData` with all seed data (4 systems, 10 destinations, 5 routes, 4 drives, 3 ships, 6 factions, 12 commodities, 3 story beats) plus helpers: `getSystem`, `getDestination`, `getRoutesFrom`, `getDrive`, `getStoryBeat`, `getStoryBeatsByTrigger`
+- `src/game/world/world-data.test.ts` — 16 tests covering all acceptance criteria
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 230/230 tests passed (14 test files)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. Run `bash init.sh` — must print `=== Environment ready ===`
+2. Run `npm test` — must show 14 test files, 230 tests passed
+3. Verify `src/game/world/world-data.test.ts` passes: `getSystem('sol')` resolves, `elysium-station` has `trader === 'Merchant Kess'`, `getRoutesFrom('sol')` returns 3+ routes, `getDrive('civilian-mk1').maxDistanceLy === 4`, story beats resolve correctly
+
+---
 
 ### 023 · Galaxy Map
 
