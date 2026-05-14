@@ -48,8 +48,8 @@ const touchContext: GameContext = {
   systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 
-// CONTENT_TOP = 3; tab row = CONTENT_TOP+3 = 6; item row start = CONTENT_TOP+4 = 7
-const ITEM_ROW_START = 7;
+// CONTENT_TOP = 3; tab row = CONTENT_TOP+3 = 6; item row start = CONTENT_TOP+5 = 8
+const ITEM_ROW_START = 8;
 const TAB_ROW = 6;
 
 // Tab bar "| BUY | SELL |" left-aligned at col 2
