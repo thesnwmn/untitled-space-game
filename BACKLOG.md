@@ -18,6 +18,19 @@ Add a `HintOverlay` that exclusively owns the last buffer row (`h - 1`) for inpu
 
 ---
 
+### 024 · NavBar Keyboard Shortcuts
+
+Make NavBar buttons (`[UNDOCK]`, `[HUB]`) reachable by number keys: `1` activates
+the leftmost button, `2` the next, etc. Applies in terminal and browser keyboard
+mode. In keyboard mode the buttons render as `[1:UNDOCK]` / `[2:HUB]` so the
+shortcut is self-documenting. Adds `NAV_1`–`NAV_9` to `GameAction`; wires digit
+keys in both input handlers; adds `showIndices` param to `NavBar.render()` and a
+new `getOptionId()` method; updates `StationMenuScene`, `TraderScene`, and
+`MissionBoardScene` handlers and keyboard hints. See
+`docs/features/024-navbar-keyboard-shortcuts.md` for the full spec.
+
+---
+
 ### 013 · Menu Pagination
 
 Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item lists in `MissionBoardScene` and `TraderScene` when item count exceeds the visible content area height. A one-row pager bar `< Page N/X >` appears at the bottom of the content region; LEFT/RIGHT navigates pages in the Mission Board, PAGE_UP/PAGE_DOWN in the Trader (where LEFT/RIGHT is already used for tab switching). Tap the `<`/`>` arrows or swipe to page. Pages wrap. Cursor resets to the first item on each page change. See `docs/features/013-menu-pagination.md` for full spec.
