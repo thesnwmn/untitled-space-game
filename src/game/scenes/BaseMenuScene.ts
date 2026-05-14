@@ -1,50 +1,108 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered } from '../../shared/buffer-utils';
+import { writeText } from '../../shared/buffer-utils';
+import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/ScreenChrome';
+import type { NavOption, ChromeConfig } from '../ui/ScreenChrome';
 
 export interface MenuItemDef {
   label: string;
+  info?: string;
+  details?: string[];
   action: () => void;
 }
 
-const MENU_ROW_START = 14;
-
 export abstract class BaseMenuScene implements Scene {
   private readonly title: string;
-  private readonly items: MenuItemDef[];
+  protected readonly items: MenuItemDef[];
   private readonly context: GameContext;
-  private cursorIdx = 0;
-  private activated = false;
+  protected readonly chrome: ScreenChrome;
+  private readonly navOptions: ReadonlyArray<NavOption>;
+  protected readonly infoLines: string[];
+  protected readonly itemStartRow: number;
+  protected cursorIdx = 0;
+  private pageIndex = 0;
+  private lastPageCount = 1;
+  protected activated = false;
 
-  constructor(title: string, items: MenuItemDef[], inputHandler: InputHandler, context: GameContext) {
+  constructor(
+    title: string,
+    items: MenuItemDef[],
+    navOptions: ReadonlyArray<NavOption>,
+    inputHandler: InputHandler,
+    context: GameContext,
+    infoLines: string[] = [],
+  ) {
     this.title = title;
     this.items = items;
     this.context = context;
+    this.chrome = new ScreenChrome(context);
+    this.navOptions = navOptions;
+    this.infoLines = infoLines;
+    this.itemStartRow = CONTENT_TOP + 2 + (infoLines.length > 0 ? infoLines.length + 1 : 0);
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
       if (action === 'UP') {
-        this.cursorIdx = (this.cursorIdx - 1 + this.items.length) % this.items.length;
+        this.moveCursor(-1);
       } else if (action === 'DOWN') {
-        this.cursorIdx = (this.cursorIdx + 1) % this.items.length;
+        this.moveCursor(1);
+      } else if (action === 'PAGE_UP') {
+        this.pageIndex = (this.pageIndex - 1 + this.lastPageCount) % this.lastPageCount;
+        this.cursorIdx = 0;
+      } else if (action === 'PAGE_DOWN') {
+        this.pageIndex = (this.pageIndex + 1) % this.lastPageCount;
+        this.cursorIdx = 0;
       } else if (action === 'SELECT') {
-        this.activated = true;
-        this.items[this.cursorIdx].action();
+        this.activateCurrent();
+      } else {
+        this.handleNavAction(action);
       }
     });
 
     if (inputHandler.onTap) {
-      inputHandler.onTap((_col, row) => {
+      inputHandler.onTap((col, row) => {
         if (this.activated) return;
-        for (let i = 0; i < this.items.length; i++) {
-          if (row === MENU_ROW_START + i) {
-            this.activated = true;
-            this.cursorIdx = i;
-            this.items[i].action();
-            return;
-          }
+        const navId = this.chrome.hitTestNav(col, row);
+        if (navId !== null) {
+          this.handleNavTap(navId);
+          return;
+        }
+        const itemIdx = this.rowToVisibleItemIndex(row);
+        if (itemIdx !== null) {
+          this.cursorIdx = itemIdx;
+          this.activateCurrent();
         }
       });
     }
+  }
+
+  private moveCursor(delta: number): void {
+    const n = this.items.length;
+    if (n === 0) return;
+    this.cursorIdx = (this.cursorIdx + delta + n) % n;
+  }
+
+  private activateCurrent(): void {
+    if (this.items.length === 0) return;
+    this.activated = true;
+    this.items[this.cursorIdx].action();
+  }
+
+  // Row → item index (for tap). Uses simple item heights (no paging taken into account).
+  private rowToVisibleItemIndex(row: number): number | null {
+    let r = this.itemStartRow;
+    for (let i = 0; i < this.items.length; i++) {
+      const itemHeight = 1 + (this.items[i].details?.length ?? 0);
+      if (row >= r && row < r + itemHeight) return i;
+      r += itemHeight;
+    }
+    return null;
+  }
+
+  protected handleNavAction(_action: string): void {}
+  protected handleNavTap(_navId: string): void {}
+
+  protected buildChromeConfig(): ChromeConfig {
+    return { showHeader: true, showFooter: true, navOptions: this.navOptions };
   }
 
   update(_dt: number): void {}
@@ -59,25 +117,80 @@ export abstract class BaseMenuScene implements Scene {
       }
     }
 
-    writeCentered(buffer, 3, this.title, 'cyan', 'black');
-    writeCentered(buffer, 4, '='.repeat(this.title.length), 'cyan', 'black');
+    const config = this.buildChromeConfig();
+    this.chrome.render(buffer, config);
 
-    const maxItemWidth = this.items.reduce((max, item) => Math.max(max, item.label.length + 2), 0);
-    const menuCol = Math.max(0, Math.floor((w - maxItemWidth) / 2));
+    writeText(buffer, CONTENT_TOP, 2, this.title, 'white', 'black');
+    writeText(buffer, CONTENT_TOP + 1, 2, '`'.repeat(this.title.length), 'bright-black', 'black');
 
-    for (let i = 0; i < this.items.length; i++) {
-      const row = MENU_ROW_START + i;
-      if (row >= h) continue;
-      const isCursor = i === this.cursorIdx;
-      const prefix = isCursor ? '> ' : '  ';
-      const fg: Color = isCursor ? 'bright-green' : 'white';
-      writeText(buffer, row, menuCol, prefix + this.items[i].label, fg, 'black');
+    for (let i = 0; i < this.infoLines.length; i++) {
+      writeText(buffer, CONTENT_TOP + 2 + i, 2, this.infoLines[i], 'bright-black', 'black');
     }
 
-    const footerRow = h - 3;
-    const hint = this.context.primaryInput === 'touch'
-      ? 'tap an option to select'
-      : '↑↓ navigate   ENTER select';
-    writeCentered(buffer, footerRow, hint, 'bright-black', 'black');
+    // Pagination
+    const contentEnd = contentBottom(h, config.showFooter);
+    const lastContentRow = contentEnd - 1;
+    const availableRows = lastContentRow - this.itemStartRow;
+    const allHeights = this.items.map(item => 1 + (item.details?.length ?? 0));
+    const totalHeight = allHeights.reduce((a, b) => a + b, 0);
+    const needsPager = totalHeight > availableRows;
+    const pageRows = needsPager ? availableRows - 1 : availableRows;
+
+    // Build pages
+    const pages: number[][] = [];
+    let currentPage: number[] = [];
+    let rowsUsed = 0;
+    for (let i = 0; i < allHeights.length; i++) {
+      if (rowsUsed + allHeights[i] > pageRows) {
+        if (currentPage.length > 0) pages.push(currentPage);
+        currentPage = [i];
+        rowsUsed = allHeights[i];
+      } else {
+        currentPage.push(i);
+        rowsUsed += allHeights[i];
+      }
+    }
+    if (currentPage.length > 0) pages.push(currentPage);
+
+    this.lastPageCount = Math.max(1, pages.length);
+    if (this.pageIndex >= this.lastPageCount) this.pageIndex = this.lastPageCount - 1;
+
+    const pageItems = pages[this.pageIndex] ?? [];
+
+    let row = this.itemStartRow;
+    for (const i of pageItems) {
+      const item = this.items[i];
+      const isCursor = i === this.cursorIdx;
+      const prefix = isCursor ? '> ' : '  ';
+      const cursorFg: Color = isCursor ? 'bright-green' : 'white';
+
+      if (item.info !== undefined) {
+        const dotLen = Math.max(1, (w - 2) - 2 - item.label.length - item.info.length - 2);
+        writeText(buffer, row, 2, prefix + item.label + ' ', cursorFg, 'black');
+        writeText(buffer, row, 2 + prefix.length + item.label.length + 1,
+          '.'.repeat(dotLen), 'bright-black', 'black');
+        writeText(buffer, row, 2 + prefix.length + item.label.length + 1 + dotLen + 1,
+          item.info, cursorFg, 'black');
+      } else if (item.details !== undefined && item.details.length > 0) {
+        writeText(buffer, row, 2, prefix + item.label, cursorFg, 'black');
+        for (let d = 0; d < item.details.length; d++) {
+          if (row + 1 + d <= lastContentRow) {
+            writeText(buffer, row + 1 + d, 2, '  ' + item.details[d], 'bright-black', 'black');
+          }
+        }
+      } else {
+        writeText(buffer, row, 2, prefix + item.label, cursorFg, 'black');
+      }
+      row += 1 + (item.details?.length ?? 0);
+    }
+
+    if (needsPager) {
+      const pageStr = `${this.pageIndex + 1}/${this.lastPageCount}`;
+      const pagerRow = lastContentRow;
+      writeText(buffer, pagerRow, 0, '|<|', 'white', 'black');
+      const centerCol = Math.floor((w - pageStr.length) / 2);
+      writeText(buffer, pagerRow, centerCol, pageStr, 'bright-black', 'black');
+      writeText(buffer, pagerRow, w - 3, '|>|', 'white', 'black');
+    }
   }
 }

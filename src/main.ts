@@ -16,39 +16,53 @@ import { getGameSettings, getSystem, getDestination } from './game/world/world-d
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
 const debug = new URLSearchParams(window.location.search).has('debug');
 
+const startingLocation = getGameSettings().startingLocation;
+
 const context: GameContext = {
   environment: 'browser',
   primaryInput,
   debug,
+  systemId: startingLocation.system,
+  destinationId: startingLocation.destination,
+  credits: 5000,
 };
 
 const renderer = new DOMRenderer();
 const input = new DOMInputHandler(context);
 input.connect();
 
-const startingLocation = getGameSettings().startingLocation;
 let currentSystemId = startingLocation.system;
 let currentDestinationId: string | null = startingLocation.destination;
 
 let currentScene: Scene;
 
 const goToMainMenu = () => {
+  context.systemId = currentSystemId;
+  context.destinationId = currentDestinationId;
   currentScene = new MainMenuScene(input, context, goToStory);
 };
 
 const goToTrader = () => {
+  context.systemId = currentSystemId;
+  context.destinationId = currentDestinationId;
   currentScene = new TraderScene(input, context, currentDestinationId!, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
+  context.systemId = currentSystemId;
+  context.destinationId = currentDestinationId;
   currentScene = new MissionBoardScene(input, context, currentDestinationId!, goToStation, goToShip);
 };
 
 const goToShip = () => {
-  currentScene = new ShipScene(input, context, currentSystemId, currentDestinationId, goToTravelMenu, goToStation);
+  context.systemId = currentSystemId;
+  context.destinationId = currentDestinationId;
+  currentScene = new ShipScene(input, context, goToTravelMenu, goToStation);
 };
 
 const goToStation = () => {
+  context.systemId = currentSystemId;
+  context.destinationId = currentDestinationId;
   currentScene = new StationMenuScene(input, context, currentDestinationId!, goToTrader, goToMissionBoard, goToShip);
 };
 
@@ -69,6 +83,8 @@ const onJumpSelected = (targetSystemId: string) => {
 };
 
 const goToTravelMenu = () => {
+  context.systemId = currentSystemId;
+  context.destinationId = currentDestinationId;
   currentScene = new TravelMenuScene(
     input, context, currentSystemId, currentDestinationId,
     onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
@@ -77,6 +93,8 @@ const goToTravelMenu = () => {
 
 const goToArrival = () => {
   currentDestinationId = null;
+  context.systemId = currentSystemId;
+  context.destinationId = null;
   currentScene = new TravelMenuScene(
     input, context, currentSystemId, null,
     onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
@@ -84,6 +102,8 @@ const goToArrival = () => {
 };
 
 const goToStory = () => {
+  context.systemId = currentSystemId;
+  context.destinationId = currentDestinationId;
   currentScene = new StoryScene(input, context, goToStation);
 };
 

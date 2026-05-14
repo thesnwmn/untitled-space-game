@@ -14,11 +14,22 @@ const KEY_MAP: Array<[string, GameAction]> = [
   ['\x1b[D', 'LEFT'],
   ['\x1b[5~', 'PAGE_UP'],
   ['\x1b[6~', 'PAGE_DOWN'],
+  ['[', 'PAGE_UP'],
+  [']', 'PAGE_DOWN'],
   ['\r', 'SELECT'],
   ['\n', 'SELECT'],
   ['\x1b', 'BACK'],
   ['p', 'PAUSE'],
   ['P', 'PAUSE'],
+  ['1', 'NAV_1'],
+  ['2', 'NAV_2'],
+  ['3', 'NAV_3'],
+  ['4', 'NAV_4'],
+  ['5', 'NAV_5'],
+  ['6', 'NAV_6'],
+  ['7', 'NAV_7'],
+  ['8', 'NAV_8'],
+  ['9', 'NAV_9'],
 ];
 
 const EXIT_KEYS = new Set(['\x03', 'q', 'Q']);

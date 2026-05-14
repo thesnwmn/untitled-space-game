@@ -39,9 +39,9 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const browserContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
-const terminalContext: GameContext = { environment: 'terminal', primaryInput: 'keyboard', debug: false };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
+const browserContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
+const terminalContext: GameContext = { environment: 'terminal', primaryInput: 'keyboard', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
+const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
 
 // Menu col for a 40-wide grid: Math.floor((40 - 10) / 2) = 15
 // "NEW GAME" (8 chars) + 2 prefix = 10; "QUIT" (4 chars) + 2 prefix = 6; max = 10
@@ -100,32 +100,6 @@ describe('MainMenuScene', () => {
       expect(rowFg(buf, MENU_ROW_START, MENU_COL)).toBe('bright-green');
     });
 
-    it('renders keyboard footer 3 rows from bottom in bright-black', () => {
-      const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      const footerRow = 30 - 3;
-      expect(rowText(buf, footerRow)).toContain('ENTER select');
-      expect(buf[footerRow].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-black');
-    });
-
-    it('renders touch footer 3 rows from bottom for touch context', () => {
-      const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, touchContext, vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 27)).toContain('tap an option to select');
-    });
-
-    it('renders footer at h-3 on a smaller grid', () => {
-      const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
-      const buf = makeBuffer(40, 20);
-      scene.render(buf);
-      const footerRow = 20 - 3;
-      expect(rowText(buf, footerRow)).toContain('ENTER select');
-    });
   });
 
   describe('render — browser vs terminal items', () => {

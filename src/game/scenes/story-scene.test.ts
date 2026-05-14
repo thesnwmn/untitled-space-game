@@ -39,8 +39,8 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
+const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
+const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -91,25 +91,6 @@ describe('StoryScene', () => {
       scene.render(buf);
       const allText = buf.map(row => row.map(c => c.char).join('')).join('');
       expect(allText).not.toContain('Hugo poured');
-    });
-
-    it('renders keyboard footer hint near bottom in bright-black', () => {
-      const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      const h = buf.length;
-      expect(rowText(buf, h - 3)).toContain('PRESS ENTER TO CONTINUE');
-      expect(buf[h - 3].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-black');
-    });
-
-    it('renders touch footer hint near bottom for touch context', () => {
-      const input = new MockInputHandler();
-      const scene = new StoryScene(input, touchContext, vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      const h = buf.length;
-      expect(rowText(buf, h - 3)).toContain('TAP TO CONTINUE');
     });
 
     it('story text lines do not exceed 36 chars from col 2', () => {

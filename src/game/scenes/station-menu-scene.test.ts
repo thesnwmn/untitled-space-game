@@ -39,16 +39,24 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
+const keyboardContext: GameContext = {
+  environment: 'browser', primaryInput: 'keyboard', debug: false,
+  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
+};
+const touchContext: GameContext = {
+  environment: 'browser', primaryInput: 'touch', debug: false,
+  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
+};
 
-// maxItemWidth = "MISSION BOARD".length + 2 = 15
-// menuCol = Math.floor((40 - 15) / 2) = 12
-const MENU_COL = 12;
-const MENU_ROW_START = 14;
+// elysium-station description wraps to 3 lines + dangerLine = 4 info lines
+// itemStartRow = CONTENT_TOP + 2 + 4 + 1 = 10
+const MENU_ROW_START = 10;
 
-// NavBar single [UNDOCK] (8 chars) in 40-col buffer: startCol = floor((40-8)/2) = 16
-const NAV_UNDOCK_COL = 16;
+// Footer at row 29 (h-1 for 40×30)
+const FOOTER_ROW = 29;
+// ":: [1] UNDOCK ::::::::::::..."
+// UNDOCK button: cols 3-12
+const NAV_UNDOCK_COL = 3;
 
 function makeScene(
   input: MockInputHandler,
@@ -69,54 +77,59 @@ describe('StationMenuScene', () => {
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][0].char).toBe(' ');
-      expect(buf[0][0].fg).toBe('black');
+      expect(buf[0][0].char).not.toBe('+');
     });
 
-    it('nav bar row 0 contains station name ELYSIUM STATION in bright-cyan', () => {
+    it('chrome header row 0 contains system name SOL', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 0)).toContain('ELYSIUM STATION');
-      expect(rowFg(buf, 0, 12)).toBe('bright-cyan');
+      expect(rowText(buf, 0)).toContain('SOL');
     });
 
-    it('nav bar row 1 contains [UNDOCK]', () => {
+    it('chrome header row 1 contains destination name ELYSIUM STATION', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 1)).toContain('[UNDOCK]');
+      expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
     });
 
-    it('scene title at row 3 reads HUB in cyan', () => {
+    it('chrome footer row h-1 contains [1] UNDOCK', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, keyboardContext);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, FOOTER_ROW)).toContain('[1]');
+      expect(rowText(buf, FOOTER_ROW)).toContain('UNDOCK');
+    });
+
+    it('scene title at row 3 reads HUB in white', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('HUB');
-      expect(buf[3].find(c => c.char === 'H')?.fg).toBe('cyan');
+      expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
     });
 
-    it('renders title rule === at row 4 in cyan', () => {
+    it('renders backtick underline at row 4 in bright-black', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 4)).toContain('===');
-      expect(buf[4].find(c => c.char === '=')?.fg).toBe('cyan');
+      expect(rowText(buf, 4)).toContain('`');
+      expect(buf[4].find(c => c.char === '`')?.fg).toBe('bright-black');
     });
 
-    it('renders TRADER at row 14 and MISSION BOARD at row 15 for elysium-station; no UNDOCK in items', () => {
+    it('renders TRADER at row 10 and MISSION BOARD at row 11', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 14)).toContain('TRADER');
-      expect(rowText(buf, 15)).toContain('MISSION BOARD');
-      expect(rowText(buf, 14)).not.toContain('UNDOCK');
-      expect(rowText(buf, 15)).not.toContain('UNDOCK');
+      expect(rowText(buf, MENU_ROW_START)).toContain('TRADER');
+      expect(rowText(buf, MENU_ROW_START + 1)).toContain('MISSION BOARD');
     });
 
     it('cursor starts on TRADER in bright-green', () => {
@@ -125,7 +138,7 @@ describe('StationMenuScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('> TRADER');
-      expect(rowFg(buf, MENU_ROW_START, MENU_COL)).toBe('bright-green');
+      expect(rowFg(buf, MENU_ROW_START, 2)).toBe('bright-green');
     });
 
     it('renders description lines at row 5 in bright-black', () => {
@@ -143,37 +156,29 @@ describe('StationMenuScene', () => {
       const scene = makeScene(input, keyboardContext);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // elysium-station description wraps to 3 lines; DANGER at row 5+3+1=9
-      const dangerRow = rowText(buf, 9);
+      // elysium-station description wraps to 3 lines; danger at row 5+3=8
+      const dangerRow = rowText(buf, 8);
       expect(dangerRow).toContain('DANGER:');
-      expect(buf[9].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-black');
+      expect(buf[8].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-black');
     });
 
     it('does not show TRADER item when amenities.trader is false', () => {
       const input = new MockInputHandler();
-      const scene = new StationMenuScene(input, keyboardContext, 'tycho-orbital', vi.fn(), vi.fn(), vi.fn());
+      // tycho-orbital: trader=false; only MISSION BOARD
+      const ctx: GameContext = { ...keyboardContext, destinationId: 'tycho-orbital' };
+      const scene = new StationMenuScene(input, ctx, 'tycho-orbital', vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // tycho-orbital has trader=false; only MISSION BOARD should appear at row 14
-      expect(rowText(buf, 14)).toContain('MISSION BOARD');
-      expect(rowText(buf, 14)).not.toContain('TRADER');
-    });
-
-    it('renders keyboard footer hint at row 27 in bright-black', () => {
-      const input = new MockInputHandler();
-      const scene = makeScene(input, keyboardContext);
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 27)).toContain('ENTER select');
-      expect(buf[27].find((c, i) => c.char !== ' ' && i > 0 && i < 39)?.fg).toBe('bright-black');
-    });
-
-    it('renders touch footer hint at row 27 for touch context', () => {
-      const input = new MockInputHandler();
-      const scene = makeScene(input, touchContext);
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, 27)).toContain('tap an option to select');
+      // First item should be MISSION BOARD
+      let foundMission = false;
+      let foundTrader = false;
+      for (let r = 0; r < 30; r++) {
+        const t = rowText(buf, r);
+        if (t.includes('MISSION BOARD')) foundMission = true;
+        if (t.includes('TRADER') && !t.includes('MISSION')) foundTrader = true;
+      }
+      expect(foundMission).toBe(true);
+      expect(foundTrader).toBe(false);
     });
   });
 
@@ -218,13 +223,21 @@ describe('StationMenuScene', () => {
       expect(onMissionBoard).toHaveBeenCalledTimes(1);
     });
 
-    it('ESC fires onShip once and silences further input', () => {
+    it('BACK fires onShip once and silences further input', () => {
       const onShip = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, keyboardContext, vi.fn(), vi.fn(), onShip);
       input.triggerAction('BACK');
       expect(onShip).toHaveBeenCalledTimes(1);
       input.triggerAction('BACK');
+      expect(onShip).toHaveBeenCalledTimes(1);
+    });
+
+    it('NAV_1 fires onShip', () => {
+      const onShip = vi.fn();
+      const input = new MockInputHandler();
+      makeScene(input, keyboardContext, vi.fn(), vi.fn(), onShip);
+      input.triggerAction('NAV_1');
       expect(onShip).toHaveBeenCalledTimes(1);
     });
 
@@ -239,7 +252,7 @@ describe('StationMenuScene', () => {
   });
 
   describe('touch navigation', () => {
-    it('tap on row 14 activates TRADER', () => {
+    it('tap on row 10 activates TRADER', () => {
       const onTrader = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, keyboardContext, onTrader);
@@ -247,7 +260,7 @@ describe('StationMenuScene', () => {
       expect(onTrader).toHaveBeenCalledTimes(1);
     });
 
-    it('tap on row 15 activates MISSION BOARD', () => {
+    it('tap on row 11 activates MISSION BOARD', () => {
       const onMissionBoard = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, keyboardContext, vi.fn(), onMissionBoard);
@@ -255,13 +268,13 @@ describe('StationMenuScene', () => {
       expect(onMissionBoard).toHaveBeenCalledTimes(1);
     });
 
-    it('tap on [UNDOCK] nav button fires onShip', () => {
+    it('tap on footer UNDOCK button fires onShip', () => {
       const onShip = vi.fn();
       const input = new MockInputHandler();
       const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), onShip);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(NAV_UNDOCK_COL, 1);
+      input.triggerTap(NAV_UNDOCK_COL, FOOTER_ROW);
       expect(onShip).toHaveBeenCalledTimes(1);
     });
 
@@ -270,10 +283,12 @@ describe('StationMenuScene', () => {
       const onMissionBoard = vi.fn();
       const onShip = vi.fn();
       const input = new MockInputHandler();
-      makeScene(input, keyboardContext, onTrader, onMissionBoard, onShip);
-      input.triggerTap(10, 0);
-      input.triggerTap(10, 10);
-      input.triggerTap(10, 29);
+      const scene = makeScene(input, keyboardContext, onTrader, onMissionBoard, onShip);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Row 0 is chrome header, row 4 is underline - neither activates items/nav
+      input.triggerTap(10, 4);
+      input.triggerTap(10, 9);
       expect(onTrader).not.toHaveBeenCalled();
       expect(onMissionBoard).not.toHaveBeenCalled();
       expect(onShip).not.toHaveBeenCalled();

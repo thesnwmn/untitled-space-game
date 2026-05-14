@@ -1,7 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered } from '../../shared/buffer-utils';
+import { writeText } from '../../shared/buffer-utils';
 import { getDestination } from '../world/world-data';
-import { NavBar } from '../ui/NavBar';
+import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/ScreenChrome';
 
 interface Mission {
   id: string;
@@ -27,22 +27,21 @@ const TYPE_ICONS: Record<Mission['type'], string> = {
   salvage:  'S',
 };
 
-const MISSION_ROW_START = 5;
-const MISSION_COL = 1;
+const MISSION_ROW_START = CONTENT_TOP + 2;
+const MISSION_COL = 2;
 
 export class MissionBoardScene implements Scene {
-  private readonly context: GameContext;
-  private readonly navBar: NavBar;
+  private readonly chrome: ScreenChrome;
+  private readonly onHub: () => void;
+  private readonly onUndock: () => void;
   private cursorIdx = 0;
   private activated = false;
 
   constructor(inputHandler: InputHandler, context: GameContext, destinationId: string, onHub: () => void, onUndock: () => void) {
-    const dest = getDestination(destinationId)!;
-    this.context = context;
-    this.navBar = new NavBar(
-      dest.name.toUpperCase(),
-      [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
-    );
+    getDestination(destinationId)!;
+    this.chrome = new ScreenChrome(context);
+    this.onHub = onHub;
+    this.onUndock = onUndock;
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
@@ -53,16 +52,19 @@ export class MissionBoardScene implements Scene {
       } else if (action === 'SELECT') {
         const mission = MISSIONS[this.cursorIdx];
         console.log(`[MissionBoard] Selected: ${mission.title}`);
-      } else if (action === 'BACK') {
+      } else if (action === 'BACK' || action === 'NAV_2') {
         this.activated = true;
         onHub();
+      } else if (action === 'NAV_1') {
+        this.activated = true;
+        onUndock();
       }
     });
 
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
-        const navHit = this.navBar.hitTest(col, row);
+        const navHit = this.chrome.hitTestNav(col, row);
         if (navHit === 'hub')    { this.activated = true; onHub();    return; }
         if (navHit === 'undock') { this.activated = true; onUndock(); return; }
         for (let i = 0; i < MISSIONS.length; i++) {
@@ -88,34 +90,32 @@ export class MissionBoardScene implements Scene {
       }
     }
 
-    this.navBar.render(buffer);
+    this.chrome.render(buffer, {
+      showHeader: true,
+      showFooter: true,
+      navOptions: [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
+    });
 
-    writeCentered(buffer, 3, 'MISSION BOARD', 'cyan', 'black');
-    writeCentered(buffer, 4, '=============', 'cyan', 'black');
+    writeText(buffer, CONTENT_TOP, 2, 'MISSION BOARD', 'white', 'black');
+    writeText(buffer, CONTENT_TOP + 1, 2, '`'.repeat('MISSION BOARD'.length), 'bright-black', 'black');
 
-    const contentWidth = w - 2;
+    const contentEnd = contentBottom(h, true);
     for (let i = 0; i < MISSIONS.length; i++) {
       const row = MISSION_ROW_START + i;
-      if (row >= h) continue;
+      if (row >= contentEnd - 1) break;
       const mission = MISSIONS[i];
       const isCursor = i === this.cursorIdx;
       const cursor = isCursor ? '>' : ' ';
       const icon = TYPE_ICONS[mission.type];
       const rewardStr = `${mission.reward} CR`;
       const prefixWidth = 1 + 4; // cursor(1) + '[X] '(4)
-      const dotLen = Math.max(1, contentWidth - prefixWidth - mission.title.length - 2 - rewardStr.length);
+      const dotLen = Math.max(1, (w - 2) - prefixWidth - mission.title.length - 2 - rewardStr.length);
 
       const titleFg: Color = isCursor ? 'bright-green' : 'white';
-      writeText(buffer, row, MISSION_COL, cursor, isCursor ? 'bright-green' : 'white', 'black');
+      writeText(buffer, row, MISSION_COL, cursor, titleFg, 'black');
       writeText(buffer, row, MISSION_COL + 1, `[${icon}] `, 'bright-yellow', 'black');
       writeText(buffer, row, MISSION_COL + 5, `${mission.title} ${'.'.repeat(dotLen)} `, titleFg, 'black');
       writeText(buffer, row, MISSION_COL + 5 + mission.title.length + 1 + dotLen + 1, rewardStr, 'bright-green', 'black');
     }
-
-    const footerRow = h - 3;
-    const hint = this.context.primaryInput === 'touch'
-      ? 'TAP to select   2-finger exit'
-      : '↑↓ navigate   ESC return';
-    writeCentered(buffer, footerRow, hint, 'bright-black', 'black');
   }
 }

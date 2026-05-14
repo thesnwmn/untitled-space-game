@@ -1,20 +1,18 @@
-import type { InputHandler, GameContext, CharBuffer, Scene } from '../../shared/types';
-import { writeText, writeCentered, wrapText } from '../../shared/buffer-utils';
+import type { InputHandler, CharBuffer, Scene } from '../../shared/types';
+import { writeText, wrapText } from '../../shared/buffer-utils';
 import { getStoryBeatsByTrigger } from '../world/world-data';
 
 const YEAR_ROW = 2;
-const KEYBOARD_HINT = '[ PRESS ENTER TO CONTINUE ]';
-const TOUCH_HINT = '[ TAP TO CONTINUE ]';
+const BODY_START_ROW = 4;
 
 export class StoryScene implements Scene {
-  private readonly context: GameContext;
   private readonly onContinue: () => void;
   private activated = false;
   private readonly yearHeader: string;
   private readonly bodyLines: string[];
+  private pageIndex = 0;
 
-  constructor(inputHandler: InputHandler, context: GameContext, onContinue: () => void) {
-    this.context = context;
+  constructor(inputHandler: InputHandler, _context: unknown, onContinue: () => void) {
     this.onContinue = onContinue;
 
     const beat = getStoryBeatsByTrigger('game-start')[0];
@@ -43,6 +41,11 @@ export class StoryScene implements Scene {
       if (action === 'SELECT') {
         this.activated = true;
         this.onContinue();
+      } else if (action === 'LEFT') {
+        if (this.pageIndex > 0) this.pageIndex--;
+      } else if (action === 'RIGHT') {
+        // advance to next page; will be clamped in render
+        this.pageIndex++;
       }
     });
 
@@ -68,21 +71,34 @@ export class StoryScene implements Scene {
     }
 
     if (this.yearHeader) {
-      writeCentered(buffer, YEAR_ROW, this.yearHeader, 'bright-yellow', 'black');
+      const col = Math.max(0, Math.floor((w - this.yearHeader.length) / 2));
+      writeText(buffer, YEAR_ROW, col, this.yearHeader, 'bright-yellow', 'black');
     }
 
-    let row = 4;
-    for (const line of this.bodyLines) {
-      if (row >= h - 4) break;
-      if (line === '') {
-        row++;
-      } else {
+    // Rows available for body text (last row reserved for pager if needed)
+    const bodyRows = h - 1 - BODY_START_ROW; // rows BODY_START_ROW..h-2 inclusive
+    const linesPerPage = bodyRows;
+
+    const totalPages = Math.max(1, Math.ceil(this.bodyLines.length / linesPerPage));
+    if (this.pageIndex >= totalPages) this.pageIndex = totalPages - 1;
+
+    const needsPager = totalPages > 1;
+    const startLine = this.pageIndex * linesPerPage;
+    const endLine = Math.min(startLine + linesPerPage, this.bodyLines.length);
+
+    let row = BODY_START_ROW;
+    for (let i = startLine; i < endLine; i++) {
+      const line = this.bodyLines[i];
+      if (line !== '') {
         writeText(buffer, row, 2, line, 'white', 'black');
-        row++;
       }
+      row++;
     }
 
-    const hint = this.context.primaryInput === 'touch' ? TOUCH_HINT : KEYBOARD_HINT;
-    writeCentered(buffer, h - 3, hint, 'bright-black', 'black');
+    if (needsPager) {
+      const pageStr = `< ${this.pageIndex + 1}/${totalPages} >`;
+      const col = w - 9;
+      writeText(buffer, h - 1, col, pageStr, 'bright-black', 'black');
+    }
   }
 }

@@ -35,125 +35,94 @@ function rowText(buffer: CharBuffer, row: number): string {
   return buffer[row].map(c => c.char).join('').trimEnd();
 }
 
-const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
+// Contexts — systemId/destinationId now live in context, not constructor args
+const keyboardContext: GameContext = {
+  environment: 'browser', primaryInput: 'keyboard', debug: false,
+  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
+};
+const touchContext: GameContext = {
+  environment: 'browser', primaryInput: 'touch', debug: false,
+  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
+};
+const inSpaceContext: GameContext = {
+  environment: 'browser', primaryInput: 'keyboard', debug: false,
+  systemId: 'alpha-centauri', destinationId: null, credits: 5000,
+};
+const militaryContext: GameContext = {
+  environment: 'browser', primaryInput: 'keyboard', debug: false,
+  systemId: 'sol', destinationId: 'tycho-orbital', credits: 5000,
+};
 
 // Layout constants for 40×30 reference grid
-const WINDOW_TOP = 2;
-const WINDOW_SILL = 26;  // h - 4
-const WINDOW_BOT = 27;   // h - 3
-const INT_ROW_START = 3;
-const INT_ROW_END = 25;
+// Row 0–1: ScreenChrome header; row 2: gap
+const FUEL_ROW = 3;      // CONTENT_TOP
+const VIEW_TOP = 4;      // CONTENT_TOP + 1
+const VIEW_BOT = 26;     // h - 4
+const SEP_ROW = 27;      // h - 3
 const BUTTONS_ROW = 28;  // h - 2
-const FOOTER_ROW = 29;   // h - 1
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
 describe('ShipScene', () => {
   describe('render — layout', () => {
-    it('has no border (row 0 is status bar, not border)', () => {
+    it('does not render a border at row 0', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).not.toBe('+');
       expect(buf[0][0].char).not.toBe('-');
     });
 
-    it('renders status bar at row 0 with fuel, cargo, and credits', () => {
+    it('chrome header row 0 contains SOL', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const text = rowText(buf, 0);
-      expect(text).toContain('FUEL:100%');
-      expect(text).toContain('CARGO:0/50T');
-      expect(text).toContain('CR:5000');
+      expect(rowText(buf, 0)).toContain('SOL');
     });
 
-    it('status bar is in bright-cyan', () => {
+    it('chrome header row 1 contains ELYSIUM STATION', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][1].fg).toBe('bright-cyan');
+      expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
     });
 
-    it('renders location at row 1 with destination and system name from world data', () => {
+    it('renders fuel/cargo info at FUEL_ROW in bright-black', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const text = rowText(buf, 1);
-      expect(text).toContain('ELYSIUM STATION');
-      expect(text).toContain('SOL');
-      expect(buf[1][1].fg).toBe('bright-cyan');
+      const text = rowText(buf, FUEL_ROW);
+      expect(text).toContain('FUEL: 100%');
+      expect(text).toContain('CARGO: 0/50T');
+      expect(buf[FUEL_ROW].find(c => c.char !== ' ')?.fg).toBe('bright-black');
     });
 
-    it('top border row has \\ at col 1, _ in middle, / at col w-2', () => {
+    it('interior region (rows VIEW_TOP to VIEW_BOT) contains non-space cells', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(buf[WINDOW_TOP][1].char).toBe('\\');
-      expect(buf[WINDOW_TOP][38].char).toBe('/');
-      expect(buf[WINDOW_TOP][20].char).toBe('_');
-    });
-
-    it('interior rows have | at col 1 and col w-2', () => {
-      const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
-        expect(buf[r][1].char).toBe('|');
-        expect(buf[r][38].char).toBe('|');
-      }
-    });
-
-    it('sill row has | at col 1, _ in middle, | at col w-2', () => {
-      const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(buf[WINDOW_SILL][1].char).toBe('|');
-      expect(buf[WINDOW_SILL][38].char).toBe('|');
-      expect(buf[WINDOW_SILL][20].char).toBe('_');
-    });
-
-    it('corners row has / at col 1, space in middle, \\ at col w-2', () => {
-      const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(buf[WINDOW_BOT][1].char).toBe('/');
-      expect(buf[WINDOW_BOT][38].char).toBe('\\');
-      expect(buf[WINDOW_BOT][20].char).toBe(' ');
-    });
-
-    it('interior region contains non-space cells after render (stars or station)', () => {
-      const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       let nonSpace = false;
-      outer: for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
-        for (let c = 1; c <= 38; c++) {
+      outer: for (let r = VIEW_TOP; r <= VIEW_BOT; r++) {
+        for (let c = 0; c < 40; c++) {
           if (buf[r][c].char !== ' ') { nonSpace = true; break outer; }
         }
       }
       expect(nonSpace).toBe(true);
     });
 
-    it('civilian destination produces HUB station glyph (contains HUB characters in interior)', () => {
+    it('civilian destination produces HUB station glyph ([H]) in interior', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // HUB glyph contains '[H]' — scan interior for '[' then 'H' then ']'
       let hubFound = false;
-      outer: for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
-        for (let c = 2; c <= 37; c++) {
+      outer: for (let r = VIEW_TOP; r <= VIEW_BOT; r++) {
+        for (let c = 0; c <= 37; c++) {
           if (buf[r][c].char === '[' && buf[r][c + 1]?.char === 'H' && buf[r][c + 2]?.char === ']') {
             hubFound = true;
             break outer;
@@ -163,15 +132,14 @@ describe('ShipScene', () => {
       expect(hubFound).toBe(true);
     });
 
-    it('military destination produces RELAY station glyph (bright-yellow in interior)', () => {
+    it('military destination produces RELAY station glyph (bright-yellow) in interior', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'tycho-orbital', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, militaryContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // RELAY glyph is bright-yellow; scan interior for bright-yellow cell
       let relayFound = false;
-      outer: for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
-        for (let c = 2; c <= 37; c++) {
+      outer: for (let r = VIEW_TOP; r <= VIEW_BOT; r++) {
+        for (let c = 0; c <= 37; c++) {
           if (buf[r][c].fg === 'bright-yellow' && buf[r][c].char !== ' ') {
             relayFound = true;
             break outer;
@@ -183,7 +151,7 @@ describe('ShipScene', () => {
 
     it('both TRAVEL and DOCK labels appear on BUTTONS_ROW', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
@@ -191,9 +159,9 @@ describe('ShipScene', () => {
       expect(line).toContain('[ D ] DOCK');
     });
 
-    it('cursor starts on TRAVEL (> prefix appears on BUTTONS_ROW)', () => {
+    it('cursor starts on TRAVEL (> prefix left of DOCK)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
@@ -201,52 +169,27 @@ describe('ShipScene', () => {
       expect(line.indexOf('>')).toBeLessThan(line.indexOf('DOCK'));
     });
 
-    it('renders keyboard footer hint with navigate and select (no ESC)', () => {
+    it('footer row (h-1) is empty — no hint text', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, FOOTER_ROW)).toContain('ENTER select');
-      expect(rowText(buf, FOOTER_ROW)).not.toContain('ESC');
-      expect(buf[FOOTER_ROW].find(c => c.char !== ' ')?.fg).toBe('bright-black');
-    });
-
-    it('renders touch footer hint without 2-finger exit', () => {
-      const input = new MockInputHandler();
-      const scene = new ShipScene(input, touchContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, FOOTER_ROW)).toContain('TAP to select');
-      expect(rowText(buf, FOOTER_ROW)).not.toContain('2-finger');
-    });
-  });
-
-  describe('window border colours', () => {
-    it('all border cells are in bright-black', () => {
-      const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(buf[WINDOW_TOP][1].fg).toBe('bright-black');
-      expect(buf[WINDOW_TOP][20].fg).toBe('bright-black');
-      expect(buf[INT_ROW_START][1].fg).toBe('bright-black');
-      expect(buf[WINDOW_SILL][1].fg).toBe('bright-black');
-      expect(buf[WINDOW_BOT][1].fg).toBe('bright-black');
+      expect(rowText(buf, 29)).toBe('');
     });
   });
 
   describe('animation forwarding', () => {
     it('update advances starfield (interior cells differ after large dt)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf1 = makeBuffer(40, 30);
       scene.render(buf1);
       scene.update(5000);
       const buf2 = makeBuffer(40, 30);
       scene.render(buf2);
       let changed = false;
-      outer: for (let r = INT_ROW_START; r <= INT_ROW_END; r++) {
-        for (let c = 1; c <= 38; c++) {
+      outer: for (let r = VIEW_TOP; r <= VIEW_BOT; r++) {
+        for (let c = 0; c < 40; c++) {
           if (buf1[r][c].char !== buf2[r][c].char) { changed = true; break outer; }
         }
       }
@@ -255,9 +198,9 @@ describe('ShipScene', () => {
 
     it('update advances station (no throw, renders after update)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
-      scene.render(buf); // lazy-init station
+      scene.render(buf);
       expect(() => scene.update(2250)).not.toThrow();
       expect(() => scene.render(buf)).not.toThrow();
     });
@@ -266,7 +209,7 @@ describe('ShipScene', () => {
   describe('keyboard navigation', () => {
     it('DOWN moves cursor so > appears near DOCK on BUTTONS_ROW', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -276,7 +219,7 @@ describe('ShipScene', () => {
 
     it('UP from TRAVEL wraps cursor to DOCK', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -286,7 +229,7 @@ describe('ShipScene', () => {
 
     it('DOWN from DOCK wraps back to TRAVEL', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
@@ -295,18 +238,18 @@ describe('ShipScene', () => {
       expect(line.indexOf('>')).toBeLessThan(line.indexOf('DOCK'));
     });
 
-    it('SELECT on TRAVEL calls onJump', () => {
-      const onJump = vi.fn();
+    it('SELECT on TRAVEL calls onTravel', () => {
+      const onTravel = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, 'sol', 'elysium-station', onJump, vi.fn());
+      new ShipScene(input, keyboardContext, onTravel, vi.fn());
       input.triggerAction('SELECT');
-      expect(onJump).toHaveBeenCalledTimes(1);
+      expect(onTravel).toHaveBeenCalledTimes(1);
     });
 
     it('SELECT on DOCK calls onDock and silences further input', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), onDock);
+      new ShipScene(input, keyboardContext, vi.fn(), onDock);
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
       expect(onDock).toHaveBeenCalledTimes(1);
@@ -314,31 +257,31 @@ describe('ShipScene', () => {
       expect(onDock).toHaveBeenCalledTimes(1);
     });
 
-    it('BACK action does nothing (not applicable in ship scene)', () => {
-      const onJump = vi.fn();
+    it('BACK action does nothing', () => {
+      const onTravel = vi.fn();
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, 'sol', 'elysium-station', onJump, onDock);
+      new ShipScene(input, keyboardContext, onTravel, onDock);
       input.triggerAction('BACK');
-      expect(onJump).not.toHaveBeenCalled();
+      expect(onTravel).not.toHaveBeenCalled();
       expect(onDock).not.toHaveBeenCalled();
     });
   });
 
   describe('touch navigation', () => {
-    it('tap left half of BUTTONS_ROW calls onJump', () => {
-      const onJump = vi.fn();
+    it('tap left half of BUTTONS_ROW calls onTravel', () => {
+      const onTravel = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, 'sol', 'elysium-station', onJump, vi.fn());
-      input.triggerTap(10, BUTTONS_ROW); // col 10 < 20 (w/2) → TRAVEL
-      expect(onJump).toHaveBeenCalledTimes(1);
+      new ShipScene(input, keyboardContext, onTravel, vi.fn());
+      input.triggerTap(10, BUTTONS_ROW);
+      expect(onTravel).toHaveBeenCalledTimes(1);
     });
 
     it('tap right half of BUTTONS_ROW calls onDock', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), onDock);
-      input.triggerTap(30, BUTTONS_ROW); // col 30 >= 20 (w/2) → DOCK
+      new ShipScene(input, keyboardContext, vi.fn(), onDock);
+      input.triggerTap(30, BUTTONS_ROW);
       expect(onDock).toHaveBeenCalledTimes(1);
     });
   });
@@ -346,31 +289,31 @@ describe('ShipScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'sol', 'elysium-station', vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, vi.fn(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
 
   describe('in space (destinationId = null)', () => {
-    it('renders IN SPACE in the location row', () => {
+    it('chrome header row 1 shows IN SPACE', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'alpha-centauri', null, vi.fn(), vi.fn());
+      const scene = new ShipScene(input, inSpaceContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 1)).toContain('IN SPACE');
     });
 
-    it('renders the system name in the location row when in space', () => {
+    it('chrome header row 0 shows the system name when in space', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'alpha-centauri', null, vi.fn(), vi.fn());
+      const scene = new ShipScene(input, inSpaceContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 1)).toContain('ALPHA CENTAURI');
+      expect(rowText(buf, 0)).toContain('ALPHA CENTAURI');
     });
 
     it('DOCK button appears greyed ([ - ] DOCK) when in space', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'alpha-centauri', null, vi.fn(), vi.fn());
+      const scene = new ShipScene(input, inSpaceContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, BUTTONS_ROW)).toContain('[ - ] DOCK');
@@ -379,22 +322,20 @@ describe('ShipScene', () => {
     it('SELECT does not call onDock when in space', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, 'alpha-centauri', null, vi.fn(), onDock);
-      // DOWN would move to DOCK if available, but in space it wraps back
+      new ShipScene(input, inSpaceContext, vi.fn(), onDock);
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
       expect(onDock).not.toHaveBeenCalled();
     });
 
-    it('does not render a station in the window when in space', () => {
+    it('does not render a HUB station glyph when in space', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, 'alpha-centauri', null, vi.fn(), vi.fn());
+      const scene = new ShipScene(input, inSpaceContext, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // HUB glyph '[H]' should not appear
       let hubFound = false;
-      for (let r = 3; r <= 25; r++) {
-        for (let c = 2; c <= 37; c++) {
+      for (let r = VIEW_TOP; r <= VIEW_BOT; r++) {
+        for (let c = 0; c <= 37; c++) {
           if (buf[r][c].char === '[' && buf[r][c + 1]?.char === 'H' && buf[r][c + 2]?.char === ']') {
             hubFound = true;
           }

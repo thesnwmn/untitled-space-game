@@ -15,13 +15,10 @@ interface MenuItem {
 
 export class MainMenuScene implements Scene {
   private readonly items: MenuItem[];
-  private readonly context: GameContext;
   private cursorIdx = 0;
   private activated = false;
 
   constructor(inputHandler: InputHandler, context: GameContext, onNewGame: () => void) {
-    this.context = context;
-
     this.items = [
       {
         label: 'NEW GAME',
@@ -96,11 +93,5 @@ export class MainMenuScene implements Scene {
       const fg: Color = isCursor ? 'bright-green' : 'white';
       writeText(buffer, row, menuCol, prefix + this.items[i].label, fg, 'black');
     }
-
-    const footerRow = h - 3;
-    const hint = this.context.primaryInput === 'touch'
-      ? 'tap an option to select'
-      : '↑↓ navigate   ENTER select';
-    writeCentered(buffer, footerRow, hint, 'bright-black', 'black');
   }
 }

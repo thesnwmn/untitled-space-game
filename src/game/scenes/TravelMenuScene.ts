@@ -1,7 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText, writeCentered } from '../../shared/buffer-utils';
+import { writeText } from '../../shared/buffer-utils';
 import { getSystem, getDestination, getRoutesFrom } from '../world/world-data';
-import { NavBar } from '../ui/NavBar';
+import { ScreenChrome, CONTENT_TOP } from '../ui/ScreenChrome';
 
 type TabKey = 'DESTINATIONS' | 'JUMPS';
 
@@ -16,14 +16,13 @@ interface JumpItem {
   label: string;
 }
 
-const TITLE_ROW = 3;
-const TAB_ROW = 6;
-const ITEM_ROW_START = 8;
+const TITLE_ROW = CONTENT_TOP;
+const TAB_ROW = CONTENT_TOP + 3;
+const ITEM_ROW_START = CONTENT_TOP + 5;
 const ITEM_COL = 2;
 
-const DEST_TAB_TEXT = '[DESTINATIONS]';
-const JUMP_TAB_TEXT = '[JUMPS]';
-const JUMP_TAB_OFFSET = DEST_TAB_TEXT.length + 2;
+const DEST_TAB_TEXT = 'DESTINATIONS';
+const JUMP_TAB_TEXT = 'JUMPS';
 
 // Sentinel id for the "fly into space" pseudo-destination
 const FLY_INTO_SPACE_ID = '__space__';
@@ -33,12 +32,16 @@ export class TravelMenuScene implements Scene {
   private readonly systemName: string;
   private readonly destinations: DestItem[];
   private readonly jumps: JumpItem[];
-  private readonly navBar: NavBar;
-  private readonly destTabCol: number;
-  private readonly jumpTabCol: number;
+  private readonly chrome: ScreenChrome;
   private activeTab: TabKey = 'DESTINATIONS';
   private cursorIdx = 0;
   private activated = false;
+
+  // Tab column ranges (computed each render, used for tap)
+  private destTabStart = 0;
+  private destTabEnd = 0;
+  private jumpTabStart = 0;
+  private jumpTabEnd = 0;
 
   constructor(
     inputHandler: InputHandler,
@@ -53,8 +56,7 @@ export class TravelMenuScene implements Scene {
     this.context = context;
     const system = getSystem(systemId)!;
     this.systemName = system.name.toUpperCase();
-
-    this.navBar = new NavBar(this.systemName, [{ id: 'ship', label: 'SHIP' }]);
+    this.chrome = new ScreenChrome(context);
 
     this.destinations = [
       ...system.destinations.map((destId) => ({
@@ -78,9 +80,6 @@ export class TravelMenuScene implements Scene {
         label: `${targetSystem.name.toUpperCase()}  ${route.distance}LY  [${stability}]`.slice(0, 36),
       };
     });
-
-    this.destTabCol = Math.floor((40 - JUMP_TAB_OFFSET - JUMP_TAB_TEXT.length) / 2);
-    this.jumpTabCol = this.destTabCol + JUMP_TAB_OFFSET;
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
@@ -107,19 +106,16 @@ export class TravelMenuScene implements Scene {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
 
-        if (this.navBar.hitTest(col, row) === 'ship') {
-          this.activated = true;
-          onShip();
-          return;
-        }
+        const navHit = this.chrome.hitTestNav(col, row);
+        if (navHit !== null) return; // no nav buttons in travel scene
 
         if (row === TAB_ROW) {
-          if (col >= this.destTabCol && col < this.destTabCol + DEST_TAB_TEXT.length) {
+          if (col >= this.destTabStart && col < this.destTabEnd) {
             this.activeTab = 'DESTINATIONS';
             this.cursorIdx = 0;
             return;
           }
-          if (col >= this.jumpTabCol && col < this.jumpTabCol + JUMP_TAB_TEXT.length) {
+          if (col >= this.jumpTabStart && col < this.jumpTabEnd) {
             this.activeTab = 'JUMPS';
             this.cursorIdx = 0;
             return;
@@ -174,19 +170,47 @@ export class TravelMenuScene implements Scene {
       }
     }
 
-    this.navBar.render(buffer);
+    this.chrome.render(buffer, {
+      showHeader: true,
+      showFooter: true,
+      navOptions: [],
+    });
 
-    writeCentered(buffer, TITLE_ROW, 'TRAVEL', 'cyan', 'black');
-    writeCentered(buffer, TITLE_ROW + 1, '======', 'cyan', 'black');
+    // Title + underline
+    writeText(buffer, TITLE_ROW, 2, 'TRAVEL', 'white', 'black');
+    writeText(buffer, TITLE_ROW + 1, 2, '``````', 'bright-black', 'black');
 
-    const tabGroupWidth = DEST_TAB_TEXT.length + 2 + JUMP_TAB_TEXT.length;
-    const destTabCol = Math.floor((w - tabGroupWidth) / 2);
-    const jumpTabCol = destTabCol + DEST_TAB_TEXT.length + 2;
+    // Tab bar: [ DESTINATIONS | JUMPS ] centered
+    const destTabContent = ` ${DEST_TAB_TEXT} `;
+    const jumpTabContent = ` ${JUMP_TAB_TEXT} `;
+    const tabBarWidth = 1 + destTabContent.length + 1 + jumpTabContent.length + 1;
+    const tabStartCol = Math.floor((w - tabBarWidth) / 2);
 
-    const destFg: Color = this.activeTab === 'DESTINATIONS' ? 'bright-green' : 'white';
-    const jumpFg: Color = this.activeTab === 'JUMPS' ? 'bright-green' : 'white';
-    writeText(buffer, TAB_ROW, destTabCol, DEST_TAB_TEXT, destFg, 'black');
-    writeText(buffer, TAB_ROW, jumpTabCol, JUMP_TAB_TEXT, jumpFg, 'black');
+    buffer[TAB_ROW][tabStartCol] = { char: '[', fg: 'bright-black', bg: 'black' };
+    let tc = tabStartCol + 1;
+
+    this.destTabStart = tc;
+    const destFg: Color = this.activeTab === 'DESTINATIONS' ? 'black' : 'white';
+    const destBg: Color = this.activeTab === 'DESTINATIONS' ? 'green' : 'black';
+    for (const ch of destTabContent) {
+      buffer[TAB_ROW][tc] = { char: ch, fg: destFg, bg: destBg };
+      tc++;
+    }
+    this.destTabEnd = tc;
+
+    buffer[TAB_ROW][tc] = { char: '|', fg: 'bright-black', bg: 'black' };
+    tc++;
+
+    this.jumpTabStart = tc;
+    const jumpFg: Color = this.activeTab === 'JUMPS' ? 'black' : 'white';
+    const jumpBg: Color = this.activeTab === 'JUMPS' ? 'green' : 'black';
+    for (const ch of jumpTabContent) {
+      buffer[TAB_ROW][tc] = { char: ch, fg: jumpFg, bg: jumpBg };
+      tc++;
+    }
+    this.jumpTabEnd = tc;
+
+    buffer[TAB_ROW][tc] = { char: ']', fg: 'bright-black', bg: 'black' };
 
     if (this.activeTab === 'DESTINATIONS') {
       for (let i = 0; i < this.destinations.length; i++) {
@@ -209,11 +233,5 @@ export class TravelMenuScene implements Scene {
         writeText(buffer, row, ITEM_COL, prefix + item.label, fg, 'black');
       }
     }
-
-    const footerRow = h - 3;
-    const hint = this.context.primaryInput === 'touch'
-      ? 'tap tab or item to select'
-      : '↑↓ items   ←→ tabs   ENTER select';
-    writeCentered(buffer, footerRow, hint, 'bright-black', 'black');
   }
 }
