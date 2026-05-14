@@ -66,20 +66,18 @@ Add a reusable `Pager` component (`src/game/ui/Pager.ts`) that paginates item li
 
 ---
 
-## NEEDS SPEC
-
 ### 028 · Common Screen Layout
 
-Define a shared layout chrome that wraps all scenes. The chrome has three zones:
-a status bar at the top (current system name and location from world data), a
-main content area in the middle (where each scene renders its own content), and
-a navigation bar at the bottom (player actions, context-sensitive). Each zone
-occupies a fixed number of rows so every scene knows its exact content bounds
-(`contentTop`, `contentBottom`) without hard-coding magic row numbers. Individual
-scenes can opt out of any zone — for example the story screen and jump animation
-suppress the status bar; the ship view suppresses the nav zone in favour of its
-own controls. All existing scenes are updated to render within the content area
-bounds rather than the full buffer.
+Introduce a `ScreenChrome` component that renders a 2-row header (`:: SYSTEM :: … :: [M] MENU ::` / `:: DESTINATION :: … :: credits CR ::`) and a 1-row footer nav (`:: [1] NAV1 :: [2] NAV2 ::::`) into every scene's buffer. Exports layout constants (`CONTENT_TOP`, `contentBottom(h, showFooter)`) so scenes no longer hard-code row numbers. Updates `BaseMenuScene` with left-aligned titles, backtick underlines, and richer `MenuItemDef` (simple / info / multi-line). Story screen suppresses both zones; Ship screen keeps header only. Replaces the existing `NavBar` component.
+See `docs/features/028-common-screen-layout.md` for the full spec.
+
+**Depends on:** 011, 015
+
+---
+
+## NEEDS SPEC
+
+_(none)_
 
 ---
 
