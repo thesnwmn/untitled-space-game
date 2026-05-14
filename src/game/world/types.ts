@@ -112,7 +112,19 @@ export interface Commodity {
   description: string;
 }
 
+export interface GameSettings {
+  player: {
+    name: string;
+    startingCredits: number;
+  };
+  startingLocation: {
+    system: string;
+    destination: string;
+  };
+}
+
 export interface WorldData {
+  settings: GameSettings;
   systems: StarSystem[];
   destinations: Destination[];
   routes: JumpRoute[];

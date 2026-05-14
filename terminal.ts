@@ -7,6 +7,7 @@ import { TraderScene } from './src/game/scenes/TraderScene';
 import { MissionBoardScene } from './src/game/scenes/MissionBoardScene';
 import { ShipScene } from './src/game/scenes/ShipScene';
 import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
+import { getGameSettings } from './src/game/world/world-data';
 
 const context: GameContext = {
   environment: 'terminal',
@@ -17,7 +18,7 @@ const context: GameContext = {
 const renderer = new TerminalRenderer();
 const input = new TerminalInputHandler();
 
-const STARTING_DESTINATION = 'elysium-station';
+const STARTING_DESTINATION = getGameSettings().startingLocation.destination;
 
 let currentScene: Scene;
 

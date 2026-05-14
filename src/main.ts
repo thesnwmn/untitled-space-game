@@ -8,6 +8,7 @@ import { TraderScene } from './game/scenes/TraderScene';
 import { MissionBoardScene } from './game/scenes/MissionBoardScene';
 import { ShipScene } from './game/scenes/ShipScene';
 import type { CharBuffer, Color, GameContext, Scene } from './shared/types';
+import { getGameSettings } from './game/world/world-data';
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
 const debug = new URLSearchParams(window.location.search).has('debug');
@@ -22,7 +23,7 @@ const renderer = new DOMRenderer();
 const input = new DOMInputHandler(context);
 input.connect();
 
-const STARTING_DESTINATION = 'elysium-station';
+const STARTING_DESTINATION = getGameSettings().startingLocation.destination;
 
 let currentScene: Scene;
 
