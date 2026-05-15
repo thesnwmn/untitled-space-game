@@ -2,7 +2,7 @@ import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpD
 
 export const WORLD: WorldData = {
   settings: {
-    player: { name: 'Captain', startingCredits: 100 },
+    player: { name: 'Captain', startingCredits: 5000 },
     startingLocation: { system: 'sol', destination: 'elysium-station' },
     startingShip: 'freighter',
   },
@@ -497,4 +497,11 @@ export function getGameSettings(): GameSettings {
 
 export function getShip(id: string): Ship | undefined {
   return WORLD.ships.find(s => s.id === id);
+}
+
+export function getRoute(fromId: string, toId: string): JumpRoute | undefined {
+  return WORLD.routes.find(
+    r => (r.from === fromId && r.to === toId) ||
+         (r.from === toId   && r.to === fromId)
+  );
 }

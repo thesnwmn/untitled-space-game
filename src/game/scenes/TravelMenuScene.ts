@@ -1,5 +1,6 @@
 import type { InputHandler, GameContext } from '../../shared/types';
-import { getSystem, getDestination, getRoutesFrom } from '../world/world-data';
+import { getSystem, getDestination, getRoutesFrom, getDrive } from '../world/world-data';
+import { FUEL_PER_LY } from '../constants';
 import { BaseMenuScene, type MenuItemDef, type TabDef } from './BaseMenuScene';
 
 export class TravelMenuScene extends BaseMenuScene {
@@ -10,12 +11,16 @@ export class TravelMenuScene extends BaseMenuScene {
     context: GameContext,
     systemId: string,
     currentDestinationId: string | null,
+    fuelL: number,
+    fuelCapacityL: number, // reserved for future display (e.g. fuel % indicator)
+    driveId: string,
     onDestinationSelected: (destinationId: string) => void,
     onJumpSelected: (targetSystemId: string) => void,
     onFlyIntoSpace: () => void,
     onShip: () => void,
   ) {
     const system = getSystem(systemId)!;
+    const drive = getDrive(driveId)!;
 
     const destItems: MenuItemDef[] = [
       ...system.destinations.map(destId => ({
@@ -34,8 +39,10 @@ export class TravelMenuScene extends BaseMenuScene {
       const targetId = route.from === systemId ? route.to : route.from;
       const targetSystem = getSystem(targetId)!;
       const stability = route.stability.toUpperCase();
+      const fuelNeeded = Math.ceil(FUEL_PER_LY * route.distance * drive.fuelEfficiency);
       return {
         label: `${targetSystem.name.toUpperCase()}  ${route.distance}LY  [${stability}]`.slice(0, 36),
+        disabled: fuelNeeded > fuelL,
         action: () => onJumpSelected(targetId),
       };
     });

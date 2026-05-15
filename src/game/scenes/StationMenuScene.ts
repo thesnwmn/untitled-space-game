@@ -1,6 +1,7 @@
 import type { InputHandler, GameContext } from '../../shared/types';
 import { wrapText } from '../../shared/buffer-utils';
 import { getDestination } from '../world/world-data';
+import { FUEL_PRICE_PER_L } from '../constants';
 import { BaseMenuScene, type MenuItemDef } from './BaseMenuScene';
 
 export class StationMenuScene extends BaseMenuScene {
@@ -10,6 +11,10 @@ export class StationMenuScene extends BaseMenuScene {
     inputHandler: InputHandler,
     context: GameContext,
     destinationId: string,
+    fuelL: number,
+    fuelCapacityL: number,
+    credits: number,
+    onRefuel: (litres: number, cost: number) => void,
     onTrader: () => void,
     onMissionBoard: () => void,
     onShip: () => void,
@@ -18,6 +23,17 @@ export class StationMenuScene extends BaseMenuScene {
     const items: MenuItemDef[] = [];
     if (dest.amenities.trader) items.push({ label: 'TRADER', action: onTrader });
     if (dest.amenities.missionBoard) items.push({ label: 'MISSION BOARD', action: onMissionBoard });
+
+    const fuelNeeded  = fuelCapacityL - fuelL;
+    const affordableL = Math.floor(credits / FUEL_PRICE_PER_L);
+    const purchaseL   = Math.min(fuelNeeded, affordableL);
+    if (dest.amenities.fuel && purchaseL > 0) {
+      const cost = purchaseL * FUEL_PRICE_PER_L;
+      items.push({
+        label: `BUY FUEL  +${purchaseL}L  ${cost}CR`,
+        action: () => onRefuel(purchaseL, cost),
+      });
+    }
 
     const descLines = wrapText(dest.description, 36).slice(0, 3);
     const dangerLine = `DANGER: ${dest.dangerLevel.toUpperCase()}`;

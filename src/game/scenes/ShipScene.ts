@@ -1,13 +1,14 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { getDestination, getGameSettings, getShip } from '../world/world-data';
+import { getDestination } from '../world/world-data';
 import type { DestinationType } from '../world/types';
 import { Starfield } from './Starfield';
 import { SpaceStation } from './SpaceStation';
 import { STATION_TYPES, type SpaceStationDef } from './station-types';
 import { ScreenChrome } from '../ui/ScreenChrome';
 
-interface PlayerState {
-  fuel: number;
+export interface PlayerStateView {
+  fuelL: number;
+  fuelCapacityL: number;
   cargo: number;
   cargoCapacity: number;
   credits: number;
@@ -29,7 +30,7 @@ const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
 };
 
 export class ShipScene implements Scene {
-  private readonly state: PlayerState;
+  private readonly playerState: PlayerStateView;
   private readonly context: GameContext;
   private readonly inSpace: boolean;
   private cursorIdx = 0;
@@ -44,24 +45,20 @@ export class ShipScene implements Scene {
   constructor(
     inputHandler: InputHandler,
     context: GameContext,
+    systemId: string,
+    destinationId: string | null,
+    playerState: PlayerStateView,
     onTravel: () => void,
     onDock: () => void,
   ) {
-    const settings = getGameSettings();
-    const ship = getShip(settings.startingShip)!;
-    this.state = {
-      fuel: 100,
-      cargo: 0,
-      cargoCapacity: ship.cargoCapacityKg,
-      credits: settings.player.startingCredits,
-    };
+    this.playerState = playerState;
     this.context = context;
     this.chrome = new ScreenChrome(context);
     this.starfield = new Starfield();
-    this.inSpace = context.destinationId === null;
+    this.inSpace = destinationId === null;
 
-    if (context.destinationId !== null) {
-      const dest = getDestination(context.destinationId)!;
+    if (destinationId !== null) {
+      const dest = getDestination(destinationId)!;
       this.stationType = DESTINATION_TYPE_TO_STATION[dest.type] ?? STATION_TYPES.RELAY;
     } else {
       this.stationType = null;
@@ -149,10 +146,10 @@ export class ShipScene implements Scene {
       ({ char, fg: 'bright-black', bg: 'black' });
 
     // ── Stat panels (row 2) ────────────────────────────────────────────────────
-    //  \    FUEL: 100%   /\   CARGO: 0/50T  /
-    const leftStat  = pad(`FUEL: ${this.state.fuel}%`, inner);
-    const cargoMg   = Math.round(this.state.cargo / 1000);
-    const capMg     = Math.round(this.state.cargoCapacity / 1000);
+    //  \    FUEL:x/yL    /\   CARGO: 0/2Mg  /
+    const leftStat  = pad(`FUEL:${this.playerState.fuelL}/${this.playerState.fuelCapacityL}L`, inner);
+    const cargoMg   = Math.round(this.playerState.cargo / 1000);
+    const capMg     = Math.round(this.playerState.cargoCapacity / 1000);
     const rightStat = pad(`CARGO: ${cargoMg}/${capMg}Mg`, inner);
 
     buffer[statRow][1] = dim('\\');

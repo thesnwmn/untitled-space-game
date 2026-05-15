@@ -14,6 +14,37 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 030 · Fuel Management
+
+**Built:**
+- `src/game/constants.ts` — added `FUEL_PER_LY = 5` and `FUEL_PRICE_PER_L = 10`
+- `src/game/world/world-data.ts` — added `getRoute(fromId, toId)` helper
+- `src/game/scenes/ShipScene.ts` — removed internal `PlayerState`; added `PlayerStateView` interface (exported); constructor now accepts `systemId`, `destinationId`, `playerState`; fuel stat updated from `FUEL: x%` to `FUEL:x/yL`
+- `src/game/scenes/TravelMenuScene.ts` — constructor accepts `fuelL`, `fuelCapacityL`, `driveId`; each jump item has `disabled: true` when fuel needed exceeds current fuel; imports `getDrive` and `FUEL_PER_LY`
+- `src/game/scenes/StationMenuScene.ts` — constructor accepts `fuelL`, `fuelCapacityL`, `credits`, `onRefuel`; conditionally inserts `BUY FUEL +xL yCR` item when `amenities.fuel && fuelL < fuelCapacityL`
+- `src/main.ts` — module-level `playerState` initialised from world data; `onJumpSelected` deducts fuel; `goToShip`, `goToTravelMenu`, `goToArrival`, `goToStation` all thread fuel/credits through
+- `terminal.ts` — identical changes to `src/main.ts`
+- `src/game/scenes/ship-scene.test.ts` — updated constructor calls to pass `systemId`, `destinationId`, `playerState`; stat panel assertion updated to `FUEL:100/100L`
+- `src/game/scenes/travel-menu-scene.test.ts` — updated constructor calls to include fuel params; added 2 new tests for greyed/selectable jump items
+- `src/game/scenes/station-menu-scene.test.ts` — updated `makeScene` to accept fuel params; added 5 new BUY FUEL tests
+- `src/game/world/world-data.test.ts` — added tests for `getShip` and `getRoute`
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 302/302 tests passed (19 test files, +13 new tests)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. Start game → Ship screen shows `FUEL:100/100L` in the stat panel.
+2. Open travel menu → JUMPS tab shows all routes (reachable from full tank).
+3. Jump to another system → Ship screen shows reduced fuel (e.g. Sol → Alpha Centauri: 100 − 18 = 82 L).
+4. Drain fuel by jumping repeatedly → unreachable routes appear in `bright-black` in the JUMPS tab; pressing SELECT on them does nothing.
+5. Dock at Elysium Station (or any station with `amenities.fuel: true`) with a non-full tank → `BUY FUEL +xL yCR` item appears.
+6. Select BUY FUEL → fuel returns to max; credits decrease by `fuelNeeded × 10`.
+7. Dock when tank is already full → no BUY FUEL option shown.
+
+---
+
 ### 029 · Freighter as Starting Ship
 
 **Built:**

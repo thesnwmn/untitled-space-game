@@ -12,20 +12,7 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 030 · Fuel Management
-
-Track fuel in litres. Deduct fuel on every jump using the formula
-`Math.ceil(FUEL_PER_LY × distance × drive.fuelEfficiency)` where `FUEL_PER_LY = 5`.
-Lift `PlayerState` from `ShipScene` to module level in both orchestrators so fuel
-persists across scene transitions. Update the Ship screen status bar to show `FUEL:x/yL`
-instead of a percentage. Grey out jump routes the player lacks fuel to reach. Add a
-`BUY FUEL` option to `StationMenuScene` when the destination has `amenities.fuel: true`
-and the tank is not already full; the option refills to max and charges
-`(fuelCapacityL − fuelL) × 10 CR`. Add `getShip` and `getRoute` helpers to
-`world-data.ts`. Add `FUEL_PER_LY` and `FUEL_PRICE_PER_L` constants to `constants.ts`.
-See `docs/features/030-fuel-management.md` for the full spec.
-
-**Depends on:** 029
+See BACKLOG_HISTORY.md — 030 · Fuel Management
 
 ---
 
