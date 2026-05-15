@@ -3,7 +3,7 @@ id: game-settings
 
 player:
   name: Captain
-  starting_credits: 100
+  starting_credits: 5000
 
 starting_location:
   system: sol

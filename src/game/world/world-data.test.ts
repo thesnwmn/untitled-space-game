@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  WORLD,
+  getWorld,
   getSystem,
   getDestination,
   getRoutesFrom,
@@ -55,7 +55,7 @@ describe('getRoutesFrom', () => {
 
 describe('route integrity', () => {
   it('every route from and to resolves via getSystem', () => {
-    for (const route of WORLD.routes) {
+    for (const route of getWorld().routes) {
       expect(getSystem(route.from), `route.from '${route.from}' should resolve`).toBeDefined();
       expect(getSystem(route.to), `route.to '${route.to}' should resolve`).toBeDefined();
     }
@@ -64,7 +64,7 @@ describe('route integrity', () => {
 
 describe('destination integrity', () => {
   it('every destination system field resolves via getSystem', () => {
-    for (const dest of WORLD.destinations) {
+    for (const dest of getWorld().destinations) {
       expect(getSystem(dest.system), `destination '${dest.id}' system '${dest.system}' should resolve`).toBeDefined();
     }
   });
@@ -72,7 +72,7 @@ describe('destination integrity', () => {
 
 describe('system integrity', () => {
   it('every system destinations array entry resolves via getDestination', () => {
-    for (const system of WORLD.systems) {
+    for (const system of getWorld().systems) {
       for (const destId of system.destinations) {
         expect(getDestination(destId), `system '${system.id}' destination '${destId}' should resolve`).toBeDefined();
       }
@@ -126,7 +126,7 @@ describe('getRoute', () => {
 
 describe('commodities', () => {
   it('all commodity basePrice values are positive numbers', () => {
-    for (const commodity of WORLD.commodities) {
+    for (const commodity of getWorld().commodities) {
       expect(commodity.basePrice, `commodity '${commodity.id}' basePrice`).toBeGreaterThan(0);
     }
   });
@@ -171,7 +171,7 @@ describe('getCommodity', () => {
 describe('getCommodities', () => {
   it('returns all commodities', () => {
     const list = getCommodities();
-    expect(list.length).toBe(WORLD.commodities.length);
+    expect(list.length).toBe(getWorld().commodities.length);
     expect(list.length).toBeGreaterThan(0);
   });
 });
