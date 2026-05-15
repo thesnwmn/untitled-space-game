@@ -12,8 +12,13 @@ Individual menu scenes pass a title, items array, info lines, nav options, and p
 
 **Custom scenes** implement `Scene` directly (not via `BaseMenuScene`) when they require non-standard layout or behaviour that the base class cannot accommodate:
 - `TravelMenuScene` — two tabs (DESTINATIONS / JUMPS) with LEFT/RIGHT switching
-- `JumpAnimationScene` — timer-driven, no player input at all; auto-advances after 5 000 ms
-- `InSystemTravelAnimationScene` — same pattern as above but 2 000 ms; kept separate from JumpAnimationScene to allow future visual divergence
+
+**Transition scenes** extend `BaseTransitionScene` (`src/game/scenes/base-transition-scene.ts`). The base class handles timing, chrome rendering, and buffer clearing; subclasses implement only `renderContent(buffer)`. All eight animation scenes use this pattern:
+- `JumpAnimationScene`, `InSystemTravelAnimationScene` — travel transitions
+- `SurfaceLandingAnimationScene`, `AsteroidLandingAnimationScene`, `OrbitalDockingAnimationScene` — docking/landing transitions
+- `SurfaceTakeOffAnimationScene`, `AsteroidTakeOffAnimationScene`, `OrbitalUndockingAnimationScene` — take-off/undocking transitions
+
+Transition scenes accept no `InputHandler` and auto-advance once elapsed time reaches their duration. See `docs/decisions/travel-system.md` for durations, chrome overrides, and routing.
 
 **ScreenChrome** (`src/game/ui/ScreenChrome.ts`) provides the consistent 2-row header and 1-row footer nav used by all scenes:
 - Row 0: system name

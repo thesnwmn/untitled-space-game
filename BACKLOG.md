@@ -25,16 +25,6 @@ See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
 
 ---
 
-### 035 · Landing/Take-Off Animations and Terminology
-
-Replace dock/undock with land/take-off for surface and asteroid destinations,
-add distinct text-based landing and take-off animations for each type, and
-unify all animation scenes behind a shared `BaseTransitionScene` that keeps
-the screen chrome visible with context-aware header labels.
-See `docs/features/035-landing-take-off-animations.md` for the full spec.
-
----
-
 ### 036 · Cockpit Ship View
 
 Replace the current ship view with a fully animated cockpit display:
@@ -47,6 +37,7 @@ embedded as coloured-background words inside the bottom panels.
 See `docs/features/036-cockpit-ship-view.md` for the full spec.
 
 ---
+
 
 ## NEEDS SPEC
 

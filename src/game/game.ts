@@ -8,6 +8,12 @@ import { CargoScene } from './scenes/cargo-scene';
 import { TravelMenuScene } from './scenes/travel-menu-scene';
 import { JumpAnimationScene } from './scenes/jump-animation-scene';
 import { InSystemTravelAnimationScene } from './scenes/in-system-travel-animation-scene';
+import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation-scene';
+import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
+import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
+import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animation-scene';
+import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
+import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
 import type { TraderStockEntry } from './world/types';
 import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity } from './world/world-data';
@@ -145,8 +151,30 @@ export class Game {
         this.player.addFuel(litres);
         this.goToStation();
       },
-      () => this.goToTrader(), () => this.goToMissionBoard(), () => this.goToShip(),
+      () => this.goToTrader(), () => this.goToMissionBoard(), () => this.goToTakeOffOrUndock(),
     );
+  }
+
+  private goToLandOrDock(): void {
+    const locationType = getDestination(this.player.destinationId!)?.locationType;
+    if (locationType === 'surface') {
+      this.currentScene = new SurfaceLandingAnimationScene(this.player, this.context, () => this.goToStation());
+    } else if (locationType === 'asteroid') {
+      this.currentScene = new AsteroidLandingAnimationScene(this.player, this.context, () => this.goToStation());
+    } else {
+      this.currentScene = new OrbitalDockingAnimationScene(this.player, this.context, () => this.goToStation());
+    }
+  }
+
+  private goToTakeOffOrUndock(): void {
+    const locationType = getDestination(this.player.destinationId!)?.locationType;
+    if (locationType === 'surface') {
+      this.currentScene = new SurfaceTakeOffAnimationScene(this.player, this.context, () => this.goToShip());
+    } else if (locationType === 'asteroid') {
+      this.currentScene = new AsteroidTakeOffAnimationScene(this.player, this.context, () => this.goToShip());
+    } else {
+      this.currentScene = new OrbitalUndockingAnimationScene(this.player, this.context, () => this.goToShip());
+    }
   }
 
   private goToTrader(): void {
@@ -170,7 +198,7 @@ export class Game {
   private goToShip(): void {
     this.currentScene = new ShipScene(
       this.input, this.context, this.player,
-      () => this.goToTravelMenu(), () => this.goToStation(), () => this.goToCargo(),
+      () => this.goToTravelMenu(), () => this.goToLandOrDock(), () => this.goToCargo(),
     );
   }
 
@@ -202,12 +230,12 @@ export class Game {
 
   private goToFlyIntoSpace(): void {
     this.player.undock();
-    this.currentScene = new InSystemTravelAnimationScene('OPEN SPACE', () => this.goToShip(), 'LAUNCHING...');
+    this.currentScene = new InSystemTravelAnimationScene(this.player, this.context, () => this.goToShip(), 'OPEN SPACE');
   }
 
   private onDestinationSelected(destinationId: string): void {
     this.player.dock(destinationId);
-    this.currentScene = new InSystemTravelAnimationScene(getDestination(destinationId)!.name, () => this.goToShip());
+    this.currentScene = new InSystemTravelAnimationScene(this.player, this.context, () => this.goToShip());
   }
 
   private onJumpSelected(targetSystemId: string): void {
@@ -216,7 +244,6 @@ export class Game {
     const used = Math.ceil(FUEL_PER_LY * route.distance * drive.fuelEfficiency);
     this.player.consumeFuel(used);
     this.player.jumpTo(targetSystemId);
-    const targetName = getSystem(targetSystemId)!.name;
-    this.currentScene = new JumpAnimationScene(targetName, () => this.goToArrival());
+    this.currentScene = new JumpAnimationScene(this.player, this.context, () => this.goToArrival());
   }
 }

@@ -42,11 +42,12 @@ export class StationMenuScene extends BaseMenuScene {
     const descLines = wrapText(dest.description, 36).slice(0, 3);
     const dangerLine = `DANGER: ${dest.dangerLevel.toUpperCase()}`;
     const infoLines = [...descLines, dangerLine];
+    const undockLabel = (dest.locationType === 'surface' || dest.locationType === 'asteroid') ? 'TAKE OFF' : 'UNDOCK';
 
     super(
       'HUB',
       items,
-      [{ id: 'undock', label: 'UNDOCK' }],
+      [{ id: 'undock', label: undockLabel }],
       inputHandler,
       context,
       player,

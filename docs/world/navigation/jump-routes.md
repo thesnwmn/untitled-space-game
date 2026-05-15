@@ -32,6 +32,19 @@ routes:
     distance: 3.1
     stability: unstable
     security: low
+
+  # Outer Reach — less-travelled routes beyond the frontier
+  - from: alpha-centauri
+    to: tau-ceti
+    distance: 9.4
+    stability: stable
+    security: medium
+
+  - from: barnards-star
+    to: epsilon-eridani
+    distance: 7.2
+    stability: unstable
+    security: low
 ---
 
 # Jump Routes

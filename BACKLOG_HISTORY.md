@@ -14,6 +14,41 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 035 · Landing/Take-Off Animations and Terminology — DONE
+
+**Built:**
+- `src/game/scenes/base-transition-scene.ts` — new abstract `BaseTransitionScene` class; owns `ScreenChrome`, elapsed timer, `arrived` guard; abstract `renderContent()` for subclasses
+- `src/game/ui/screen-chrome.ts` — `ChromeConfig` gains `systemLabel?: string | null` and `destinationLabel?: string | null` override fields; `undefined` uses default, `null` renders blank, string is verbatim
+- `src/game/scenes/jump-animation-scene.ts` — refactored to extend `BaseTransitionScene`; constructor now `(player, context, onArrival)`; overrides `getChromeConfig()` with `systemLabel: 'IN TRANSIT'` and `destinationLabel: null`
+- `src/game/scenes/in-system-travel-animation-scene.ts` — refactored to extend `BaseTransitionScene`; constructor now `(player, context, onArrival, targetLabel?)`; overrides `getChromeConfig()` with `destinationLabel: 'IN TRANSIT'`
+- `src/game/scenes/surface-landing-animation-scene.ts` — new; 2500 ms; title `[ LANDING SEQUENCE ]`, countdown `TOUCHDOWN IN Xs`
+- `src/game/scenes/asteroid-landing-animation-scene.ts` — new; 2500 ms; title `[ APPROACH LOCKED ]`, countdown `CLAMPING IN Xs`
+- `src/game/scenes/surface-take-off-animation-scene.ts` — new; 1500 ms; title `[ LIFTOFF SEQUENCE ]`, countdown `CLEAR IN Xs`
+- `src/game/scenes/asteroid-take-off-animation-scene.ts` — new; 1500 ms; title `[ RELEASING CLAMPS ]`, countdown `DEPARTING IN Xs`
+- `src/game/scenes/ship-scene.ts` — dock button shows `[L] LAND` for surface/asteroid destinations, `[D] DOCK` for orbital/deep-space, `[ - ] DOCK` when in space
+- `src/game/scenes/station-menu-scene.ts` — nav label shows `TAKE OFF` for surface/asteroid destinations, `UNDOCK` for others; nav `id` unchanged
+- `src/game/game.ts` — new `goToLandOrDock()` and `goToTakeOffOrUndock()` routing methods; updated `goToShip()`, `goToStation()`, `goToFlyIntoSpace()`, `onDestinationSelected()`, `onJumpSelected()` to use new constructors/routing
+- 4 new test files for the new animation scenes; updated `jump-animation-scene.test.ts` and `in-system-travel-animation-scene.test.ts`; added label override tests to `screen-chrome.test.ts`; added LAND/DOCK and TAKE OFF/UNDOCK tests to `ship-scene.test.ts` and `station-menu-scene.test.ts`
+
+**Evidence:**
+- `tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 485 passed / 1 skipped across 28 test files
+- `npm run build`: ✓ Vite build OK (145 kB JS)
+- `init.sh` (before and after): ✓ passes clean
+
+**Play-test instructions:**
+1. `npm run dev`, open the game in a browser
+2. Start game, navigate to a destination with `locationType: orbital` (e.g. Elysium Station in Sol) — ship scene shows `[D] DOCK`; press it and confirm you go straight to the hub (no animation)
+3. From the hub, press `UNDOCK` in the footer — confirm you go straight to the cockpit
+4. Travel to `Ceti Landfall` (Tau Ceti, surface) — ship scene shows `[L] LAND`; press it and confirm `[ LANDING SEQUENCE ]` animation plays (~2.5 s) then hub appears
+5. From the hub, press `TAKE OFF` in the footer — confirm `[ LIFTOFF SEQUENCE ]` animation plays (~1.5 s) then cockpit appears
+6. Travel to `Eridani Anchorage` (Epsilon Eridani, asteroid) — ship scene shows `[L] LAND`; press it and confirm `[ APPROACH LOCKED ]` animation plays (~2.5 s) then hub appears
+7. From the hub, press `TAKE OFF` — confirm `[ RELEASING CLAMPS ]` animation plays (~1.5 s) then cockpit appears
+8. Execute a jump — chrome row 0 shows `IN TRANSIT`, row 1 destination slot is blank; credits still visible
+9. Confirm in-system travel shows `IN TRANSIT` in the destination slot of the chrome
+
+---
+
 ### 020 · World Data File Loader — DONE
 
 **Built:**
