@@ -151,7 +151,9 @@ export class ShipScene implements Scene {
     // ── Stat panels (row 2) ────────────────────────────────────────────────────
     //  \    FUEL: 100%   /\   CARGO: 0/50T  /
     const leftStat  = pad(`FUEL: ${this.state.fuel}%`, inner);
-    const rightStat = pad(`CARGO: ${this.state.cargo}/${this.state.cargoCapacity}KG`, inner);
+    const cargoMg   = Math.round(this.state.cargo / 1000);
+    const capMg     = Math.round(this.state.cargoCapacity / 1000);
+    const rightStat = pad(`CARGO: ${cargoMg}/${capMg}Mg`, inner);
 
     buffer[statRow][1] = dim('\\');
     for (let c = 0; c < inner; c++)
