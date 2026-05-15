@@ -3,7 +3,9 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 You are working on an ASCII terminal-style space game built with Vite + TypeScript
-for browser, and Bun for terminal. Read DECISION_REGISTER.md for full technical context.
+for browser, and Bun for terminal. Read DECISION_REGISTER.md for a quick-reference
+index of all architectural decisions; pull detail files from docs/decisions/ only when
+you need the full rationale for a specific area.
 
 ## Commands
 
@@ -44,7 +46,9 @@ See: docs/agent/roles/PLANNER.md
 ### Engineer
 Activated when: the manager asks you to implement a backlog item.
 Your job: Implement the specified feature. Deliver working, type-safe code with evidence
-of correctness. Write play-test instructions. Run init.sh before and after. Update BACKLOG.md.
+of correctness. Write play-test instructions. Run init.sh before and after. On completion:
+append the DONE record to BACKLOG_HISTORY.md, remove the item from BACKLOG.md, and
+archive the feature spec to docs/features/_history/.
 If you cannot finish in one session, write a handoff note before stopping.
 On completion, automatically proceed to the Reviewer role without waiting to be asked.
 See: docs/agent/roles/ENGINEER.md
@@ -88,9 +92,12 @@ If no instruction is given, ask.
 
 ## Key Files
 
-- DECISION_REGISTER.md — architecture and technical decisions
-- BACKLOG.md — ordered feature list, implementation evidence, status
-- docs/features/ — full spec docs for complex features
+- DECISION_REGISTER.md — index of all architectural decisions (read first; detail in docs/decisions/)
+- BACKLOG.md — active feature list (READY / IN PROGRESS / NEEDS SPEC)
+- BACKLOG_HISTORY.md — all completed features with full implementation records
+- docs/features/ — full spec docs for active/upcoming features
+- docs/features/_history/ — brief summaries of completed feature specs
+- docs/decisions/ — detailed decision rationale split by area
 - docs/agent/roles/ — detailed instructions for each role
 - docs/implementation/ — how game systems are built (scenes, etc.)
 - init.sh — run at the start and end of every Engineer or Debugger session
