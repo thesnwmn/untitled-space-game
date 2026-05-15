@@ -1,6 +1,8 @@
-import type { InputHandler, CharBuffer, Scene } from '../../shared/types';
+import type { InputHandler, CharBuffer, Scene, GameContext } from '../../shared/types';
 import { writeText, wrapText } from '../../shared/buffer-utils';
 import { getStoryBeatsByTrigger } from '../world/world-data';
+import { ScreenChrome } from '../ui/screen-chrome';
+import type { PlayerState } from '../PlayerState';
 
 const YEAR_ROW = 2;
 const BODY_START_ROW = 4;
@@ -11,9 +13,11 @@ export class StoryScene implements Scene {
   private readonly yearHeader: string;
   private readonly bodyLines: string[];
   private pageIndex = 0;
+  private readonly chrome: ScreenChrome;
 
-  constructor(inputHandler: InputHandler, _context: unknown, _player: unknown, onContinue: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, player: PlayerState, onContinue: () => void) {
     this.onContinue = onContinue;
+    this.chrome = new ScreenChrome(context, player);
 
     const beat = getStoryBeatsByTrigger('game-start')[0];
     const paragraphs = beat.text.split('\n\n');
@@ -70,13 +74,15 @@ export class StoryScene implements Scene {
       }
     }
 
+    this.chrome.render(buffer, { showHeader: true, showFooter: true, navOptions: [] });
+
     if (this.yearHeader) {
       const col = Math.max(0, Math.floor((w - this.yearHeader.length) / 2));
       writeText(buffer, YEAR_ROW, col, this.yearHeader, 'bright-yellow', 'black');
     }
 
-    // Rows available for body text (last row reserved for pager if needed)
-    const bodyRows = h - 1 - BODY_START_ROW; // rows BODY_START_ROW..h-2 inclusive
+    // Rows available for body text (h-2 reserved for pager if needed, h-1 is chrome footer)
+    const bodyRows = h - 2 - BODY_START_ROW; // rows BODY_START_ROW..h-3 inclusive
     const linesPerPage = bodyRows;
 
     const totalPages = Math.max(1, Math.ceil(this.bodyLines.length / linesPerPage));
@@ -98,7 +104,7 @@ export class StoryScene implements Scene {
     if (needsPager) {
       const pageStr = `< ${this.pageIndex + 1}/${totalPages} >`;
       const col = w - 9;
-      writeText(buffer, h - 1, col, pageStr, 'bright-black', 'black');
+      writeText(buffer, h - 2, col, pageStr, 'bright-black', 'black');
     }
   }
 }
