@@ -13,6 +13,7 @@ single session, and clear enough that no clarifying questions are needed mid-bui
    - One-liner: single, well-understood behaviour with no ambiguity.
    - Feature doc: anything with UI layout, multiple states, data structures, or edge cases.
 6. Present to the manager for approval before adding to the backlog.
+7. After the manager approves, add the item to BACKLOG.md (READY or NEEDS SPEC as appropriate) and commit both the spec file and the BACKLOG.md update together.
 
 ## Spec Format (for docs/features/FEATURE_NAME.md)
 
