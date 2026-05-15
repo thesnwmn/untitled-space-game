@@ -37,7 +37,7 @@ Never begin implementation without confirming which feature is being worked on.
       (or remove it entirely if the DONE section already has a pointer to that file).
 11. Archive the feature spec:
     - If a `docs/features/NNN-*.md` spec exists for this item, replace it with a
-      short summary in `docs/features/_history/NNN-*.md` (same filename, new directory).
+      short summary in `docs/features/history/NNN-*.md` (same filename, new directory).
     - Summary format (~15–25 lines):
       ```
       # NNN · Title — DONE

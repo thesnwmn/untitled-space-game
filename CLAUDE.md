@@ -96,7 +96,7 @@ If no instruction is given, ask.
 - BACKLOG.md — active feature list (READY / IN PROGRESS / NEEDS SPEC)
 - BACKLOG_HISTORY.md — all completed features with full implementation records
 - docs/features/ — full spec docs for active/upcoming features
-- docs/features/_history/ — brief summaries of completed feature specs
+- docs/features/history/ — brief summaries of completed feature specs
 - docs/decisions/ — detailed decision rationale split by area
 - docs/agent/roles/ — detailed instructions for each role
 - docs/implementation/ — how game systems are built (scenes, etc.)
