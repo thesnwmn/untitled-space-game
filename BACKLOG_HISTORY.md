@@ -14,6 +14,45 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 031 · Cargo Trading — DONE
+
+**Built:**
+- `src/shared/types.ts` — added `'CARGO'` to `GameAction` union
+- `src/game/world/types.ts` — added `TraderStockEntry` interface
+- `src/game/world/world-data.ts` — added `getCommodity`, `getCommodities`, `computeCargoWeightKg` exports
+- `src/game/PlayerState.ts` — replaced `cargoWeightKg` stub with real `computeCargoWeightKg` implementation
+- `src/platform/dom/dom-input-handler.ts` — mapped `c`/`C` to `'CARGO'`
+- `src/platform/terminal/terminal-input-handler.ts` — mapped `c`/`C` to `'CARGO'`
+- `src/game/scenes/trader-scene.ts` — rewrote with live stock; constructor takes `traderStock`, `onBuy`, `onSell`; SELECT does not activate scene; hold-capacity footer on both tabs
+- `src/game/scenes/ship-scene.ts` — added `onCargo` param; handles `CARGO` action and tap on right stat panel; `[C] CARGO` hint in viewport
+- `src/game/scenes/cargo-scene.ts` — new read-only hold scene; `BACK`/`CARGO` return to ship; shows all hold entries with name/qty/weight and total/capacity
+- `src/game/game.ts` — added trader stock cache with 2-minute TTL; `getOrCreateTraderStock`, `onBuy`, `onSell` methods; updated `goToTrader` and `goToShip`; added `goToCargo`
+- `src/game/scenes/cargo-scene.test.ts` — new (11 tests)
+- `src/game/scenes/trader-scene.test.ts` — rewritten for live-data API (28 tests)
+- `src/game/scenes/ship-scene.test.ts` — updated for 6-arg constructor; 3 new tests (31 total)
+- `src/game/world/world-data.test.ts` — 6 new tests for `getCommodity`, `getCommodities`, `computeCargoWeightKg`
+- `src/game/player-state.test.ts` — updated `cargoWeightKg` test to verify real computation
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 355 passed | 1 skipped (356 total; 25 new)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. `npm run dev` → open browser → NEW GAME → Ship screen shows `CARGO: 0/2Mg` in stat panel.
+2. Press `C` → CargoScene opens, shows "CARGO HOLD EMPTY", closes with ESC.
+3. Dock at any station → open Trader → BUY tab shows 4–6 randomly generated items.
+4. Select an item on BUY tab → item disappears from BUY, credits decrease, HOLD line updates.
+5. Switch to SELL tab → bought item appears with qty and price.
+6. Select on SELL tab → item disappears, credits increase, HOLD line decreases.
+7. Open CargoScene again → hold contents match expectation.
+8. Fill hold to near capacity → buying a heavy item with insufficient space does nothing.
+9. Leave station, return within 2 minutes → same (possibly depleted) stock on BUY tab.
+10. Return after 2 minutes → fresh stock generated.
+11. Sell at a different station → item leaves hold, appears in that station's BUY tab.
+
+---
+
 ### 034 · Shared Game Orchestrator — DONE
 
 **Built:**
