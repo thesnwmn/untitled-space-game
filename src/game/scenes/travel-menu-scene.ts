@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext } from '../../shared/types';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 import { getSystem, getDestination, getRoutesFrom, getDrive } from '../world/world-data';
 import { FUEL_PER_LY } from '../constants';
 import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';

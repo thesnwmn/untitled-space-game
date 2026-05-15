@@ -1,7 +1,7 @@
 import type { CharBuffer, GameContext } from '../../shared/types';
 import { writeText } from '../../shared/buffer-utils';
 import { getSystem, getDestination } from '../world/world-data';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 
 export interface NavOption {
   id: string;

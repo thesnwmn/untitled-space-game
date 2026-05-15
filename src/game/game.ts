@@ -11,7 +11,7 @@ import { InSystemTravelAnimationScene } from './scenes/in-system-travel-animatio
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
 import type { TraderStockEntry } from './world/types';
 import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity } from './world/world-data';
-import { PlayerState } from './PlayerState';
+import { PlayerState } from './player-state';
 import { FUEL_PER_LY } from './constants';
 
 const MAX_DT = 100;
