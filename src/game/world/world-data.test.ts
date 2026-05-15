@@ -195,3 +195,46 @@ describe('computeCargoWeightKg', () => {
     expect(computeCargoWeightKg(hold)).toBe(0);
   });
 });
+
+describe('jump route reachability — surface/asteroid destinations accessible', () => {
+  function reachableSystems(startId: string): Set<string> {
+    const visited = new Set<string>();
+    const queue = [startId];
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (visited.has(current)) continue;
+      visited.add(current);
+      for (const route of getRoutesFrom(current)) {
+        const neighbor = route.from === current ? route.to : route.from;
+        if (!visited.has(neighbor)) queue.push(neighbor);
+      }
+    }
+    return visited;
+  }
+
+  it('tau-ceti (has surface destination ceti-landfall) is reachable from sol', () => {
+    expect(reachableSystems('sol').has('tau-ceti')).toBe(true);
+  });
+
+  it('epsilon-eridani (has asteroid destination eridani-anchorage) is reachable from sol', () => {
+    expect(reachableSystems('sol').has('epsilon-eridani')).toBe(true);
+  });
+
+  it('alpha-centauri to tau-ceti route exists', () => {
+    const routes = getRoutesFrom('alpha-centauri');
+    const found = routes.some(r => {
+      const other = r.from === 'alpha-centauri' ? r.to : r.from;
+      return other === 'tau-ceti';
+    });
+    expect(found).toBe(true);
+  });
+
+  it('barnards-star to epsilon-eridani route exists', () => {
+    const routes = getRoutesFrom('barnards-star');
+    const found = routes.some(r => {
+      const other = r.from === 'barnards-star' ? r.to : r.from;
+      return other === 'epsilon-eridani';
+    });
+    expect(found).toBe(true);
+  });
+});

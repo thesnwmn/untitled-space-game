@@ -12,6 +12,8 @@ export interface ChromeConfig {
   showHeader: boolean;
   showFooter: boolean;
   navOptions: ReadonlyArray<NavOption>;
+  systemLabel?: string | null;
+  destinationLabel?: string | null;
 }
 
 export const CONTENT_TOP = 3;
@@ -49,8 +51,8 @@ export class ScreenChrome {
     this.buttonRanges = null;
 
     if (config.showHeader) {
-      this.renderHeaderRow0(buffer, w);
-      this.renderHeaderRow1(buffer, w);
+      this.renderHeaderRow0(buffer, w, config.systemLabel);
+      this.renderHeaderRow1(buffer, w, config.destinationLabel);
       // Row 2 is the gap — already cleared by the scene
     }
 
@@ -60,9 +62,10 @@ export class ScreenChrome {
     }
   }
 
-  private renderHeaderRow0(buffer: CharBuffer, w: number): void {
-    const sys = getSystem(this.player.systemId);
-    const sysName = sys ? sys.name.toUpperCase() : this.player.systemId.toUpperCase();
+  private renderHeaderRow0(buffer: CharBuffer, w: number, systemLabel?: string | null): void {
+    const sysName = systemLabel !== undefined
+      ? (systemLabel ?? '')
+      : (() => { const sys = getSystem(this.player.systemId); return sys ? sys.name.toUpperCase() : this.player.systemId.toUpperCase(); })();
 
     // Left prefix: "::" (bright-black)
     const prefix = '::';
@@ -91,11 +94,10 @@ export class ScreenChrome {
     writeText(buffer, 0, col, '::', 'bright-black', 'black');
   }
 
-  private renderHeaderRow1(buffer: CharBuffer, w: number): void {
-    const dest = this.player.destinationId
-      ? getDestination(this.player.destinationId)
-      : null;
-    const destName = dest ? dest.name.toUpperCase() : 'IN SPACE';
+  private renderHeaderRow1(buffer: CharBuffer, w: number, destinationLabel?: string | null): void {
+    const destName = destinationLabel !== undefined
+      ? (destinationLabel ?? '')
+      : (() => { const dest = this.player.destinationId ? getDestination(this.player.destinationId) : null; return dest ? dest.name.toUpperCase() : 'IN SPACE'; })();
     const creditsStr = formatCredits(this.player.credits);
 
     // Right zone width = creditsStr.length + 5 (" CR::")

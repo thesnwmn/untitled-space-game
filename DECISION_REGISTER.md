@@ -7,10 +7,10 @@ Quick-reference index. Read this file first. Only pull a detail file when you ne
 | File | Contents |
 |---|---|
 | `docs/decisions/rendering-architecture.md` | DOM + `<pre>` rendering rationale; platform abstraction layer diagram; file structure; naming conventions; core TypeScript types (`Color`, `Cell`, `CharBuffer`, `Renderer`, `InputHandler`, `Scene`, `GameAction`, `GameContext`) |
-| `docs/decisions/scene-system.md` | Scene interface; `BaseMenuScene`; `ScreenChrome`; custom scenes (`TravelMenuScene`, animation scenes); `buffer-utils` helpers; `GameContext` fields |
+| `docs/decisions/scene-system.md` | Scene interface; `BaseMenuScene`; `BaseTransitionScene`; `ScreenChrome`; custom scenes (`TravelMenuScene`, transition scenes); `buffer-utils` helpers; `GameContext` fields |
 | `docs/decisions/colour-input-context.md` | 16-colour named palette; input action table (keyboard / touch / terminal); `NAV_1`–`NAV_9`; `GameContext` construction and mutation |
 | `docs/decisions/build-layout-deployment.md` | Vite + Bun + TypeScript build rationale; npm scripts; adaptive grid height (30–50 rows, 40 cols fixed); deployment via GitHub Pages |
-| `docs/decisions/travel-system.md` | `TravelMenuScene` constructor and tab layout; in-space `ShipScene` state; `currentDestinationId` as single source of truth; animation scene durations |
+| `docs/decisions/travel-system.md` | `TravelMenuScene` constructor and tab layout; in-space `ShipScene` state; `currentDestinationId` as single source of truth; all eight animation scene durations, chrome overrides, and routing |
 
 ---
 
@@ -31,5 +31,7 @@ Quick-reference index. Read this file first. Only pull a detail file when you ne
 | Travel scene | Single `TravelMenuScene` with two tabs | Unifies in-system and inter-system travel; arrival mode reuses same scene without a separate SystemArrivalScene |
 | In-space state | `player.destinationId: string \| null` on `PlayerState` | Single nullable field drives ShipScene display, DOCK availability, TravelMenuScene greying, and FLY INTO SPACE selectability |
 | Player state ownership | `PlayerState` class (`src/game/player-state.ts`) | Centralises all persistent game data (location, fuel, credits, cargo, ship info); scenes receive it as one arg; orchestrator mutates via named methods only |
-| Separate animation scenes | `JumpAnimationScene` + `InSystemTravelAnimationScene` | Distinct classes preserve the option to diverge visually without conditional branching |
+| Separate animation scenes | One class per transition (eight total) | Distinct classes preserve the option to diverge visually without conditional branching |
+| Transition scene base | `BaseTransitionScene` abstract class | Centralises timing guard, `ScreenChrome` ownership, and buffer clearing; subclasses implement only `renderContent(buffer)` and optionally override `getChromeConfig()` |
+| ChromeConfig label overrides | `systemLabel?: string \| null`, `destinationLabel?: string \| null` on `ChromeConfig` | Three-way semantics: `undefined`=read from player (default), `null`=render blank, `string`=verbatim; used by jump (system=`'IN TRANSIT'`, destination blank) and in-system travel (destination=`'IN TRANSIT'`) |
 | Nav actions | `NAV_1`–`NAV_9` + digit keys | Allows ScreenChrome footer buttons to be keyboard-accessible without overloading existing actions |
