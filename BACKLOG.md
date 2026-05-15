@@ -12,6 +12,18 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
+### 033 · Centralise Player State
+
+Replace the ad-hoc `playerState` object and scattered orchestrator variables with a
+single `PlayerState` class (constructed once at game start, updated via named methods)
+that owns all persistent game state. Pass it to scenes as one argument instead of
+the current spread of individual parameters (fuel, credits, drive, location, etc.).
+See `docs/features/033-centralise-player-state.md` for the full spec.
+
+**Depends on:** 030
+
+---
+
 ### 031 · Cargo Trading
 
 Introduce a persistent cargo hold, live trading (buy/sell) at any trader, and a
@@ -21,7 +33,7 @@ available lot to the hold; selling transfers all held units of a type back to th
 trader. Prices are fixed at commodity base prices for now.
 See `docs/features/031-cargo-trading.md` for the full spec.
 
-**Depends on:** 029, 030
+**Depends on:** 029, 030, 033
 
 ---
 

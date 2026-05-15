@@ -29,14 +29,16 @@ Individual menu scenes pass a title, items array, info lines, nav options, and p
 
 **Scene wiring** (creating scenes and passing callbacks between them) lives entirely in the two entry points — `src/main.ts` (browser) and `terminal.ts` (Bun). Both must be kept in sync when adding new scenes.
 
-**GameContext fields** added after feature 028:
+**GameContext fields** (slimmed to runtime-only after feature 033):
 ```typescript
 export interface GameContext {
   environment: RuntimeEnvironment;
   primaryInput: PrimaryInput;
   debug: boolean;
-  systemId: string;
-  destinationId: string | null;
-  credits: number;
 }
 ```
+
+Game state (location, credits, fuel, cargo) moved to `PlayerState`
+(`src/game/PlayerState.ts`), which is constructed once at startup and passed to
+every scene alongside `context`. `ScreenChrome` reads from `PlayerState` for its
+header rows (system name, destination name, credits).

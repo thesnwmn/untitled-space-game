@@ -29,6 +29,7 @@ Quick-reference index. Read this file first. Only pull a detail file when you ne
 | Layout | Fixed 40 cols, adaptive 30–50 rows, font scales to fill viewport | Fixed width simplifies scene layout; scaling preserves crisp character grid |
 | Menu scene pattern | `BaseMenuScene` abstract class + `ScreenChrome` | Centralises cursor nav, tap-to-item, input-silencing, and consistent header/footer chrome |
 | Travel scene | Single `TravelMenuScene` with two tabs | Unifies in-system and inter-system travel; arrival mode reuses same scene without a separate SystemArrivalScene |
-| In-space state | `currentDestinationId: string \| null` | Single nullable field drives ShipScene display, DOCK availability, TravelMenuScene greying, and FLY INTO SPACE selectability |
+| In-space state | `player.destinationId: string \| null` on `PlayerState` | Single nullable field drives ShipScene display, DOCK availability, TravelMenuScene greying, and FLY INTO SPACE selectability |
+| Player state ownership | `PlayerState` class (`src/game/PlayerState.ts`) | Centralises all persistent game data (location, fuel, credits, cargo, ship info); scenes receive it as one arg; orchestrator mutates via named methods only |
 | Separate animation scenes | `JumpAnimationScene` + `InSystemTravelAnimationScene` | Distinct classes preserve the option to diverge visually without conditional branching |
 | Nav actions | `NAV_1`–`NAV_9` + digit keys | Allows ScreenChrome footer buttons to be keyboard-accessible without overloading existing actions |
