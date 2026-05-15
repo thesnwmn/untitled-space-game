@@ -4,8 +4,8 @@ import { getStoryBeatsByTrigger } from '../world/world-data';
 import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../PlayerState';
 
-const YEAR_ROW = 2;
-const BODY_START_ROW = 4;
+const YEAR_ROW = 3;
+const BODY_START_ROW = 5;
 
 export class StoryScene implements Scene {
   private readonly onContinue: () => void;
@@ -81,8 +81,8 @@ export class StoryScene implements Scene {
       writeText(buffer, YEAR_ROW, col, this.yearHeader, 'bright-yellow', 'black');
     }
 
-    // Rows available for body text (h-2 reserved for pager if needed, h-1 is chrome footer)
-    const bodyRows = h - 2 - BODY_START_ROW; // rows BODY_START_ROW..h-3 inclusive
+    // h-1: chrome footer; h-2: blank above nav; h-3: pager if needed
+    const bodyRows = h - 3 - BODY_START_ROW; // rows BODY_START_ROW..h-4 inclusive
     const linesPerPage = bodyRows;
 
     const totalPages = Math.max(1, Math.ceil(this.bodyLines.length / linesPerPage));
@@ -104,7 +104,7 @@ export class StoryScene implements Scene {
     if (needsPager) {
       const pageStr = `< ${this.pageIndex + 1}/${totalPages} >`;
       const col = w - 9;
-      writeText(buffer, h - 2, col, pageStr, 'bright-black', 'black');
+      writeText(buffer, h - 3, col, pageStr, 'bright-black', 'black');
     }
   }
 }

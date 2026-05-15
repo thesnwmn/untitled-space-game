@@ -65,24 +65,24 @@ describe('StoryScene', () => {
       expect(row0).toContain('SOL');
     });
 
-    it('renders YEAR header from world data centred in bright-yellow on row 2', () => {
+    it('renders YEAR header from world data centred in bright-yellow on row 3', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 2)).toContain('YEAR  2284');
+      expect(rowText(buf, 3)).toContain('YEAR  2284');
       // "YEAR  2284" is 10 chars; centred in 40: col = 15
-      expect(rowFg(buf, 2, 15)).toBe('bright-yellow');
+      expect(rowFg(buf, 3, 15)).toBe('bright-yellow');
     });
 
-    it('renders at least one body line from world data below row 4 in white', () => {
+    it('renders at least one body line from world data starting at row 5 in white', () => {
       const input = new MockInputHandler();
       const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const text = rowText(buf, 4);
+      const text = rowText(buf, 5);
       expect(text.trim().length).toBeGreaterThan(0);
-      expect(buf[4].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
+      expect(buf[5].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
     });
 
     it('does not render "Hugo poured" anywhere in the buffer', () => {
@@ -99,7 +99,7 @@ describe('StoryScene', () => {
       const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      for (let row = 4; row < buf.length - 4; row++) {
+      for (let row = 5; row < buf.length - 4; row++) {
         const textContent = buf[row].slice(2, 38).map(c => c.char).join('').trimEnd();
         expect(textContent.length).toBeLessThanOrEqual(36);
       }
