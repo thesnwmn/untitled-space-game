@@ -1,5 +1,6 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { getDestination } from '../world/world-data';
+import { writeText } from '../../shared/buffer-utils';
 import type { DestinationType } from '../world/types';
 import { Starfield } from './starfield';
 import { SpaceStation } from './space-station';
@@ -41,6 +42,7 @@ export class ShipScene implements Scene {
     player: PlayerState,
     onTravel: () => void,
     onDock: () => void,
+    onCargo: () => void,
   ) {
     this.player = player;
     this.context = context;
@@ -59,7 +61,10 @@ export class ShipScene implements Scene {
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
-      if (action === 'UP') {
+      if (action === 'CARGO') {
+        this.activated = true;
+        onCargo();
+      } else if (action === 'UP') {
         this.cursorIdx = (this.cursorIdx - 1 + navCount()) % navCount();
       } else if (action === 'DOWN') {
         this.cursorIdx = (this.cursorIdx + 1) % navCount();
@@ -77,7 +82,14 @@ export class ShipScene implements Scene {
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
-        if (row === this.h - 1) {
+        if (row === 2) {
+          // Stat row: right half (cargo panel) opens cargo
+          if (col >= this.w / 2) {
+            this.activated = true;
+            onCargo();
+          }
+          // Left half (fuel panel) does nothing
+        } else if (row === this.h - 1) {
           if (col < this.w / 2) {
             this.activated = true;
             onTravel();
@@ -170,6 +182,9 @@ export class ShipScene implements Scene {
 
     this.starfield.render(buffer, viewTop, viewBot, viewLeft, viewRight);
     if (this.station) this.station.render(buffer);
+
+    // Cargo shortcut hint in lower-left of viewport
+    writeText(buffer, viewBot, viewLeft + 1, '[C] CARGO', 'bright-black', 'black');
 
     // ── Viewport bottom sill (h-2) ─────────────────────────────────────────────
     //  \__________________  __________________/

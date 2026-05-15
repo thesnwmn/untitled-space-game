@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TraderScene } from './trader-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import type { TraderStockEntry } from '../world/types';
 import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -43,24 +44,47 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
 const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
 };
-const touchContext: GameContext = {
-  environment: 'browser', primaryInput: 'touch', debug: false,
-};
 
 // CONTENT_TOP = 3; tab row = CONTENT_TOP+3 = 6; item row start = CONTENT_TOP+5 = 8
 const ITEM_ROW_START = 8;
 const TAB_ROW = 6;
 
-// Tab bar "| BUY | SELL |" left-aligned at col 2
-// | at 2, ' BUY ' at 3-7, | at 8, ' SELL ' at 9-14, | at 15
-const BUY_TAB_COL = 5;    // middle of ' BUY ' (cols 3-7)
-const SELL_TAB_COL = 12;  // middle of ' SELL ' (cols 9-14)
+const BUY_TAB_COL = 5;
+const SELL_TAB_COL = 12;
 
-// Footer at row 29 (h-1 for 40×30): ":: [1] UNDOCK :: [2] HUB :::..."
-// [1] UNDOCK: button cols 3-12; [2] HUB: button cols 17-23
 const FOOTER_ROW = 29;
 const NAV_UNDOCK_COL = 3;
 const NAV_HUB_COL = 17;
+
+// Test stock using real commodity IDs from WORLD data
+const makeStock = (): TraderStockEntry[] => [
+  { commodityId: 'iron-ore', qty: 5 },
+  { commodityId: 'rare-earth', qty: 2 },
+  { commodityId: 'rations', qty: 8 },
+];
+
+function makeScene(
+  input: MockInputHandler,
+  opts: {
+    stock?: TraderStockEntry[];
+    onBuy?: (id: string) => void;
+    onSell?: (id: string) => void;
+    onHub?: () => void;
+    onUndock?: () => void;
+  } = {},
+): TraderScene {
+  return new TraderScene(
+    input,
+    keyboardContext,
+    makePlayer(),
+    'elysium-station',
+    opts.stock ?? makeStock(),
+    opts.onBuy ?? vi.fn(),
+    opts.onSell ?? vi.fn(),
+    opts.onHub ?? vi.fn(),
+    opts.onUndock ?? vi.fn(),
+  );
+}
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -68,7 +92,7 @@ describe('TraderScene', () => {
   describe('render — layout', () => {
     it('does not render a border', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).not.toBe('+');
@@ -76,7 +100,7 @@ describe('TraderScene', () => {
 
     it('chrome header row 0 contains system name SOL', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 0)).toContain('SOL');
@@ -84,7 +108,7 @@ describe('TraderScene', () => {
 
     it('chrome footer row h-1 contains [1] UNDOCK and [2] HUB', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, FOOTER_ROW)).toContain('[1]');
@@ -95,7 +119,7 @@ describe('TraderScene', () => {
 
     it('renders trader name at row 3 in bright-white', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MERCHANT KESS');
@@ -104,7 +128,7 @@ describe('TraderScene', () => {
 
     it("renders ' underline at row 4 in bright-black", () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 4)).toContain("'");
@@ -113,43 +137,85 @@ describe('TraderScene', () => {
 
     it('renders | BUY | SELL | tab bar at tab row', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = rowText(buf, TAB_ROW);
       expect(text).toContain('BUY');
       expect(text).toContain('SELL');
-      // Active BUY tab has green background
       expect(buf[TAB_ROW][BUY_TAB_COL].bg).toBe('green');
       expect(buf[TAB_ROW][BUY_TAB_COL].fg).toBe('black');
-      // Inactive SELL tab has black background
       expect(buf[TAB_ROW][SELL_TAB_COL].bg).toBe('black');
     });
 
-    it('renders buy items in content area starting at row 7', () => {
+    it('BUY tab renders stock items with name, qty and price', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, { stock: [{ commodityId: 'iron-ore', qty: 5 }] });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('120 CR');
-      expect(rowText(buf, ITEM_ROW_START + 1)).toContain('Copper Wire');
+      // iron-ore basePrice=80; 5×80=400 CR
+      expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore (x5)');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('400 CR');
+    });
+
+    it('BUY tab shows NO STOCK AVAILABLE when stock is empty', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, { stock: [] });
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START)).toContain('NO STOCK AVAILABLE');
     });
 
     it('cursor starts on first item in bright-green', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('>');
       expect(rowFg(buf, ITEM_ROW_START, 2)).toBe('bright-green');
+    });
+
+    it('hold-capacity footer renders', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Scan all rows for HOLD: text
+      const found = buf.some(row => row.map(c => c.char).join('').includes('HOLD:'));
+      expect(found).toBe(true);
+    });
+  });
+
+  describe('SELL tab', () => {
+    it('SELL tab renders hold items with name, qty and price', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      player.addCargo('rations', 3); // rations basePrice=60; 3×60=180 CR
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        makeStock(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      input.triggerAction('RIGHT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START)).toContain('Ration Packs (x3)');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('180 CR');
+    });
+
+    it('SELL tab shows CARGO HOLD EMPTY when hold is empty', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input);
+      input.triggerAction('RIGHT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START)).toContain('CARGO HOLD EMPTY');
     });
   });
 
   describe('keyboard navigation', () => {
     it('DOWN moves cursor to next item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       input.triggerAction('DOWN');
       scene.render(buf);
@@ -159,40 +225,27 @@ describe('TraderScene', () => {
 
     it('UP from first item wraps to last item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       input.triggerAction('UP');
       scene.render(buf);
-      expect(rowText(buf, ITEM_ROW_START + 5)).toContain('>');
+      expect(rowText(buf, ITEM_ROW_START + 2)).toContain('>');
     });
 
     it('RIGHT switches to SELL tab and resets cursor', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       input.triggerAction('DOWN');
       input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[TAB_ROW][SELL_TAB_COL].bg).toBe('green');
       expect(buf[TAB_ROW][BUY_TAB_COL].bg).toBe('black');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies (x5)');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('>');
-    });
-
-    it('sell tab displays qty for each item', () => {
-      const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
-      input.triggerAction('RIGHT');
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, ITEM_ROW_START)).toContain('Water Supplies (x5)');
-      expect(rowText(buf, ITEM_ROW_START + 1)).toContain('Oxygen Tank (x3)');
-      expect(rowText(buf, ITEM_ROW_START + 2)).toContain('Nutrient Paste (x8)');
     });
 
     it('LEFT switches back to BUY tab', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       input.triggerAction('RIGHT');
       input.triggerAction('LEFT');
       const buf = makeBuffer(40, 30);
@@ -201,19 +254,44 @@ describe('TraderScene', () => {
       expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
     });
 
-    it('SELECT on item logs placeholder', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    it('SELECT on BUY tab calls onBuy with correct commodity id', () => {
+      const onBuy = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      makeScene(input, { onBuy });
       input.triggerAction('SELECT');
-      expect(consoleSpy).toHaveBeenCalledWith('[Trader] Selected Iron Ore');
-      consoleSpy.mockRestore();
+      expect(onBuy).toHaveBeenCalledWith('iron-ore');
+    });
+
+    it('SELECT on SELL tab calls onSell with correct commodity id', () => {
+      const onSell = vi.fn();
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      player.addCargo('rations', 3);
+      new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        makeStock(), vi.fn(), onSell, vi.fn(), vi.fn(),
+      );
+      input.triggerAction('RIGHT');
+      input.triggerAction('SELECT');
+      expect(onSell).toHaveBeenCalledWith('rations');
+    });
+
+    it('SELECT does not set activated (scene stays open for further trades)', () => {
+      const onBuy = vi.fn();
+      const onHub = vi.fn();
+      const input = new MockInputHandler();
+      makeScene(input, { onBuy, onHub });
+      input.triggerAction('SELECT');
+      expect(onBuy).toHaveBeenCalledTimes(1);
+      // After buy, BACK should still work (scene is not activated)
+      input.triggerAction('BACK');
+      expect(onHub).toHaveBeenCalledTimes(1);
     });
 
     it('BACK calls onHub and silences further input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
+      makeScene(input, { onHub });
       input.triggerAction('BACK');
       expect(onHub).toHaveBeenCalledTimes(1);
       input.triggerAction('BACK');
@@ -223,7 +301,7 @@ describe('TraderScene', () => {
     it('NAV_2 calls onHub', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
+      makeScene(input, { onHub });
       input.triggerAction('NAV_2');
       expect(onHub).toHaveBeenCalledTimes(1);
     });
@@ -231,7 +309,7 @@ describe('TraderScene', () => {
     it('NAV_1 calls onUndock', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), onUndock);
+      makeScene(input, { onUndock });
       input.triggerAction('NAV_1');
       expect(onUndock).toHaveBeenCalledTimes(1);
     });
@@ -240,42 +318,41 @@ describe('TraderScene', () => {
   describe('touch navigation', () => {
     it('tap on BUY tab area switches back from SELL to BUY', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
-      input.triggerAction('RIGHT'); // switch to SELL first
+      const scene = makeScene(input);
+      input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(BUY_TAB_COL, TAB_ROW);
       const buf2 = makeBuffer(40, 30);
       scene.render(buf2);
       expect(buf2[TAB_ROW][BUY_TAB_COL].bg).toBe('green');
-      expect(rowText(buf2, ITEM_ROW_START)).toContain('Iron Ore');
     });
 
-    it('tap on SELL tab area switches to SELL and shows qty', () => {
+    it('tap on SELL tab area switches to SELL', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(SELL_TAB_COL, TAB_ROW);
       const buf2 = makeBuffer(40, 30);
       scene.render(buf2);
       expect(buf2[TAB_ROW][SELL_TAB_COL].bg).toBe('green');
-      expect(rowText(buf2, ITEM_ROW_START)).toContain('Water Supplies (x5)');
     });
 
-    it('tap on item row logs placeholder', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    it('tap on item row calls onBuy for BUY tab item', () => {
+      const onBuy = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
-      input.triggerTap(5, ITEM_ROW_START + 2);
-      expect(consoleSpy).toHaveBeenCalledWith('[Trader] Selected Refined Fuel');
-      consoleSpy.mockRestore();
+      const scene = makeScene(input, { onBuy });
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(5, ITEM_ROW_START);
+      expect(onBuy).toHaveBeenCalledWith('iron-ore');
     });
 
     it('tap on footer UNDOCK button fires onUndock and silences input', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), onUndock);
+      const scene = makeScene(input, { onUndock });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_UNDOCK_COL, FOOTER_ROW);
@@ -287,7 +364,7 @@ describe('TraderScene', () => {
     it('tap on footer HUB button fires onHub and silences input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
+      const scene = makeScene(input, { onHub });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_HUB_COL, FOOTER_ROW);
@@ -300,7 +377,7 @@ describe('TraderScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input);
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });

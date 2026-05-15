@@ -21,6 +21,8 @@ const KEY_MAP: Array<[string, GameAction]> = [
   ['\x1b', 'BACK'],
   ['p', 'PAUSE'],
   ['P', 'PAUSE'],
+  ['c', 'CARGO'],
+  ['C', 'CARGO'],
   ['1', 'NAV_1'],
   ['2', 'NAV_2'],
   ['3', 'NAV_3'],

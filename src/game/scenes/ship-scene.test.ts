@@ -68,7 +68,7 @@ describe('ShipScene', () => {
   describe('render — layout', () => {
     it('does not render a border at row 0', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).not.toBe('+');
@@ -77,7 +77,7 @@ describe('ShipScene', () => {
 
     it('chrome header row 0 contains SOL', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 0)).toContain('SOL');
@@ -85,7 +85,7 @@ describe('ShipScene', () => {
 
     it('chrome header row 1 contains ELYSIUM STATION', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
@@ -93,7 +93,7 @@ describe('ShipScene', () => {
 
     it('renders stat panels at STAT_ROW with FUEL:100/100L and cargo text in bright-black', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = rowText(buf, STAT_ROW);
@@ -113,7 +113,7 @@ describe('ShipScene', () => {
 
     it('renders viewport arch top at TOP_BORDER_ROW', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[TOP_BORDER_ROW][0].char).toBe(' ');
@@ -128,7 +128,7 @@ describe('ShipScene', () => {
 
     it('interior region (rows VIEW_TOP to VIEW_BOT) has | borders at col 0 and col 39', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let r = VIEW_TOP; r <= VIEW_BOT; r++) {
@@ -139,7 +139,7 @@ describe('ShipScene', () => {
 
     it('interior region contains non-space cells (starfield)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       let nonSpace = false;
@@ -153,7 +153,7 @@ describe('ShipScene', () => {
 
     it('renders viewport bottom sill at SILL_ROW', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[SILL_ROW][0].char).toBe(' ');
@@ -168,7 +168,7 @@ describe('ShipScene', () => {
 
     it('civilian destination produces HUB station glyph ([H]) in interior', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       let hubFound = false;
@@ -188,7 +188,7 @@ describe('ShipScene', () => {
       const scene = new ShipScene(
         input, keyboardContext,
         makePlayer({ destinationId: 'tycho-orbital' }),
-        vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -206,7 +206,7 @@ describe('ShipScene', () => {
 
     it('both TRAVEL and DOCK labels appear on BUTTONS_ROW', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
@@ -216,7 +216,7 @@ describe('ShipScene', () => {
 
     it('cursor starts on TRAVEL (> prefix left of DOCK)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const line = rowText(buf, BUTTONS_ROW);
@@ -228,7 +228,7 @@ describe('ShipScene', () => {
   describe('animation forwarding', () => {
     it('update advances starfield (interior cells differ after large dt)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf1 = makeBuffer(40, 30);
       scene.render(buf1);
       scene.update(5000);
@@ -245,7 +245,7 @@ describe('ShipScene', () => {
 
     it('update advances station (no throw, renders after update)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(() => scene.update(2250)).not.toThrow();
@@ -256,7 +256,7 @@ describe('ShipScene', () => {
   describe('keyboard navigation', () => {
     it('DOWN moves cursor so > appears near DOCK on BUTTONS_ROW', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -266,7 +266,7 @@ describe('ShipScene', () => {
 
     it('UP from TRAVEL wraps cursor to DOCK', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -276,7 +276,7 @@ describe('ShipScene', () => {
 
     it('DOWN from DOCK wraps back to TRAVEL', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
@@ -288,7 +288,7 @@ describe('ShipScene', () => {
     it('SELECT on TRAVEL calls onTravel', () => {
       const onTravel = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, makePlayer(), onTravel, vi.fn());
+      new ShipScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn());
       input.triggerAction('SELECT');
       expect(onTravel).toHaveBeenCalledTimes(1);
     });
@@ -296,7 +296,7 @@ describe('ShipScene', () => {
     it('SELECT on DOCK calls onDock and silences further input', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), onDock);
+      new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
       expect(onDock).toHaveBeenCalledTimes(1);
@@ -304,11 +304,21 @@ describe('ShipScene', () => {
       expect(onDock).toHaveBeenCalledTimes(1);
     });
 
+    it('CARGO action calls onCargo and silences further input', () => {
+      const onCargo = vi.fn();
+      const input = new MockInputHandler();
+      new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo);
+      input.triggerAction('CARGO');
+      expect(onCargo).toHaveBeenCalledTimes(1);
+      input.triggerAction('CARGO');
+      expect(onCargo).toHaveBeenCalledTimes(1);
+    });
+
     it('BACK action does nothing', () => {
       const onTravel = vi.fn();
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, makePlayer(), onTravel, onDock);
+      new ShipScene(input, keyboardContext, makePlayer(), onTravel, onDock, vi.fn());
       input.triggerAction('BACK');
       expect(onTravel).not.toHaveBeenCalled();
       expect(onDock).not.toHaveBeenCalled();
@@ -319,7 +329,7 @@ describe('ShipScene', () => {
     it('tap left half of BUTTONS_ROW calls onTravel', () => {
       const onTravel = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, makePlayer(), onTravel, vi.fn());
+      new ShipScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn());
       input.triggerTap(10, BUTTONS_ROW);
       expect(onTravel).toHaveBeenCalledTimes(1);
     });
@@ -327,16 +337,32 @@ describe('ShipScene', () => {
     it('tap right half of BUTTONS_ROW calls onDock', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), onDock);
+      new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn());
       input.triggerTap(30, BUTTONS_ROW);
       expect(onDock).toHaveBeenCalledTimes(1);
+    });
+
+    it('tap right half of STAT_ROW calls onCargo', () => {
+      const onCargo = vi.fn();
+      const input = new MockInputHandler();
+      new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo);
+      input.triggerTap(30, STAT_ROW);
+      expect(onCargo).toHaveBeenCalledTimes(1);
+    });
+
+    it('tap left half of STAT_ROW does not call onCargo', () => {
+      const onCargo = vi.fn();
+      const input = new MockInputHandler();
+      new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo);
+      input.triggerTap(5, STAT_ROW);
+      expect(onCargo).not.toHaveBeenCalled();
     });
   });
 
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn());
+      const scene = new ShipScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
@@ -347,7 +373,7 @@ describe('ShipScene', () => {
       const scene = new ShipScene(
         input, keyboardContext,
         makePlayer({ systemId: 'alpha-centauri', destinationId: null }),
-        vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -359,7 +385,7 @@ describe('ShipScene', () => {
       const scene = new ShipScene(
         input, keyboardContext,
         makePlayer({ systemId: 'alpha-centauri', destinationId: null }),
-        vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -371,7 +397,7 @@ describe('ShipScene', () => {
       const scene = new ShipScene(
         input, keyboardContext,
         makePlayer({ systemId: 'alpha-centauri', destinationId: null }),
-        vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -384,7 +410,7 @@ describe('ShipScene', () => {
       new ShipScene(
         input, keyboardContext,
         makePlayer({ systemId: 'alpha-centauri', destinationId: null }),
-        vi.fn(), onDock,
+        vi.fn(), onDock, vi.fn(),
       );
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
@@ -396,7 +422,7 @@ describe('ShipScene', () => {
       const scene = new ShipScene(
         input, keyboardContext,
         makePlayer({ systemId: 'alpha-centauri', destinationId: null }),
-        vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);

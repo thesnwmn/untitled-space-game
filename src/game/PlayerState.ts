@@ -1,4 +1,4 @@
-import { getShip } from './world/world-data';
+import { getShip, computeCargoWeightKg } from './world/world-data';
 import type { CargoEntry } from './world/types';
 
 interface PlayerStateInit {
@@ -75,7 +75,7 @@ export class PlayerState {
     if (idx >= 0) this._cargoHold.splice(idx, 1);
   }
 
-  get cargoWeightKg(): number { return 0; }
+  get cargoWeightKg(): number { return computeCargoWeightKg(this._cargoHold); }
 
   // Location
   get systemId(): string { return this._systemId; }

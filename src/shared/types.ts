@@ -37,7 +37,7 @@ export interface Scene {
 
 export type GameAction =
   | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
-  | 'SELECT' | 'BACK' | 'PAUSE'
+  | 'SELECT' | 'BACK' | 'PAUSE' | 'CARGO'
   | 'PAGE_UP' | 'PAGE_DOWN'
   | 'NAV_1' | 'NAV_2' | 'NAV_3' | 'NAV_4' | 'NAV_5'
   | 'NAV_6' | 'NAV_7' | 'NAV_8' | 'NAV_9';

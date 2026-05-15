@@ -13,6 +13,8 @@ const KEY_MAP: Record<string, GameAction> = {
   Escape: 'BACK',
   p: 'PAUSE',
   P: 'PAUSE',
+  c: 'CARGO',
+  C: 'CARGO',
   '1': 'NAV_1',
   '2': 'NAV_2',
   '3': 'NAV_3',
