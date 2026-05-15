@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { JumpAnimationScene } from './JumpAnimationScene';
+import { JumpAnimationScene } from './jump-animation-scene';
 import type { CharBuffer, Color } from '../../shared/types';
 
 function makeBuffer(w: number, h: number): CharBuffer {

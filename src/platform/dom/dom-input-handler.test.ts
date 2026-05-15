@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DOMInputHandler } from './DOMInputHandler';
+import { DOMInputHandler } from './dom-input-handler';
 import type { GameAction } from '../../shared/types';
 
 describe('DOMInputHandler', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { MissionBoardScene } from './MissionBoardScene';
+import { MissionBoardScene } from './mission-board-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────

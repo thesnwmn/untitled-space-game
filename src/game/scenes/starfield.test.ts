@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Starfield } from './Starfield';
+import { Starfield } from './starfield';
 import type { CharBuffer, Color } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────

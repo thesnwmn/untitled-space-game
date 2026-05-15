@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { InSystemTravelAnimationScene } from './InSystemTravelAnimationScene';
+import { InSystemTravelAnimationScene } from './in-system-travel-animation-scene';
 import type { CharBuffer, Color } from '../../shared/types';
 
 function makeBuffer(w: number, h: number): CharBuffer {

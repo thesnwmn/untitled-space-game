@@ -1,6 +1,6 @@
 import type { InputHandler, GameContext } from '../../shared/types';
 import { getDestination } from '../world/world-data';
-import { BaseMenuScene, type MenuItemDef, type TabDef } from './BaseMenuScene';
+import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';
 
 interface TraderItem {
   name: string;

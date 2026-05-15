@@ -1,7 +1,7 @@
 import type { InputHandler, GameContext } from '../../shared/types';
 import { getSystem, getDestination, getRoutesFrom, getDrive } from '../world/world-data';
 import { FUEL_PER_LY } from '../constants';
-import { BaseMenuScene, type MenuItemDef, type TabDef } from './BaseMenuScene';
+import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';
 
 export class TravelMenuScene extends BaseMenuScene {
   private readonly onShip: () => void;

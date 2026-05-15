@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { TravelMenuScene } from './TravelMenuScene';
+import { TravelMenuScene } from './travel-menu-scene';
 import { getSystem, getRoutesFrom } from '../world/world-data';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 

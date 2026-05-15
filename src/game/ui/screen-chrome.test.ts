@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ScreenChrome } from './ScreenChrome';
+import { ScreenChrome } from './screen-chrome';
 import type { CharBuffer, Color, GameContext } from '../../shared/types';
 
 function makeBuffer(w: number, h: number): CharBuffer {

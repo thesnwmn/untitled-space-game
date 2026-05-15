@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TerminalRenderer } from './TerminalRenderer';
+import { TerminalRenderer } from './terminal-renderer';
 import { GRID_WIDTH, MIN_GRID_HEIGHT } from '../../shared/types';
 
 describe('TerminalRenderer', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ShipScene } from './ShipScene';
+import { ShipScene } from './ship-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
-import type { PlayerStateView } from './ShipScene';
+import type { PlayerStateView } from './ship-scene';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 

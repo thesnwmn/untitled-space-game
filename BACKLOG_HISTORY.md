@@ -14,6 +14,28 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 034 · Standardise Kebab-Case File Names
+
+**Built:**
+- 25 files renamed via `git mv` from PascalCase to kebab-case (16 implementation files + 9 test files)
+- Scenes: `BaseMenuScene`, `InSystemTravelAnimationScene`, `JumpAnimationScene`, `MainMenuScene`, `MissionBoardScene`, `ShipScene`, `SpaceStation`, `Starfield`, `StationMenuScene`, `StoryScene`, `TraderScene`, `TravelMenuScene`
+- UI: `ScreenChrome`
+- Platform DOM: `DOMInputHandler`, `DOMRenderer`
+- Platform terminal: `TerminalInputHandler`, `TerminalRenderer`
+- All import paths updated in `src/main.ts`, `terminal.ts`, and all affected scene/test files
+- `CLAUDE.md` — added "Conventions" section: kebab-case file names, PascalCase identifiers
+- `DECISION_REGISTER.md` — updated player-state row to reference `src/game/player-state.ts`
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 304/305 tests passed (1 skipped, 19 test files)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+This is a pure refactor — no behaviour changes. Verify by running the game normally and confirming all scenes load without errors.
+
+---
+
 ### 030 · Fuel Management
 
 **Built:**
