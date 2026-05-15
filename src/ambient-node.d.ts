@@ -29,5 +29,9 @@ declare namespace NodeJS {
 }
 
 interface ImportMeta {
-  glob(pattern: string, options?: { eager?: boolean; as?: string; query?: string }): Record<string, any>;
+  glob(pattern: string, options?: { eager?: boolean; as?: string; query?: string; import?: string }): Record<string, any>;
+}
+
+declare module 'js-yaml' {
+  export function safeLoad(str: string, options?: unknown): unknown;
 }

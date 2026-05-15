@@ -1,4 +1,4 @@
-import matter from 'gray-matter';
+import { safeLoad } from 'js-yaml';
 import type {
   WorldData,
   StarSystem,
@@ -12,6 +12,21 @@ import type {
   StoryBeat,
   GameSettings,
 } from './types';
+
+function parseFrontMatter(source: string): { data: Record<string, unknown>; content: string } {
+  if (!source.startsWith('---\n')) {
+    return { data: {}, content: source };
+  }
+  const closeIdx = source.indexOf('\n---', 4);
+  if (closeIdx === -1) {
+    return { data: {}, content: source };
+  }
+  const yamlStr = source.slice(4, closeIdx);
+  const afterClose = source.slice(closeIdx + 4);
+  const body = afterClose.startsWith('\n') ? afterClose.slice(1) : afterClose;
+  const data = (safeLoad(yamlStr) as Record<string, unknown>) ?? {};
+  return { data, content: body };
+}
 
 export function parseWorldFiles(files: Record<string, string>): WorldData {
   const world: WorldData = {
@@ -34,7 +49,7 @@ export function parseWorldFiles(files: Record<string, string>): WorldData {
     const basename = path.split('/').pop() ?? '';
     if (basename === '_template.md' || basename === '.gitkeep') continue;
 
-    const { data, content: body } = matter(content);
+    const { data, content: body } = parseFrontMatter(content);
 
     if (/^systems\/[^/]+\.md$/.test(path)) {
       world.systems.push(parseSystem(data, body));

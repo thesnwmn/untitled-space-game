@@ -15,7 +15,7 @@
     "terminal": "bun terminal.ts"
   },
   "devDependencies": {
-    "gray-matter": "^4.0.3",
+    "js-yaml": "^3.14.2",
     "jsdom": "^29.1.1",
     "marked": "^18.0.3",
     "typescript": "^5.4.0",
