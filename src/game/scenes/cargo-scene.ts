@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Scene } from '../../shared/types';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 import { getCommodity } from '../world/world-data';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
 

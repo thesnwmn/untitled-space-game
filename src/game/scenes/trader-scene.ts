@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer } from '../../shared/types';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 import type { TraderStockEntry } from '../world/types';
 import { getCommodity, getDestination } from '../world/world-data';
 import { writeText } from '../../shared/buffer-utils';

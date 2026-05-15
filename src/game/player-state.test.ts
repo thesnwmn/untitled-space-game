@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PlayerState } from './PlayerState';
+import { PlayerState } from './player-state';
 
 function makePlayer(overrides?: {
   shipId?: string;

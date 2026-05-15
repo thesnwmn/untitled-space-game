@@ -1,4 +1,4 @@
-import { PlayerState } from '../game/PlayerState';
+import { PlayerState } from '../game/player-state';
 
 export function makePlayer(overrides?: {
   shipId?: string;

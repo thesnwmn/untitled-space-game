@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext } from '../../shared/types';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 import { wrapText } from '../../shared/buffer-utils';
 import { getDestination } from '../world/world-data';
 import { FUEL_PRICE_PER_L } from '../constants';

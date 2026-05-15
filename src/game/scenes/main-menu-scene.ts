@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
 
 const TITLE_LINES = ['UNTITLED', 'SPACE GAME'];

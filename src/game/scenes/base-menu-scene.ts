@@ -2,7 +2,7 @@ import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../
 import { writeText } from '../../shared/buffer-utils';
 import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
 import type { NavOption, ChromeConfig } from '../ui/screen-chrome';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 
 export interface MenuItemDef {

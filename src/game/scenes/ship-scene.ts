@@ -6,7 +6,7 @@ import { Starfield } from './starfield';
 import { SpaceStation } from './space-station';
 import { STATION_TYPES, type SpaceStationDef } from './station-types';
 import { ScreenChrome } from '../ui/screen-chrome';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 
 // Center text in a fixed-width field; truncates if too long.
 function pad(text: string, width: number): string {

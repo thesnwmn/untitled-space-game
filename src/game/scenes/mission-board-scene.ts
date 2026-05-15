@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext } from '../../shared/types';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 import { getDestination } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 
