@@ -4,6 +4,14 @@ Completed items moved from BACKLOG.md to keep that file navigable.
 
 ---
 
+## CANCELLED
+
+### ~~016 · Hint Overlay~~ — CANCELLED
+
+Superseded by 028. Hint text is removed entirely. If hints return they will be part of `ScreenChrome` and togglable.
+
+---
+
 ## DONE
 
 ### 029 · Freighter as Starting Ship

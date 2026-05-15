@@ -1,12 +1,12 @@
 # Backlog
 
 Items are ordered by priority. The Engineer always takes the top READY item.
+Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## Statuses
 - READY — fully specified, dependencies met, ready to build
 - NEEDS SPEC — idea captured, Designer needs to flesh it out
 - IN PROGRESS — currently being built (should only ever be one of these)
-- DONE — built, verified, play-tested
 
 ---
 
@@ -83,12 +83,6 @@ See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
 
 ---
 
-### ~~016 · Hint Overlay~~ — CANCELLED
-
-Superseded by 028. Hint text is removed entirely. If hints return they will be part of `ScreenChrome` and togglable.
-
----
-
 ## NEEDS SPEC
 
 _(none)_
@@ -98,9 +92,3 @@ _(none)_
 ## IN PROGRESS
 
 _(none)_
-
----
-
-## DONE
-
-See [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md) for all completed items.
