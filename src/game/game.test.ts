@@ -2,6 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { Game } from './game';
 import type { Renderer, InputHandler, GameContext, CharBuffer } from '../shared/types';
 import type { TraderStockEntry } from './world/types';
+import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation-scene';
+import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
+import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
+import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animation-scene';
+import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
+import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 
 function makeMockRenderer(width = 40, height = 30): Renderer & { drawBuffer: ReturnType<typeof vi.fn> } {
   return {
@@ -152,5 +158,65 @@ describe('Game — onSell', () => {
     (game as any).onSell('rations', 1, stock);
     expect(player.credits).toBe(initialCredits);
     expect(stock).toHaveLength(0);
+  });
+});
+
+describe('Game — goToLandOrDock routing', () => {
+  function makeGame() {
+    return new Game(makeMockRenderer(), makeMockInput(), context);
+  }
+
+  it('surface destination plays SurfaceLandingAnimationScene', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.dock('ceti-landfall'); // surface destination in tau-ceti
+    (game as any).goToLandOrDock();
+    expect((game as any).currentScene).toBeInstanceOf(SurfaceLandingAnimationScene);
+  });
+
+  it('asteroid destination plays AsteroidLandingAnimationScene', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.dock('eridani-anchorage'); // asteroid destination in epsilon-eridani
+    (game as any).goToLandOrDock();
+    expect((game as any).currentScene).toBeInstanceOf(AsteroidLandingAnimationScene);
+  });
+
+  it('orbital destination plays OrbitalDockingAnimationScene', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.dock('elysium-station'); // orbital destination
+    (game as any).goToLandOrDock();
+    expect((game as any).currentScene).toBeInstanceOf(OrbitalDockingAnimationScene);
+  });
+});
+
+describe('Game — goToTakeOffOrUndock routing', () => {
+  function makeGame() {
+    return new Game(makeMockRenderer(), makeMockInput(), context);
+  }
+
+  it('surface destination plays SurfaceTakeOffAnimationScene', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.dock('ceti-landfall');
+    (game as any).goToTakeOffOrUndock();
+    expect((game as any).currentScene).toBeInstanceOf(SurfaceTakeOffAnimationScene);
+  });
+
+  it('asteroid destination plays AsteroidTakeOffAnimationScene', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.dock('eridani-anchorage');
+    (game as any).goToTakeOffOrUndock();
+    expect((game as any).currentScene).toBeInstanceOf(AsteroidTakeOffAnimationScene);
+  });
+
+  it('orbital destination plays OrbitalUndockingAnimationScene', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.dock('elysium-station');
+    (game as any).goToTakeOffOrUndock();
+    expect((game as any).currentScene).toBeInstanceOf(OrbitalUndockingAnimationScene);
   });
 });

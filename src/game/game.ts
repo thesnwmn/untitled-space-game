@@ -12,6 +12,8 @@ import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation
 import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
 import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
 import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animation-scene';
+import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
+import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
 import type { TraderStockEntry } from './world/types';
 import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity } from './world/world-data';
@@ -160,7 +162,7 @@ export class Game {
     } else if (locationType === 'asteroid') {
       this.currentScene = new AsteroidLandingAnimationScene(this.player, this.context, () => this.goToStation());
     } else {
-      this.goToStation();
+      this.currentScene = new OrbitalDockingAnimationScene(this.player, this.context, () => this.goToStation());
     }
   }
 
@@ -171,7 +173,7 @@ export class Game {
     } else if (locationType === 'asteroid') {
       this.currentScene = new AsteroidTakeOffAnimationScene(this.player, this.context, () => this.goToShip());
     } else {
-      this.goToShip();
+      this.currentScene = new OrbitalUndockingAnimationScene(this.player, this.context, () => this.goToShip());
     }
   }
 

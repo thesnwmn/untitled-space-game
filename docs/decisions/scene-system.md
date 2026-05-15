@@ -13,10 +13,10 @@ Individual menu scenes pass a title, items array, info lines, nav options, and p
 **Custom scenes** implement `Scene` directly (not via `BaseMenuScene`) when they require non-standard layout or behaviour that the base class cannot accommodate:
 - `TravelMenuScene` — two tabs (DESTINATIONS / JUMPS) with LEFT/RIGHT switching
 
-**Transition scenes** extend `BaseTransitionScene` (`src/game/scenes/base-transition-scene.ts`). The base class handles timing, chrome rendering, and buffer clearing; subclasses implement only `renderContent(buffer)`. All six animation scenes use this pattern:
+**Transition scenes** extend `BaseTransitionScene` (`src/game/scenes/base-transition-scene.ts`). The base class handles timing, chrome rendering, and buffer clearing; subclasses implement only `renderContent(buffer)`. All eight animation scenes use this pattern:
 - `JumpAnimationScene`, `InSystemTravelAnimationScene` — travel transitions
-- `SurfaceLandingAnimationScene`, `AsteroidLandingAnimationScene` — landing transitions (2 500 ms)
-- `SurfaceTakeOffAnimationScene`, `AsteroidTakeOffAnimationScene` — take-off transitions (1 500 ms)
+- `SurfaceLandingAnimationScene`, `AsteroidLandingAnimationScene`, `OrbitalDockingAnimationScene` — docking/landing transitions
+- `SurfaceTakeOffAnimationScene`, `AsteroidTakeOffAnimationScene`, `OrbitalUndockingAnimationScene` — take-off/undocking transitions
 
 Transition scenes accept no `InputHandler` and auto-advance once elapsed time reaches their duration. See `docs/decisions/travel-system.md` for durations, chrome overrides, and routing.
 

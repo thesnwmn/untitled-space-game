@@ -80,9 +80,11 @@ All animation scenes extend `BaseTransitionScene` (`src/game/scenes/base-transit
 | `InSystemTravelAnimationScene` | 2 000 ms | `onDestinationSelected` / `goToFlyIntoSpace` | `goToShip` → ShipScene | `destinationLabel: 'IN TRANSIT'` |
 | `SurfaceLandingAnimationScene` | 2 500 ms | `goToLandOrDock` (surface dest) | `goToStation` → StationMenuScene | none (default chrome) |
 | `AsteroidLandingAnimationScene` | 2 500 ms | `goToLandOrDock` (asteroid dest) | `goToStation` → StationMenuScene | none (default chrome) |
+| `OrbitalDockingAnimationScene` | 1 500 ms | `goToLandOrDock` (orbital/deep-space) | `goToStation` → StationMenuScene | none (default chrome) |
 | `SurfaceTakeOffAnimationScene` | 1 500 ms | `goToTakeOffOrUndock` (surface dest) | `goToShip` → ShipScene | none (default chrome) |
 | `AsteroidTakeOffAnimationScene` | 1 500 ms | `goToTakeOffOrUndock` (asteroid dest) | `goToShip` → ShipScene | none (default chrome) |
+| `OrbitalUndockingAnimationScene` | 1 500 ms | `goToTakeOffOrUndock` (orbital/deep-space) | `goToShip` → ShipScene | none (default chrome) |
 
 **Routing methods in `game.ts`:**
-- `goToLandOrDock()` — called from `goToShip`'s dock callback; checks `player.destinationId`'s `locationType` and plays the appropriate landing animation, or calls `goToStation()` directly for orbital/deep-space.
-- `goToTakeOffOrUndock()` — passed as the `onShip` callback to `StationMenuScene`; plays the appropriate take-off animation, or calls `goToShip()` directly for orbital/deep-space.
+- `goToLandOrDock()` — called from `goToShip`'s dock callback; checks `player.destinationId`'s `locationType` and plays the appropriate landing animation: `SurfaceLandingAnimationScene`, `AsteroidLandingAnimationScene`, or `OrbitalDockingAnimationScene`.
+- `goToTakeOffOrUndock()` — passed as the `onShip` callback to `StationMenuScene`; plays the appropriate take-off animation: `SurfaceTakeOffAnimationScene`, `AsteroidTakeOffAnimationScene`, or `OrbitalUndockingAnimationScene`.
