@@ -236,17 +236,59 @@ describe('StationMenuScene', () => {
       // destination with fuel=false is added to world-data.ts.
     });
 
-    it('selecting BUY FUEL calls onRefuel with correct cost', () => {
+    it('selecting BUY FUEL calls onRefuel with litres and cost', () => {
       const onRefuel = vi.fn();
       const input = new MockInputHandler();
-      // elysium-station: fuel=true, fuelL=80, cap=100 → cost = 20 * 10 = 200 CR
+      // elysium-station: fuel=true, fuelL=80, cap=100 → needs 20L → cost 200 CR
+      // credits=5000 → can afford all 20L
       const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), vi.fn(), 80, 100, 5000, onRefuel);
       // BUY FUEL is item at index 2 (TRADER=0, MISSION BOARD=1, BUY FUEL=2)
       input.triggerAction('DOWN');
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
       expect(onRefuel).toHaveBeenCalledTimes(1);
-      expect(onRefuel).toHaveBeenCalledWith(200);
+      expect(onRefuel).toHaveBeenCalledWith(20, 200);
+    });
+
+    it('BUY FUEL is capped to what the player can afford', () => {
+      const input = new MockInputHandler();
+      // fuelL=80, cap=100 → needs 20L but only 50 CR → can afford 5L
+      const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), vi.fn(), 80, 100, 50);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      let found = false;
+      for (let r = 0; r < buf.length; r++) {
+        const text = rowText(buf, r);
+        if (text.includes('BUY FUEL')) {
+          expect(text).toContain('+5L');
+          expect(text).toContain('50CR');
+          found = true;
+          break;
+        }
+      }
+      expect(found).toBe(true);
+    });
+
+    it('selecting affordability-capped BUY FUEL calls onRefuel with capped values', () => {
+      const onRefuel = vi.fn();
+      const input = new MockInputHandler();
+      // 50 CR → can afford 5L at 10 CR/L
+      const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), vi.fn(), 80, 100, 50, onRefuel);
+      input.triggerAction('DOWN');
+      input.triggerAction('DOWN');
+      input.triggerAction('SELECT');
+      expect(onRefuel).toHaveBeenCalledWith(5, 50);
+    });
+
+    it('BUY FUEL is absent when player cannot afford any fuel', () => {
+      const input = new MockInputHandler();
+      // 5 CR → floor(5/10) = 0L affordable → no BUY FUEL item
+      const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), vi.fn(), 80, 100, 5);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      for (let r = 0; r < buf.length; r++) {
+        expect(rowText(buf, r)).not.toContain('BUY FUEL');
+      }
     });
   });
 

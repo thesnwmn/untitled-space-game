@@ -2,7 +2,7 @@ import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpD
 
 export const WORLD: WorldData = {
   settings: {
-    player: { name: 'Captain', startingCredits: 100 },
+    player: { name: 'Captain', startingCredits: 5000 },
     startingLocation: { system: 'sol', destination: 'elysium-station' },
     startingShip: 'freighter',
   },

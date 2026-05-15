@@ -14,7 +14,7 @@ export class StationMenuScene extends BaseMenuScene {
     fuelL: number,
     fuelCapacityL: number,
     credits: number,
-    onRefuel: (cost: number) => void,
+    onRefuel: (litres: number, cost: number) => void,
     onTrader: () => void,
     onMissionBoard: () => void,
     onShip: () => void,
@@ -24,12 +24,14 @@ export class StationMenuScene extends BaseMenuScene {
     if (dest.amenities.trader) items.push({ label: 'TRADER', action: onTrader });
     if (dest.amenities.missionBoard) items.push({ label: 'MISSION BOARD', action: onMissionBoard });
 
-    const fuelNeeded = fuelCapacityL - fuelL;
-    const refuelCost = fuelNeeded * FUEL_PRICE_PER_L;
-    if (dest.amenities.fuel && fuelNeeded > 0) {
+    const fuelNeeded  = fuelCapacityL - fuelL;
+    const affordableL = Math.floor(credits / FUEL_PRICE_PER_L);
+    const purchaseL   = Math.min(fuelNeeded, affordableL);
+    if (dest.amenities.fuel && purchaseL > 0) {
+      const cost = purchaseL * FUEL_PRICE_PER_L;
       items.push({
-        label: `BUY FUEL  +${fuelNeeded}L  ${refuelCost}CR`,
-        action: () => onRefuel(refuelCost),
+        label: `BUY FUEL  +${purchaseL}L  ${cost}CR`,
+        action: () => onRefuel(purchaseL, cost),
       });
     }
 

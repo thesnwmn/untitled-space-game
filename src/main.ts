@@ -85,9 +85,9 @@ const goToStation = () => {
   currentScene = new StationMenuScene(
     input, context, currentDestinationId!,
     playerState.fuelL, playerState.fuelCapacityL, playerState.credits,
-    (refuelCost: number) => {
+    (litres: number, refuelCost: number) => {
       playerState.credits -= refuelCost;
-      playerState.fuelL    = playerState.fuelCapacityL;
+      playerState.fuelL    = Math.min(playerState.fuelCapacityL, playerState.fuelL + litres);
       goToStation();
     },
     goToTrader, goToMissionBoard, goToShip,
