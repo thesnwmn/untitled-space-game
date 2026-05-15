@@ -3,6 +3,10 @@ import { DOMRenderer } from './platform/dom/dom-renderer';
 import { DOMInputHandler } from './platform/dom/dom-input-handler';
 import type { GameContext } from './shared/types';
 import { Game } from './game/game';
+import { initWorld } from './game/world/world-data';
+import { loadWorldData } from './game/world/world-loader-browser';
+
+initWorld(loadWorldData());
 
 const primaryInput = navigator.maxTouchPoints > 0 ? 'touch' : 'keyboard';
 const debug = new URLSearchParams(window.location.search).has('debug');

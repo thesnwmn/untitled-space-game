@@ -14,6 +14,31 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 020 · World Data File Loader — DONE
+
+**Built:**
+- `src/game/world/world-parser.ts` — new; `parseWorldFiles(files)` maps `Record<string, string>` paths → `WorldData`; snake_case → camelCase field mapping; description extraction from first body paragraph; story beat text from full body; all entity types routed by path pattern; `_template.md` and `.gitkeep` skipped
+- `src/game/world/world-loader-browser.ts` — new; `loadWorldData()` using `import.meta.glob` with `as: 'raw'` and `eager: true`; path prefix stripped to normalise keys; calls `parseWorldFiles`
+- `src/game/world/world-loader-terminal.ts` — new; `loadWorldData()` using Node/Bun `fs` APIs; recursive directory walk; calls `parseWorldFiles`
+- `src/game/world/world-data.ts` — removed static `WORLD` object and all hardcoded data; added `initWorld(data)` / `getWorld()` pair; all getters now delegate to `getWorld()`
+- `src/main.ts` — calls `initWorld(loadWorldData())` before game construction
+- `terminal.ts` — calls `initWorld(loadWorldData())` before game construction
+- `src/tests/setup.ts` — calls `initWorld(loadWorldData())` so all Vitest tests have world data
+- `src/ambient-node.d.ts` — new; minimal ambient declarations for `fs`, `path`, `process`, `import.meta.glob`
+- `docs/world/game-settings.md` — corrected `starting_credits` to 5000
+- `src/game/scenes/story-scene.ts` — fixed pre-existing import path (`PlayerState` → `player-state`)
+- `src/game/world/world-parser.test.ts` — new; 14 unit tests for `parseWorldFiles` in isolation
+- `src/game/world/world-data.test.ts` — removed `WORLD` import; replaced all `WORLD.*` with `getWorld().*`
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 439 passed | 1 skipped (14 new parser tests)
+- `npm run build` (via init.sh): ✓ browser build OK, terminal entry OK
+
+**Play-test instructions:**
+- Browser: `npm run dev`, open the game. The opening story beat should display, and all systems/destinations should be navigable via the Travel menu. `getSystem('sol')` and `getDestination('elysium-station')` return correctly typed objects.
+- Terminal: `npm run terminal` — game starts with the same world data loaded from `docs/world/`.
+
 ### 032 · Modal Input Dialog — DONE
 
 **Built:**

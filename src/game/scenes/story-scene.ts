@@ -2,7 +2,7 @@ import type { InputHandler, CharBuffer, Scene, GameContext } from '../../shared/
 import { writeText, wrapText } from '../../shared/buffer-utils';
 import { getStoryBeatsByTrigger } from '../world/world-data';
 import { ScreenChrome } from '../ui/screen-chrome';
-import type { PlayerState } from '../PlayerState';
+import type { PlayerState } from '../player-state';
 
 const YEAR_ROW = 3;
 const BODY_START_ROW = 5;

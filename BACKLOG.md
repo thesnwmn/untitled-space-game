@@ -12,21 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 020 · World Data File Loader
-
-Replace the static `WORLD` object in `world-data.ts` with a loader that parses
-`docs/world/**/*.md` via `gray-matter`. Browser build uses Vite `import.meta.glob`
-(bundled at compile time); terminal build uses Bun fs reads. A shared
-`world-parser.ts` maps snake_case front matter to camelCase TypeScript types and
-extracts `description` from markdown body text. Both paths call `initWorld()` in
-their respective entry points; `src/tests/setup.ts` is updated so all Vitest tests
-have world data initialised automatically.
-See `docs/features/020-world-file-loader.md` for the full spec.
-
-**Depends on:** 018, 019
-
----
-
 ### 025 · Randomise Station Star Patterns
 
 Each visit to a destination generates a new random `Starfield` seed, producing a

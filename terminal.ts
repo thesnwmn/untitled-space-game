@@ -2,6 +2,10 @@ import { TerminalRenderer } from './src/platform/terminal/terminal-renderer';
 import { TerminalInputHandler } from './src/platform/terminal/terminal-input-handler';
 import type { GameContext } from './src/shared/types';
 import { Game } from './src/game/game';
+import { initWorld } from './src/game/world/world-data';
+import { loadWorldData } from './src/game/world/world-loader-terminal';
+
+initWorld(loadWorldData());
 
 const context: GameContext = { environment: 'terminal', primaryInput: 'keyboard', debug: false };
 
