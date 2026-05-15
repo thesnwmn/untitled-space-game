@@ -24,6 +24,16 @@ See `docs/features/033-centralise-player-state.md` for the full spec.
 
 ---
 
+### 034 · Shared Game Orchestrator
+
+Extract all game navigation logic into a shared `Game` class in `src/game/game.ts`,
+reducing `src/main.ts` and `terminal.ts` to platform setup and a game loop only.
+See `docs/features/034-shared-game-orchestrator.md` for the full spec.
+
+**Depends on:** 033
+
+---
+
 ### 031 · Cargo Trading
 
 Introduce a persistent cargo hold, live trading (buy/sell) at any trader, and a
