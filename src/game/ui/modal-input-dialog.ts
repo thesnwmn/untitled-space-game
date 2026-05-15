@@ -6,7 +6,6 @@ export interface NumberFieldDef {
   initialValue: number;
   min: number;
   max: number;
-  step: number;
 }
 
 export interface DerivedRowDef {
@@ -46,40 +45,22 @@ export class ModalInputDialog {
   handleAction(action: GameAction): void {
     const { field } = this.formDef;
 
-    if (action === 'BACK') {
-      this.formDef.onCancel();
+    if (action === 'BACK') { this.formDef.onCancel(); return; }
+    if (action === 'UP')    { this.value = Math.min(field.max, this.value + 1);  return; }
+    if (action === 'DOWN')  { this.value = Math.max(field.min, this.value - 1);  return; }
+    if (action === 'RIGHT') { this.value = Math.min(field.max, this.value + 10); return; }
+    if (action === 'LEFT')  { this.value = Math.max(field.min, this.value - 10); return; }
+
+    if (action === 'TAB') {
+      if (this.focus === 'field') this.focus = 'confirm';
+      else if (this.focus === 'confirm') this.focus = 'cancel';
+      else this.focus = 'field';
       return;
     }
 
-    if (this.focus === 'field') {
-      if (action === 'UP') {
-        this.value = Math.min(field.max, this.value + field.step);
-      } else if (action === 'DOWN') {
-        this.value = Math.max(field.min, this.value - field.step);
-      } else if (action === 'SELECT') {
-        this.formDef.onConfirm(this.value);
-      } else if (action === 'TAB' || action === 'RIGHT') {
-        this.focus = 'confirm';
-      }
-    } else if (this.focus === 'confirm') {
-      if (action === 'SELECT') {
-        this.formDef.onConfirm(this.value);
-      } else if (action === 'TAB' || action === 'RIGHT') {
-        this.focus = 'cancel';
-      } else if (action === 'LEFT' || action === 'UP') {
-        this.focus = 'field';
-      }
-    } else {
-      // cancel focused
-      if (action === 'SELECT') {
-        this.formDef.onCancel();
-      } else if (action === 'TAB') {
-        this.focus = 'field';
-      } else if (action === 'LEFT') {
-        this.focus = 'confirm';
-      } else if (action === 'UP') {
-        this.focus = 'field';
-      }
+    if (action === 'SELECT') {
+      if (this.focus === 'cancel') this.formDef.onCancel();
+      else this.formDef.onConfirm(this.value);
     }
   }
 

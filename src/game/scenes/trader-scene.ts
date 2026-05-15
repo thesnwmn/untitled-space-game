@@ -71,7 +71,7 @@ export class TraderScene extends BaseMenuScene {
           const initial = Math.min(entry.qty, maxAffordable);
           this.openModal(new ModalInputDialog({
             title: commodity.name.toUpperCase(),
-            field: { label: 'Quantity', initialValue: initial, min: 0, max: initial, step: 1 },
+            field: { label: 'Quantity', initialValue: initial, min: 0, max: initial },
             derivedRows: [{ label: 'Total', compute: qty => `${qty * commodity.basePrice} CR` }],
             confirmLabel: 'BUY',
             onConfirm: (qty) => {
@@ -102,7 +102,7 @@ export class TraderScene extends BaseMenuScene {
         action: () => {
           this.openModal(new ModalInputDialog({
             title: commodity.name.toUpperCase(),
-            field: { label: 'Quantity', initialValue: entry.qty, min: 0, max: entry.qty, step: 1 },
+            field: { label: 'Quantity', initialValue: entry.qty, min: 0, max: entry.qty },
             derivedRows: [{ label: 'Total', compute: qty => `${qty * commodity.basePrice} CR` }],
             confirmLabel: 'SELL',
             onConfirm: (qty) => {

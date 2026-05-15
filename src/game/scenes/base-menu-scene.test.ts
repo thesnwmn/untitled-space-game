@@ -273,7 +273,7 @@ describe('BaseMenuScene', () => {
       const onCancel = vi.fn();
       const modal = new ModalInputDialog({
         title: 'TEST',
-        field: { label: 'Val', initialValue: 5, min: 0, max: 10, step: 1 },
+        field: { label: 'Val', initialValue: 5, min: 0, max: 10 },
         derivedRows: [],
         confirmLabel: 'OK',
         onConfirm,

@@ -71,7 +71,7 @@ export class StationMenuScene extends BaseMenuScene {
       const max = Math.min(fuelNeeded, affordableL);
       this.openModal(new ModalInputDialog({
         title: 'BUY FUEL',
-        field: { label: 'Litres', initialValue: max, min: 0, max, step: 10 },
+        field: { label: 'Litres', initialValue: max, min: 0, max },
         derivedRows: [{ label: 'Cost', compute: l => `${l * FUEL_PRICE_PER_L} CR` }],
         confirmLabel: 'BUY',
         onConfirm: (litres) => {
