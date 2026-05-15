@@ -3,6 +3,7 @@ import { writeText } from '../../shared/buffer-utils';
 import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
 import type { NavOption, ChromeConfig } from '../ui/screen-chrome';
 import type { PlayerState } from '../PlayerState';
+import { ModalInputDialog } from '../ui/modal-input-dialog';
 
 export interface MenuItemDef {
   label: string;
@@ -47,6 +48,7 @@ export abstract class BaseMenuScene implements Scene {
   private pageIndex = 0;
   private lastPageCount = 1;
   protected activated = false;
+  protected modal: ModalInputDialog | null = null;
 
   constructor(
     title: string,
@@ -70,7 +72,17 @@ export abstract class BaseMenuScene implements Scene {
       ? CONTENT_TOP + 5          // tab bar at CONTENT_TOP+3, blank at +4, items at +5
       : CONTENT_TOP + 3 + infoLines.length;
 
+    if (inputHandler.onCharInput) {
+      inputHandler.onCharInput((char) => {
+        if (this.modal !== null) this.modal.handleCharInput(char);
+      });
+    }
+
     inputHandler.onAction((action) => {
+      if (this.modal !== null) {
+        this.modal.handleAction(action);
+        return;
+      }
       if (this.activated) return;
       if (action === 'UP') {
         this.moveCursor(-1);
@@ -99,6 +111,10 @@ export abstract class BaseMenuScene implements Scene {
 
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
+        if (this.modal !== null) {
+          this.modal.handleTap(col, row);
+          return;
+        }
         if (this.activated) return;
         const navId = this.chrome.hitTestNav(col, row);
         if (navId !== null) {
@@ -182,6 +198,14 @@ export abstract class BaseMenuScene implements Scene {
 
   protected handleNavAction(_action: string): void {}
   protected handleNavTap(_navId: string): void {}
+
+  protected openModal(modal: ModalInputDialog): void {
+    this.modal = modal;
+  }
+
+  protected closeModal(): void {
+    this.modal = null;
+  }
 
   protected buildChromeConfig(): ChromeConfig {
     return { showHeader: true, showFooter: true, navOptions: this.navOptions };
@@ -310,6 +334,10 @@ export abstract class BaseMenuScene implements Scene {
       const centerCol = Math.floor((w - pageStr.length) / 2);
       writeText(buffer, pagerRow, centerCol, pageStr, 'bright-black', 'black');
       writeText(buffer, pagerRow, w - 3, '|>|', 'white', 'black');
+    }
+
+    if (this.modal !== null) {
+      this.modal.render(buffer);
     }
   }
 }

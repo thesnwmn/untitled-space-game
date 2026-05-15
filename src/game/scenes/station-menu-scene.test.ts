@@ -8,6 +8,7 @@ import { makePlayer } from '../../tests/makePlayer';
 class MockInputHandler implements InputHandler {
   private actionHandlers: Array<(action: GameAction) => void> = [];
   private tapHandlers: Array<(col: number, row: number) => void> = [];
+  private charInputHandlers: Array<(char: string) => void> = [];
 
   onAction(handler: (action: GameAction) => void): void {
     this.actionHandlers.push(handler);
@@ -17,12 +18,20 @@ class MockInputHandler implements InputHandler {
     this.tapHandlers.push(handler);
   }
 
+  onCharInput(handler: (char: string) => void): void {
+    this.charInputHandlers.push(handler);
+  }
+
   triggerAction(action: GameAction): void {
     for (const h of this.actionHandlers) h(action);
   }
 
   triggerTap(col: number, row: number): void {
     for (const h of this.tapHandlers) h(col, row);
+  }
+
+  triggerCharInput(char: string): void {
+    for (const h of this.charInputHandlers) h(char);
   }
 }
 
@@ -67,7 +76,7 @@ function makeScene(
   fuelL = 100,
   fuelCapacityL = 100,
   credits = 5000,
-  onRefuel = vi.fn(),
+  onRefuel: (cost: number, litres: number) => void = vi.fn(),
 ): StationMenuScene {
   const player = makePlayer({ credits });
   // Consume fuel to reach the desired fuelL (player starts at full capacity 100)
@@ -237,18 +246,20 @@ describe('StationMenuScene', () => {
       // destination with fuel=false is added to world-data.ts.
     });
 
-    it('selecting BUY FUEL calls onRefuel with litres and cost', () => {
+    it('BUY FUEL opens modal; confirm calls onRefuel with cost and litres', () => {
       const onRefuel = vi.fn();
       const input = new MockInputHandler();
       // elysium-station: fuel=true, fuelL=80, cap=100 → needs 20L → cost 200 CR
-      // credits=5000 → can afford all 20L
+      // credits=5000 → can afford all 20L → initial=20L
       const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), vi.fn(), 80, 100, 5000, onRefuel);
       // BUY FUEL is item at index 2 (TRADER=0, MISSION BOARD=1, BUY FUEL=2)
       input.triggerAction('DOWN');
       input.triggerAction('DOWN');
-      input.triggerAction('SELECT');
+      input.triggerAction('SELECT'); // opens modal — onRefuel NOT called yet
+      expect(onRefuel).not.toHaveBeenCalled();
+      input.triggerAction('SELECT'); // confirm modal (field focused, initial=20L)
       expect(onRefuel).toHaveBeenCalledTimes(1);
-      expect(onRefuel).toHaveBeenCalledWith(20, 200);
+      expect(onRefuel).toHaveBeenCalledWith(200, 20); // cost=200, litres=20
     });
 
     it('BUY FUEL is capped to what the player can afford', () => {
@@ -270,15 +281,16 @@ describe('StationMenuScene', () => {
       expect(found).toBe(true);
     });
 
-    it('selecting affordability-capped BUY FUEL calls onRefuel with capped values', () => {
+    it('affordability-capped BUY FUEL modal: confirm calls onRefuel with capped values', () => {
       const onRefuel = vi.fn();
       const input = new MockInputHandler();
-      // 50 CR → can afford 5L at 10 CR/L
+      // 50 CR → can afford 5L at 10 CR/L → initial=5L, cost=50CR
       const scene = makeScene(input, keyboardContext, vi.fn(), vi.fn(), vi.fn(), 80, 100, 50, onRefuel);
       input.triggerAction('DOWN');
       input.triggerAction('DOWN');
-      input.triggerAction('SELECT');
-      expect(onRefuel).toHaveBeenCalledWith(5, 50);
+      input.triggerAction('SELECT'); // opens modal
+      input.triggerAction('SELECT'); // confirm (initial=5L)
+      expect(onRefuel).toHaveBeenCalledWith(50, 5); // cost=50, litres=5
     });
 
     it('BUY FUEL is absent when player cannot afford any fuel', () => {

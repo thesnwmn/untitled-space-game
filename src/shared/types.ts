@@ -28,6 +28,7 @@ export interface Renderer {
 export interface InputHandler {
   onAction(handler: (action: GameAction) => void): void;
   onTap?(handler: (col: number, row: number) => void): void;
+  onCharInput?(handler: (char: string) => void): void;
 }
 
 export interface Scene {
@@ -37,7 +38,7 @@ export interface Scene {
 
 export type GameAction =
   | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
-  | 'SELECT' | 'BACK' | 'PAUSE' | 'CARGO'
+  | 'SELECT' | 'BACK' | 'PAUSE' | 'CARGO' | 'TAB'
   | 'PAGE_UP' | 'PAGE_DOWN'
   | 'NAV_1' | 'NAV_2' | 'NAV_3' | 'NAV_4' | 'NAV_5'
   | 'NAV_6' | 'NAV_7' | 'NAV_8' | 'NAV_9';

@@ -89,10 +89,53 @@ describe('DOMInputHandler', () => {
     h.connect();
     fireKey('a');
     fireKey(' ');
-    fireKey('Tab');
     h.disconnect();
 
     expect(received).toEqual([]);
+  });
+
+  it('Tab fires TAB action', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
+    const received: GameAction[] = [];
+    h.onAction((a) => received.push(a));
+    h.connect();
+    fireKey('Tab');
+    h.disconnect();
+    expect(received).toEqual(['TAB']);
+  });
+
+  it('digit key fires both its NAV action and onCharInput', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
+    const actions: GameAction[] = [];
+    const chars: string[] = [];
+    h.onAction((a) => actions.push(a));
+    h.onCharInput((c) => chars.push(c));
+    h.connect();
+    fireKey('3');
+    h.disconnect();
+    expect(actions).toEqual(['NAV_3']);
+    expect(chars).toEqual(['3']);
+  });
+
+  it('Backspace fires onCharInput with backspace and no action', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
+    const actions: GameAction[] = [];
+    const chars: string[] = [];
+    h.onAction((a) => actions.push(a));
+    h.onCharInput((c) => chars.push(c));
+    h.connect();
+    fireKey('Backspace');
+    h.disconnect();
+    expect(actions).toEqual([]);
+    expect(chars).toEqual(['\b']);
+  });
+
+  it('no error when onCharInput not registered and digit pressed', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
+    h.onAction(() => {});
+    h.connect();
+    expect(() => fireKey('5')).not.toThrow();
+    h.disconnect();
   });
 });
 

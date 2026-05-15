@@ -85,44 +85,47 @@ export class Game {
     return entries;
   }
 
-  private onBuy(commodityId: string, traderStock: TraderStockEntry[]): void {
+  private onBuy(commodityId: string, qty: number, traderStock: TraderStockEntry[]): void {
+    if (qty <= 0) return;
     const stockIdx = traderStock.findIndex(e => e.commodityId === commodityId);
     if (stockIdx < 0) return;
 
     const entry = traderStock[stockIdx];
+    if (qty > entry.qty) return;
+
     const commodity = getCommodity(commodityId);
     if (!commodity) return;
 
-    const totalCost = entry.qty * commodity.basePrice;
+    const totalCost = qty * commodity.basePrice;
     if (this.player.credits < totalCost) return;
 
-    const newWeight = this.player.cargoWeightKg + entry.qty * commodity.weightKg;
+    const newWeight = this.player.cargoWeightKg + qty * commodity.weightKg;
     if (newWeight > this.player.cargoCapacity) return;
 
     this.player.spendCredits(totalCost);
-    this.player.addCargo(commodityId, entry.qty);
-    traderStock.splice(stockIdx, 1);
+    this.player.addCargo(commodityId, qty);
+    entry.qty -= qty;
+    if (entry.qty <= 0) traderStock.splice(stockIdx, 1);
   }
 
-  private onSell(commodityId: string, traderStock: TraderStockEntry[]): void {
+  private onSell(commodityId: string, qty: number, traderStock: TraderStockEntry[]): void {
+    if (qty <= 0) return;
     const heldEntry = this.player.cargoHold.find(e => e.commodityId === commodityId);
-    if (!heldEntry) return;
+    if (!heldEntry || heldEntry.qty < qty) return;
 
     const commodity = getCommodity(commodityId);
     if (!commodity) return;
 
-    const totalValue = heldEntry.qty * commodity.basePrice;
-    const soldQty = heldEntry.qty;
-
+    const totalValue = qty * commodity.basePrice;
     this.player.addCredits(totalValue);
-    this.player.removeCargo(commodityId);
+    this.player.removeCargo(commodityId, qty);
 
     // Merge back into trader stock
     const existing = traderStock.find(e => e.commodityId === commodityId);
     if (existing) {
-      existing.qty += soldQty;
+      existing.qty += qty;
     } else {
-      traderStock.push({ commodityId, qty: soldQty });
+      traderStock.push({ commodityId, qty });
     }
   }
 
@@ -137,8 +140,8 @@ export class Game {
   private goToStation(): void {
     this.currentScene = new StationMenuScene(
       this.input, this.context, this.player, this.player.destinationId!,
-      (litres: number, refuelCost: number) => {
-        this.player.spendCredits(refuelCost);
+      (cost: number, litres: number) => {
+        this.player.spendCredits(cost);
         this.player.addFuel(litres);
         this.goToStation();
       },
@@ -151,8 +154,8 @@ export class Game {
     const stock = this.getOrCreateTraderStock(destinationId);
     this.currentScene = new TraderScene(
       this.input, this.context, this.player, destinationId, stock,
-      (commodityId) => this.onBuy(commodityId, stock),
-      (commodityId) => this.onSell(commodityId, stock),
+      (commodityId, qty) => this.onBuy(commodityId, qty, stock),
+      (commodityId, qty) => this.onSell(commodityId, qty, stock),
       () => this.goToStation(), () => this.goToShip(),
     );
   }

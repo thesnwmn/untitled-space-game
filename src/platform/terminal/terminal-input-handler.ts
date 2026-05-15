@@ -19,6 +19,7 @@ const KEY_MAP: Array<[string, GameAction]> = [
   ['\r', 'SELECT'],
   ['\n', 'SELECT'],
   ['\x1b', 'BACK'],
+  ['\t', 'TAB'],
   ['p', 'PAUSE'],
   ['P', 'PAUSE'],
   ['c', 'CARGO'],
@@ -34,11 +35,14 @@ const KEY_MAP: Array<[string, GameAction]> = [
   ['9', 'NAV_9'],
 ];
 
+const DIGIT_KEYS = new Set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+
 const EXIT_KEYS = new Set(['\x03', 'q', 'Q']);
 
 export class TerminalInputHandler implements InputHandler {
   private readonly stdin: StdinLike;
   private handlers: Array<(action: GameAction) => void> = [];
+  private charInputHandlers: Array<(char: string) => void> = [];
   private dataHandler: ((chunk: { toString(): string }) => void) | null = null;
 
   constructor(stdin: StdinLike = process.stdin) {
@@ -49,6 +53,10 @@ export class TerminalInputHandler implements InputHandler {
     this.handlers.push(handler);
   }
 
+  onCharInput(handler: (char: string) => void): void {
+    this.charInputHandlers.push(handler);
+  }
+
   connect(): void {
     this.dataHandler = (chunk) => {
       const key = chunk.toString();
@@ -56,6 +64,18 @@ export class TerminalInputHandler implements InputHandler {
         process.exit(0);
         return;
       }
+
+      // Backspace (DEL): fire charInput only
+      if (key === '\x7f') {
+        for (const h of this.charInputHandlers) h('\b');
+        return;
+      }
+
+      // Digit keys: fire charInput then fall through to KEY_MAP
+      if (DIGIT_KEYS.has(key)) {
+        for (const h of this.charInputHandlers) h(key);
+      }
+
       for (const [seq, action] of KEY_MAP) {
         if (key === seq) {
           for (const h of this.handlers) h(action);

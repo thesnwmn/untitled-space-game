@@ -4,16 +4,19 @@ import { wrapText } from '../../shared/buffer-utils';
 import { getDestination } from '../world/world-data';
 import { FUEL_PRICE_PER_L } from '../constants';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
+import { ModalInputDialog } from '../ui/modal-input-dialog';
 
 export class StationMenuScene extends BaseMenuScene {
   private readonly onShip: () => void;
+  private readonly onRefuel: (cost: number, litres: number) => void;
+  private readonly fuelItemIdx: number | null;
 
   constructor(
     inputHandler: InputHandler,
     context: GameContext,
     player: PlayerState,
     destinationId: string,
-    onRefuel: (litres: number, cost: number) => void,
+    onRefuel: (cost: number, litres: number) => void,
     onTrader: () => void,
     onMissionBoard: () => void,
     onShip: () => void,
@@ -26,11 +29,13 @@ export class StationMenuScene extends BaseMenuScene {
     const fuelNeeded  = player.fuelCapacityL - player.fuelL;
     const affordableL = Math.floor(player.credits / FUEL_PRICE_PER_L);
     const purchaseL   = Math.min(fuelNeeded, affordableL);
+    let fuelIdx: number | null = null;
     if (dest.amenities.fuel && purchaseL > 0) {
       const cost = purchaseL * FUEL_PRICE_PER_L;
+      fuelIdx = items.length;
       items.push({
         label: `BUY FUEL  +${purchaseL}L  ${cost}CR`,
-        action: () => onRefuel(purchaseL, cost),
+        action: () => {}, // overridden by activateCurrent
       });
     }
 
@@ -49,6 +54,40 @@ export class StationMenuScene extends BaseMenuScene {
     );
 
     this.onShip = onShip;
+    this.onRefuel = onRefuel;
+    this.fuelItemIdx = fuelIdx;
+  }
+
+  protected override activateCurrent(): void {
+    const items = this.items;
+    if (items.length === 0 || this.cursorIdx === -1) return;
+    const item = items[this.cursorIdx];
+    if (item.disabled) return;
+
+    if (this.fuelItemIdx !== null && this.cursorIdx === this.fuelItemIdx) {
+      this.activated = true;
+      const fuelNeeded = this.player.fuelCapacityL - this.player.fuelL;
+      const affordableL = Math.floor(this.player.credits / FUEL_PRICE_PER_L);
+      const max = Math.min(fuelNeeded, affordableL);
+      this.openModal(new ModalInputDialog({
+        title: 'BUY FUEL',
+        field: { label: 'Litres', initialValue: max, min: 0, max, step: 10 },
+        derivedRows: [{ label: 'Cost', compute: l => `${l * FUEL_PRICE_PER_L} CR` }],
+        confirmLabel: 'BUY',
+        onConfirm: (litres) => {
+          this.closeModal();
+          if (litres > 0) this.onRefuel(litres * FUEL_PRICE_PER_L, litres);
+        },
+        onCancel: () => {
+          this.closeModal();
+          this.activated = false;
+        },
+      }));
+      return;
+    }
+
+    this.activated = true;
+    item.action();
   }
 
   protected override handleNavAction(action: string): void {

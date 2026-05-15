@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
+import { ModalInputDialog } from '../ui/modal-input-dialog';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 import { makePlayer } from '../../tests/makePlayer';
 
@@ -8,6 +9,7 @@ import { makePlayer } from '../../tests/makePlayer';
 class MockInputHandler implements InputHandler {
   private actionHandlers: Array<(action: GameAction) => void> = [];
   private tapHandlers: Array<(col: number, row: number) => void> = [];
+  private charInputHandlers: Array<(char: string) => void> = [];
 
   onAction(handler: (action: GameAction) => void): void {
     this.actionHandlers.push(handler);
@@ -17,12 +19,20 @@ class MockInputHandler implements InputHandler {
     this.tapHandlers.push(handler);
   }
 
+  onCharInput(handler: (char: string) => void): void {
+    this.charInputHandlers.push(handler);
+  }
+
   triggerAction(action: GameAction): void {
     for (const h of this.actionHandlers) h(action);
   }
 
   triggerTap(col: number, row: number): void {
     for (const h of this.tapHandlers) h(col, row);
+  }
+
+  triggerCharInput(char: string): void {
+    for (const h of this.charInputHandlers) h(char);
   }
 }
 
@@ -40,11 +50,16 @@ const ctx: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
 };
 
-// Concrete subclass — no nav overrides needed for these tests
+// Concrete subclass — no nav overrides needed for most tests
 class TestMenuScene extends BaseMenuScene {
   constructor(items: MenuItemDef[], input: MockInputHandler, infoLines: string[] = []) {
     super('TEST MENU', items, [], input, ctx, makePlayer(), infoLines);
   }
+
+  // Expose for modal routing tests
+  openTestModal(modal: ModalInputDialog): void { this.openModal(modal); }
+  closeTestModal(): void { this.closeModal(); }
+  isActivated(): boolean { return this.activated; }
 }
 
 // itemStartRow = CONTENT_TOP(3) + 3 = 6 (when no infoLines)
@@ -249,6 +264,102 @@ describe('BaseMenuScene', () => {
       expect(rowText(buf, 6)).toContain('Line two');
       // item start row = CONTENT_TOP + 3 + infoLines.length = 3 + 3 + 2 = 8
       expect(rowText(buf, 8)).toContain('> ITEM');
+    });
+  });
+
+  describe('modal routing', () => {
+    function makeModalWithSpies() {
+      const onConfirm = vi.fn();
+      const onCancel = vi.fn();
+      const modal = new ModalInputDialog({
+        title: 'TEST',
+        field: { label: 'Val', initialValue: 5, min: 0, max: 10, step: 1 },
+        derivedRows: [],
+        confirmLabel: 'OK',
+        onConfirm,
+        onCancel,
+      });
+      return { modal, onConfirm, onCancel };
+    }
+
+    it('while modal open, onAction routes to modal not parent cursor', () => {
+      const itemAction = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene(
+        [{ label: 'ALPHA', action: itemAction }, { label: 'BETA', action: vi.fn() }],
+        input,
+      );
+      const { modal } = makeModalWithSpies();
+      scene.openTestModal(modal);
+
+      // UP would normally move cursor; with modal open it should route to modal (UP = increment)
+      // Buffer: after UP on modal field, value goes 5→6
+      input.triggerAction('UP');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Cursor on parent should still be at item 0 (ALPHA has '>')
+      expect(rowText(buf, ITEM_ROW_START)).toContain('> ALPHA');
+    });
+
+    it('while modal open, onAction does not reach parent SELECT', () => {
+      const itemAction = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: itemAction }], input);
+      const { modal } = makeModalWithSpies();
+      scene.openTestModal(modal);
+
+      input.triggerAction('SELECT'); // goes to modal.onConfirm, not parent itemAction
+      expect(itemAction).not.toHaveBeenCalled();
+    });
+
+    it('while modal open, onTap routes to modal not parent items', () => {
+      const itemAction = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: itemAction }], input);
+      const { modal } = makeModalWithSpies();
+      scene.openTestModal(modal);
+
+      // Tap on item row — should NOT fire itemAction
+      input.triggerTap(10, ITEM_ROW_START);
+      expect(itemAction).not.toHaveBeenCalled();
+    });
+
+    it('while modal open, onCharInput routes to modal field', () => {
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: vi.fn() }], input);
+      const { modal, onConfirm } = makeModalWithSpies();
+      scene.openTestModal(modal);
+
+      // Type '3' then SELECT to confirm; onConfirm should get 3 (replaced initial 5)
+      input.triggerCharInput('3');
+      input.triggerAction('SELECT');
+      expect(onConfirm).toHaveBeenCalledWith(3);
+    });
+
+    it('after closeModal, actions route to parent', () => {
+      const itemAction = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: itemAction }], input);
+      const { modal } = makeModalWithSpies();
+      scene.openTestModal(modal);
+      scene.closeTestModal();
+
+      input.triggerAction('SELECT'); // now routes to parent
+      expect(itemAction).toHaveBeenCalledOnce();
+    });
+
+    it('modal renders on top of scene buffer', () => {
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: vi.fn() }], input);
+      const { modal } = makeModalWithSpies();
+      scene.openTestModal(modal);
+
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Modal border should be present: '+' at dialog top-left
+      // dialogH=8, dialogCol=5, dialogRow=floor((30-8)/2)=11
+      const dRow = Math.floor((30 - 8) / 2);
+      expect(buf[dRow][5].char).toBe('+');
     });
   });
 });

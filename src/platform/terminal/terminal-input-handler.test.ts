@@ -110,8 +110,37 @@ describe('TerminalInputHandler', () => {
     handler.connect();
     stdin.emit('a');
     stdin.emit(' ');
-    stdin.emit('\t');
     expect(received).toEqual([]);
+  });
+
+  it('tab fires TAB action', () => {
+    const received: GameAction[] = [];
+    handler.onAction(a => received.push(a));
+    handler.connect();
+    stdin.emit('\t');
+    expect(received).toEqual(['TAB']);
+  });
+
+  it('digit fires both its NAV action and onCharInput', () => {
+    const actions: GameAction[] = [];
+    const chars: string[] = [];
+    handler.onAction(a => actions.push(a));
+    handler.onCharInput(c => chars.push(c));
+    handler.connect();
+    stdin.emit('3');
+    expect(actions).toEqual(['NAV_3']);
+    expect(chars).toEqual(['3']);
+  });
+
+  it('DEL (0x7f) fires onCharInput with backspace and no action', () => {
+    const actions: GameAction[] = [];
+    const chars: string[] = [];
+    handler.onAction(a => actions.push(a));
+    handler.onCharInput(c => chars.push(c));
+    handler.connect();
+    stdin.emit('\x7f');
+    expect(actions).toEqual([]);
+    expect(chars).toEqual(['\b']);
   });
 
   it('q triggers process.exit(0)', () => {
