@@ -1,52 +1,40 @@
-import type { CharBuffer, Scene } from '../../shared/types';
+import type { CharBuffer, GameContext } from '../../shared/types';
 import { writeCentered } from '../../shared/buffer-utils';
+import { getDestination } from '../world/world-data';
+import type { PlayerState } from '../player-state';
+import { BaseTransitionScene } from './base-transition-scene';
+import type { ChromeConfig } from '../ui/screen-chrome';
 
 const TRAVEL_DURATION = 2000;
 const ELLIPSIS_FRAMES = ['[ —   ]', '[  —  ]', '[   — ]'];
 
-export class InSystemTravelAnimationScene implements Scene {
-  private readonly destinationName: string;
-  private readonly onArrival: () => void;
-  private elapsed = 0;
-  private arrived = false;
+export class InSystemTravelAnimationScene extends BaseTransitionScene {
+  private readonly targetLabel: string | undefined;
 
-  private readonly footerText: string | null;
-
-  constructor(destinationName: string, onArrival: () => void, footerText?: string) {
-    this.destinationName = destinationName.toUpperCase();
-    this.onArrival = onArrival;
-    this.footerText = footerText ?? null;
+  constructor(player: PlayerState, context: GameContext, onArrival: () => void, targetLabel?: string) {
+    super(player, context, TRAVEL_DURATION, onArrival);
+    this.targetLabel = targetLabel;
   }
 
-  update(dt: number): void {
-    if (this.arrived) return;
-    this.elapsed += dt;
-    if (this.elapsed >= TRAVEL_DURATION) {
-      this.arrived = true;
-      this.onArrival();
-    }
+  protected override getChromeConfig(): ChromeConfig {
+    return { showHeader: true, showFooter: true, navOptions: [], destinationLabel: 'IN TRANSIT' };
   }
 
-  render(buffer: CharBuffer): void {
+  protected override renderContent(buffer: CharBuffer): void {
     const h = buffer.length;
-    const w = h > 0 ? buffer[0].length : 0;
-
-    for (let r = 0; r < h; r++) {
-      for (let c = 0; c < w; c++) {
-        buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-      }
-    }
-
     const mid = Math.floor(h / 2);
     const frameIdx = Math.floor(this.elapsed / 300) % 3;
     const remaining = Math.ceil((TRAVEL_DURATION - this.elapsed) / 1000);
     const countdown = Math.max(1, Math.min(2, remaining));
 
+    const destName = this.targetLabel !== undefined
+      ? this.targetLabel.toUpperCase()
+      : (() => { const d = this.player.destinationId ? getDestination(this.player.destinationId) : null; return d ? d.name.toUpperCase() : 'UNKNOWN'; })();
+
     writeCentered(buffer, mid - 3, '[ THRUSTERS ENGAGED ]', 'bright-yellow', 'black');
     writeCentered(buffer, mid - 1, 'HEADING TO:', 'bright-black', 'black');
-    writeCentered(buffer, mid, this.destinationName, 'bright-white', 'black');
+    writeCentered(buffer, mid, destName, 'bright-white', 'black');
     writeCentered(buffer, mid + 2, ELLIPSIS_FRAMES[frameIdx], 'bright-black', 'black');
-    const footer = this.footerText ?? `ARRIVING IN ${countdown}S`;
-    writeCentered(buffer, mid + 4, footer, 'bright-black', 'black');
+    writeCentered(buffer, mid + 4, `ARRIVING IN ${countdown}S`, 'bright-black', 'black');
   }
 }

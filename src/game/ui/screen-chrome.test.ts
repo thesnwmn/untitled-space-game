@@ -168,4 +168,59 @@ describe('ScreenChrome', () => {
     // col out of any button range
     expect(chrome.hitTestNav(39, 29)).toBeNull();
   });
+
+  describe('systemLabel override', () => {
+    it('renders the override string in row 0 when systemLabel is a string', () => {
+      const chrome = new ScreenChrome(baseContext, makePlayer());
+      const buf = makeBuffer(40, 30);
+      chrome.render(buf, { ...defaultConfig, systemLabel: 'IN TRANSIT' });
+      expect(rowText(buf, 0)).toContain('IN TRANSIT');
+      expect(rowText(buf, 0)).not.toContain('SOL');
+    });
+
+    it('renders a blank system label in row 0 when systemLabel is null', () => {
+      const chrome = new ScreenChrome(baseContext, makePlayer());
+      const buf = makeBuffer(40, 30);
+      chrome.render(buf, { ...defaultConfig, systemLabel: null });
+      expect(rowText(buf, 0)).not.toContain('SOL');
+    });
+
+    it('uses default system name when systemLabel is undefined', () => {
+      const chrome = new ScreenChrome(baseContext, makePlayer());
+      const buf = makeBuffer(40, 30);
+      chrome.render(buf, { ...defaultConfig });
+      expect(rowText(buf, 0)).toContain('SOL');
+    });
+  });
+
+  describe('destinationLabel override', () => {
+    it('renders the override string in row 1 when destinationLabel is a string', () => {
+      const chrome = new ScreenChrome(baseContext, makePlayer());
+      const buf = makeBuffer(40, 30);
+      chrome.render(buf, { ...defaultConfig, destinationLabel: 'IN TRANSIT' });
+      expect(rowText(buf, 1)).toContain('IN TRANSIT');
+      expect(rowText(buf, 1)).not.toContain('ELYSIUM STATION');
+    });
+
+    it('renders a blank destination label in row 1 when destinationLabel is null', () => {
+      const chrome = new ScreenChrome(baseContext, makePlayer());
+      const buf = makeBuffer(40, 30);
+      chrome.render(buf, { ...defaultConfig, destinationLabel: null });
+      expect(rowText(buf, 1)).not.toContain('ELYSIUM STATION');
+    });
+
+    it('uses default destination name when destinationLabel is undefined', () => {
+      const chrome = new ScreenChrome(baseContext, makePlayer());
+      const buf = makeBuffer(40, 30);
+      chrome.render(buf, { ...defaultConfig });
+      expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
+    });
+
+    it('credits are still visible in row 1 when destinationLabel is null', () => {
+      const chrome = new ScreenChrome(baseContext, makePlayer({ credits: 5000 }));
+      const buf = makeBuffer(40, 30);
+      chrome.render(buf, { ...defaultConfig, destinationLabel: null });
+      expect(rowText(buf, 1)).toContain('5,000');
+    });
+  });
 });

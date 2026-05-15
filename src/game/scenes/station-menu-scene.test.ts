@@ -425,4 +425,47 @@ describe('StationMenuScene', () => {
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
+
+  describe('nav label — TAKE OFF vs UNDOCK by locationType', () => {
+    function makeSceneForDest(input: MockInputHandler, destinationId: string): StationMenuScene {
+      const player = makePlayer({ destinationId });
+      return new StationMenuScene(
+        input, keyboardContext, player, destinationId,
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+    }
+
+    it('shows UNDOCK for orbital destination', () => {
+      const input = new MockInputHandler();
+      // elysium-station is orbital
+      const scene = makeSceneForDest(input, 'elysium-station');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const footer = buf[29].map(c => c.char).join('');
+      expect(footer).toContain('UNDOCK');
+      expect(footer).not.toContain('TAKE OFF');
+    });
+
+    it('shows TAKE OFF for surface destination', () => {
+      const input = new MockInputHandler();
+      // ceti-landfall is surface
+      const scene = makeSceneForDest(input, 'ceti-landfall');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const footer = buf[29].map(c => c.char).join('');
+      expect(footer).toContain('TAKE OFF');
+      expect(footer).not.toContain('UNDOCK');
+    });
+
+    it('shows TAKE OFF for asteroid destination', () => {
+      const input = new MockInputHandler();
+      // eridani-anchorage is asteroid
+      const scene = makeSceneForDest(input, 'eridani-anchorage');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const footer = buf[29].map(c => c.char).join('');
+      expect(footer).toContain('TAKE OFF');
+      expect(footer).not.toContain('UNDOCK');
+    });
+  });
 });

@@ -437,4 +437,42 @@ describe('ShipScene', () => {
       expect(hubFound).toBe(false);
     });
   });
+
+  describe('dock button label — LAND vs DOCK by locationType', () => {
+    it('shows [D] DOCK for orbital destination', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, makePlayer({ destinationId: 'elysium-station' }), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, BUTTONS_ROW)).toContain('DOCK');
+      expect(rowText(buf, BUTTONS_ROW)).not.toContain('LAND');
+    });
+
+    it('shows [L] LAND for surface destination', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, makePlayer({ systemId: 'tau-ceti', destinationId: 'ceti-landfall' }), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, BUTTONS_ROW)).toContain('LAND');
+      expect(rowText(buf, BUTTONS_ROW)).not.toContain('DOCK');
+    });
+
+    it('shows [L] LAND for asteroid destination', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, makePlayer({ systemId: 'epsilon-eridani', destinationId: 'eridani-anchorage' }), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, BUTTONS_ROW)).toContain('LAND');
+      expect(rowText(buf, BUTTONS_ROW)).not.toContain('DOCK');
+    });
+
+    it('shows [ - ] DOCK when in space regardless of previous destination', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipScene(input, keyboardContext, makePlayer({ destinationId: null }), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, BUTTONS_ROW)).toContain('DOCK');
+      expect(rowText(buf, BUTTONS_ROW)).not.toContain('LAND');
+    });
+  });
 });

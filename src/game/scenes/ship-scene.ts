@@ -35,6 +35,7 @@ export class ShipScene implements Scene {
   private station: SpaceStation | null = null;
   private readonly stationType: SpaceStationDef | null;
   private readonly chrome: ScreenChrome;
+  private readonly isLandingDest: boolean;
 
   constructor(
     inputHandler: InputHandler,
@@ -53,8 +54,10 @@ export class ShipScene implements Scene {
     if (player.destinationId !== null) {
       const dest = getDestination(player.destinationId)!;
       this.stationType = DESTINATION_TYPE_TO_STATION[dest.type] ?? STATION_TYPES.RELAY;
+      this.isLandingDest = dest.locationType === 'surface' || dest.locationType === 'asteroid';
     } else {
       this.stationType = null;
+      this.isLandingDest = false;
     }
 
     const navCount = () => this.inSpace ? 1 : 2;
@@ -199,7 +202,7 @@ export class ShipScene implements Scene {
     // ── Action buttons (h-1) ──────────────────────────────────────────────────
     //  /   [T] TRAVEL    \/    [D] DOCK     \
     const travelLabel = '[T] TRAVEL';
-    const dockLabel   = this.inSpace ? '[ - ] DOCK' : '[D] DOCK';
+    const dockLabel   = this.inSpace ? '[ - ] DOCK' : (this.isLandingDest ? '[L] LAND' : '[D] DOCK');
 
     let travelContent = pad(travelLabel, inner);
     let dockContent   = pad(dockLabel, inner);
