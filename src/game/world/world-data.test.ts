@@ -5,6 +5,8 @@ import {
   getDestination,
   getRoutesFrom,
   getDrive,
+  getShip,
+  getRoute,
   getStoryBeat,
   getStoryBeatsByTrigger,
 } from './world-data';
@@ -84,6 +86,38 @@ describe('getDrive', () => {
 
   it('returns undefined for unknown drive', () => {
     expect(getDrive('warp-drive')).toBeUndefined();
+  });
+});
+
+describe('getShip', () => {
+  it('returns the freighter with correct fuelCapacityL', () => {
+    const ship = getShip('freighter');
+    expect(ship).toBeDefined();
+    expect(ship!.fuelCapacityL).toBe(100);
+    expect(ship!.defaultJumpDrive).toBe('civilian-mk1');
+  });
+
+  it('returns undefined for unknown ship id', () => {
+    expect(getShip('battleship')).toBeUndefined();
+  });
+});
+
+describe('getRoute', () => {
+  it('returns the route between sol and alpha-centauri (forward direction)', () => {
+    const route = getRoute('sol', 'alpha-centauri');
+    expect(route).toBeDefined();
+    expect(route!.distance).toBe(4.3);
+  });
+
+  it('returns the route between sol and alpha-centauri (reverse direction)', () => {
+    const route = getRoute('alpha-centauri', 'sol');
+    expect(route).toBeDefined();
+    expect(route!.distance).toBe(4.3);
+  });
+
+  it('returns undefined for a route that does not exist', () => {
+    expect(getRoute('sol', 'wolf-359')).toBeDefined(); // sol-wolf-359 exists
+    expect(getRoute('alpha-centauri', 'wolf-359')).toBeUndefined(); // no direct route
   });
 });
 

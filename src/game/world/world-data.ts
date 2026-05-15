@@ -498,3 +498,10 @@ export function getGameSettings(): GameSettings {
 export function getShip(id: string): Ship | undefined {
   return WORLD.ships.find(s => s.id === id);
 }
+
+export function getRoute(fromId: string, toId: string): JumpRoute | undefined {
+  return WORLD.routes.find(
+    r => (r.from === fromId && r.to === toId) ||
+         (r.from === toId   && r.to === fromId)
+  );
+}
