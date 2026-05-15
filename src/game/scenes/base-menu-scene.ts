@@ -2,6 +2,7 @@ import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../
 import { writeText } from '../../shared/buffer-utils';
 import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
 import type { NavOption, ChromeConfig } from '../ui/screen-chrome';
+import type { PlayerState } from '../PlayerState';
 
 export interface MenuItemDef {
   label: string;
@@ -37,6 +38,7 @@ export abstract class BaseMenuScene implements Scene {
   protected readonly tabs: TabDef[] | null;
   protected activeTabIdx = 0;
   private readonly context: GameContext;
+  protected readonly player: PlayerState;
   protected readonly chrome: ScreenChrome;
   private readonly navOptions: ReadonlyArray<NavOption>;
   protected readonly infoLines: string[];
@@ -52,6 +54,7 @@ export abstract class BaseMenuScene implements Scene {
     navOptions: ReadonlyArray<NavOption>,
     inputHandler: InputHandler,
     context: GameContext,
+    player: PlayerState,
     infoLines: string[] = [],
     tabs: TabDef[] | null = null,
   ) {
@@ -59,7 +62,8 @@ export abstract class BaseMenuScene implements Scene {
     this._staticItems = items;
     this.tabs = tabs;
     this.context = context;
-    this.chrome = new ScreenChrome(context);
+    this.player = player;
+    this.chrome = new ScreenChrome(context, player);
     this.navOptions = navOptions;
     this.infoLines = infoLines;
     this.itemStartRow = tabs !== null

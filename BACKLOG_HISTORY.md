@@ -14,6 +14,35 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 033 · Centralise Player State — DONE
+
+**Built:**
+- `src/game/PlayerState.ts` — new `PlayerState` class with named getters and update methods
+- `src/game/world/types.ts` — added `CargoEntry` interface
+- `src/shared/types.ts` — removed `systemId`, `destinationId`, `credits` from `GameContext`
+- `src/game/ui/screen-chrome.ts` — added `player: PlayerState` second constructor parameter; reads location and credits from `player`
+- `src/game/scenes/base-menu-scene.ts` — added `player: PlayerState` constructor parameter; passes to `ScreenChrome`; stored as `protected readonly player`
+- `src/game/scenes/station-menu-scene.ts` — removed `fuelL`, `fuelCapacityL`, `credits` params; reads from `this.player`
+- `src/game/scenes/travel-menu-scene.ts` — removed `systemId`, `currentDestinationId`, `fuelL`, `fuelCapacityL`, `driveId` params; reads from `player`
+- `src/game/scenes/ship-scene.ts` — removed `systemId`, `destinationId`, `PlayerStateView` spread; deleted `PlayerStateView` interface; reads from `player`
+- `src/game/scenes/main-menu-scene.ts`, `story-scene.ts`, `trader-scene.ts`, `mission-board-scene.ts` — added `player` param, threaded through to `BaseMenuScene`
+- `src/main.ts`, `terminal.ts` — construct single `PlayerState` at startup; all `context.X = ...` sync lines removed; player state mutations via `player.*` methods
+- `src/game/player-state.test.ts` — 22 new tests covering all public methods
+- `src/tests/makePlayer.ts` — shared test helper for constructing `PlayerState`
+- All existing scene tests updated to use `makePlayer()` and stripped of removed `GameContext` fields
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 326 passed | 1 skipped (327 total; 22 new)
+
+**Play-test instructions:**
+1. `npm run dev` → open browser → NEW GAME → walk through the opening story
+2. Verify the chrome header shows system name, destination, and credit balance correctly
+3. Go to SHIP → TRAVEL → confirm fuel gauge shows in stat panel
+4. Buy fuel at a station; confirm credits decrease and fuel increases
+5. Jump to another system; confirm system name updates in chrome header and fuel decreases
+6. `npm run terminal` → repeat the above in terminal mode
+
 ### 034 · Standardise Kebab-Case File Names
 
 **Built:**

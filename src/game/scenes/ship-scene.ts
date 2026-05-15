@@ -5,14 +5,7 @@ import { Starfield } from './starfield';
 import { SpaceStation } from './space-station';
 import { STATION_TYPES, type SpaceStationDef } from './station-types';
 import { ScreenChrome } from '../ui/screen-chrome';
-
-export interface PlayerStateView {
-  fuelL: number;
-  fuelCapacityL: number;
-  cargo: number;
-  cargoCapacity: number;
-  credits: number;
-}
+import type { PlayerState } from '../PlayerState';
 
 // Center text in a fixed-width field; truncates if too long.
 function pad(text: string, width: number): string {
@@ -30,7 +23,7 @@ const DESTINATION_TYPE_TO_STATION: Record<DestinationType, SpaceStationDef> = {
 };
 
 export class ShipScene implements Scene {
-  private readonly playerState: PlayerStateView;
+  private readonly player: PlayerState;
   private readonly context: GameContext;
   private readonly inSpace: boolean;
   private cursorIdx = 0;
@@ -45,20 +38,18 @@ export class ShipScene implements Scene {
   constructor(
     inputHandler: InputHandler,
     context: GameContext,
-    systemId: string,
-    destinationId: string | null,
-    playerState: PlayerStateView,
+    player: PlayerState,
     onTravel: () => void,
     onDock: () => void,
   ) {
-    this.playerState = playerState;
+    this.player = player;
     this.context = context;
-    this.chrome = new ScreenChrome(context);
+    this.chrome = new ScreenChrome(context, player);
     this.starfield = new Starfield();
-    this.inSpace = destinationId === null;
+    this.inSpace = player.destinationId === null;
 
-    if (destinationId !== null) {
-      const dest = getDestination(destinationId)!;
+    if (player.destinationId !== null) {
+      const dest = getDestination(player.destinationId)!;
       this.stationType = DESTINATION_TYPE_TO_STATION[dest.type] ?? STATION_TYPES.RELAY;
     } else {
       this.stationType = null;
@@ -147,9 +138,9 @@ export class ShipScene implements Scene {
 
     // ── Stat panels (row 2) ────────────────────────────────────────────────────
     //  \    FUEL:x/yL    /\   CARGO: 0/2Mg  /
-    const leftStat  = pad(`FUEL:${this.playerState.fuelL}/${this.playerState.fuelCapacityL}L`, inner);
-    const cargoMg   = Math.round(this.playerState.cargo / 1000);
-    const capMg     = Math.round(this.playerState.cargoCapacity / 1000);
+    const leftStat  = pad(`FUEL:${this.player.fuelL}/${this.player.fuelCapacityL}L`, inner);
+    const cargoMg   = Math.round(this.player.cargoWeightKg / 1000);
+    const capMg     = Math.round(this.player.cargoCapacity / 1000);
     const rightStat = pad(`CARGO: ${cargoMg}/${capMg}Mg`, inner);
 
     buffer[statRow][1] = dim('\\');

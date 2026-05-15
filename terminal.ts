@@ -11,78 +11,54 @@ import { JumpAnimationScene } from './src/game/scenes/jump-animation-scene';
 import { InSystemTravelAnimationScene } from './src/game/scenes/in-system-travel-animation-scene';
 import type { GameContext, CharBuffer, Color, Scene } from './src/shared/types';
 import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute } from './src/game/world/world-data';
+import { PlayerState } from './src/game/PlayerState';
 import { FUEL_PER_LY } from './src/game/constants';
 
 const settings = getGameSettings();
 const startingLocation = settings.startingLocation;
 const ship = getShip(settings.startingShip)!;
-const drive = getDrive(ship.defaultJumpDrive)!;
 
 const context: GameContext = {
   environment: 'terminal',
   primaryInput: 'keyboard',
   debug: false,
+};
+
+const player = new PlayerState({
+  shipId: settings.startingShip,
+  driveId: ship.defaultJumpDrive,
+  credits: settings.player.startingCredits,
   systemId: startingLocation.system,
   destinationId: startingLocation.destination,
-  credits: settings.player.startingCredits,
-};
+});
 
 const renderer = new TerminalRenderer();
 const input = new TerminalInputHandler();
 
-let currentSystemId = startingLocation.system;
-let currentDestinationId: string | null = startingLocation.destination;
-
-const playerState = {
-  fuelL:         ship.fuelCapacityL,
-  fuelCapacityL: ship.fuelCapacityL,
-  driveId:       ship.defaultJumpDrive,
-  cargo:         0,
-  cargoCapacity: ship.cargoCapacityKg,
-  credits:       settings.player.startingCredits,
-};
-
 let currentScene: Scene;
 
 const goToMainMenu = () => {
-  context.systemId = currentSystemId;
-  context.destinationId = currentDestinationId;
-  currentScene = new MainMenuScene(input, context, goToStory);
+  currentScene = new MainMenuScene(input, context, player, goToStory);
 };
 
 const goToTrader = () => {
-  context.systemId = currentSystemId;
-  context.destinationId = currentDestinationId;
-  currentScene = new TraderScene(input, context, currentDestinationId!, goToStation, goToShip);
+  currentScene = new TraderScene(input, context, player, player.destinationId!, goToStation, goToShip);
 };
 
 const goToMissionBoard = () => {
-  context.systemId = currentSystemId;
-  context.destinationId = currentDestinationId;
-  currentScene = new MissionBoardScene(input, context, currentDestinationId!, goToStation, goToShip);
+  currentScene = new MissionBoardScene(input, context, player, player.destinationId!, goToStation, goToShip);
 };
 
 const goToShip = () => {
-  context.systemId = currentSystemId;
-  context.destinationId = currentDestinationId;
-  currentScene = new ShipScene(
-    input, context,
-    currentSystemId, currentDestinationId,
-    playerState,
-    goToTravelMenu, goToStation,
-  );
+  currentScene = new ShipScene(input, context, player, goToTravelMenu, goToStation);
 };
 
 const goToStation = () => {
-  context.systemId = currentSystemId;
-  context.destinationId = currentDestinationId;
-  context.credits = playerState.credits;
   currentScene = new StationMenuScene(
-    input, context, currentDestinationId!,
-    playerState.fuelL, playerState.fuelCapacityL, playerState.credits,
+    input, context, player, player.destinationId!,
     (litres: number, refuelCost: number) => {
-      playerState.credits -= refuelCost;
-      playerState.fuelL    = Math.min(playerState.fuelCapacityL, playerState.fuelL + litres);
+      player.spendCredits(refuelCost);
+      player.addFuel(litres);
       goToStation();
     },
     goToTrader, goToMissionBoard, goToShip,
@@ -90,55 +66,44 @@ const goToStation = () => {
 };
 
 const onDestinationSelected = (destinationId: string) => {
-  currentDestinationId = destinationId;
+  player.dock(destinationId);
   currentScene = new InSystemTravelAnimationScene(getDestination(destinationId)!.name, goToShip);
 };
 
 const goToFlyIntoSpace = () => {
-  currentDestinationId = null;
+  player.undock();
   currentScene = new InSystemTravelAnimationScene('OPEN SPACE', goToShip, 'LAUNCHING...');
 };
 
 const onJumpSelected = (targetSystemId: string) => {
-  const route = getRoute(currentSystemId, targetSystemId)!;
+  const route = getRoute(player.systemId, targetSystemId)!;
+  const drive = getDrive(player.driveId)!;
   const used  = Math.ceil(FUEL_PER_LY * route.distance * drive.fuelEfficiency);
-  playerState.fuelL = Math.max(0, playerState.fuelL - used);
-
-  currentSystemId = targetSystemId;
+  player.consumeFuel(used);
+  player.jumpTo(targetSystemId);
   const targetName = getSystem(targetSystemId)!.name;
   currentScene = new JumpAnimationScene(targetName, goToArrival);
 };
 
 const goToTravelMenu = () => {
-  context.systemId = currentSystemId;
-  context.destinationId = currentDestinationId;
   currentScene = new TravelMenuScene(
-    input, context,
-    currentSystemId, currentDestinationId,
-    playerState.fuelL, playerState.fuelCapacityL, playerState.driveId,
+    input, context, player,
     onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
   );
 };
 
 const goToArrival = () => {
-  currentDestinationId = null;
-  context.systemId = currentSystemId;
-  context.destinationId = null;
   currentScene = new TravelMenuScene(
-    input, context,
-    currentSystemId, null,
-    playerState.fuelL, playerState.fuelCapacityL, playerState.driveId,
+    input, context, player,
     onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
   );
 };
 
 const goToStory = () => {
-  context.systemId = currentSystemId;
-  context.destinationId = currentDestinationId;
-  currentScene = new StoryScene(input, context, goToStation);
+  currentScene = new StoryScene(input, context, player, goToStation);
 };
 
-currentScene = new MainMenuScene(input, context, goToStory);
+currentScene = new MainMenuScene(input, context, player, goToStory);
 
 // Exit cleanly when stdin closes (e.g. piped from /dev/null during init checks)
 process.stdin.on('close', () => process.exit(0));

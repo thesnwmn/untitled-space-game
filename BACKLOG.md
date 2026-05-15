@@ -12,18 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 033 · Centralise Player State
-
-Replace the ad-hoc `playerState` object and scattered orchestrator variables with a
-single `PlayerState` class (constructed once at game start, updated via named methods)
-that owns all persistent game state. Pass it to scenes as one argument instead of
-the current spread of individual parameters (fuel, credits, drive, location, etc.).
-See `docs/features/033-centralise-player-state.md` for the full spec.
-
-**Depends on:** 030
-
----
-
 ### 034 · Shared Game Orchestrator
 
 Extract all game navigation logic into a shared `Game` class in `src/game/game.ts`,
