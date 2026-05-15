@@ -3,7 +3,7 @@
 ## Goal
 
 Introduce a reusable `ModalInputDialog` component that overlays a numeric input form on
-any `BaseMenuScene` subclass.  Replace the one-shot buy-all/sell-all mechanic from
+any `BaseMenuScene` subclass. Replace the one-shot buy-all/sell-all mechanic from
 feature 031 and the full-refuel mechanic from feature 030 with dialogs that let the
 player choose an exact quantity or litre count before confirming.
 
@@ -21,20 +21,18 @@ player choose an exact quantity or litre count before confirming.
 ### Modal as overlay, not a scene
 
 The dialog renders into a sub-rectangle of the current buffer rather than replacing the
-full scene.  The trader list (or station menu) remains visible behind it, preserving
+full scene. The trader list (or station menu) remains visible behind it, preserving
 context.
 
 Because `InputHandler` callbacks register at construction time and cannot be removed,
 the parent (`BaseMenuScene`) intercepts all actions and routes them into the dialog while
-it is open, suppressing its own normal handling.  The dialog is never registered directly
+it is open, suppressing its own normal handling. The dialog is never registered directly
 against the `InputHandler` — it only receives pre-routed calls.
 
 ### Character input extension
 
 A new optional method `onCharInput(handler)` is added to the `InputHandler` interface.
-It delivers:
-- `'0'`–`'9'` for digit keys
-- `'\b'` for Backspace / Delete
+It delivers `'0'`–`'9'` for digit keys and `'\b'` for Backspace/Delete.
 
 Both platform handlers fire `onCharInput` **in addition to** any `GameAction` that the
 same keypress already produces (digits `1`–`9` currently map to `NAV_1`–`NAV_9`; that
@@ -43,24 +41,24 @@ mapping is preserved so existing nav behaviour is unaffected when no modal is op
 
 ### First-character-clears
 
-When the dialog opens `replaceNextDigit = true`.  The first digit typed replaces the
-existing value and sets `replaceNextDigit = false`; subsequent digits append.  Arrow
+When the dialog opens `replaceNextDigit = true`. The first digit typed replaces the
+existing value and sets `replaceNextDigit = false`; subsequent digits append. Arrow
 keys (UP/DOWN) adjust by `step` and do **not** change `replaceNextDigit` — so digits
-typed after arrows still append rather than replace.  Backspace removes the last digit
-(by integer-dividing by 10); if the result is 0, `replaceNextDigit` is reset to `true`.
+typed after arrows still append rather than replace. Backspace removes the last digit
+(integer-divide by 10); if the result is 0, `replaceNextDigit` is reset to `true`.
 
 ### TAB action
 
-`'TAB'` is added to `GameAction` and mapped in both platform handlers.  It cycles focus
+`'TAB'` is added to `GameAction` and mapped in both platform handlers. It cycles focus
 forward: `field → confirm button → cancel button → field`.
 
 ### Focus styling
 
 | Control | Focused | Unfocused |
 |---------|---------|-----------|
-| Number input box `\| … \|` | black on green | white on black |
-| Button `\| Label \|` | black on green | white on black |
-| Labels and derived rows | white on black | (always this) |
+| Number input box | black on green | white on black |
+| Button | black on green | white on black |
+| Labels and derived rows | white on black | (always) |
 
 Dialog background: every cell in the dialog rectangle is black.
 
@@ -70,287 +68,9 @@ Dialog background: every cell in the dialog rectangle is black.
 
 ### `src/shared/types.ts`
 
-1. Add `'TAB'` to `GameAction`:
+Add `'TAB'` to `GameAction`.
 
-```typescript
-export type GameAction =
-  | 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
-  | 'SELECT' | 'BACK' | 'PAUSE' | 'TAB'
-  | 'PAGE_UP' | 'PAGE_DOWN' | 'CARGO'
-  | 'NAV_1' | 'NAV_2' | 'NAV_3' | 'NAV_4' | 'NAV_5'
-  | 'NAV_6' | 'NAV_7' | 'NAV_8' | 'NAV_9';
-```
-
-2. Add `onCharInput` to `InputHandler`:
-
-```typescript
-export interface InputHandler {
-  onAction(handler: (action: GameAction) => void): void;
-  onTap?(handler: (col: number, row: number) => void): void;
-  onCharInput?(handler: (char: string) => void): void;
-}
-```
-
----
-
-## Changed files
-
-### 1 · `src/platform/dom/DOMInputHandler.ts`
-
-**a)** Add a `charHandlers` array and an `onCharInput` method:
-
-```typescript
-private charHandlers: ((char: string) => void)[] = [];
-
-onCharInput(handler: (char: string) => void): void {
-  this.charHandlers.push(handler);
-}
-```
-
-**b)** Add `Tab` to `PREVENT_DEFAULT_KEYS`.
-
-**c)** Restructure the `keydown` listener to fire both charInput events and action events
-without short-circuiting one for the other:
-
-```typescript
-this.keyListener = (event: KeyboardEvent) => {
-  if (event.key === 'Tab') {
-    event.preventDefault();
-    for (const h of this.actionHandlers.slice()) h('TAB');
-    return;
-  }
-  if (!event.ctrlKey && !event.altKey && !event.metaKey) {
-    if (/^[0-9]$/.test(event.key)) {
-      for (const h of this.charHandlers.slice()) h(event.key);
-      // fall through — digit keys also map to NAV_1-9
-    } else if (event.key === 'Backspace') {
-      event.preventDefault();
-      for (const h of this.charHandlers.slice()) h('\b');
-      return;
-    }
-  }
-  const action = KEY_MAP[event.key];
-  if (!action) return;
-  if (PREVENT_DEFAULT_KEYS.has(event.key)) event.preventDefault();
-  for (const h of this.actionHandlers.slice()) h(action);
-};
-```
-
-### 2 · `src/platform/terminal/TerminalInputHandler.ts`
-
-**a)** Add a `charHandlers` array and an `onCharInput` method (same pattern as DOM).
-
-**b)** In the `data` listener, handle Tab, digits, and backspace before the KEY_MAP
-loop; digits fall through to KEY_MAP so `NAV_1`–`NAV_9` still fire:
-
-```typescript
-this.dataHandler = (chunk) => {
-  const key = chunk.toString();
-  if (EXIT_KEYS.has(key)) { process.exit(0); return; }
-
-  // Tab
-  if (key === '\t') {
-    for (const h of this.handlers) h('TAB');
-    return;
-  }
-
-  // Char input: digits fire charInput then fall through to KEY_MAP (NAV_1-9)
-  if (/^[0-9]$/.test(key)) {
-    for (const h of this.charHandlers) h(key);
-    // fall through
-  }
-  // Backspace (DEL = 0x7f, BS = 0x08)
-  if (key === '\x7f' || key === '\x08') {
-    for (const h of this.charHandlers) h('\b');
-    return;
-  }
-
-  for (const [seq, action] of KEY_MAP) {
-    if (key === seq) {
-      for (const h of this.handlers) h(action);
-      return;
-    }
-  }
-};
-```
-
-**c)** Add `['0', 'NAV_0']` to KEY_MAP is **not** needed — `'0'` is delivered only via
-`onCharInput`.
-
-### 3 · `src/game/scenes/BaseMenuScene.ts`
-
-**a)** Add a protected modal field:
-
-```typescript
-protected modal: ModalInputDialog | null = null;
-```
-
-**b)** Add `openModal` and `closeModal` helpers:
-
-```typescript
-protected openModal(dialog: ModalInputDialog): void {
-  this.modal = dialog;
-}
-
-protected closeModal(): void {
-  this.modal = null;
-}
-```
-
-**c)** At the top of the `onAction` lambda, intercept when a modal is open:
-
-```typescript
-inputHandler.onAction((action) => {
-  if (this.modal !== null) {
-    this.modal.handleAction(action);
-    return;
-  }
-  // … existing handling unchanged …
-});
-```
-
-**d)** At the top of the `onTap` lambda, intercept tap events:
-
-```typescript
-if (inputHandler.onTap) {
-  inputHandler.onTap((col, row) => {
-    if (this.modal !== null) {
-      this.modal.handleTap(col, row);
-      return;
-    }
-    // … existing tap handling unchanged …
-  });
-}
-```
-
-**e)** Register `onCharInput` routing:
-
-```typescript
-inputHandler.onCharInput?.((char) => {
-  if (this.modal !== null) {
-    this.modal.handleCharInput(char);
-  }
-});
-```
-
-**f)** At the end of `render()`, draw the modal on top if open:
-
-```typescript
-if (this.modal !== null) {
-  this.modal.render(buffer);
-}
-```
-
-### 4 · `src/game/scenes/TraderScene.ts` (post-031 state)
-
-Change the SELECT action on a BUY or SELL item from calling `onBuy`/`onSell` directly to
-opening a modal.  Compute initial value and max before constructing the form.
-
-```typescript
-// Called when SELECT fires on an item in the active tab
-private openTradeDialog(item: { commodityId: string; name: string; price: number; qty: number }): void {
-  const isBuy = this.activeTab === 'BUY';
-  const initialValue = isBuy
-    ? Math.min(item.qty, Math.floor(this.playerState.credits / item.price))
-    : item.qty;
-  const maxValue = isBuy
-    ? Math.min(item.qty, Math.floor(this.playerState.credits / item.price))
-    : item.qty;
-
-  if (maxValue === 0) return; // nothing to buy/sell — no dialog
-
-  const form: ModalFormDef = {
-    title: `${isBuy ? 'Buy' : 'Sell'} ${item.name}`,
-    field: {
-      label: 'Quantity',
-      initialValue,
-      min: 0,
-      max: maxValue,
-      step: 1,
-    },
-    derivedRows: [{
-      label: 'Total Value',
-      compute: (n) => `${n * item.price} CR`,
-    }],
-    confirmLabel: isBuy ? 'Buy' : 'Sell',
-    onConfirm: (qty) => {
-      if (qty > 0) {
-        isBuy ? this.onBuy(item.commodityId, qty) : this.onSell(item.commodityId, qty);
-      }
-      this.closeModal();
-    },
-    onCancel: () => this.closeModal(),
-  };
-  this.openModal(new ModalInputDialog(form));
-}
-```
-
-Do **not** set `this.activated = true` when opening the dialog — the player stays in
-TraderScene after a trade.
-
-The `onBuy` and `onSell` constructor parameters become `(commodityId: string, qty: number) => void`.
-
-### 5 · `src/game/scenes/StationMenuScene.ts` (post-030 state)
-
-Replace the immediate-refuel action for BUY FUEL with a modal.  The existing item is
-already computed; change its `action` callback to:
-
-```typescript
-action: () => {
-  const fuelNeeded = fuelCapacityL - fuelL;
-  const maxAffordable = Math.floor(credits / FUEL_PRICE_PER_L);
-  const maxLitres = Math.min(fuelNeeded, maxAffordable);
-
-  if (maxLitres === 0) return; // guard: shouldn't occur if item is shown
-
-  const form: ModalFormDef = {
-    title: 'Buy Fuel',
-    field: {
-      label: 'Litres',
-      initialValue: maxLitres,
-      min: 0,
-      max: maxLitres,
-      step: 10,
-    },
-    derivedRows: [{
-      label: 'Total Value',
-      compute: (n) => `${n * FUEL_PRICE_PER_L} CR`,
-    }],
-    confirmLabel: 'Buy',
-    onConfirm: (litres) => {
-      if (litres > 0) onRefuel(litres * FUEL_PRICE_PER_L, litres);
-      this.closeModal();
-    },
-    onCancel: () => this.closeModal(),
-  };
-  this.openModal(new ModalInputDialog(form));
-},
-```
-
-`StationMenuScene` must store `fuelL`, `fuelCapacityL`, and `credits` as instance fields
-so the action closure can reference them.
-
-### 6 · `src/main.ts` and `terminal.ts`
-
-Update the `onBuy`, `onSell`, and `onRefuel` callbacks to accept and use the new `qty`
-/ `litres` arguments:
-
-```typescript
-function onBuy(commodityId: string, qty: number): void {
-  // … same logic as 031 but use qty instead of entry.qty …
-}
-
-function onSell(commodityId: string, qty: number): void {
-  // … same logic as 031 but use qty instead of entry.qty …
-}
-
-// onRefuel updated signature:
-(cost: number, litres: number) => {
-  playerState.credits -= cost;
-  playerState.fuelL = Math.min(playerState.fuelL + litres, playerState.fuelCapacityL);
-  goToStation();
-},
-```
+Add optional `onCharInput(handler: (char: string) => void): void` to `InputHandler`.
 
 ---
 
@@ -360,15 +80,15 @@ function onSell(commodityId: string, qty: number): void {
 
 ```typescript
 export interface NumberFieldDef {
-  label: string;         // e.g. 'Quantity', 'Litres'
+  label: string;
   initialValue: number;
-  min: number;           // 0
+  min: number;
   max: number;
-  step: number;          // 1 for goods, 10 for fuel
+  step: number;
 }
 
 export interface DerivedRowDef {
-  label: string;         // e.g. 'Total Value'
+  label: string;
   compute: (value: number) => string;
 }
 
@@ -376,210 +96,149 @@ export interface ModalFormDef {
   title: string;
   field: NumberFieldDef;
   derivedRows: DerivedRowDef[];
-  confirmLabel: string;  // 'Buy' or 'Sell'
+  confirmLabel: string;
   onConfirm: (value: number) => void;
   onCancel: () => void;
 }
 ```
 
-### Layout
+The class receives a `ModalFormDef` and exposes: `handleAction(action: GameAction)`,
+`handleCharInput(char: string)`, `handleTap(col: number, row: number)`, and
+`render(buffer: CharBuffer)`.
 
-The dialog box is **30 columns wide** and **`8 + D` rows tall** (where D = `derivedRows.length`).
-It is drawn centred in the buffer:
+### Dialog layout
 
-```
-startCol = Math.floor((bufferW - 30) / 2)   → col 5 on a 40-wide buffer
-startRow = Math.floor((bufferH - height) / 2)
-```
+The dialog is **30 columns wide** and centred horizontally in the buffer. Height is
+`8 + D` rows where D = `derivedRows.length`. It is centred vertically too.
 
-The standard 1-derived-row form is 9 rows tall, centred at row 10 on a 30-row buffer.
+Row structure from top:
+- Border row
+- Title
+- Underline of title
+- Blank row
+- Number field: label, ` : `, value box (right-justified in 5 chars)
+- One row per derived row: label and computed value, aligned to the right edge of the field
+- Blank row
+- Button row: confirm and cancel buttons, centred with a gap between them
+- Border row
 
-```
-dialogRow 0:  +----------------------------+        (border)
-dialogRow 1:  | {title}                    |
-dialogRow 2:  | {underline '…}             |
-dialogRow 3:  |                            |        (blank)
-dialogRow 4:  | {label} : | {value,5d} |   |        (number field)
-dialogRow 5:  | {derived[0].label} : {val} |        (derived row 0)
-   …          | (one row per extra derived) |
-dialogRow 5+D:|                            |        (blank)
-dialogRow 6+D:| | {confirmLabel} | | Cancel| |      (buttons)
-dialogRow 7+D:+----------------------------+        (border)
-```
+Borders use `+` corners, `-` horizontal, `|` vertical. Label column width is
+the max of all labels so the value column stays aligned.
 
-Borders use `+` corners, `-` horizontal, `|` vertical — consistent with `drawBorder`.
-Each cell in the dialog rectangle (including the border) starts with `bg: 'black'`.
+After each `render()` call, store the absolute buffer coordinates of the value box and
+buttons so `handleTap` can hit-test them.
 
-#### Number field row (dialogRow 4)
+### Action routing
 
-Inner content (28 chars between the `|` borders):
+| Focused control | Action | Effect |
+|---|---|---|
+| any | `BACK` | `onCancel()` |
+| `field` | `UP` | increment by step, clamped at max |
+| `field` | `DOWN` | decrement by step, clamped at min |
+| `field` | `SELECT` | `onConfirm(value)` |
+| `field` | `TAB` or `RIGHT` | focus → confirm |
+| `confirm` | `SELECT` | `onConfirm(value)` |
+| `confirm` | `TAB` or `RIGHT` | focus → cancel |
+| `confirm` | `LEFT` or `UP` | focus → field |
+| `cancel` | `SELECT` | `onCancel()` |
+| `cancel` | `TAB` | focus → field |
+| `cancel` | `LEFT` | focus → confirm |
+| `cancel` | `UP` | focus → field |
 
-```
- {label padded to labelWidth} :  | {value right-justified in 5 chars} |
-```
+`DOWN` on `confirm`/`cancel` is a no-op. `NAV_1`–`NAV_9` are ignored in all states.
 
-- `labelWidth = Math.max(field.label.length, ...derivedRows.map(r => r.label.length))`
-- One space left margin, `labelWidth` chars for label, ` : `, two spaces, then the value box.
-- Value box = `| ` + value + ` |` (value is right-aligned in a field 5 chars wide, padded with spaces).
-- The value box portion (from `|` to `|` inclusive): bg `'green'`/fg `'black'` when
-  `focusedControl === 'field'`; bg `'black'`/fg `'white'` otherwise.
+### Char input (field focused only)
 
-#### Derived rows (dialogRows 5 … 5+D-1)
+- Digit: if `replaceNextDigit`, set value to digit and clear flag; otherwise append
+  (multiply current value by 10, add digit), clamped at max.
+- Backspace: integer-divide by 10; if result is 0, set `replaceNextDigit = true`.
 
-Same left margin and label width as the field row; the computed value string is
-right-aligned to the same end column as the value box.
+---
 
-Colour: fg `'white'`, bg `'black'` always (read-only).
+## Changed files
 
-#### Button row (dialogRow 6+D)
+### `src/platform/dom/DOMInputHandler.ts`
 
-Confirm button text: `| {confirmLabel} |` (e.g. `| Buy |` = 7 chars, `| Sell |` = 8 chars).
-Cancel button text: `| Cancel |` (10 chars).
+Add `Tab` to `PREVENT_DEFAULT_KEYS`. Add `onCharInput` method with its own handler
+array. In the keydown listener: digits fire `onCharInput` and also fall through to the
+`KEY_MAP` action (so `NAV_1`–`NAV_9` still fire); Backspace fires `onCharInput('\b')`
+only; Tab fires `'TAB'` action only.
 
-Both buttons are centred together within the 28-char inner width with a 3-space gap
-between them; remaining space is split equally (rounded down) on the outside.
+### `src/platform/terminal/TerminalInputHandler.ts`
 
-```
-padding = Math.floor((28 - confirmLen - 10 - 3) / 2)
-row text: {padding} {confirm} {3 spaces} {cancel} {padding}
-```
+Add `onCharInput` method. In the data listener: digits fire `onCharInput` then fall
+through to `KEY_MAP`; Backspace fires `onCharInput('\b')` and returns; Tab fires
+`'TAB'` and returns.
 
-Each button renders its characters:
-- Focused button: bg `'green'`, fg `'black'`
-- Unfocused button: bg `'black'`, fg `'white'`
+### `src/game/scenes/BaseMenuScene.ts`
 
-#### Caching bounds
+Add a `protected modal: ModalInputDialog | null` field. Add `openModal` and
+`closeModal` helpers. When a modal is open, route all `onAction`, `onTap`, and
+`onCharInput` events to the modal instead of the scene's own handlers. At the end
+of `render()`, draw the modal on top if one is open.
 
-After each `render()` call the dialog stores:
+### `src/game/scenes/TraderScene.ts`
 
-```typescript
-private lastBounds: { startRow: number; startCol: number; endRow: number; endCol: number } | null = null;
-```
+On SELECT of an item, open a modal instead of calling `onBuy`/`onSell` directly.
+Initial value = min(available qty, max the player can afford). Confirm callback calls
+`onBuy(commodityId, qty)` or `onSell(commodityId, qty)`. Do not set `activated` on
+SELECT — the player stays in the scene.
 
-`handleTap` uses these bounds to hit-test the value box and button regions.
+`onBuy` and `onSell` constructor parameters gain a `qty: number` argument.
 
-### `handleAction` routing
+### `src/game/scenes/StationMenuScene.ts`
 
-| `focusedControl` | Action | Effect |
-|------------------|--------|--------|
-| any | `BACK` | `form.onCancel()` |
-| `'field'` | `UP` | `value = min(value + step, max)` |
-| `'field'` | `DOWN` | `value = max(value − step, min)` |
-| `'field'` | `SELECT` | `form.onConfirm(value)` |
-| `'field'` | `TAB` or `RIGHT` | `focusedControl = 'confirm'` |
-| `'confirm'` | `SELECT` | `form.onConfirm(value)` |
-| `'confirm'` | `TAB` or `RIGHT` | `focusedControl = 'cancel'` |
-| `'confirm'` | `LEFT` or `UP` | `focusedControl = 'field'` |
-| `'cancel'` | `SELECT` | `form.onCancel()` |
-| `'cancel'` | `TAB` | `focusedControl = 'field'` |
-| `'cancel'` | `LEFT` | `focusedControl = 'confirm'` |
-| `'cancel'` | `UP` | `focusedControl = 'field'` |
+Replace the immediate-refuel action for BUY FUEL with a modal. Initial litres =
+min(fuel needed, max affordable at the per-litre price). Step = 10. Confirm calls
+`onRefuel(litres × price, litres)`.
 
-`NAV_1`–`NAV_9` and `DOWN` on `'confirm'` / `'cancel'` are ignored (no-op).
+Store `fuelL`, `fuelCapacityL`, and `credits` as instance fields so the action closure
+can reference them.
 
-### `handleCharInput` logic
+### `src/main.ts` and `terminal.ts`
 
-Only processed when `focusedControl === 'field'`:
-
-```typescript
-handleCharInput(char: string): void {
-  if (this.focusedControl !== 'field') return;
-  if (char === '\b') {
-    this.value = Math.floor(this.value / 10);
-    if (this.value === 0) this.replaceNextDigit = true;
-  } else if (/^[0-9]$/.test(char)) {
-    const digit = parseInt(char, 10);
-    if (this.replaceNextDigit) {
-      this.value = digit;
-      this.replaceNextDigit = false;
-    } else {
-      this.value = Math.min(this.value * 10 + digit, this.form.field.max);
-    }
-  }
-}
-```
-
-### `handleTap` logic
-
-Uses `lastBounds` to determine which hit region was tapped.  Regions (all in buffer
-coordinates):
-- **Value box**: row `startRow + 4`, cols `valueBoxStart` to `valueBoxEnd`.  Tap → `focusedControl = 'field'`.
-- **Confirm button**: row `startRow + 6 + D`, cols for the confirm button span.  Tap → `form.onConfirm(value)`.
-- **Cancel button**: same row, cols for the cancel button span.  Tap → `form.onCancel()`.
-- Anywhere else in the dialog or outside: no-op.
+Update `onBuy`, `onSell`, and `onRefuel` to accept and use the new `qty`/`litres`
+arguments rather than always using the full available quantity.
 
 ---
 
 ## Tests
 
-### `src/game/ui/modal-input-dialog.test.ts` (new, ~18 tests)
+### New: `src/game/ui/modal-input-dialog.test.ts`
 
-| # | Test |
-|---|------|
-| 1 | `render` draws `+` corners and `-`/`|` border at correct buffer positions |
-| 2 | Title renders at dialog row 1, underline at row 2 |
-| 3 | Field label and initial value render at dialog row 4 |
-| 4 | Derived row label and computed value render at dialog row 5 |
-| 5 | Confirm and cancel button text at dialog row 6 (D=1) |
-| 6 | Focused field: value box cells have `bg: 'green'` |
-| 7 | Unfocused field (focus on confirm): value box cells have `bg: 'black'` |
-| 8 | Focused confirm button: its cells have `bg: 'green'` |
-| 9 | `UP` increments value by step; clamped at max |
-| 10 | `DOWN` decrements value by step; clamped at min |
-| 11 | First digit typed replaces existing value (`replaceNextDigit = true` on open) |
-| 12 | Second digit appends to first |
-| 13 | Backspace removes last digit (`Math.floor(50 / 10) === 5`) |
-| 14 | Backspace to 0 resets `replaceNextDigit` |
-| 15 | `TAB` from field → confirm → cancel → field |
-| 16 | `SELECT` with field focused fires `onConfirm` with current value |
-| 17 | `SELECT` with confirm focused fires `onConfirm` |
-| 18 | `SELECT` with cancel focused fires `onCancel` |
-| 19 | `BACK` from any focus fires `onCancel` |
-| 20 | `handleTap` on confirm button area fires `onConfirm` |
-| 21 | `handleTap` on cancel button area fires `onCancel` |
+Cover: border and title render at correct positions; field label and initial value
+render; derived row renders with computed value; confirm and cancel button text
+present; focused field cells have green background; focused button cells have green
+background; UP/DOWN adjust value with clamping; first digit replaces, second appends;
+backspace removes last digit; backspace to zero resets replaceNextDigit; TAB cycles
+focus; SELECT on field fires onConfirm; SELECT on confirm fires onConfirm; SELECT
+on cancel fires onCancel; BACK fires onCancel; tap on confirm area fires onConfirm;
+tap on cancel area fires onCancel.
 
-### `src/platform/dom/DOMInputHandler.test.ts` (update, ~4 tests)
+### Update: `src/platform/dom/DOMInputHandler.test.ts`
 
-| # | Test |
-|---|------|
-| 1 | Tab key fires `TAB` action and no tap |
-| 2 | Digit key `'3'` fires both `NAV_3` action and `onCharInput('3')` |
-| 3 | `Backspace` fires `onCharInput('\b')` and no action |
-| 4 | `onCharInput` not registered → digit key fires NAV action only (no error) |
+Cover: Tab fires TAB action; digit fires both its NAV action and onCharInput; Backspace
+fires onCharInput('\b') and no action; no error when onCharInput not registered.
 
-### `src/platform/terminal/TerminalInputHandler.test.ts` (update, ~3 tests)
+### Update: `src/platform/terminal/TerminalInputHandler.test.ts`
 
-| # | Test |
-|---|------|
-| 1 | `'\t'` fires `TAB` action |
-| 2 | `'5'` fires both `NAV_5` action and `onCharInput('5')` |
-| 3 | `'\x7f'` fires `onCharInput('\b')` |
+Cover: `'\t'` fires TAB; digit fires both NAV and onCharInput; `'\x7f'` fires
+onCharInput('\b').
 
-### `src/game/scenes/BaseMenuScene.test.ts` (new or extended, ~4 tests)
+### New/Update: `src/game/scenes/BaseMenuScene.test.ts`
 
-BaseMenuScene is abstract; use a concrete test subclass.
+Use a concrete test subclass. Cover: while modal open, onAction routes to modal not
+parent; same for onTap and onCharInput; after closeModal, actions route to parent.
 
-| # | Test |
-|---|------|
-| 1 | While modal is open, `onAction` routes to modal, not parent |
-| 2 | While modal is open, `onTap` routes to modal, not parent |
-| 3 | While modal is open, `onCharInput` routes to modal |
-| 4 | After `closeModal()`, actions route to parent again |
+### Update: `src/game/scenes/trader-scene.test.ts`
 
-### `src/game/scenes/trader-scene.test.ts` (update, ~3 tests)
+Cover: SELECT opens modal rather than calling onBuy directly; onBuy called with
+correct commodityId and qty after modal confirm.
 
-| # | Test |
-|---|------|
-| 1 | SELECT on a BUY item opens a modal (not immediately calling `onBuy`) |
-| 2 | SELECT on a SELL item opens a modal (not immediately calling `onSell`) |
-| 3 | `onBuy` is called with correct `commodityId` and `qty` after modal confirm |
+### Update: `src/game/scenes/station-menu-scene.test.ts`
 
-### `src/game/scenes/station-menu-scene.test.ts` (update, ~2 tests)
-
-| # | Test |
-|---|------|
-| 1 | Selecting BUY FUEL opens a modal (not immediately calling `onRefuel`) |
-| 2 | `onRefuel` is called with correct `cost` and `litres` after modal confirm |
+Cover: BUY FUEL opens modal rather than calling onRefuel directly; onRefuel called
+with correct cost and litres after confirm.
 
 ---
 
@@ -589,12 +248,12 @@ BaseMenuScene is abstract; use a concrete test subclass.
 - `npm test` passes with zero failures.
 - Opening the trade dialog for "Buy Iron Ore (x3, 80 CR each)" with 200 CR available
   shows initial quantity 2 (max affordable) and total value 160 CR.
-- Typing `'1'` changes quantity to 1 (replaces); typing `'0'` changes it to 10 (appends);
-  backspace reverts to 1.
+- Typing `'1'` changes quantity to 1 (replaces); typing `'0'` changes it to 10
+  (appends); backspace reverts to 1.
 - UP/DOWN arrow in dialog changes quantity by step (1 for goods, 10 for fuel); clamped.
 - Tab cycles: field → confirm button → cancel button → field.
 - Enter while on the field or confirm button fires confirm; Enter on cancel fires cancel.
-- Escape (or two-finger tap on touch) cancels from any focus.
+- Escape cancels from any focus.
 - Fuel dialog shows initial litres = min(missing litres, max affordable); step = 10.
 - After confirming a trade, the modal closes and the trader list is visible again.
 
@@ -606,20 +265,19 @@ BaseMenuScene is abstract; use a concrete test subclass.
 2. `npm test` → all tests pass
 3. **Browser** `npm run dev` → dock at Elysium Station → TRADER:
    - BUY tab: select an item → modal overlays the trader list.
-   - Dialog shows title `Buy {item name}`, Quantity field, Total Value derived row, `| Buy |` and `| Cancel |` buttons.
+   - Dialog shows title, Quantity field, Total Value derived row, confirm and cancel buttons.
    - Initial quantity = min(trader stock, max affordable).
-   - Arrow UP/DOWN changes quantity by 1; value clamps at 0 and max.
+   - Arrow UP/DOWN changes quantity; value clamps at 0 and max.
    - Tab cycles focus; focused control is green.
    - Type `3` → quantity becomes 3 (first key replaces). Type `0` → becomes 30.
-   - Backspace → becomes 3 again. Backspace again → becomes 0.
+     Backspace → 3. Backspace → 0.
    - Total Value updates on every change.
    - Enter confirms; item removed from BUY list; credits reduced; SELL tab shows item.
-   - Escape / two-finger tap cancels; no change to inventory.
-   - SELL tab: select a held item → similar dialog with initial qty = all held. Confirm → item disappears from SELL tab, credits increase.
-4. Open STATION HUB → BUY FUEL (if tank not full):
-   - Modal with `Buy Fuel` title, Litres field (initial = min(missing, affordable)), step 10.
-   - Total Value = litres × 10 CR.
-   - Confirm → fuel increases by selected litres; credits decrease.
+   - Escape cancels; no change to inventory.
+   - SELL tab: similar dialog; confirm removes from SELL tab and increases credits.
+4. STATION HUB → BUY FUEL (if tank not full):
+   - Modal with Litres field, initial = min(missing, affordable), step 10.
+   - Confirm → fuel increases; credits decrease.
 5. **Terminal** `npm run terminal` → same flows using keyboard only.
 
 ---

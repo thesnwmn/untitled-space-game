@@ -13,13 +13,12 @@ screen, or in future: jumps to a different destination).
 
 ### What changes
 
-`ShipScene` currently instantiates `new Starfield()`, which always uses the default
-seed of `42`. All visits therefore show identical star layouts.
+`ShipScene` currently instantiates `new Starfield()` with a fixed seed of `42`.
+All visits therefore show identical star layouts.
 
 After this feature, `ShipScene` receives a `starfieldSeed: number` from the
-orchestrator (`main.ts` / `terminal.ts`). The seed is a random 32-bit integer
-generated once per visit and reused for every subsequent `ShipScene` instance
-within that visit.
+orchestrator. The seed is a random 32-bit integer generated once per visit and
+reused for every subsequent `ShipScene` instance within that visit.
 
 ### Visit lifecycle
 
@@ -37,98 +36,40 @@ within that visit.
 - Every trip through Main Menu → Story → Station → Undock yields a different star
   layout (different star positions and different initial twinkling phases).
 - Docking and undocking multiple times at the same station shows the same star
-  positions. Twinkling phases resume from the beginning of the period (same seed
-  ⟹ same initial phase), which is imperceptible given continuous animation.
+  positions.
 
 ---
 
-## Implementation
+## Technical notes
 
 ### `ShipScene.ts`
 
-Change the constructor signature to require a seed:
-
-```typescript
-constructor(
-  inputHandler: InputHandler,
-  context: GameContext,
-  onDock: () => void,
-  starfieldSeed: number,
-)
-```
-
-Replace the existing `new Starfield()` call with `new Starfield(starfieldSeed)`.
-
+Add `starfieldSeed: number` to the constructor signature after the existing parameters.
+Pass it to `new Starfield(starfieldSeed)` instead of the current call with no argument.
 No other changes to `ShipScene`.
 
-### `main.ts`
+### `main.ts` and `terminal.ts`
 
-Add a module-level variable to hold the current destination seed:
+Add a module-level `destinationSeed: number | null` variable, initially `null`.
 
-```typescript
-let destinationSeed: number | null = null;
-```
+`goToShip`: if the seed is null, generate a random non-zero 32-bit integer and store
+it; if it already has a value, reuse it. Either way, pass it to `ShipScene`.
 
-Update `goToShip` to generate a fresh seed when none exists, and preserve it when
-one is already set (i.e. the player is undocking):
+`goToMainMenu` and `goToStory`: clear the seed to `null` before constructing the scene.
+Extract `goToMainMenu` from the current inline construction if it doesn't already exist
+as a named function.
 
-```typescript
-const goToShip = () => {
-  if (destinationSeed === null) {
-    destinationSeed = (Math.floor(Math.random() * 0xFFFF_FFFF) + 1) >>> 0;
-  }
-  currentScene = new ShipScene(input, context, goToStation, destinationSeed);
-};
-```
-
-Seed must be cleared whenever the player leaves a destination entirely. Add a
-`goToMainMenu` function (the initial scene is set inline today; extract it) and
-clear the seed in `goToStory` too:
-
-```typescript
-const goToMainMenu = () => {
-  destinationSeed = null;
-  currentScene = new MainMenuScene(input, context, goToStory);
-};
-
-const goToStory = () => {
-  destinationSeed = null;
-  currentScene = new StoryScene(input, context, goToStation);
-};
-```
-
-Replace the inline `currentScene = new MainMenuScene(...)` at the bottom with
-`goToMainMenu()`.
-
-### `terminal.ts`
-
-Apply the same changes as `main.ts`:
-- Add `let destinationSeed: number | null = null`
-- Same `goToShip` logic
-- Clear `destinationSeed` in `goToMainMenu` / `goToStory`
-
-### No changes needed to
-
-- `Starfield.ts` — already accepts an arbitrary seed; LCG is deterministic for any
-  non-zero 32-bit value
-- `StationMenuScene.ts`, `TraderScene.ts`, `MissionBoardScene.ts` — routing
-  callbacks are unchanged; these scenes never touch the starfield
-- World docs / destination files — seeds are generated at runtime, not stored
+Apply the same changes to both orchestrators.
 
 ---
 
 ## Tests
 
-Add or extend `ShipScene.test.ts`:
+Add to `ShipScene.test.ts`:
+- A given seed produces the same star positions as `new Starfield(seed)` directly.
+- Two different seeds produce at least one star position that differs.
 
-1. **Seed is used** — constructing `ShipScene` with seed `N` produces a `Starfield`
-   whose star positions match `new Starfield(N)` directly.
-2. **Different seeds differ** — two `ShipScene` instances with distinct seeds have
-   at least one star position that differs.
-3. **TypeScript** — the constructor requires a `starfieldSeed` argument (compile-time
-   check; `npx tsc --noEmit` must pass with zero errors).
-
-Orchestration logic in `main.ts` / `terminal.ts` is verified by play-test.
+Orchestration logic is verified by play-test.
 
 ---
 
@@ -147,3 +88,9 @@ Orchestration logic in `main.ts` / `terminal.ts` is verified by play-test.
 ### Terminal (`npm run terminal`)
 
 Repeat the same steps using keyboard navigation.
+
+---
+
+## Dependencies
+
+None beyond the existing `Starfield` class, which already accepts an arbitrary seed.
