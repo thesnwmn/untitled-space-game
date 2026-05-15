@@ -62,11 +62,27 @@ All scenes that depend on dock/space state (ShipScene, TravelMenuScene) read
 
 ## Animation scenes
 
-Both animation scenes implement `Scene` directly, accept no `InputHandler`, and auto-advance via an elapsed-time guard:
+All animation scenes extend `BaseTransitionScene` (`src/game/scenes/base-transition-scene.ts`), accept no `InputHandler`, and auto-advance via an elapsed-time guard. They are kept as separate classes (rather than parameterised) to allow future visual divergence.
 
-| Scene | Duration | Fired by | Advances to |
-|---|---|---|---|
-| `JumpAnimationScene` | 5 000 ms | `onJumpSelected` | `goToArrival` → TravelMenuScene (arrival mode) |
-| `InSystemTravelAnimationScene` | 2 000 ms | `onDestinationSelected` | `goToStation` → StationMenuScene |
+**Constructor signature for all six scenes:**
+```typescript
+(player: PlayerState, context: GameContext, onComplete: () => void)
+```
+`InSystemTravelAnimationScene` adds an optional fourth parameter:
+```typescript
+(player: PlayerState, context: GameContext, onComplete: () => void, targetLabel?: string)
+```
+`targetLabel` is used verbatim as the destination name in the content area when the player has no `destinationId` (e.g. fly-into-space passes `'OPEN SPACE'`).
 
-They are kept as separate classes (rather than parameterised) to allow future visual divergence (different text, effects, or durations).
+| Scene | Duration | Fired by | Advances to | Chrome override |
+|---|---|---|---|---|
+| `JumpAnimationScene` | 5 000 ms | `onJumpSelected` | `goToArrival` → TravelMenuScene | `systemLabel: 'IN TRANSIT'`, `destinationLabel: null` |
+| `InSystemTravelAnimationScene` | 2 000 ms | `onDestinationSelected` / `goToFlyIntoSpace` | `goToShip` → ShipScene | `destinationLabel: 'IN TRANSIT'` |
+| `SurfaceLandingAnimationScene` | 2 500 ms | `goToLandOrDock` (surface dest) | `goToStation` → StationMenuScene | none (default chrome) |
+| `AsteroidLandingAnimationScene` | 2 500 ms | `goToLandOrDock` (asteroid dest) | `goToStation` → StationMenuScene | none (default chrome) |
+| `SurfaceTakeOffAnimationScene` | 1 500 ms | `goToTakeOffOrUndock` (surface dest) | `goToShip` → ShipScene | none (default chrome) |
+| `AsteroidTakeOffAnimationScene` | 1 500 ms | `goToTakeOffOrUndock` (asteroid dest) | `goToShip` → ShipScene | none (default chrome) |
+
+**Routing methods in `game.ts`:**
+- `goToLandOrDock()` — called from `goToShip`'s dock callback; checks `player.destinationId`'s `locationType` and plays the appropriate landing animation, or calls `goToStation()` directly for orbital/deep-space.
+- `goToTakeOffOrUndock()` — passed as the `onShip` callback to `StationMenuScene`; plays the appropriate take-off animation, or calls `goToShip()` directly for orbital/deep-space.
