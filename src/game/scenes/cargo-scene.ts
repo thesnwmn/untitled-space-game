@@ -56,7 +56,7 @@ export class CargoScene implements Scene {
         const commodity = getCommodity(entry.commodityId);
         if (!commodity) continue;
         const entryWeight = entry.qty * commodity.weightKg;
-        const suffix = `  x${entry.qty}  ${entryWeight}KG`;
+        const suffix = `  x${entry.qty}  ${commodity.basePrice}CR  ${entryWeight}KG`;
         const maxNameWidth = Math.max(6, w - 4 - suffix.length);
         const rawName = commodity.name;
         const name = rawName.length > maxNameWidth ? rawName.slice(0, maxNameWidth) : rawName;

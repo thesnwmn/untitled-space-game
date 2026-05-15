@@ -14,6 +14,44 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 032 · Modal Input Dialog — DONE
+
+**Built:**
+- `src/shared/types.ts` — added `'TAB'` to `GameAction` union; added optional `onCharInput` to `InputHandler`
+- `src/game/ui/modal-input-dialog.ts` — new `ModalInputDialog` class; 30-col overlay centred in buffer; height `8+D` (D = derived rows); TAB/arrow/digit/backspace/SELECT/BACK action routing; first-character-clears; focus cycling (field → confirm → cancel → field)
+- `src/game/scenes/base-menu-scene.ts` — added `modal` field; `openModal`/`closeModal` helpers; modal routing check before `activated` guard in all three handler paths (`onCharInput`, `onAction`, `onTap`); modal rendered last in `render()`
+- `src/game/scenes/trader-scene.ts` — `onBuy`/`onSell` now take `(commodityId, qty)`; SELECT opens `ModalInputDialog` instead of calling callback directly; initial qty = min(stock, affordable); does not set `activated` on SELECT; `syncItems`/`clampCursor` called in `onConfirm`
+- `src/game/scenes/station-menu-scene.ts` — `onRefuel` signature changed to `(cost, litres)`; BUY FUEL uses `fuelItemIdx` + `activateCurrent()` override to open modal; `activated` reset to `false` on cancel
+- `src/game/PlayerState.ts` — `removeCargo` extended with optional `qty` param for partial removal
+- `src/game/game.ts` — updated `onBuy`, `onSell`, `onRefuel` for new signatures; partial stock depletion/merge
+- `src/platform/dom/dom-input-handler.ts` — added Tab → `'TAB'`; digits fire `onCharInput` then fall through to `NAV_N`; Backspace fires `onCharInput('\b')` only
+- `src/platform/terminal/terminal-input-handler.ts` — same digit/backspace/tab behaviour as DOM handler
+- `src/game/ui/modal-input-dialog.test.ts` — new (39 tests)
+- `src/game/scenes/base-menu-scene.test.ts` — added modal routing describe block (6 new tests); updated `MockInputHandler` with `onCharInput`/`triggerCharInput`
+- `src/game/scenes/trader-scene.test.ts` — updated for 2-step modal flow and `(commodityId, qty)` args
+- `src/game/scenes/station-menu-scene.test.ts` — updated for 2-step fuel modal and `(cost, litres)` order
+- `src/game/game.test.ts` — updated `onBuy`/`onSell` call sites; added partial buy/sell tests
+- `src/platform/dom/dom-input-handler.test.ts` — 4 new tests for Tab/digit/backspace charInput
+- `src/platform/terminal/terminal-input-handler.test.ts` — 3 new tests for tab/digit/DEL
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 416 passed | 1 skipped (1 pre-existing; 61 new)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. `npm run dev` → dock at any station → TRADER → BUY tab: select any item → modal appears overlaying the list.
+2. Dialog shows title, Quantity field (initial = min(stock, affordable)), Total value derived row, BUY / CANCEL buttons.
+3. Arrow UP/DOWN changes quantity (step 1, clamped). TAB cycles focus field → BUY → CANCEL → field (green highlight).
+4. Type `3` → quantity becomes 3 (first key replaces). Type `0` → becomes 30. Backspace → 3. Backspace → 0.
+5. Enter on field or BUY button confirms; modal closes; credits decrease; item moves to SELL tab.
+6. Escape cancels from any focus; no inventory change.
+7. SELL tab: same flow; confirm reduces hold, increases credits.
+8. STATION HUB → BUY FUEL (if tank not full) → modal; initial litres = min(missing, affordable); step 10. Confirm → fuel up; credits down.
+9. `npm run terminal` → same flows using keyboard only.
+
+---
+
 ### 031 · Cargo Trading — DONE
 
 **Built:**

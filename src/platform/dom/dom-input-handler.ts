@@ -11,6 +11,7 @@ const KEY_MAP: Record<string, GameAction> = {
   ']': 'PAGE_DOWN',
   Enter: 'SELECT',
   Escape: 'BACK',
+  Tab: 'TAB',
   p: 'PAUSE',
   P: 'PAUSE',
   c: 'CARGO',
@@ -26,8 +27,10 @@ const KEY_MAP: Record<string, GameAction> = {
   '9': 'NAV_9',
 };
 
+const DIGIT_KEYS = new Set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+
 const PREVENT_DEFAULT_KEYS = new Set([
-  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown',
+  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Tab',
 ]);
 
 interface PointerStart { startX: number; startY: number; }
@@ -35,6 +38,7 @@ interface PointerStart { startX: number; startY: number; }
 export class DOMInputHandler implements InputHandler {
   private actionHandlers: ((action: GameAction) => void)[] = [];
   private tapHandlers: ((col: number, row: number) => void)[] = [];
+  private charInputHandlers: ((char: string) => void)[] = [];
   private pointerStartMap = new Map<number, PointerStart>();
   private activePointers = new Set<number>();
   private keyListener: ((event: KeyboardEvent) => void) | null = null;
@@ -76,11 +80,27 @@ export class DOMInputHandler implements InputHandler {
     this.tapHandlers.push(handler);
   }
 
+  onCharInput(handler: (char: string) => void): void {
+    this.charInputHandlers.push(handler);
+  }
+
   connect(): void {
     this.keyListener = (event: KeyboardEvent) => {
+      if (PREVENT_DEFAULT_KEYS.has(event.key)) event.preventDefault();
+
+      // Digit keys: fire charInput AND fall through to KEY_MAP (for NAV_1–NAV_9)
+      if (DIGIT_KEYS.has(event.key)) {
+        for (const h of this.charInputHandlers.slice()) h(event.key);
+      }
+
+      // Backspace/Delete: fire charInput only
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        for (const h of this.charInputHandlers.slice()) h('\b');
+        return;
+      }
+
       const action = KEY_MAP[event.key];
       if (!action) return;
-      if (PREVENT_DEFAULT_KEYS.has(event.key)) event.preventDefault();
       for (const handler of this.actionHandlers.slice()) handler(action);
     };
     document.addEventListener('keydown', this.keyListener);

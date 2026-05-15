@@ -9,6 +9,7 @@ import { makePlayer } from '../../tests/makePlayer';
 class MockInputHandler implements InputHandler {
   private actionHandlers: Array<(action: GameAction) => void> = [];
   private tapHandlers: Array<(col: number, row: number) => void> = [];
+  private charInputHandlers: Array<(char: string) => void> = [];
 
   onAction(handler: (action: GameAction) => void): void {
     this.actionHandlers.push(handler);
@@ -18,12 +19,20 @@ class MockInputHandler implements InputHandler {
     this.tapHandlers.push(handler);
   }
 
+  onCharInput(handler: (char: string) => void): void {
+    this.charInputHandlers.push(handler);
+  }
+
   triggerAction(action: GameAction): void {
     for (const h of this.actionHandlers) h(action);
   }
 
   triggerTap(col: number, row: number): void {
     for (const h of this.tapHandlers) h(col, row);
+  }
+
+  triggerCharInput(char: string): void {
+    for (const h of this.charInputHandlers) h(char);
   }
 }
 
@@ -67,8 +76,8 @@ function makeScene(
   input: MockInputHandler,
   opts: {
     stock?: TraderStockEntry[];
-    onBuy?: (id: string) => void;
-    onSell?: (id: string) => void;
+    onBuy?: (id: string, qty: number) => void;
+    onSell?: (id: string, qty: number) => void;
     onHub?: () => void;
     onUndock?: () => void;
   } = {},
@@ -153,9 +162,9 @@ describe('TraderScene', () => {
       const scene = makeScene(input, { stock: [{ commodityId: 'iron-ore', qty: 5 }] });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // iron-ore basePrice=80; 5×80=400 CR
+      // iron-ore basePrice=80 per unit
       expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore (x5)');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('400 CR');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('80 CR');
     });
 
     it('BUY tab shows NO STOCK AVAILABLE when stock is empty', () => {
@@ -190,7 +199,7 @@ describe('TraderScene', () => {
     it('SELL tab renders hold items with name, qty and price', () => {
       const input = new MockInputHandler();
       const player = makePlayer();
-      player.addCargo('rations', 3); // rations basePrice=60; 3×60=180 CR
+      player.addCargo('rations', 3); // rations basePrice=60 per unit
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
         makeStock(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
@@ -199,7 +208,7 @@ describe('TraderScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('Ration Packs (x3)');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('180 CR');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('60 CR');
     });
 
     it('SELL tab shows CARGO HOLD EMPTY when hold is empty', () => {
@@ -254,15 +263,18 @@ describe('TraderScene', () => {
       expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
     });
 
-    it('SELECT on BUY tab calls onBuy with correct commodity id', () => {
+    it('SELECT opens modal; second SELECT confirms and calls onBuy with correct id and qty', () => {
+      // iron-ore: basePrice=80, stock qty=5, player credits=5000 → initial=min(5,62)=5
       const onBuy = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, { onBuy });
-      input.triggerAction('SELECT');
-      expect(onBuy).toHaveBeenCalledWith('iron-ore');
+      input.triggerAction('SELECT'); // opens modal — onBuy NOT called yet
+      expect(onBuy).not.toHaveBeenCalled();
+      input.triggerAction('SELECT'); // confirm modal (field focused)
+      expect(onBuy).toHaveBeenCalledWith('iron-ore', 5);
     });
 
-    it('SELECT on SELL tab calls onSell with correct commodity id', () => {
+    it('SELECT on SELL tab opens modal; confirm calls onSell with correct id and qty', () => {
       const onSell = vi.fn();
       const input = new MockInputHandler();
       const player = makePlayer();
@@ -272,18 +284,21 @@ describe('TraderScene', () => {
         makeStock(), vi.fn(), onSell, vi.fn(), vi.fn(),
       );
       input.triggerAction('RIGHT');
-      input.triggerAction('SELECT');
-      expect(onSell).toHaveBeenCalledWith('rations');
+      input.triggerAction('SELECT'); // opens modal — initial qty=3 (full hold)
+      expect(onSell).not.toHaveBeenCalled();
+      input.triggerAction('SELECT'); // confirm
+      expect(onSell).toHaveBeenCalledWith('rations', 3);
     });
 
-    it('BUY tab shows NO STOCK AVAILABLE after all items are bought', () => {
+    it('BUY tab shows NO STOCK AVAILABLE after all items are bought via modal', () => {
       const stock: TraderStockEntry[] = [{ commodityId: 'iron-ore', qty: 5 }];
       const input = new MockInputHandler();
       const scene = makeScene(input, {
         stock,
-        onBuy: (_id) => { stock.splice(0, 1); }, // simulate buy removing the item
+        onBuy: (_id, _qty) => { stock.splice(0, 1); },
       });
-      input.triggerAction('SELECT');
+      input.triggerAction('SELECT'); // opens modal
+      input.triggerAction('SELECT'); // confirms → onBuy called → syncItems
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('NO STOCK AVAILABLE');
@@ -294,9 +309,10 @@ describe('TraderScene', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, { onBuy, onHub });
-      input.triggerAction('SELECT');
+      input.triggerAction('SELECT'); // opens modal
+      input.triggerAction('SELECT'); // confirms → onBuy called
       expect(onBuy).toHaveBeenCalledTimes(1);
-      // After buy, BACK should still work (scene is not activated)
+      // After confirming, modal is closed and scene is still active → BACK navigates
       input.triggerAction('BACK');
       expect(onHub).toHaveBeenCalledTimes(1);
     });
@@ -352,14 +368,16 @@ describe('TraderScene', () => {
       expect(buf2[TAB_ROW][SELL_TAB_COL].bg).toBe('green');
     });
 
-    it('tap on item row calls onBuy for BUY tab item', () => {
+    it('tap on item row opens modal; confirm calls onBuy', () => {
       const onBuy = vi.fn();
       const input = new MockInputHandler();
       const scene = makeScene(input, { onBuy });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(5, ITEM_ROW_START);
-      expect(onBuy).toHaveBeenCalledWith('iron-ore');
+      input.triggerTap(5, ITEM_ROW_START); // opens modal
+      expect(onBuy).not.toHaveBeenCalled();
+      input.triggerAction('SELECT'); // confirm (field focused)
+      expect(onBuy).toHaveBeenCalledWith('iron-ore', 5);
     });
 
     it('tap on footer UNDOCK button fires onUndock and silences input', () => {

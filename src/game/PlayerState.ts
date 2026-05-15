@@ -70,9 +70,14 @@ export class PlayerState {
     }
   }
 
-  removeCargo(commodityId: string): void {
+  removeCargo(commodityId: string, qty?: number): void {
     const idx = this._cargoHold.findIndex(e => e.commodityId === commodityId);
-    if (idx >= 0) this._cargoHold.splice(idx, 1);
+    if (idx < 0) return;
+    if (qty !== undefined && qty < this._cargoHold[idx].qty) {
+      this._cargoHold[idx].qty -= qty;
+    } else {
+      this._cargoHold.splice(idx, 1);
+    }
   }
 
   get cargoWeightKg(): number { return computeCargoWeightKg(this._cargoHold); }

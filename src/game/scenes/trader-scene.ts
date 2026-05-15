@@ -5,11 +5,12 @@ import { getCommodity, getDestination } from '../world/world-data';
 import { writeText } from '../../shared/buffer-utils';
 import { contentBottom } from '../ui/screen-chrome';
 import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';
+import { ModalInputDialog } from '../ui/modal-input-dialog';
 
 export class TraderScene extends BaseMenuScene {
   private readonly traderStock: TraderStockEntry[];
-  private readonly onBuy: (commodityId: string) => void;
-  private readonly onSell: (commodityId: string) => void;
+  private readonly onBuy: (commodityId: string, qty: number) => void;
+  private readonly onSell: (commodityId: string, qty: number) => void;
   private readonly onHub: () => void;
   private readonly onUndock: () => void;
 
@@ -19,8 +20,8 @@ export class TraderScene extends BaseMenuScene {
     player: PlayerState,
     destinationId: string,
     traderStock: TraderStockEntry[],
-    onBuy: (commodityId: string) => void,
-    onSell: (commodityId: string) => void,
+    onBuy: (commodityId: string, qty: number) => void,
+    onSell: (commodityId: string, qty: number) => void,
     onHub: () => void,
     onUndock: () => void,
   ) {
@@ -61,11 +62,26 @@ export class TraderScene extends BaseMenuScene {
     return this.traderStock.flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
-      const totalPrice = entry.qty * commodity.basePrice;
       return [{
         label: `${commodity.name} (x${entry.qty})`,
-        info: `${totalPrice} CR`,
-        action: () => this.onBuy(entry.commodityId),
+        info: `${commodity.basePrice} CR`,
+        action: () => {
+          const maxAffordable = Math.floor(this.player.credits / commodity.basePrice);
+          const initial = Math.min(entry.qty, maxAffordable);
+          this.openModal(new ModalInputDialog({
+            title: commodity.name.toUpperCase(),
+            field: { label: 'Quantity', initialValue: initial, min: 0, max: initial },
+            derivedRows: [{ label: 'Total', compute: qty => `${qty * commodity.basePrice} CR` }],
+            confirmLabel: 'BUY',
+            onConfirm: (qty) => {
+              if (qty > 0) this.onBuy(entry.commodityId, qty);
+              this.syncItems();
+              this.clampCursor();
+              this.closeModal();
+            },
+            onCancel: () => this.closeModal(),
+          }));
+        },
       }];
     });
   }
@@ -78,11 +94,24 @@ export class TraderScene extends BaseMenuScene {
     return [...hold].flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
-      const totalPrice = entry.qty * commodity.basePrice;
       return [{
         label: `${commodity.name} (x${entry.qty})`,
-        info: `${totalPrice} CR`,
-        action: () => this.onSell(entry.commodityId),
+        info: `${commodity.basePrice} CR`,
+        action: () => {
+          this.openModal(new ModalInputDialog({
+            title: commodity.name.toUpperCase(),
+            field: { label: 'Quantity', initialValue: entry.qty, min: 0, max: entry.qty },
+            derivedRows: [{ label: 'Total', compute: qty => `${qty * commodity.basePrice} CR` }],
+            confirmLabel: 'SELL',
+            onConfirm: (qty) => {
+              if (qty > 0) this.onSell(entry.commodityId, qty);
+              this.syncItems();
+              this.clampCursor();
+              this.closeModal();
+            },
+            onCancel: () => this.closeModal(),
+          }));
+        },
       }];
     });
   }
@@ -108,10 +137,7 @@ export class TraderScene extends BaseMenuScene {
     if (items.length === 0 || this.cursorIdx < 0 || this.cursorIdx >= items.length) return;
     const item = items[this.cursorIdx];
     if (item.disabled) return;
-    item.action(); // calls onBuy or onSell; mutates traderStock / player hold
-    // Re-sync after the data mutation and clamp the cursor to a valid position
-    this.syncItems();
-    this.clampCursor();
+    item.action(); // opens modal; syncItems/clampCursor happen in modal onConfirm
     // Don't set activated — player can keep trading
   }
 
