@@ -16,7 +16,7 @@ to scenes as one argument instead of many individual parameters.
   The old `playerState` plain object, `currentSystemId`, `currentDestinationId`, and
   the `drive` constant are removed. The `context.X = ...` sync lines before every
   scene construction are removed.
-- `GameContext` contains only `environment`, `primaryInput`, and `debug`.  The fields
+- `GameContext` contains only `environment`, `primaryInput`, and `debug`. The fields
   `systemId`, `destinationId`, and `credits` are removed.
 - `ScreenChrome` accepts `player: PlayerState` alongside `context: GameContext` and
   reads location and credits from `player` rather than `context`.
@@ -25,8 +25,8 @@ to scenes as one argument instead of many individual parameters.
 - `StationMenuScene` drops individual `fuelL`, `fuelCapacityL`, and `credits` params.
 - `TravelMenuScene` drops individual `systemId`, `currentDestinationId`, `fuelL`,
   `fuelCapacityL`, and `driveId` params.
-- `ShipScene` drops individual `systemId`, `destinationId`, and the
-  `PlayerStateView` spread; the `PlayerStateView` interface is deleted.
+- `ShipScene` drops individual `systemId`, `destinationId`, and the `PlayerStateView`
+  spread; the `PlayerStateView` interface is deleted.
 - `npx tsc --noEmit` passes with zero errors.
 - `npm test` passes with zero failures.
 
@@ -40,10 +40,7 @@ to scenes as one argument instead of many individual parameters.
 
 ## Technical notes
 
-### 1 · `CargoEntry` in `src/game/world/types.ts`
-
-Add after existing type definitions (feature 031 imports this; it no longer needs to
-define it):
+### `CargoEntry` in `src/game/world/types.ts`
 
 ```typescript
 export interface CargoEntry {
@@ -52,312 +49,72 @@ export interface CargoEntry {
 }
 ```
 
-### 2 · `src/game/PlayerState.ts` (new file)
+### `PlayerState` public API (`src/game/PlayerState.ts`)
 
-```typescript
-import type { CargoEntry } from './world/types';
-import { getShip } from './world/world-data';
+Constructor takes `{ shipId, driveId, credits, systemId, destinationId }`. Reads the
+ship record from world data to populate `fuelCapacityL` and `cargoCapacity`. Starts
+`fuelL` at full capacity.
 
-export class PlayerState {
-  private readonly _shipId: string;
-  private readonly _fuelCapacityL: number;
-  private readonly _cargoCapacity: number;
-  private readonly _driveId: string;
-  private _fuelL: number;
-  private _credits: number;
-  private readonly _cargoHold: CargoEntry[] = [];
-  private _systemId: string;
-  private _destinationId: string | null;
+Ship (immutable after construction): `shipId`, `driveId`, `fuelCapacityL`, `cargoCapacity`
 
-  constructor(params: {
-    shipId: string;
-    driveId: string;
-    credits: number;
-    systemId: string;
-    destinationId: string | null;
-  }) {
-    const ship = getShip(params.shipId)!;
-    this._shipId        = params.shipId;
-    this._driveId       = params.driveId;
-    this._fuelCapacityL = ship.fuelCapacityL;
-    this._cargoCapacity = ship.cargoCapacityKg;
-    this._fuelL         = ship.fuelCapacityL; // starts full
-    this._credits       = params.credits;
-    this._systemId      = params.systemId;
-    this._destinationId = params.destinationId;
-  }
+Fuel: `fuelL` getter; `addFuel(litres)` clamps at capacity; `consumeFuel(litres)` clamps at 0
 
-  // Ship (immutable after construction)
-  get shipId(): string        { return this._shipId; }
-  get driveId(): string       { return this._driveId; }
-  get fuelCapacityL(): number { return this._fuelCapacityL; }
-  get cargoCapacity(): number { return this._cargoCapacity; }
+Credits: `credits` getter; `addCredits(amount)`; `spendCredits(amount)`
 
-  // Fuel
-  get fuelL(): number { return this._fuelL; }
-  addFuel(litres: number): void {
-    this._fuelL = Math.min(this._fuelL + litres, this._fuelCapacityL);
-  }
-  consumeFuel(litres: number): void {
-    this._fuelL = Math.max(0, this._fuelL - litres);
-  }
+Cargo: `cargoHold: readonly CargoEntry[]` getter; `addCargo(commodityId, qty)` merges
+into existing entry or pushes new; `removeCargo(commodityId)` removes entry (no-op if absent)
 
-  // Credits
-  get credits(): number { return this._credits; }
-  addCredits(amount: number): void   { this._credits += amount; }
-  spendCredits(amount: number): void { this._credits -= amount; }
+Location: `systemId` and `destinationId` getters; `dock(destinationId)`; `undock()`
+clears to null; `jumpTo(systemId)` sets system and clears destination
 
-  // Cargo (feature 031 adds cargoWeightKg once commodity weights are available)
-  get cargoHold(): readonly CargoEntry[] { return this._cargoHold; }
-  addCargo(commodityId: string, qty: number): void {
-    const existing = this._cargoHold.find(e => e.commodityId === commodityId);
-    if (existing) existing.qty += qty;
-    else this._cargoHold.push({ commodityId, qty });
-  }
-  removeCargo(commodityId: string): void {
-    const idx = this._cargoHold.findIndex(e => e.commodityId === commodityId);
-    if (idx !== -1) this._cargoHold.splice(idx, 1);
-  }
+Leave `cargoWeightKg` as a stub returning 0 — feature 031 will replace it.
 
-  // Location
-  get systemId(): string             { return this._systemId; }
-  get destinationId(): string | null { return this._destinationId; }
-  dock(destinationId: string): void  { this._destinationId = destinationId; }
-  undock(): void                     { this._destinationId = null; }
-  jumpTo(systemId: string): void     {
-    this._systemId      = systemId;
-    this._destinationId = null;
-  }
-}
-```
+### `GameContext` (`src/shared/types.ts`)
 
-`_driveId` is `readonly` for now; a drive-upgrade feature can relax that later.
+Remove `systemId`, `destinationId`, and `credits`. Keep only `environment`,
+`primaryInput`, and `debug`.
 
-### 3 · `src/shared/types.ts` — slim down `GameContext`
+### `ScreenChrome` (`src/game/ui/ScreenChrome.ts`)
 
-Remove `systemId`, `destinationId`, and `credits`:
+Add `player: PlayerState` as a second constructor parameter. Replace all reads of
+`context.systemId`, `context.destinationId`, and `context.credits` with `player.*`.
 
-```typescript
-export interface GameContext {
-  environment: RuntimeEnvironment;
-  primaryInput: PrimaryInput;
-  debug: boolean;
-}
-```
+### `BaseMenuScene` (`src/game/scenes/BaseMenuScene.ts`)
 
-### 4 · `src/game/ui/ScreenChrome.ts`
+Add `player: PlayerState` as the third constructor parameter (after `context`). Pass
+it to `new ScreenChrome(context, player)`. Store as `protected readonly player` so
+subclasses can access player state without receiving it as a separate parameter.
 
-Add `PlayerState` import and a second constructor parameter:
+### Scene constructor changes
 
-```typescript
-import type { PlayerState } from '../PlayerState';
-
-export class ScreenChrome {
-  private readonly context: GameContext;
-  private readonly player: PlayerState;
-
-  constructor(context: GameContext, player: PlayerState) {
-    this.context = context;
-    this.player  = player;
-  }
-  ...
-}
-```
-
-Replace all references inside `ScreenChrome`:
-
-| Old | New |
-|---|---|
-| `this.context.systemId` | `this.player.systemId` |
-| `this.context.destinationId` | `this.player.destinationId` |
-| `this.context.credits` | `this.player.credits` |
-
-### 5 · `src/game/scenes/BaseMenuScene.ts`
-
-Add `player: PlayerState` as the **third** constructor parameter (after `context`,
-before any title / items / nav args). Pass it to `new ScreenChrome(context, player)`.
-
-Store it as `protected readonly player: PlayerState` so subclasses can read state
-directly without receiving it again as a separate parameter.
-
-### 6 · Scene constructor changes
-
-**BaseMenuScene subclasses** — each gains `player: PlayerState` after `context` and
-passes it to `super(...)`. Individual state parameters are removed where they are now
-available via `player`:
-
-| Scene | Parameters removed | Behaviour change |
+| Scene | Parameters removed | Notes |
 |---|---|---|
 | `StationMenuScene` | `fuelL`, `fuelCapacityL`, `credits` | reads `this.player.*` |
 | `MainMenuScene` | — | player threaded through to chrome |
 | `StoryScene` | — | player threaded through to chrome |
 | `TraderScene` | — | player threaded through to chrome |
 | `MissionBoardScene` | — | player threaded through to chrome |
+| `ShipScene` | `systemId`, `destinationId`, `PlayerStateView` spread | reads `player.*`; `PlayerStateView` deleted |
+| `TravelMenuScene` | `systemId`, `currentDestinationId`, `fuelL`, `fuelCapacityL`, `driveId` | reads `player.*` |
 
-**Custom scenes** — `ShipScene` and `TravelMenuScene` both hold a `PlayerState`
-reference and construct `ScreenChrome` themselves:
+### Orchestrator changes (`src/main.ts` and `terminal.ts`)
 
-**`ShipScene` new constructor:**
-```typescript
-constructor(
-  inputHandler: InputHandler,
-  context: GameContext,
-  player: PlayerState,
-  onTravel: () => void,
-  onDock: () => void,
-)
-```
-- `PlayerStateView` interface is deleted.
-- Reads `player.systemId`, `player.destinationId`, `player.fuelL`, `player.fuelCapacityL`,
-  `player.credits` directly. (`player.cargoWeightKg` and `player.cargoCapacity` are used
-  once feature 031 adds them.)
+Remove: `playerState` plain object, `currentSystemId`, `currentDestinationId`, `drive`
+constant, all `context.X = ...` sync lines before scene construction.
 
-**`TravelMenuScene` new constructor:**
-```typescript
-constructor(
-  inputHandler: InputHandler,
-  context: GameContext,
-  player: PlayerState,
-  onDestinationSelected: (destinationId: string) => void,
-  onJumpSelected: (targetSystemId: string) => void,
-  onFlyIntoSpace: () => void,
-  onShip: () => void,
-)
-```
-- Reads `player.systemId`, `player.destinationId`, `player.fuelL`, `player.fuelCapacityL`,
-  `player.driveId` directly.
+Add: construct one `PlayerState` at startup from game settings. `GameContext` no longer
+includes any player state fields. Pass `player` as the third argument to every scene
+constructor; remove all individual state arguments that are now on `player`.
 
-### 7 · Orchestrator changes (`src/main.ts` and `terminal.ts`)
+### Tests
 
-Both files are changed identically.
+Add `src/game/player-state.test.ts` covering each public method: fuel clamping,
+credit mutation, cargo merge and remove (including no-op remove), location transitions,
+and the full-fuel initial state.
 
-**Remove:**
-- `let currentSystemId`, `let currentDestinationId`
-- `const playerState = { ... }`
-- `const drive = getDrive(...)!`
-- Every `context.systemId = ...`, `context.destinationId = ...`, `context.credits = ...`
-  line before scene construction
-
-**Add:**
-```typescript
-import { PlayerState } from './game/PlayerState';
-
-const player = new PlayerState({
-  shipId:       settings.startingShip,
-  driveId:      ship.defaultJumpDrive,
-  credits:      settings.player.startingCredits,
-  systemId:     startingLocation.system,
-  destinationId: startingLocation.destination,
-});
-```
-
-**`GameContext` construction becomes:**
-```typescript
-const context: GameContext = {
-  environment: 'browser', // or 'terminal'
-  primaryInput,
-  debug,
-};
-```
-
-**Updated callbacks:**
-
-```typescript
-// Refuel (inside goToStation)
-(litres: number, refuelCost: number) => {
-  player.spendCredits(refuelCost);
-  player.addFuel(litres);
-  goToStation();
-}
-
-const onJumpSelected = (targetSystemId: string) => {
-  const route = getRoute(player.systemId, targetSystemId)!;
-  const drive = getDrive(player.driveId)!;
-  const used  = Math.ceil(FUEL_PER_LY * route.distance * drive.fuelEfficiency);
-  player.consumeFuel(used);
-  player.jumpTo(targetSystemId);
-  currentScene = new JumpAnimationScene(getSystem(targetSystemId)!.name, goToArrival);
-};
-
-const onDestinationSelected = (destinationId: string) => {
-  player.dock(destinationId);
-  currentScene = new InSystemTravelAnimationScene(
-    getDestination(destinationId)!.name, goToShip,
-  );
-};
-
-const goToFlyIntoSpace = () => {
-  player.undock();
-  currentScene = new InSystemTravelAnimationScene('OPEN SPACE', goToShip, 'LAUNCHING...');
-};
-
-const goToArrival = () => {
-  // player.jumpTo() already called in onJumpSelected
-  currentScene = new TravelMenuScene(
-    input, context, player,
-    onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
-  );
-};
-```
-
-Each `goTo*` function passes `player` as the third argument; all individual state
-params are gone:
-
-```typescript
-// Before
-new TravelMenuScene(
-  input, context,
-  currentSystemId, currentDestinationId,
-  playerState.fuelL, playerState.fuelCapacityL, playerState.driveId,
-  onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
-);
-
-// After
-new TravelMenuScene(input, context, player,
-  onDestinationSelected, onJumpSelected, goToFlyIntoSpace, goToShip,
-);
-```
-
-```typescript
-// Before
-new StationMenuScene(
-  input, context, currentDestinationId!,
-  playerState.fuelL, playerState.fuelCapacityL, playerState.credits,
-  onRefuel, goToTrader, goToMissionBoard, goToShip,
-);
-
-// After
-new StationMenuScene(
-  input, context, player, currentDestinationId!,
-  onRefuel, goToTrader, goToMissionBoard, goToShip,
-);
-```
-
-Note: `currentDestinationId!` remains as a local derived from `player.destinationId`
-until the Engineer judges it cleaner to inline — either approach is fine.
-
-### 8 · Tests
-
-**New: `src/game/player-state.test.ts`** (~12 tests)
-
-| # | Test |
-|---|---|
-| 1 | `addFuel` does not exceed `fuelCapacityL` |
-| 2 | `consumeFuel` does not go below 0 |
-| 3 | `addCredits` increases credits |
-| 4 | `spendCredits` decreases credits |
-| 5 | `addCargo` creates new entry for unknown commodity |
-| 6 | `addCargo` merges qty for existing commodity |
-| 7 | `removeCargo` deletes entry |
-| 8 | `removeCargo` is a no-op for unknown commodity |
-| 9 | `dock` sets `destinationId` |
-| 10 | `undock` clears `destinationId` to null |
-| 11 | `jumpTo` sets `systemId` and clears `destinationId` |
-| 12 | Constructor starts `fuelL` at full capacity |
-
-**Update all scene test files** that construct scenes: add `player` parameter. A shared
-`makePlayer()` test helper (in e.g. `src/tests/makePlayer.ts`) avoids repeating the
-constructor call in every test file.
+Add a shared `makePlayer()` test helper (e.g. `src/tests/makePlayer.ts`) so every
+scene test that constructs a scene can add `player` without repeating the `PlayerState`
+constructor call.
 
 ## Dependencies
 
