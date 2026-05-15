@@ -1,9 +1,10 @@
-import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpDrive, StoryBeat } from './types';
+import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat } from './types';
 
 export const WORLD: WorldData = {
   settings: {
     player: { name: 'Captain', startingCredits: 100 },
     startingLocation: { system: 'sol', destination: 'elysium-station' },
+    startingShip: 'freighter',
   },
   systems: [
     {
@@ -492,4 +493,8 @@ export function getStoryBeatsByTrigger(trigger: string): StoryBeat[] {
 
 export function getGameSettings(): GameSettings {
   return WORLD.settings;
+}
+
+export function getShip(id: string): Ship | undefined {
+  return WORLD.ships.find(s => s.id === id);
 }

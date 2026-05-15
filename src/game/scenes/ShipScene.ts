@@ -1,5 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { getDestination } from '../world/world-data';
+import { getDestination, getGameSettings, getShip } from '../world/world-data';
 import type { DestinationType } from '../world/types';
 import { Starfield } from './Starfield';
 import { SpaceStation } from './SpaceStation';
@@ -10,13 +10,8 @@ interface PlayerState {
   fuel: number;
   cargo: number;
   cargoCapacity: number;
+  credits: number;
 }
-
-const INITIAL_STATE: PlayerState = {
-  fuel: 100,
-  cargo: 0,
-  cargoCapacity: 50,
-};
 
 // Center text in a fixed-width field; truncates if too long.
 function pad(text: string, width: number): string {
@@ -52,7 +47,14 @@ export class ShipScene implements Scene {
     onTravel: () => void,
     onDock: () => void,
   ) {
-    this.state = { ...INITIAL_STATE };
+    const settings = getGameSettings();
+    const ship = getShip(settings.startingShip)!;
+    this.state = {
+      fuel: 100,
+      cargo: 0,
+      cargoCapacity: ship.cargoCapacityKg,
+      credits: settings.player.startingCredits,
+    };
     this.context = context;
     this.chrome = new ScreenChrome(context);
     this.starfield = new Starfield();
@@ -149,7 +151,7 @@ export class ShipScene implements Scene {
     // ── Stat panels (row 2) ────────────────────────────────────────────────────
     //  \    FUEL: 100%   /\   CARGO: 0/50T  /
     const leftStat  = pad(`FUEL: ${this.state.fuel}%`, inner);
-    const rightStat = pad(`CARGO: ${this.state.cargo}/${this.state.cargoCapacity}T`, inner);
+    const rightStat = pad(`CARGO: ${this.state.cargo}/${this.state.cargoCapacity}KG`, inner);
 
     buffer[statRow][1] = dim('\\');
     for (let c = 0; c < inner; c++)

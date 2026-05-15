@@ -121,6 +121,7 @@ export interface GameSettings {
     system: string;
     destination: string;
   };
+  startingShip: string;
 }
 
 export interface WorldData {
