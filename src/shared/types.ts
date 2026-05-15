@@ -49,7 +49,4 @@ export interface GameContext {
   environment: RuntimeEnvironment;
   primaryInput: PrimaryInput;
   debug: boolean;
-  systemId: string;
-  destinationId: string | null;
-  credits: number;
 }

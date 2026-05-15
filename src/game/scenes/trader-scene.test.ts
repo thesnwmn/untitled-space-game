@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TraderScene } from './trader-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,11 +42,9 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
 
 const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
-  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 const touchContext: GameContext = {
   environment: 'browser', primaryInput: 'touch', debug: false,
-  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 
 // CONTENT_TOP = 3; tab row = CONTENT_TOP+3 = 6; item row start = CONTENT_TOP+5 = 8
@@ -69,7 +68,7 @@ describe('TraderScene', () => {
   describe('render — layout', () => {
     it('does not render a border', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).not.toBe('+');
@@ -77,7 +76,7 @@ describe('TraderScene', () => {
 
     it('chrome header row 0 contains system name SOL', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 0)).toContain('SOL');
@@ -85,7 +84,7 @@ describe('TraderScene', () => {
 
     it('chrome footer row h-1 contains [1] UNDOCK and [2] HUB', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, FOOTER_ROW)).toContain('[1]');
@@ -96,7 +95,7 @@ describe('TraderScene', () => {
 
     it('renders trader name at row 3 in bright-white', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MERCHANT KESS');
@@ -105,7 +104,7 @@ describe('TraderScene', () => {
 
     it("renders ' underline at row 4 in bright-black", () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 4)).toContain("'");
@@ -114,7 +113,7 @@ describe('TraderScene', () => {
 
     it('renders | BUY | SELL | tab bar at tab row', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = rowText(buf, TAB_ROW);
@@ -129,7 +128,7 @@ describe('TraderScene', () => {
 
     it('renders buy items in content area starting at row 7', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore');
@@ -139,7 +138,7 @@ describe('TraderScene', () => {
 
     it('cursor starts on first item in bright-green', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('>');
@@ -150,7 +149,7 @@ describe('TraderScene', () => {
   describe('keyboard navigation', () => {
     it('DOWN moves cursor to next item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       input.triggerAction('DOWN');
       scene.render(buf);
@@ -160,7 +159,7 @@ describe('TraderScene', () => {
 
     it('UP from first item wraps to last item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       input.triggerAction('UP');
       scene.render(buf);
@@ -169,7 +168,7 @@ describe('TraderScene', () => {
 
     it('RIGHT switches to SELL tab and resets cursor', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
@@ -182,7 +181,7 @@ describe('TraderScene', () => {
 
     it('sell tab displays qty for each item', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -193,7 +192,7 @@ describe('TraderScene', () => {
 
     it('LEFT switches back to BUY tab', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('RIGHT');
       input.triggerAction('LEFT');
       const buf = makeBuffer(40, 30);
@@ -205,7 +204,7 @@ describe('TraderScene', () => {
     it('SELECT on item logs placeholder', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('SELECT');
       expect(consoleSpy).toHaveBeenCalledWith('[Trader] Selected Iron Ore');
       consoleSpy.mockRestore();
@@ -214,7 +213,7 @@ describe('TraderScene', () => {
     it('BACK calls onHub and silences further input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
+      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
       input.triggerAction('BACK');
       expect(onHub).toHaveBeenCalledTimes(1);
       input.triggerAction('BACK');
@@ -224,7 +223,7 @@ describe('TraderScene', () => {
     it('NAV_2 calls onHub', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
+      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
       input.triggerAction('NAV_2');
       expect(onHub).toHaveBeenCalledTimes(1);
     });
@@ -232,7 +231,7 @@ describe('TraderScene', () => {
     it('NAV_1 calls onUndock', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), onUndock);
+      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), onUndock);
       input.triggerAction('NAV_1');
       expect(onUndock).toHaveBeenCalledTimes(1);
     });
@@ -241,7 +240,7 @@ describe('TraderScene', () => {
   describe('touch navigation', () => {
     it('tap on BUY tab area switches back from SELL to BUY', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       input.triggerAction('RIGHT'); // switch to SELL first
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -254,7 +253,7 @@ describe('TraderScene', () => {
 
     it('tap on SELL tab area switches to SELL and shows qty', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(SELL_TAB_COL, TAB_ROW);
@@ -267,7 +266,7 @@ describe('TraderScene', () => {
     it('tap on item row logs placeholder', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       input.triggerTap(5, ITEM_ROW_START + 2);
       expect(consoleSpy).toHaveBeenCalledWith('[Trader] Selected Refined Fuel');
       consoleSpy.mockRestore();
@@ -276,7 +275,7 @@ describe('TraderScene', () => {
     it('tap on footer UNDOCK button fires onUndock and silences input', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), onUndock);
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), onUndock);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_UNDOCK_COL, FOOTER_ROW);
@@ -288,7 +287,7 @@ describe('TraderScene', () => {
     it('tap on footer HUB button fires onHub and silences input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', onHub, vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_HUB_COL, FOOTER_ROW);
@@ -301,7 +300,7 @@ describe('TraderScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new TraderScene(input, keyboardContext, 'elysium-station', vi.fn(), vi.fn());
+      const scene = new TraderScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });

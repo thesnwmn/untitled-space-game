@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -37,13 +38,12 @@ function rowText(buf: CharBuffer, row: number): string {
 
 const ctx: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
-  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 
 // Concrete subclass — no nav overrides needed for these tests
 class TestMenuScene extends BaseMenuScene {
   constructor(items: MenuItemDef[], input: MockInputHandler, infoLines: string[] = []) {
-    super('TEST MENU', items, [], input, ctx, infoLines);
+    super('TEST MENU', items, [], input, ctx, makePlayer(), infoLines);
   }
 }
 

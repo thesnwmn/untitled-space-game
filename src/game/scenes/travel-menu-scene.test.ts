@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { TravelMenuScene } from './travel-menu-scene';
 import { getSystem, getRoutesFrom } from '../world/world-data';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import { makePlayer } from '../../tests/makePlayer';
 
 class MockInputHandler implements InputHandler {
   private actionHandlers: Array<(action: GameAction) => void> = [];
@@ -36,13 +37,7 @@ function allText(buffer: CharBuffer): string {
 
 const context: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
-  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
-
-// Default fuel params: full tank with civilian-mk1 drive
-const FULL_FUEL_L = 100;
-const FUEL_CAP_L  = 100;
-const DRIVE_ID    = 'civilian-mk1';
 
 // TAB_ROW = CONTENT_TOP + 3 = 6
 // Tab layout: "| DESTINATIONS | JUMPS |" left-aligned at col 2
@@ -59,19 +54,19 @@ const ITEM_ROW_START = 8;
 describe('TravelMenuScene render', () => {
   it('does not throw for sol with a current destination', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     expect(() => scene.render(makeBuffer(40, 30))).not.toThrow();
   });
 
   it('does not throw in arrival mode (no current destination)', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'alpha-centauri', null, FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer({ systemId: 'alpha-centauri', destinationId: null }), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     expect(() => scene.render(makeBuffer(40, 30))).not.toThrow();
   });
 
   it('renders TRAVEL as the title', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     expect(allText(buf)).toContain('TRAVEL');
@@ -79,7 +74,7 @@ describe('TravelMenuScene render', () => {
 
   it('renders the system name', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     expect(allText(buf)).toContain('SOL');
@@ -87,7 +82,7 @@ describe('TravelMenuScene render', () => {
 
   it('renders DESTINATIONS tab and JUMPS tab', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     const text = allText(buf);
@@ -97,7 +92,7 @@ describe('TravelMenuScene render', () => {
 
   it('DESTINATIONS is highlighted (bg green) on initial render', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     expect(buf[TAB_ROW][DEST_TAB_COL].bg).toBe('green');
@@ -106,7 +101,7 @@ describe('TravelMenuScene render', () => {
 
   it('shows destinations from the current system in DESTINATIONS tab', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     expect(allText(buf)).toContain('ELYSIUM STATION');
@@ -114,7 +109,7 @@ describe('TravelMenuScene render', () => {
 
   it('renders the current destination in bright-black (greyed out)', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     // Search only item rows (ITEM_ROW_START+) to avoid the chrome header which also shows the name
@@ -133,7 +128,7 @@ describe('TravelMenuScene render', () => {
 
   it('does not grey out any destination in arrival mode', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'alpha-centauri', null, FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer({ systemId: 'alpha-centauri', destinationId: null }), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     const system = getSystem('alpha-centauri')!;
@@ -153,7 +148,7 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
   it('SELECT on a non-current destination calls onDestinationSelected', () => {
     const onDest = vi.fn();
     const input = new MockInputHandler();
-    new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, onDest, vi.fn(), vi.fn(), vi.fn());
+    new TravelMenuScene(input, context, makePlayer(), onDest, vi.fn(), vi.fn(), vi.fn());
     // cursor starts on first enabled item (index 1, since index 0 is the current destination)
     input.triggerAction('SELECT');
     expect(onDest).toHaveBeenCalledTimes(1);
@@ -164,7 +159,7 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
   it('tapping the greyed-out current destination does NOT call onDestinationSelected', () => {
     const onDest = vi.fn();
     const input = new MockInputHandler();
-    new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, onDest, vi.fn(), vi.fn(), vi.fn());
+    new TravelMenuScene(input, context, makePlayer(), onDest, vi.fn(), vi.fn(), vi.fn());
     // elysium-station is destinations[0] and renders at ITEM_ROW_START
     input.triggerTap(10, ITEM_ROW_START);
     expect(onDest).not.toHaveBeenCalled();
@@ -173,7 +168,7 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
   it('SELECT calls onDestinationSelected in arrival mode (no greyed items)', () => {
     const onDest = vi.fn();
     const input = new MockInputHandler();
-    new TravelMenuScene(input, context, 'alpha-centauri', null, FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, onDest, vi.fn(), vi.fn(), vi.fn());
+    new TravelMenuScene(input, context, makePlayer({ systemId: 'alpha-centauri', destinationId: null }), onDest, vi.fn(), vi.fn(), vi.fn());
     input.triggerAction('SELECT');
     const system = getSystem('alpha-centauri')!;
     expect(onDest).toHaveBeenCalledWith(system.destinations[0]);
@@ -185,7 +180,7 @@ describe('TravelMenuScene DESTINATIONS tab', () => {
 describe('TravelMenuScene JUMPS tab', () => {
   it('RIGHT switches to JUMPS tab (bg green on JUMPS area)', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
@@ -195,7 +190,7 @@ describe('TravelMenuScene JUMPS tab', () => {
 
   it('RIGHT then render shows jump routes', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
@@ -208,7 +203,7 @@ describe('TravelMenuScene JUMPS tab', () => {
   it('SELECT on JUMPS tab calls onJumpSelected with a valid system id', () => {
     const onJump = vi.fn();
     const input = new MockInputHandler();
-    new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), onJump, vi.fn(), vi.fn());
+    new TravelMenuScene(input, context, makePlayer(), vi.fn(), onJump, vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     input.triggerAction('SELECT');
     expect(onJump).toHaveBeenCalledTimes(1);
@@ -218,7 +213,7 @@ describe('TravelMenuScene JUMPS tab', () => {
 
   it('LEFT from JUMPS switches back to DESTINATIONS (bg green on DESTINATIONS area)', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     input.triggerAction('LEFT');
     const buf = makeBuffer(40, 30);
@@ -233,7 +228,9 @@ describe('TravelMenuScene JUMPS tab', () => {
     //   barnards-star:  ceil(5 * 5.9 * 0.8) = 24 L > 10 L
     //   wolf-359:       ceil(5 * 7.9 * 0.8) = 32 L > 10 L
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', 10, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const player = makePlayer();
+    player.consumeFuel(90); // 100 - 90 = 10 L remaining
+    const scene = new TravelMenuScene(input, context, player, vi.fn(), vi.fn(), vi.fn(), vi.fn());
     input.triggerAction('RIGHT'); // switch to JUMPS tab
     const buf = makeBuffer(40, 30);
     scene.render(buf);
@@ -252,7 +249,9 @@ describe('TravelMenuScene JUMPS tab', () => {
     const onJump = vi.fn();
     const input = new MockInputHandler();
     // 10 L — all Sol jumps are disabled
-    new TravelMenuScene(input, context, 'sol', 'elysium-station', 10, FUEL_CAP_L, DRIVE_ID, vi.fn(), onJump, vi.fn(), vi.fn());
+    const player = makePlayer();
+    player.consumeFuel(90);
+    new TravelMenuScene(input, context, player, vi.fn(), onJump, vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     input.triggerAction('SELECT');
     expect(onJump).not.toHaveBeenCalled();
@@ -262,7 +261,9 @@ describe('TravelMenuScene JUMPS tab', () => {
     const onJump = vi.fn();
     const input = new MockInputHandler();
     // 20 L — alpha-centauri costs 18 L, so it should be reachable
-    new TravelMenuScene(input, context, 'sol', 'elysium-station', 20, FUEL_CAP_L, DRIVE_ID, vi.fn(), onJump, vi.fn(), vi.fn());
+    const player = makePlayer();
+    player.consumeFuel(80);
+    new TravelMenuScene(input, context, player, vi.fn(), onJump, vi.fn(), vi.fn());
     input.triggerAction('RIGHT');
     input.triggerAction('SELECT');
     expect(onJump).toHaveBeenCalledTimes(1);
@@ -276,7 +277,7 @@ describe('TravelMenuScene SHIP navigation', () => {
   it('BACK calls onShip', () => {
     const onShip = vi.fn();
     const input = new MockInputHandler();
-    new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), onShip);
+    new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), onShip);
     input.triggerAction('BACK');
     expect(onShip).toHaveBeenCalledTimes(1);
   });
@@ -284,7 +285,7 @@ describe('TravelMenuScene SHIP navigation', () => {
   it('BACK calls onShip in arrival mode too', () => {
     const onShip = vi.fn();
     const input = new MockInputHandler();
-    new TravelMenuScene(input, context, 'sol', null, FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), onShip);
+    new TravelMenuScene(input, context, makePlayer({ destinationId: null }), vi.fn(), vi.fn(), vi.fn(), onShip);
     input.triggerAction('BACK');
     expect(onShip).toHaveBeenCalledTimes(1);
   });
@@ -295,7 +296,7 @@ describe('TravelMenuScene SHIP navigation', () => {
 describe('TravelMenuScene FLY INTO SPACE', () => {
   it('renders FLY INTO SPACE in the destinations list', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     expect(allText(buf)).toContain('FLY INTO SPACE');
@@ -305,7 +306,7 @@ describe('TravelMenuScene FLY INTO SPACE', () => {
     const onFlyIntoSpace = vi.fn();
     const input = new MockInputHandler();
     const system = getSystem('sol')!;
-    new TravelMenuScene(input, context, 'sol', 'elysium-station', FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn());
+    new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn());
     // cursor starts at index 1 (first enabled item), so need destinations.length-1 DOWNs to reach FLY INTO SPACE
     for (let i = 0; i < system.destinations.length - 1; i++) input.triggerAction('DOWN');
     input.triggerAction('SELECT');
@@ -314,7 +315,7 @@ describe('TravelMenuScene FLY INTO SPACE', () => {
 
   it('FLY INTO SPACE is greyed out in arrival mode (already in space)', () => {
     const input = new MockInputHandler();
-    const scene = new TravelMenuScene(input, context, 'sol', null, FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    const scene = new TravelMenuScene(input, context, makePlayer({ destinationId: null }), vi.fn(), vi.fn(), vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     for (const row of buf) {
@@ -332,7 +333,7 @@ describe('TravelMenuScene FLY INTO SPACE', () => {
     const onFlyIntoSpace = vi.fn();
     const system = getSystem('sol')!;
     const input = new MockInputHandler();
-    new TravelMenuScene(input, context, 'sol', null, FULL_FUEL_L, FUEL_CAP_L, DRIVE_ID, vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn());
+    new TravelMenuScene(input, context, makePlayer({ destinationId: null }), vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn());
     for (let i = 0; i < system.destinations.length; i++) input.triggerAction('DOWN');
     input.triggerAction('SELECT');
     expect(onFlyIntoSpace).not.toHaveBeenCalled();

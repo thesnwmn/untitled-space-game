@@ -39,8 +39,8 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
+const keyboardContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ describe('StoryScene', () => {
   describe('render — layout', () => {
     it('clears buffer to black spaces before drawing', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
       const buf = makeBuffer(40, 30);
       buf[1][5] = { char: 'X', fg: 'red', bg: 'red' };
       scene.render(buf);
@@ -57,7 +57,7 @@ describe('StoryScene', () => {
 
     it('does not render a border', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).toBe(' ');
@@ -66,7 +66,7 @@ describe('StoryScene', () => {
 
     it('renders YEAR header from world data centred in bright-yellow on row 2', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 2)).toContain('YEAR  2284');
@@ -76,7 +76,7 @@ describe('StoryScene', () => {
 
     it('renders at least one body line from world data below row 4 in white', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = rowText(buf, 4);
@@ -86,7 +86,7 @@ describe('StoryScene', () => {
 
     it('does not render "Hugo poured" anywhere in the buffer', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const allText = buf.map(row => row.map(c => c.char).join('')).join('');
@@ -95,7 +95,7 @@ describe('StoryScene', () => {
 
     it('story text lines do not exceed 36 chars from col 2', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let row = 4; row < buf.length - 4; row++) {
@@ -109,7 +109,7 @@ describe('StoryScene', () => {
     it('SELECT triggers onContinue exactly once', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, onContinue);
+      new StoryScene(input, keyboardContext, null, onContinue);
       input.triggerAction('SELECT');
       expect(onContinue).toHaveBeenCalledTimes(1);
     });
@@ -117,7 +117,7 @@ describe('StoryScene', () => {
     it('second SELECT after first does nothing', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, onContinue);
+      new StoryScene(input, keyboardContext, null, onContinue);
       input.triggerAction('SELECT');
       input.triggerAction('SELECT');
       expect(onContinue).toHaveBeenCalledTimes(1);
@@ -128,7 +128,7 @@ describe('StoryScene', () => {
     it('tap on any row triggers onContinue exactly once', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, onContinue);
+      new StoryScene(input, keyboardContext, null, onContinue);
       input.triggerTap(5, 10);
       expect(onContinue).toHaveBeenCalledTimes(1);
     });
@@ -136,7 +136,7 @@ describe('StoryScene', () => {
     it('tap on row 0 (empty row) triggers onContinue', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, onContinue);
+      new StoryScene(input, keyboardContext, null, onContinue);
       input.triggerTap(0, 0);
       expect(onContinue).toHaveBeenCalledTimes(1);
     });
@@ -144,7 +144,7 @@ describe('StoryScene', () => {
     it('second tap after first does nothing', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, onContinue);
+      new StoryScene(input, keyboardContext, null, onContinue);
       input.triggerTap(0, 5);
       input.triggerTap(0, 5);
       expect(onContinue).toHaveBeenCalledTimes(1);
@@ -155,7 +155,7 @@ describe('StoryScene', () => {
     it('BACK has no effect', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, onContinue);
+      new StoryScene(input, keyboardContext, null, onContinue);
       input.triggerAction('BACK');
       expect(onContinue).not.toHaveBeenCalled();
     });
@@ -164,7 +164,7 @@ describe('StoryScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });

@@ -12,7 +12,7 @@ export class StoryScene implements Scene {
   private readonly bodyLines: string[];
   private pageIndex = 0;
 
-  constructor(inputHandler: InputHandler, _context: unknown, onContinue: () => void) {
+  constructor(inputHandler: InputHandler, _context: unknown, _player: unknown, onContinue: () => void) {
     this.onContinue = onContinue;
 
     const beat = getStoryBeatsByTrigger('game-start')[0];

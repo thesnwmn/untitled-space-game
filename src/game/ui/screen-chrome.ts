@@ -1,6 +1,7 @@
 import type { CharBuffer, GameContext } from '../../shared/types';
 import { writeText } from '../../shared/buffer-utils';
 import { getSystem, getDestination } from '../world/world-data';
+import type { PlayerState } from '../PlayerState';
 
 export interface NavOption {
   id: string;
@@ -32,11 +33,13 @@ function formatCredits(n: number): string {
 
 export class ScreenChrome {
   private readonly context: GameContext;
+  private readonly player: PlayerState;
   private buttonRanges: ButtonRange[] | null = null;
   private footerRow = -1;
 
-  constructor(context: GameContext) {
+  constructor(context: GameContext, player: PlayerState) {
     this.context = context;
+    this.player = player;
   }
 
   render(buffer: CharBuffer, config: ChromeConfig): void {
@@ -58,8 +61,8 @@ export class ScreenChrome {
   }
 
   private renderHeaderRow0(buffer: CharBuffer, w: number): void {
-    const sys = getSystem(this.context.systemId);
-    const sysName = sys ? sys.name.toUpperCase() : this.context.systemId.toUpperCase();
+    const sys = getSystem(this.player.systemId);
+    const sysName = sys ? sys.name.toUpperCase() : this.player.systemId.toUpperCase();
 
     // Left prefix: "::" (bright-black)
     const prefix = '::';
@@ -89,11 +92,11 @@ export class ScreenChrome {
   }
 
   private renderHeaderRow1(buffer: CharBuffer, w: number): void {
-    const dest = this.context.destinationId
-      ? getDestination(this.context.destinationId)
+    const dest = this.player.destinationId
+      ? getDestination(this.player.destinationId)
       : null;
     const destName = dest ? dest.name.toUpperCase() : 'IN SPACE';
-    const creditsStr = formatCredits(this.context.credits);
+    const creditsStr = formatCredits(this.player.credits);
 
     // Right zone width = creditsStr.length + 5 (" CR::")
     const rightZoneWidth = creditsStr.length + 5;

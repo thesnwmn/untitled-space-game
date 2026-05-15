@@ -1,4 +1,5 @@
 import type { InputHandler, GameContext } from '../../shared/types';
+import type { PlayerState } from '../PlayerState';
 import { getDestination } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';
 
@@ -43,6 +44,7 @@ export class TraderScene extends BaseMenuScene {
   constructor(
     inputHandler: InputHandler,
     context: GameContext,
+    player: PlayerState,
     destinationId: string,
     onHub: () => void,
     onUndock: () => void,
@@ -75,6 +77,7 @@ export class TraderScene extends BaseMenuScene {
       [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
       inputHandler,
       context,
+      player,
       [],
       tabs,
     );

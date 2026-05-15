@@ -1,4 +1,5 @@
 import type { InputHandler, GameContext } from '../../shared/types';
+import type { PlayerState } from '../PlayerState';
 import { wrapText } from '../../shared/buffer-utils';
 import { getDestination } from '../world/world-data';
 import { FUEL_PRICE_PER_L } from '../constants';
@@ -10,10 +11,8 @@ export class StationMenuScene extends BaseMenuScene {
   constructor(
     inputHandler: InputHandler,
     context: GameContext,
+    player: PlayerState,
     destinationId: string,
-    fuelL: number,
-    fuelCapacityL: number,
-    credits: number,
     onRefuel: (litres: number, cost: number) => void,
     onTrader: () => void,
     onMissionBoard: () => void,
@@ -24,8 +23,8 @@ export class StationMenuScene extends BaseMenuScene {
     if (dest.amenities.trader) items.push({ label: 'TRADER', action: onTrader });
     if (dest.amenities.missionBoard) items.push({ label: 'MISSION BOARD', action: onMissionBoard });
 
-    const fuelNeeded  = fuelCapacityL - fuelL;
-    const affordableL = Math.floor(credits / FUEL_PRICE_PER_L);
+    const fuelNeeded  = player.fuelCapacityL - player.fuelL;
+    const affordableL = Math.floor(player.credits / FUEL_PRICE_PER_L);
     const purchaseL   = Math.min(fuelNeeded, affordableL);
     if (dest.amenities.fuel && purchaseL > 0) {
       const cost = purchaseL * FUEL_PRICE_PER_L;
@@ -45,6 +44,7 @@ export class StationMenuScene extends BaseMenuScene {
       [{ id: 'undock', label: 'UNDOCK' }],
       inputHandler,
       context,
+      player,
       infoLines,
     );
 

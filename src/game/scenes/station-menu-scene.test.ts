@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { StationMenuScene } from './station-menu-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,11 +42,9 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
 
 const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
-  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 const touchContext: GameContext = {
   environment: 'browser', primaryInput: 'touch', debug: false,
-  systemId: 'sol', destinationId: 'elysium-station', credits: 5000,
 };
 
 // elysium-station description wraps to 3 lines + dangerLine = 4 info lines
@@ -70,7 +69,10 @@ function makeScene(
   credits = 5000,
   onRefuel = vi.fn(),
 ): StationMenuScene {
-  return new StationMenuScene(input, ctx, 'elysium-station', fuelL, fuelCapacityL, credits, onRefuel, onTrader, onMissionBoard, onShip);
+  const player = makePlayer({ credits });
+  // Consume fuel to reach the desired fuelL (player starts at full capacity 100)
+  if (fuelL < fuelCapacityL) player.consumeFuel(fuelCapacityL - fuelL);
+  return new StationMenuScene(input, ctx, player, 'elysium-station', onRefuel, onTrader, onMissionBoard, onShip);
 }
 
 // ── tests ─────────────────────────────────────────────────────────────────────
@@ -170,8 +172,7 @@ describe('StationMenuScene', () => {
     it('does not show TRADER item when amenities.trader is false', () => {
       const input = new MockInputHandler();
       // tycho-orbital: trader=false; only MISSION BOARD
-      const ctx: GameContext = { ...keyboardContext, destinationId: 'tycho-orbital' };
-      const scene = new StationMenuScene(input, ctx, 'tycho-orbital', 100, 100, 5000, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new StationMenuScene(input, keyboardContext, makePlayer({ destinationId: 'tycho-orbital' }), 'tycho-orbital', vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // First item should be MISSION BOARD

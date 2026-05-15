@@ -1,4 +1,5 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
+import type { PlayerState } from '../PlayerState';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
 
 const TITLE_LINES = ['UNTITLED', 'SPACE GAME'];
@@ -18,7 +19,7 @@ export class MainMenuScene implements Scene {
   private cursorIdx = 0;
   private activated = false;
 
-  constructor(inputHandler: InputHandler, context: GameContext, onNewGame: () => void) {
+  constructor(inputHandler: InputHandler, context: GameContext, _player: PlayerState, onNewGame: () => void) {
     this.items = [
       {
         label: 'NEW GAME',

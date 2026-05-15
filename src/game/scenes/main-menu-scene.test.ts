@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MainMenuScene } from './main-menu-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -39,9 +40,9 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
-const browserContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
-const terminalContext: GameContext = { environment: 'terminal', primaryInput: 'keyboard', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
-const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false, systemId: 'sol', destinationId: 'elysium-station', credits: 5000 };
+const browserContext: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const terminalContext: GameContext = { environment: 'terminal', primaryInput: 'keyboard', debug: false };
+const touchContext: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 // Menu col for a 40-wide grid: Math.floor((40 - 10) / 2) = 15
 // "NEW GAME" (8 chars) + 2 prefix = 10; "QUIT" (4 chars) + 2 prefix = 6; max = 10
@@ -54,7 +55,7 @@ describe('MainMenuScene', () => {
   describe('render — layout', () => {
     it('clears buffer to black spaces before drawing', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       buf[20][15] = { char: 'X', fg: 'red', bg: 'red' };
       scene.render(buf);
@@ -63,7 +64,7 @@ describe('MainMenuScene', () => {
 
     it('does not render a border', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).toBe(' ');
@@ -72,7 +73,7 @@ describe('MainMenuScene', () => {
 
     it('renders title lines in bright-cyan within rows 1–11', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 4)).toContain('UNTITLED');
@@ -83,7 +84,7 @@ describe('MainMenuScene', () => {
 
     it('renders tagline in white on row 11 (0-indexed)', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 11)).toContain('An ASCII space adventure');
@@ -92,7 +93,7 @@ describe('MainMenuScene', () => {
 
     it('renders cursor on first item in bright-green', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = rowText(buf, MENU_ROW_START);
@@ -105,7 +106,7 @@ describe('MainMenuScene', () => {
   describe('render — browser vs terminal items', () => {
     it('shows only NEW GAME in browser context', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('NEW GAME');
@@ -114,7 +115,7 @@ describe('MainMenuScene', () => {
 
     it('shows NEW GAME and QUIT in terminal context', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, terminalContext, vi.fn());
+      const scene = new MainMenuScene(input, terminalContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, MENU_ROW_START)).toContain('NEW GAME');
@@ -123,7 +124,7 @@ describe('MainMenuScene', () => {
 
     it('QUIT is unselected (white) when cursor is on NEW GAME', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, terminalContext, vi.fn());
+      const scene = new MainMenuScene(input, terminalContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowFg(buf, MENU_ROW_START + 1, MENU_COL)).toBe('white');
@@ -133,7 +134,7 @@ describe('MainMenuScene', () => {
   describe('keyboard navigation', () => {
     it('DOWN moves cursor to next item', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, terminalContext, vi.fn());
+      const scene = new MainMenuScene(input, terminalContext, makePlayer(), vi.fn());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -144,7 +145,7 @@ describe('MainMenuScene', () => {
 
     it('UP wraps cursor from first item to last', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, terminalContext, vi.fn());
+      const scene = new MainMenuScene(input, terminalContext, makePlayer(), vi.fn());
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -153,7 +154,7 @@ describe('MainMenuScene', () => {
 
     it('DOWN wraps cursor from last item to first', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, terminalContext, vi.fn());
+      const scene = new MainMenuScene(input, terminalContext, makePlayer(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
@@ -164,7 +165,7 @@ describe('MainMenuScene', () => {
     it('SELECT on NEW GAME calls onNewGame and sets activated', () => {
       const onNewGame = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, onNewGame);
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), onNewGame);
       input.triggerAction('SELECT');
       expect(onNewGame).toHaveBeenCalledTimes(1);
       input.triggerAction('DOWN');
@@ -175,7 +176,7 @@ describe('MainMenuScene', () => {
 
     it('BACK has no effect', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, terminalContext, vi.fn());
+      const scene = new MainMenuScene(input, terminalContext, makePlayer(), vi.fn());
       input.triggerAction('BACK');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -185,7 +186,7 @@ describe('MainMenuScene', () => {
     it('ignores input after activation', () => {
       const onNewGame = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, onNewGame);
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), onNewGame);
       input.triggerAction('SELECT');
       input.triggerAction('SELECT');
       expect(onNewGame).toHaveBeenCalledTimes(1);
@@ -196,7 +197,7 @@ describe('MainMenuScene', () => {
     it('tap on menu item row activates that item', () => {
       const onNewGame = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, onNewGame);
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), onNewGame);
       input.triggerTap(10, MENU_ROW_START);
       expect(onNewGame).toHaveBeenCalledTimes(1);
     });
@@ -204,14 +205,14 @@ describe('MainMenuScene', () => {
     it('tap on non-menu row has no effect', () => {
       const onNewGame = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, onNewGame);
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), onNewGame);
       input.triggerTap(10, 0);
       expect(onNewGame).not.toHaveBeenCalled();
     });
 
     it('tap on QUIT row activates QUIT', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, terminalContext, vi.fn());
+      const scene = new MainMenuScene(input, terminalContext, makePlayer(), vi.fn());
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as () => never);
       input.triggerTap(10, MENU_ROW_START + 1);
@@ -224,7 +225,7 @@ describe('MainMenuScene', () => {
     it('tap ignored after activation', () => {
       const onNewGame = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, onNewGame);
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), onNewGame);
       input.triggerTap(0, MENU_ROW_START);
       input.triggerTap(0, MENU_ROW_START);
       expect(onNewGame).toHaveBeenCalledTimes(1);
@@ -234,7 +235,7 @@ describe('MainMenuScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new MainMenuScene(input, browserContext, vi.fn());
+      const scene = new MainMenuScene(input, browserContext, makePlayer(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
