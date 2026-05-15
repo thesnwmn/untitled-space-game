@@ -8,4 +8,6 @@ player:
 starting_location:
   system: sol
   destination: elysium-station
+
+starting_ship: freighter
 ---

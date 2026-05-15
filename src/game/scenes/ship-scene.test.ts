@@ -107,7 +107,7 @@ describe('ShipScene', () => {
       scene.render(buf);
       const text = rowText(buf, STAT_ROW);
       expect(text).toContain('FUEL: 100%');
-      expect(text).toContain('CARGO: 0/50T');
+      expect(text).toContain('CARGO: 0/2Mg');
       // col 0 is space on angled rows; col 1 is first border char
       expect(buf[STAT_ROW][0].char).toBe(' ');
       expect(buf[STAT_ROW][1].char).toBe('\\');

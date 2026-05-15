@@ -12,21 +12,6 @@ Items are ordered by priority. The Engineer always takes the top READY item.
 
 ## READY
 
-### 029 · Freighter as Starting Ship
-
-Add `starting_ship: freighter` to `docs/world/game-settings.md`. Extend
-`GameSettings` with `startingShip: string` and propagate it into the hardcoded
-`WORLD.settings`. Add `getShip(id)` to `world-data.ts`. Replace the hardcoded
-`INITIAL_STATE` in `ShipScene.ts` with values derived from the ship record:
-`cargoCapacity` from `ship.cargoCapacityKg`, `credits` from
-`settings.player.startingCredits`, fuel starts at 100%. Update the status bar
-unit from `T` to `KG`. Update the corresponding test expectations.
-See `docs/features/029-freighter-starting-ship.md` for the full spec.
-
-**Depends on:** 011, 019
-
----
-
 ### 030 · Fuel Management
 
 Track fuel in litres. Deduct fuel on every jump using the formula
@@ -117,6 +102,27 @@ _(none)_
 ---
 
 ## DONE
+
+### 029 · Freighter as Starting Ship
+
+**Built:**
+- `docs/world/game-settings.md` — added `starting_ship: freighter` field
+- `src/game/world/types.ts` — added `startingShip: string` to `GameSettings`
+- `src/game/world/world-data.ts` — added `startingShip: 'freighter'` to `WORLD.settings`; added `Ship` to imports; exported `getShip(id)` helper
+- `src/game/scenes/ShipScene.ts` — removed `INITIAL_STATE`; added `credits` to `PlayerState`; constructor derives state from `getGameSettings()` + `getShip()`; cargo stat panel unit changed from `T` to `KG`
+- `src/game/scenes/ship-scene.test.ts` — updated stat panel assertion from `CARGO: 0/50T` to `CARGO: 0/2000KG`
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 289/289 tests passed (19 test files)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. `bash init.sh` → must print `=== Environment ready ===`
+2. `npm test` → 19 test files, 289 tests passed
+3. **Browser** `npm run dev` → navigate to Ship scene; stat panel row shows `FUEL: 100%` and `CARGO: 0/2000KG`
+
+---
 
 ### 028 · Common Screen Layout
 
