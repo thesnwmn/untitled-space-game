@@ -41,7 +41,10 @@ job is to prevent wrong architectural choices, not to pre-write TypeScript.
 
 **Do not include:**
 - Method or function bodies.
-- Exact render format strings — describe the content in plain English instead.
+- Exact render format strings as requirements — if you include an example layout,
+  label it as a suggestion (`> suggestion`) so the Engineer can adapt it. If the
+  manager supplied the format directly, label it a strong suggestion (`> strong suggestion`)
+  to signal it reflects explicit intent without fully locking the implementation.
 - Specific arithmetic or formulas — say "4–6 items" not `4 + Math.floor(Math.random() * 3)`.
 - Numbered test-case tables — acceptance criteria captures what to test;
   the Engineer writes the tests.
