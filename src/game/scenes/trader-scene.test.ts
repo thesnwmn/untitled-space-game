@@ -405,6 +405,71 @@ describe('TraderScene', () => {
     });
   });
 
+  describe('unaffordable items', () => {
+    it('item player cannot afford is rendered in bright-black', () => {
+      // iron-ore basePrice=80; player has 50 credits → cannot afford any stock
+      const input = new MockInputHandler();
+      const player = makePlayer({ credits: 50 });
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [{ commodityId: 'iron-ore', qty: 5 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowFg(buf, ITEM_ROW_START, 2)).toBe('bright-black');
+    });
+
+    it('cursor skips unaffordable items and lands on first affordable one', () => {
+      // iron-ore=80 (unaffordable), rations=60 (affordable) with 70 credits
+      const input = new MockInputHandler();
+      const player = makePlayer({ credits: 70 });
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [{ commodityId: 'iron-ore', qty: 5 }, { commodityId: 'rations', qty: 8 }],
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Cursor should be on rations (row 1), not iron-ore (row 0)
+      expect(rowText(buf, ITEM_ROW_START)).not.toContain('>');
+      expect(rowText(buf, ITEM_ROW_START + 1)).toContain('>');
+      expect(rowFg(buf, ITEM_ROW_START + 1, 2)).toBe('bright-green');
+    });
+
+    it('SELECT on an unaffordable item does not call onBuy', () => {
+      const onBuy = vi.fn();
+      const input = new MockInputHandler();
+      const player = makePlayer({ credits: 50 });
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [{ commodityId: 'iron-ore', qty: 5 }], onBuy, vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerAction('SELECT');
+      expect(onBuy).not.toHaveBeenCalled();
+      // Scene should not have rendered a modal
+      const buf2 = makeBuffer(40, 30);
+      scene.render(buf2);
+      expect(rowText(buf2, ITEM_ROW_START)).toContain('Iron Ore');
+    });
+
+    it('tap on an unaffordable item does not call onBuy', () => {
+      const onBuy = vi.fn();
+      const input = new MockInputHandler();
+      const player = makePlayer({ credits: 50 });
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [{ commodityId: 'iron-ore', qty: 5 }], onBuy, vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(5, ITEM_ROW_START);
+      input.triggerAction('SELECT'); // would confirm modal if one were open
+      expect(onBuy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
