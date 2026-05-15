@@ -131,10 +131,10 @@ describe('PlayerState', () => {
       expect(p.cargoHold).toHaveLength(1);
     });
 
-    it('cargoWeightKg stub returns 0', () => {
+    it('cargoWeightKg returns computed weight from hold', () => {
       const p = makePlayer();
-      p.addCargo('iron-ore', 100);
-      expect(p.cargoWeightKg).toBe(0);
+      p.addCargo('iron-ore', 10); // iron-ore: 10 kg/unit × 10 units = 100 kg
+      expect(p.cargoWeightKg).toBe(100);
     });
   });
 

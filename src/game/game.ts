@@ -4,15 +4,23 @@ import { StationMenuScene } from './scenes/station-menu-scene';
 import { TraderScene } from './scenes/trader-scene';
 import { MissionBoardScene } from './scenes/mission-board-scene';
 import { ShipScene } from './scenes/ship-scene';
+import { CargoScene } from './scenes/cargo-scene';
 import { TravelMenuScene } from './scenes/travel-menu-scene';
 import { JumpAnimationScene } from './scenes/jump-animation-scene';
 import { InSystemTravelAnimationScene } from './scenes/in-system-travel-animation-scene';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
-import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute } from './world/world-data';
+import type { TraderStockEntry } from './world/types';
+import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity } from './world/world-data';
 import { PlayerState } from './PlayerState';
 import { FUEL_PER_LY } from './constants';
 
 const MAX_DT = 100;
+const STOCK_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
+interface StockCache {
+  entries: TraderStockEntry[];
+  generatedAt: number;
+}
 
 export class Game {
   private readonly renderer: Renderer;
@@ -20,6 +28,7 @@ export class Game {
   private readonly context: GameContext;
   private readonly player: PlayerState;
   private currentScene: Scene;
+  private readonly traderStockCache = new Map<string, StockCache>();
 
   constructor(renderer: Renderer, input: InputHandler, context: GameContext) {
     this.renderer = renderer;
@@ -55,6 +64,68 @@ export class Game {
     );
   }
 
+  private getOrCreateTraderStock(destinationId: string): TraderStockEntry[] {
+    const now = Date.now();
+    const cached = this.traderStockCache.get(destinationId);
+    if (cached && now - cached.generatedAt < STOCK_TTL_MS) {
+      return cached.entries;
+    }
+    const commodities = getCommodities();
+    const count = 4 + Math.floor(Math.random() * 3); // 4–6
+    const shuffled = [...commodities];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const entries: TraderStockEntry[] = shuffled.slice(0, count).map(c => ({
+      commodityId: c.id,
+      qty: 1 + Math.floor(Math.random() * 8), // 1–8
+    }));
+    this.traderStockCache.set(destinationId, { entries, generatedAt: now });
+    return entries;
+  }
+
+  private onBuy(commodityId: string, traderStock: TraderStockEntry[]): void {
+    const stockIdx = traderStock.findIndex(e => e.commodityId === commodityId);
+    if (stockIdx < 0) return;
+
+    const entry = traderStock[stockIdx];
+    const commodity = getCommodity(commodityId);
+    if (!commodity) return;
+
+    const totalCost = entry.qty * commodity.basePrice;
+    if (this.player.credits < totalCost) return;
+
+    const newWeight = this.player.cargoWeightKg + entry.qty * commodity.weightKg;
+    if (newWeight > this.player.cargoCapacity) return;
+
+    this.player.spendCredits(totalCost);
+    this.player.addCargo(commodityId, entry.qty);
+    traderStock.splice(stockIdx, 1);
+  }
+
+  private onSell(commodityId: string, traderStock: TraderStockEntry[]): void {
+    const heldEntry = this.player.cargoHold.find(e => e.commodityId === commodityId);
+    if (!heldEntry) return;
+
+    const commodity = getCommodity(commodityId);
+    if (!commodity) return;
+
+    const totalValue = heldEntry.qty * commodity.basePrice;
+    const soldQty = heldEntry.qty;
+
+    this.player.addCredits(totalValue);
+    this.player.removeCargo(commodityId);
+
+    // Merge back into trader stock
+    const existing = traderStock.find(e => e.commodityId === commodityId);
+    if (existing) {
+      existing.qty += soldQty;
+    } else {
+      traderStock.push({ commodityId, qty: soldQty });
+    }
+  }
+
   private goToMainMenu(): void {
     this.currentScene = new MainMenuScene(this.input, this.context, this.player, () => this.goToStory());
   }
@@ -76,8 +147,12 @@ export class Game {
   }
 
   private goToTrader(): void {
+    const destinationId = this.player.destinationId!;
+    const stock = this.getOrCreateTraderStock(destinationId);
     this.currentScene = new TraderScene(
-      this.input, this.context, this.player, this.player.destinationId!,
+      this.input, this.context, this.player, destinationId, stock,
+      (commodityId) => this.onBuy(commodityId, stock),
+      (commodityId) => this.onSell(commodityId, stock),
       () => this.goToStation(), () => this.goToShip(),
     );
   }
@@ -92,7 +167,13 @@ export class Game {
   private goToShip(): void {
     this.currentScene = new ShipScene(
       this.input, this.context, this.player,
-      () => this.goToTravelMenu(), () => this.goToStation(),
+      () => this.goToTravelMenu(), () => this.goToStation(), () => this.goToCargo(),
+    );
+  }
+
+  private goToCargo(): void {
+    this.currentScene = new CargoScene(
+      this.input, this.context, this.player, () => this.goToShip(),
     );
   }
 

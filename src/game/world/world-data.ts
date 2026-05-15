@@ -1,4 +1,4 @@
-import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat } from './types';
+import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry } from './types';
 
 export const WORLD: WorldData = {
   settings: {
@@ -504,4 +504,19 @@ export function getRoute(fromId: string, toId: string): JumpRoute | undefined {
     r => (r.from === fromId && r.to === toId) ||
          (r.from === toId   && r.to === fromId)
   );
+}
+
+export function getCommodity(id: string): Commodity | undefined {
+  return WORLD.commodities.find(c => c.id === id);
+}
+
+export function getCommodities(): Commodity[] {
+  return WORLD.commodities;
+}
+
+export function computeCargoWeightKg(cargoHold: CargoEntry[]): number {
+  return cargoHold.reduce((total, entry) => {
+    const commodity = getCommodity(entry.commodityId);
+    return total + entry.qty * (commodity?.weightKg ?? 0);
+  }, 0);
 }

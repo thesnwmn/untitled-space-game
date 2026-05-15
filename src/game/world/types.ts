@@ -129,6 +129,11 @@ export interface CargoEntry {
   qty: number;
 }
 
+export interface TraderStockEntry {
+  commodityId: string;
+  qty: number;
+}
+
 export interface WorldData {
   settings: GameSettings;
   systems: StarSystem[];
