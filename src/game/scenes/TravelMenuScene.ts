@@ -12,7 +12,7 @@ export class TravelMenuScene extends BaseMenuScene {
     systemId: string,
     currentDestinationId: string | null,
     fuelL: number,
-    fuelCapacityL: number,
+    fuelCapacityL: number, // reserved for future display (e.g. fuel % indicator)
     driveId: string,
     onDestinationSelected: (destinationId: string) => void,
     onJumpSelected: (targetSystemId: string) => void,

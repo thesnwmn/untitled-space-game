@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TravelMenuScene } from './TravelMenuScene';
-import { getSystem, getRoutesFrom, getDrive } from '../world/world-data';
-import { FUEL_PER_LY } from '../constants';
+import { getSystem, getRoutesFrom } from '../world/world-data';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 
 class MockInputHandler implements InputHandler {

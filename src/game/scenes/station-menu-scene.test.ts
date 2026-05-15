@@ -230,23 +230,10 @@ describe('StationMenuScene', () => {
       }
     });
 
-    it('BUY FUEL is absent at a station with no fuel amenity', () => {
-      const input = new MockInputHandler();
-      // blackwake-yard: amenities.fuel = true... let me use a station with fuel=false
-      // Looking at world data: blackwake-yard has fuel=true, but mars-anchor has fuel=true too
-      // tycho-orbital has fuel=true as well. Let me check: all destinations have fuel=true?
-      // From world-data: blackwake-yard amenities.fuel=true
-      // Actually looking carefully: all stations seem to have fuel=true in the world data.
-      // Let me create a mock by using a station that doesn't have fuel. Actually, we need
-      // a destination with fuel=false. From the spec: "Dock at a station with amenities.fuel: false"
-      // But looking at the world data, all current stations have fuel=true.
-      // Let me instead test via the code path: pass fuelL < fuelCapacityL but use
-      // a destination that would not have fuel amenity. Since all current stations have fuel=true,
-      // this test verifies the logic for future stations.
-      // For now, we can verify that a full tank correctly hides the option.
-      // This test is skipped since all current stations have fuel=true.
-      // We verify absence via the "full tank" test above.
-      expect(true).toBe(true); // placeholder — all current stations have fuel=true
+    it.skip('BUY FUEL is absent at a station with no fuel amenity', () => {
+      // TODO: all current world-data destinations have amenities.fuel = true, so there
+      // is no station to test the fuel=false branch against. Enable this test when a
+      // destination with fuel=false is added to world-data.ts.
     });
 
     it('selecting BUY FUEL calls onRefuel with correct cost', () => {

@@ -81,6 +81,7 @@ const goToShip = () => {
 const goToStation = () => {
   context.systemId = currentSystemId;
   context.destinationId = currentDestinationId;
+  context.credits = playerState.credits;
   currentScene = new StationMenuScene(
     input, context, currentDestinationId!,
     playerState.fuelL, playerState.fuelCapacityL, playerState.credits,
