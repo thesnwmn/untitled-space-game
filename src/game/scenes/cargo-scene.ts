@@ -24,13 +24,6 @@ export class CargoScene implements Scene {
         onBack();
       }
     });
-
-    if (inputHandler.onTap) {
-      inputHandler.onTap((_col, _row) => {
-        // Two-finger tap fires BACK action (handled above via action handler)
-        // Single tap does nothing in this read-only scene
-      });
-    }
   }
 
   update(_dt: number): void {}

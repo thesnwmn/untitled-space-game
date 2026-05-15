@@ -1,16 +1,15 @@
 import type { InputHandler, GameContext, CharBuffer } from '../../shared/types';
 import type { PlayerState } from '../PlayerState';
 import type { TraderStockEntry } from '../world/types';
-import { getCommodity } from '../world/world-data';
-import { getDestination } from '../world/world-data';
+import { getCommodity, getDestination } from '../world/world-data';
 import { writeText } from '../../shared/buffer-utils';
 import { contentBottom } from '../ui/screen-chrome';
 import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';
 
 export class TraderScene extends BaseMenuScene {
   private readonly traderStock: TraderStockEntry[];
-  private readonly _onBuy: (commodityId: string) => void;
-  private readonly _onSell: (commodityId: string) => void;
+  private readonly onBuy: (commodityId: string) => void;
+  private readonly onSell: (commodityId: string) => void;
   private readonly onHub: () => void;
   private readonly onUndock: () => void;
 
@@ -45,13 +44,14 @@ export class TraderScene extends BaseMenuScene {
     );
 
     this.traderStock = traderStock;
-    this._onBuy = onBuy;
-    this._onSell = onSell;
+    this.onBuy = onBuy;
+    this.onSell = onSell;
     this.onHub = onHub;
     this.onUndock = onUndock;
 
-    // Populate tabs and reset cursor with live data before any actions fire
-    this.syncTabItems();
+    // Populate tabs and set cursor before any actions can fire
+    this.syncItems();
+    this.clampCursor();
   }
 
   private buildBuyItems(): MenuItemDef[] {
@@ -65,7 +65,7 @@ export class TraderScene extends BaseMenuScene {
       return [{
         label: `${commodity.name} (x${entry.qty})`,
         info: `${totalPrice} CR`,
-        action: () => this._onBuy(entry.commodityId),
+        action: () => this.onBuy(entry.commodityId),
       }];
     });
   }
@@ -82,16 +82,21 @@ export class TraderScene extends BaseMenuScene {
       return [{
         label: `${commodity.name} (x${entry.qty})`,
         info: `${totalPrice} CR`,
-        action: () => this._onSell(entry.commodityId),
+        action: () => this.onSell(entry.commodityId),
       }];
     });
   }
 
-  private syncTabItems(): void {
+  // Rebuild tab item arrays from live data. Pure data sync — no cursor mutation.
+  private syncItems(): void {
     if (!this.tabs) return;
     this.tabs[0].items = this.buildBuyItems();
     this.tabs[1].items = this.buildSellItems();
-    // Clamp cursor if it's out of bounds or on a disabled item
+  }
+
+  // Clamp cursor to first enabled item in the active tab.
+  // findIndex returns -1 when all items are disabled (empty-state placeholder) — correct.
+  private clampCursor(): void {
     const items = this.items;
     if (this.cursorIdx < 0 || this.cursorIdx >= items.length || items[this.cursorIdx]?.disabled) {
       this.cursorIdx = items.findIndex(item => !item.disabled);
@@ -103,7 +108,10 @@ export class TraderScene extends BaseMenuScene {
     if (items.length === 0 || this.cursorIdx < 0 || this.cursorIdx >= items.length) return;
     const item = items[this.cursorIdx];
     if (item.disabled) return;
-    item.action();
+    item.action(); // calls onBuy or onSell; mutates traderStock / player hold
+    // Re-sync after the data mutation and clamp the cursor to a valid position
+    this.syncItems();
+    this.clampCursor();
     // Don't set activated — player can keep trading
   }
 
@@ -128,13 +136,11 @@ export class TraderScene extends BaseMenuScene {
   }
 
   override render(buffer: CharBuffer): void {
-    this.syncTabItems();
+    this.syncItems(); // refresh display data; no cursor mutation
     super.render(buffer);
 
     const h = buffer.length;
-    const weight = this.player.cargoWeightKg;
-    const capacity = this.player.cargoCapacity;
-    const footerText = `HOLD: ${weight}/${capacity}KG`;
+    const footerText = `HOLD: ${this.player.cargoWeightKg}/${this.player.cargoCapacity}KG`;
     const footerRow = contentBottom(h, true) - 2;
     writeText(buffer, footerRow, 2, footerText, 'bright-black', 'black');
   }

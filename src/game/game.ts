@@ -72,7 +72,11 @@ export class Game {
     }
     const commodities = getCommodities();
     const count = 4 + Math.floor(Math.random() * 3); // 4–6
-    const shuffled = [...commodities].sort(() => Math.random() - 0.5);
+    const shuffled = [...commodities];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     const entries: TraderStockEntry[] = shuffled.slice(0, count).map(c => ({
       commodityId: c.id,
       qty: 1 + Math.floor(Math.random() * 8), // 1–8

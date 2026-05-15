@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { Game } from './game';
 import type { Renderer, InputHandler, GameContext, CharBuffer } from '../shared/types';
+import type { TraderStockEntry } from './world/types';
 
 function makeMockRenderer(width = 40, height = 30): Renderer & { drawBuffer: ReturnType<typeof vi.fn> } {
   return {
@@ -55,5 +56,81 @@ describe('Game', () => {
     const game = new Game(renderer, makeMockInput(), context);
     for (let i = 0; i < 10; i++) game.tick(16);
     expect(renderer.drawBuffer).toHaveBeenCalledTimes(10);
+  });
+});
+
+describe('Game — onBuy guards', () => {
+  function makeGame() {
+    return new Game(makeMockRenderer(), makeMockInput(), context);
+  }
+
+  it('successful buy deducts credits, adds cargo, and removes item from stock', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    const stock: TraderStockEntry[] = [{ commodityId: 'rations', qty: 3 }]; // rations: 60 CR, 1 kg
+    (game as any).onBuy('rations', stock);
+    expect(player.credits).toBe(5000 - 3 * 60); // 4820
+    expect(player.cargoHold).toHaveLength(1);
+    expect(player.cargoHold[0]).toEqual({ commodityId: 'rations', qty: 3 });
+    expect(stock).toHaveLength(0);
+  });
+
+  it('buy does nothing when player cannot afford the item', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.spendCredits(5000); // drain all credits
+    const stock: TraderStockEntry[] = [{ commodityId: 'rations', qty: 1 }];
+    (game as any).onBuy('rations', stock);
+    expect(player.cargoHold).toHaveLength(0);
+    expect(stock).toHaveLength(1);
+  });
+
+  it('buy does nothing when item would exceed hold capacity', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    // Fill hold to 1990 kg with iron-ore (10 kg each, 199 units)
+    player.addCargo('iron-ore', 199);
+    // ship-components weighs 15 kg — would push total to 2005 kg, over 2000 kg cap
+    const stock: TraderStockEntry[] = [{ commodityId: 'ship-components', qty: 1 }];
+    (game as any).onBuy('ship-components', stock);
+    expect(player.cargoHold.find((e: TraderStockEntry) => e.commodityId === 'ship-components')).toBeUndefined();
+    expect(stock).toHaveLength(1);
+  });
+});
+
+describe('Game — onSell', () => {
+  function makeGame() {
+    return new Game(makeMockRenderer(), makeMockInput(), context);
+  }
+
+  it('sell adds credits, removes cargo, and merges into stock', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.addCargo('rations', 4);
+    player.spendCredits(5000); // zero credits to make verification clear
+    const stock: TraderStockEntry[] = [];
+    (game as any).onSell('rations', stock);
+    expect(player.credits).toBe(4 * 60); // 240
+    expect(player.cargoHold).toHaveLength(0);
+    expect(stock).toEqual([{ commodityId: 'rations', qty: 4 }]);
+  });
+
+  it('sell merges into existing stock entry', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.addCargo('rations', 2);
+    const stock: TraderStockEntry[] = [{ commodityId: 'rations', qty: 3 }];
+    (game as any).onSell('rations', stock);
+    expect(stock[0].qty).toBe(5);
+  });
+
+  it('sell does nothing when commodity is not in hold', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    const initialCredits = player.credits;
+    const stock: TraderStockEntry[] = [];
+    (game as any).onSell('rations', stock);
+    expect(player.credits).toBe(initialCredits);
+    expect(stock).toHaveLength(0);
   });
 });

@@ -276,6 +276,19 @@ describe('TraderScene', () => {
       expect(onSell).toHaveBeenCalledWith('rations');
     });
 
+    it('BUY tab shows NO STOCK AVAILABLE after all items are bought', () => {
+      const stock: TraderStockEntry[] = [{ commodityId: 'iron-ore', qty: 5 }];
+      const input = new MockInputHandler();
+      const scene = makeScene(input, {
+        stock,
+        onBuy: (_id) => { stock.splice(0, 1); }, // simulate buy removing the item
+      });
+      input.triggerAction('SELECT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_ROW_START)).toContain('NO STOCK AVAILABLE');
+    });
+
     it('SELECT does not set activated (scene stays open for further trades)', () => {
       const onBuy = vi.fn();
       const onHub = vi.fn();
