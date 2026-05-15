@@ -32,9 +32,7 @@ Never begin implementation without confirming which feature is being worked on.
 10. Update the backlogs on the feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
-    - In **BACKLOG.md**, replace the item entry with a one-liner pointer:
-      `See BACKLOG_HISTORY.md — NNN · Title`
-      (or remove it entirely if the DONE section already has a pointer to that file).
+    - Remove the item from **BACKLOG.md** entirely.
 11. Archive the feature spec:
     - If a `docs/features/NNN-*.md` spec exists for this item, replace it with a
       short summary in `docs/features/history/NNN-*.md` (same filename, new directory).
@@ -49,10 +47,19 @@ Never begin implementation without confirming which feature is being worked on.
       [any non-obvious patterns this feature established — omit section if none]
       ```
     - Delete the original from `docs/features/` after writing the summary.
-12. If you run out of context before finishing:
-    - Do not leave code in a broken state. Revert or stub cleanly.
-    - Write a HANDOFF.md in the repo root using the template below.
-    - Update the backlog item status to IN PROGRESS.
+12. On successful completion, automatically proceed to the Reviewer role. Do not
+    wait for the manager to ask. The review is part of the Engineer session.
+
+## Context Management
+
+Monitor your context usage throughout the session. **At ~80% context used, stop
+implementation and hand off cleanly** — do not wait until context is exhausted.
+
+When handing off early:
+- Do not leave code in a broken state. Revert or stub cleanly.
+- Write a HANDOFF.md in the repo root using the template below.
+- Update the backlog item status to IN PROGRESS.
+- Push whatever is complete to the branch.
 
 ## HANDOFF.md Template
 
@@ -87,8 +94,6 @@ Never begin implementation without confirming which feature is being worked on.
 [One paragraph of plain-language context — what the next session needs to know
 to continue without re-reading everything. Include the exact next step to take.]
 ```
-13. On successful completion, automatically proceed to the Reviewer role. Do not
-    wait for the manager to ask. The review is part of the Engineer session.
 
 ## Non-negotiables
 
