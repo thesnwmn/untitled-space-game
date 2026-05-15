@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { StoryScene } from './story-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -48,45 +49,45 @@ describe('StoryScene', () => {
   describe('render — layout', () => {
     it('clears buffer to black spaces before drawing', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
-      buf[1][5] = { char: 'X', fg: 'red', bg: 'red' };
+      buf[3][5] = { char: 'X', fg: 'red', bg: 'red' };
       scene.render(buf);
-      expect(buf[1][5]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
+      expect(buf[3][5]).toEqual({ char: ' ', fg: 'black', bg: 'black' });
     });
 
-    it('does not render a border', () => {
+    it('renders chrome header on row 0 with system name', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[0][0].char).toBe(' ');
-      expect(buf[0][0].fg).toBe('black');
+      const row0 = buf[0].map(c => c.char).join('');
+      expect(row0).toContain('SOL');
     });
 
-    it('renders YEAR header from world data centred in bright-yellow on row 2', () => {
+    it('renders YEAR header from world data centred in bright-yellow on row 3', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, 2)).toContain('YEAR  2284');
+      expect(rowText(buf, 3)).toContain('YEAR  2284');
       // "YEAR  2284" is 10 chars; centred in 40: col = 15
-      expect(rowFg(buf, 2, 15)).toBe('bright-yellow');
+      expect(rowFg(buf, 3, 15)).toBe('bright-yellow');
     });
 
-    it('renders at least one body line from world data below row 4 in white', () => {
+    it('renders at least one body line from world data starting at row 5 in white', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const text = rowText(buf, 4);
+      const text = rowText(buf, 5);
       expect(text.trim().length).toBeGreaterThan(0);
-      expect(buf[4].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
+      expect(buf[5].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('white');
     });
 
     it('does not render "Hugo poured" anywhere in the buffer', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const allText = buf.map(row => row.map(c => c.char).join('')).join('');
@@ -95,10 +96,10 @@ describe('StoryScene', () => {
 
     it('story text lines do not exceed 36 chars from col 2', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      for (let row = 4; row < buf.length - 4; row++) {
+      for (let row = 5; row < buf.length - 4; row++) {
         const textContent = buf[row].slice(2, 38).map(c => c.char).join('').trimEnd();
         expect(textContent.length).toBeLessThanOrEqual(36);
       }
@@ -109,7 +110,7 @@ describe('StoryScene', () => {
     it('SELECT triggers onContinue exactly once', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, null, onContinue);
+      new StoryScene(input, keyboardContext, makePlayer(), onContinue);
       input.triggerAction('SELECT');
       expect(onContinue).toHaveBeenCalledTimes(1);
     });
@@ -117,7 +118,7 @@ describe('StoryScene', () => {
     it('second SELECT after first does nothing', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, null, onContinue);
+      new StoryScene(input, keyboardContext, makePlayer(), onContinue);
       input.triggerAction('SELECT');
       input.triggerAction('SELECT');
       expect(onContinue).toHaveBeenCalledTimes(1);
@@ -128,7 +129,7 @@ describe('StoryScene', () => {
     it('tap on any row triggers onContinue exactly once', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, null, onContinue);
+      new StoryScene(input, keyboardContext, makePlayer(), onContinue);
       input.triggerTap(5, 10);
       expect(onContinue).toHaveBeenCalledTimes(1);
     });
@@ -136,7 +137,7 @@ describe('StoryScene', () => {
     it('tap on row 0 (empty row) triggers onContinue', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, null, onContinue);
+      new StoryScene(input, keyboardContext, makePlayer(), onContinue);
       input.triggerTap(0, 0);
       expect(onContinue).toHaveBeenCalledTimes(1);
     });
@@ -144,7 +145,7 @@ describe('StoryScene', () => {
     it('second tap after first does nothing', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, null, onContinue);
+      new StoryScene(input, keyboardContext, makePlayer(), onContinue);
       input.triggerTap(0, 5);
       input.triggerTap(0, 5);
       expect(onContinue).toHaveBeenCalledTimes(1);
@@ -155,7 +156,7 @@ describe('StoryScene', () => {
     it('BACK has no effect', () => {
       const onContinue = vi.fn();
       const input = new MockInputHandler();
-      new StoryScene(input, keyboardContext, null, onContinue);
+      new StoryScene(input, keyboardContext, makePlayer(), onContinue);
       input.triggerAction('BACK');
       expect(onContinue).not.toHaveBeenCalled();
     });
@@ -164,7 +165,7 @@ describe('StoryScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new StoryScene(input, keyboardContext, null, vi.fn());
+      const scene = new StoryScene(input, keyboardContext, makePlayer(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
