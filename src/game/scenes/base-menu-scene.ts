@@ -1,7 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { writeText } from '../../shared/buffer-utils';
-import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/ScreenChrome';
-import type { NavOption, ChromeConfig } from '../ui/ScreenChrome';
+import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
+import type { NavOption, ChromeConfig } from '../ui/screen-chrome';
 
 export interface MenuItemDef {
   label: string;

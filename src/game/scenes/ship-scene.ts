@@ -1,10 +1,10 @@
 import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
 import { getDestination } from '../world/world-data';
 import type { DestinationType } from '../world/types';
-import { Starfield } from './Starfield';
-import { SpaceStation } from './SpaceStation';
+import { Starfield } from './starfield';
+import { SpaceStation } from './space-station';
 import { STATION_TYPES, type SpaceStationDef } from './station-types';
-import { ScreenChrome } from '../ui/ScreenChrome';
+import { ScreenChrome } from '../ui/screen-chrome';
 
 export interface PlayerStateView {
   fuelL: number;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { BaseMenuScene, type MenuItemDef } from './BaseMenuScene';
+import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────

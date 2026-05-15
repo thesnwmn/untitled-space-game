@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { TraderScene } from './TraderScene';
+import { TraderScene } from './trader-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────

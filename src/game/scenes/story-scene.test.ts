@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { StoryScene } from './StoryScene';
+import { StoryScene } from './story-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────

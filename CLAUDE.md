@@ -52,6 +52,10 @@ Always confirm which role you're in at the start of a session. Read the role fil
 - docs/implementation/ — how game systems are built (scenes, etc.)
 - init.sh — run at the start and end of every Engineer or Debugger session
 
+## Conventions
+
+File names use kebab-case (`my-module.ts`). Class and interface names inside files remain PascalCase per TypeScript convention.
+
 ## Git Workflow
 
 All changes go to a feature branch. Open a PR against main. Never push to main directly.

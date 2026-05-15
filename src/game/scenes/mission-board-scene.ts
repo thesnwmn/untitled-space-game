@@ -1,6 +1,6 @@
 import type { InputHandler, GameContext } from '../../shared/types';
 import { getDestination } from '../world/world-data';
-import { BaseMenuScene, type MenuItemDef } from './BaseMenuScene';
+import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 
 interface Mission {
   id: string;

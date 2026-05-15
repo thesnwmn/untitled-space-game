@@ -2,7 +2,7 @@ import type { InputHandler, GameContext } from '../../shared/types';
 import { wrapText } from '../../shared/buffer-utils';
 import { getDestination } from '../world/world-data';
 import { FUEL_PRICE_PER_L } from '../constants';
-import { BaseMenuScene, type MenuItemDef } from './BaseMenuScene';
+import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 
 export class StationMenuScene extends BaseMenuScene {
   private readonly onShip: () => void;

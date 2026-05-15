@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { StationMenuScene } from './StationMenuScene';
+import { StationMenuScene } from './station-menu-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────

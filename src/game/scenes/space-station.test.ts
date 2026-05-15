@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SpaceStation } from './SpaceStation';
+import { SpaceStation } from './space-station';
 import { STATION_TYPES } from './station-types';
 import type { CharBuffer, Color } from '../../shared/types';
 

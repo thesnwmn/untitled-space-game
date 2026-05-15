@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DOMRenderer } from './DOMRenderer';
+import { DOMRenderer } from './dom-renderer';
 import { GRID_WIDTH, MIN_GRID_HEIGHT } from '../../shared/types';
 
 describe('DOMRenderer', () => {

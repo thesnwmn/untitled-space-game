@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TerminalInputHandler } from './TerminalInputHandler';
+import { TerminalInputHandler } from './terminal-input-handler';
 import type { GameAction } from '../../shared/types';
 
 class MockStdin {
