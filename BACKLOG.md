@@ -12,6 +12,20 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
+### 034 · Standardise Kebab-Case File Names
+
+Rename all PascalCase source files in `src/` to kebab-case so that files sort
+consistently and every test file is alphabetically adjacent to its implementation.
+25 files are renamed (no class/interface identifiers change). All import paths in
+`src/` and `terminal.ts` are updated to match. A "Conventions" note is added to
+`CLAUDE.md` and `DECISION_REGISTER.md` is updated to reference the kebab-case
+`player-state.ts` path for feature 033.
+See `docs/features/034-standardise-kebab-case-file-names.md` for the full spec.
+
+**Depends on:** Nothing — pure refactor.
+
+---
+
 ### 033 · Centralise Player State
 
 Replace the ad-hoc `playerState` object and scattered orchestrator variables with a
