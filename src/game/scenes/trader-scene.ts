@@ -62,9 +62,11 @@ export class TraderScene extends BaseMenuScene {
     return this.traderStock.flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
+      const canAfford = this.player.credits >= commodity.basePrice;
       return [{
         label: `${commodity.name} (x${entry.qty})`,
         info: `${commodity.basePrice} CR`,
+        disabled: !canAfford,
         action: () => {
           const maxAffordable = Math.floor(this.player.credits / commodity.basePrice);
           const initial = Math.min(entry.qty, maxAffordable);
