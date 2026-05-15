@@ -160,7 +160,7 @@ describe('getCommodity', () => {
     const c = getCommodity('iron-ore');
     expect(c).toBeDefined();
     expect(c!.basePrice).toBe(80);
-    expect(c!.weightKg).toBe(10);
+    expect(c!.weightKg).toBe(40);
   });
 
   it('returns undefined for unknown commodity id', () => {
@@ -182,12 +182,12 @@ describe('computeCargoWeightKg', () => {
   });
 
   it('sums weight correctly across multiple entries', () => {
-    // iron-ore: 10 kg × 3 = 30; electronics: 2 kg × 5 = 10; total = 40
+    // iron-ore: 40 kg × 3 = 120; electronics: 8 kg × 5 = 40; total = 160
     const hold = [
       { commodityId: 'iron-ore', qty: 3 },
       { commodityId: 'electronics', qty: 5 },
     ];
-    expect(computeCargoWeightKg(hold)).toBe(40);
+    expect(computeCargoWeightKg(hold)).toBe(160);
   });
 
   it('ignores unknown commodity ids (contributes 0)', () => {

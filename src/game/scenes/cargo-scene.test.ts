@@ -75,7 +75,7 @@ describe('CargoScene', () => {
   describe('render — with cargo', () => {
     it('shows each item name, quantity, and weight', () => {
       const player = makePlayer();
-      player.addCargo('iron-ore', 3); // iron-ore: 10 kg/unit
+      player.addCargo('iron-ore', 3); // iron-ore: 40 kg/unit
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, player, vi.fn());
       const buf = makeBuffer(40, 30);
@@ -83,7 +83,7 @@ describe('CargoScene', () => {
       const text = bufferText(buf);
       expect(text).toContain('Iron Ore');
       expect(text).toContain('x3');
-      expect(text).toContain('30KG'); // 3 × 10 = 30
+      expect(text).toContain('120KG'); // 3 × 40 = 120
     });
 
     it('shows multiple items', () => {
@@ -101,13 +101,13 @@ describe('CargoScene', () => {
 
     it('shows correct total weight', () => {
       const player = makePlayer();
-      player.addCargo('iron-ore', 2);    // 2 × 10 = 20 kg
-      player.addCargo('electronics', 5); // 5 × 2  = 10 kg  → total = 30 kg
+      player.addCargo('iron-ore', 2);    // 2 × 40 = 80 kg
+      player.addCargo('electronics', 5); // 5 × 8  = 40 kg  → total = 120 kg
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, player, vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(bufferText(buf)).toContain('30/2000KG');
+      expect(bufferText(buf)).toContain('120/2000KG');
     });
 
     it('shows correct capacity', () => {

@@ -6,7 +6,7 @@ commodities:
     base_price: 80
     category: raw-material
     legal: true
-    weight_kg: 10
+    weight_kg: 40
     description: Unrefined iron extracted from asteroid fields and planetary crust.
 
   - id: rare-earth
@@ -14,7 +14,7 @@ commodities:
     base_price: 400
     category: raw-material
     legal: true
-    weight_kg: 5
+    weight_kg: 20
     description: High-value minerals essential for electronics and drive components.
 
   - id: deuterium
@@ -22,7 +22,7 @@ commodities:
     base_price: 200
     category: raw-material
     legal: true
-    weight_kg: 3
+    weight_kg: 12
     description: Refined hydrogen isotope used in jump drive fuel production.
 
   # Manufactured Goods — found near industrial / trade systems
@@ -31,7 +31,7 @@ commodities:
     base_price: 220
     category: manufactured
     legal: true
-    weight_kg: 8
+    weight_kg: 32
     description: Processed alloys ready for ship construction and infrastructure work.
 
   - id: ship-components
@@ -39,7 +39,7 @@ commodities:
     base_price: 650
     category: manufactured
     legal: true
-    weight_kg: 15
+    weight_kg: 60
     description: Drive housings, hull panels, sensor arrays — standard replacement parts.
 
   - id: electronics
@@ -47,7 +47,7 @@ commodities:
     base_price: 500
     category: manufactured
     legal: true
-    weight_kg: 2
+    weight_kg: 8
     description: Commercial-grade devices popular across populated stations.
 
   # Consumables — available at most stations
@@ -56,7 +56,7 @@ commodities:
     base_price: 60
     category: consumable
     legal: true
-    weight_kg: 1
+    weight_kg: 4
     description: Bulk-packaged food supplies for crew and colony populations.
 
   - id: medical-supplies
@@ -64,7 +64,7 @@ commodities:
     base_price: 350
     category: consumable
     legal: true
-    weight_kg: 2
+    weight_kg: 8
     description: Pharmaceuticals, surgical kits and diagnostic equipment.
 
   - id: fuel-cells
@@ -72,7 +72,7 @@ commodities:
     base_price: 180
     category: consumable
     legal: true
-    weight_kg: 4
+    weight_kg: 16
     description: Pre-charged energy cells for ship systems and surface equipment.
 
   # Contraband — found near lawless systems; illegal in Core Space
@@ -81,7 +81,7 @@ commodities:
     base_price: 900
     category: contraband
     legal: false
-    weight_kg: 1
+    weight_kg: 2
     description: Performance-enhancing compounds banned under Union health codes.
 
   - id: black-box-data
@@ -97,7 +97,7 @@ commodities:
     base_price: 1200
     category: contraband
     legal: false
-    weight_kg: 3
+    weight_kg: 10
     description: Unlicensed ship modifications — transponder masks, reactor overrides.
 ---
 
