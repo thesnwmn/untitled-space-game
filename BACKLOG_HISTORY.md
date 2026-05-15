@@ -14,6 +14,27 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 034 · Shared Game Orchestrator — DONE
+
+**Built:**
+- `src/game/game.ts` — new `Game` class with constructor `(renderer, input, context)`; creates `PlayerState` from `getGameSettings()` internally; initialises `currentScene` to `MainMenuScene`; owns all navigation methods (`goToMainMenu`, `goToStory`, `goToStation`, `goToTrader`, `goToMissionBoard`, `goToShip`, `goToTravelMenu`, `goToArrival`, `goToFlyIntoSpace`, `onDestinationSelected`, `onJumpSelected`) as private methods; `tick(dt)` clamps dt to 100 ms then runs update → render → draw pipeline; `makeBuffer()` is a private method
+- `src/main.ts` — reduced to CSS import, `DOMRenderer`/`DOMInputHandler` construction, `GameContext` literal, `new Game(...)`, and `requestAnimationFrame` loop (25 lines)
+- `terminal.ts` — reduced to `TerminalRenderer`/`TerminalInputHandler` construction, `GameContext` literal, `new Game(...)`, stdin close guard, `input.connect()`, and `setInterval` loop (19 lines)
+- `src/game/game.test.ts` — 4 tests: `tick()` calls `drawBuffer` once per call, buffer matches renderer dimensions, dt clamped to 100 ms, multiple ticks work without error
+
+**Evidence:**
+- `npx tsc --noEmit`: ✓ zero errors
+- `npm test`: ✓ 330 passed | 1 skipped (331 total; 4 new)
+- `bash init.sh`: ✓ `=== Environment ready ===`
+
+**Play-test instructions:**
+1. `npm run dev` → open browser → NEW GAME → walk through the full game flow (story → station → ship → travel → jump)
+2. Verify all navigation works identically to before (station, trader, mission board, ship, travel menu, jumps)
+3. `npm run terminal` → repeat above in terminal mode
+4. Confirm the game loop runs smoothly at ~30 fps in terminal and 60 fps in browser
+
+---
+
 ### 033 · Centralise Player State — DONE
 
 **Built:**
