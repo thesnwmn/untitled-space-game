@@ -62,10 +62,9 @@ export class TraderScene extends BaseMenuScene {
     return this.traderStock.flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
-      const totalPrice = entry.qty * commodity.basePrice;
       return [{
         label: `${commodity.name} (x${entry.qty})`,
-        info: `${totalPrice} CR`,
+        info: `${commodity.basePrice} CR`,
         action: () => {
           const maxAffordable = Math.floor(this.player.credits / commodity.basePrice);
           const initial = Math.min(entry.qty, maxAffordable);
@@ -95,10 +94,9 @@ export class TraderScene extends BaseMenuScene {
     return [...hold].flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
-      const totalPrice = entry.qty * commodity.basePrice;
       return [{
         label: `${commodity.name} (x${entry.qty})`,
-        info: `${totalPrice} CR`,
+        info: `${commodity.basePrice} CR`,
         action: () => {
           this.openModal(new ModalInputDialog({
             title: commodity.name.toUpperCase(),

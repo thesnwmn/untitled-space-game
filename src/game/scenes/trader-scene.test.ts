@@ -162,9 +162,9 @@ describe('TraderScene', () => {
       const scene = makeScene(input, { stock: [{ commodityId: 'iron-ore', qty: 5 }] });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // iron-ore basePrice=80; 5×80=400 CR
+      // iron-ore basePrice=80 per unit
       expect(rowText(buf, ITEM_ROW_START)).toContain('Iron Ore (x5)');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('400 CR');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('80 CR');
     });
 
     it('BUY tab shows NO STOCK AVAILABLE when stock is empty', () => {
@@ -199,7 +199,7 @@ describe('TraderScene', () => {
     it('SELL tab renders hold items with name, qty and price', () => {
       const input = new MockInputHandler();
       const player = makePlayer();
-      player.addCargo('rations', 3); // rations basePrice=60; 3×60=180 CR
+      player.addCargo('rations', 3); // rations basePrice=60 per unit
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
         makeStock(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
@@ -208,7 +208,7 @@ describe('TraderScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('Ration Packs (x3)');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('180 CR');
+      expect(rowText(buf, ITEM_ROW_START)).toContain('60 CR');
     });
 
     it('SELL tab shows CARGO HOLD EMPTY when hold is empty', () => {
