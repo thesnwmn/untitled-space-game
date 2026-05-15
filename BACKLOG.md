@@ -25,6 +25,20 @@ See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
 
 ---
 
+### 036 · Cockpit Ship View
+
+Replace the current ship view with a fully animated cockpit display:
+a two-row coloured gauge strip (fuel/cargo left, shields/hull right, button
+clusters between), a borderless starfield viewport with floating crosshair
+and HUD overlay, a 5-row bottom section with button panels flanking a dark
+radar block (drifting contacts, edge arrow indicators), a scrolling
+info/comms ticker, and a screen chrome footer nav bar. TRAVEL and DOCK are
+embedded as coloured-background words inside the bottom panels.
+See `docs/features/036-cockpit-ship-view.md` for the full spec.
+
+---
+
+
 ## NEEDS SPEC
 
 _(none)_
