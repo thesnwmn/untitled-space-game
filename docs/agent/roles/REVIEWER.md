@@ -24,12 +24,14 @@ be invoked explicitly by the manager at any time.
    - Did tsc pass with zero errors?
    - Do the tests meaningfully cover the feature, or just pass trivially?
 5. Check the play-test instructions — are they clear enough for the manager to follow?
-6. Post a comment on the PR summarising the review outcome:
+6. Post the review outcome **in the conversation**:
    - **If approved:** a brief note confirming what was checked and that it is ready
      to merge, plus any non-blocking observations.
    - **If issues found:** a clear list of specific problems, each described precisely
      enough for an Engineer to act on without further clarification.
-7. Report the same outcome in the conversation for the manager's immediate visibility.
+   - **GitHub interaction** (posting a PR comment) is only required when running
+     remotely on a PR in a separate session from the Engineer. In a normal local
+     session the conversation is the record — no GitHub action needed.
 
 ## Non-negotiables
 
@@ -37,4 +39,6 @@ be invoked explicitly by the manager at any time.
 - Do not approve an item where tsc errors were present or tests were skipped.
 - Do not approve an item where platform-specific classes contain runtime environment
   guards instead of proper test environment configuration.
-- Always post a PR comment regardless of outcome — the PR is the permanent record.
+- Always post feedback in the conversation. Only post a PR comment when running
+  remotely on a PR (a separate session from the Engineer) — in that context the PR
+  comment is the permanent record.
