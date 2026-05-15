@@ -247,13 +247,15 @@ describe('ModalInputDialog — LEFT/RIGHT adjust value by 10', () => {
     expect(valueStr).toBe('0');
   });
 
-  it('RIGHT adjusts value when confirm is focused', () => {
+  it('RIGHT does not adjust value when confirm is focused', () => {
     const dialog = new ModalInputDialog(makeForm());
     dialog.handleAction('TAB'); // → confirm
-    dialog.handleAction('RIGHT'); // 3 + 10 = 10 (clamped)
+    dialog.handleAction('RIGHT'); // ignored
     const buf = makeBuffer(BUF_W, BUF_H);
     dialog.render(buf);
-    expect(rowText(buf, DIALOG_ROW + 4)).toContain('10');
+    const valueBoxCol = DIALOG_COL + 1 + 8 + 3;
+    const valueStr = buf[DIALOG_ROW + 4].slice(valueBoxCol, valueBoxCol + 5).map(c => c.char).join('').trim();
+    expect(valueStr).toBe('3'); // unchanged
   });
 });
 
@@ -408,28 +410,28 @@ describe('ModalInputDialog — action routing', () => {
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
-  it('LEFT decrements value by 10 when cancel is focused', () => {
+  it('LEFT does not adjust value when cancel is focused', () => {
     const dialog = new ModalInputDialog(makeForm());
     dialog.handleAction('TAB'); // → confirm
     dialog.handleAction('TAB'); // → cancel
-    dialog.handleAction('LEFT'); // 3 - 10 → clamped to 0
+    dialog.handleAction('LEFT'); // ignored
     const buf = makeBuffer(BUF_W, BUF_H);
     dialog.render(buf);
     const valueBoxCol = DIALOG_COL + 1 + 8 + 3;
     const valueStr = buf[DIALOG_ROW + 4].slice(valueBoxCol, valueBoxCol + 5).map(c => c.char).join('').trim();
-    expect(valueStr).toBe('0');
+    expect(valueStr).toBe('3'); // unchanged
   });
 
-  it('UP increments value by 1 when cancel is focused', () => {
+  it('UP does not adjust value when cancel is focused', () => {
     const dialog = new ModalInputDialog(makeForm());
     dialog.handleAction('TAB'); // → confirm
     dialog.handleAction('TAB'); // → cancel
-    dialog.handleAction('UP');  // 3 → 4
+    dialog.handleAction('UP');  // ignored
     const buf = makeBuffer(BUF_W, BUF_H);
     dialog.render(buf);
     const valueBoxCol = DIALOG_COL + 1 + 8 + 3;
     const valueStr = buf[DIALOG_ROW + 4].slice(valueBoxCol, valueBoxCol + 5).map(c => c.char).join('').trim();
-    expect(valueStr).toBe('4');
+    expect(valueStr).toBe('3'); // unchanged
   });
 
   it('NAV_1 through NAV_9 are ignored', () => {

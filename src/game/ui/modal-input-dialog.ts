@@ -46,10 +46,13 @@ export class ModalInputDialog {
     const { field } = this.formDef;
 
     if (action === 'BACK') { this.formDef.onCancel(); return; }
-    if (action === 'UP')    { this.value = Math.min(field.max, this.value + 1);  return; }
-    if (action === 'DOWN')  { this.value = Math.max(field.min, this.value - 1);  return; }
-    if (action === 'RIGHT') { this.value = Math.min(field.max, this.value + 10); return; }
-    if (action === 'LEFT')  { this.value = Math.max(field.min, this.value - 10); return; }
+
+    if (this.focus === 'field') {
+      if (action === 'UP')    { this.value = Math.min(field.max, this.value + 1);  return; }
+      if (action === 'DOWN')  { this.value = Math.max(field.min, this.value - 1);  return; }
+      if (action === 'RIGHT') { this.value = Math.min(field.max, this.value + 10); return; }
+      if (action === 'LEFT')  { this.value = Math.max(field.min, this.value - 10); return; }
+    }
 
     if (action === 'TAB') {
       if (this.focus === 'field') this.focus = 'confirm';
