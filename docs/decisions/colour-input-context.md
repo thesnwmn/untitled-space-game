@@ -39,14 +39,21 @@ const context: GameContext = {
   environment: 'browser',
   primaryInput: 'touch',
   debug: false,
-  systemId: 'sol',
-  destinationId: 'elysium-station',
-  credits: 5000,
 };
-const scene = new MainMenuScene(inputHandler, context);
+const player = new PlayerState({ shipId, driveId, credits, systemId, destinationId });
+const scene = new MainMenuScene(inputHandler, context, player);
 ```
 
-`GameContext` is constructed once in each entry point and passed down. `systemId`, `destinationId`, and `credits` are mutated by the orchestrator as the player navigates.
+`GameContext` is constructed once per entry point and never mutated — it holds only
+static runtime metadata. `PlayerState` is constructed once at startup and updated
+exclusively via its named methods (`dock`, `undock`, `jumpTo`, `addFuel`,
+`spendCredits`, etc.) by the orchestrator callbacks. Scenes receive both objects and
+read from them but never mutate them directly.
+
+**`PlayerState`** — see `src/game/PlayerState.ts` and feature 033 for the full API.
+All persistent game data lives here: location (`systemId`, `destinationId`), fuel,
+credits, cargo hold, ship info. Scenes read via getters; the orchestrator calls
+named mutator methods.
 
 **`environment`** — set statically by the entry point:
 - `terminal.ts` (Bun): always `'terminal'`

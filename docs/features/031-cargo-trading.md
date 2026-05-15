@@ -78,14 +78,10 @@ export type GameAction =
 
 ### 2 · `src/game/world/types.ts`
 
-Add two new interfaces (below the existing commodity types):
+`CargoEntry` is defined by feature 033 (prerequisite). Add only `TraderStockEntry`
+here:
 
 ```typescript
-export interface CargoEntry {
-  commodityId: string;
-  qty: number;           // units held
-}
-
 export interface TraderStockEntry {
   commodityId: string;
   qty: number;           // units available for sale
@@ -135,26 +131,26 @@ export function computeCargoWeightKg(cargoHold: CargoEntry[]): number {
 }
 ```
 
-### 6 · `src/main.ts` and `terminal.ts`
+### 5b · `src/game/PlayerState.ts` — add `cargoWeightKg`
 
-The changes below are identical in both orchestrators.
-
-#### a) Extend `playerState`
-
-Add `cargoHold` and remove `cargo` (replace with computed weight):
+Feature 033 leaves `cargoWeightKg` as a stub. This feature adds the real
+implementation. Add the import and getter:
 
 ```typescript
-const playerState = {
-  fuelL:         ship.fuelCapacityL,
-  fuelCapacityL: ship.fuelCapacityL,
-  driveId:       ship.defaultJumpDrive,
-  cargoHold:     [] as CargoEntry[],    // ← new; replaces cargo: 0
-  cargoCapacity: ship.cargoCapacityKg,
-  credits:       settings.player.startingCredits,
-};
+import { computeCargoWeightKg } from './world/world-data';
+
+// inside PlayerState class:
+get cargoWeightKg(): number {
+  return computeCargoWeightKg(this._cargoHold as CargoEntry[]);
+}
 ```
 
-Import `CargoEntry` and `TraderStockEntry` from `'./game/world/types'`.
+### 6 · `src/main.ts` and `terminal.ts`
+
+The changes below are identical in both orchestrators. The `playerState` plain object
+no longer exists (removed by feature 033); `player` is a `PlayerState` instance.
+
+Import `TraderStockEntry` from `'./game/world/types'`.
 Import `getCommodity`, `getCommodities`, `computeCargoWeightKg` from `'./game/world/world-data'`.
 
 #### b) Add trader stock cache
@@ -188,9 +184,11 @@ function getOrCreateTraderStock(destinationId: string): TraderStockEntry[] {
 
 #### c) Add `onBuy` and `onSell`
 
+Use `PlayerState` methods; no direct field mutation:
+
 ```typescript
 function onBuy(commodityId: string): void {
-  const stock = getOrCreateTraderStock(currentDestinationId!);
+  const stock = getOrCreateTraderStock(player.destinationId!);
   const idx = stock.findIndex(e => e.commodityId === commodityId);
   if (idx === -1) return;
   const entry = stock[idx];
@@ -198,33 +196,24 @@ function onBuy(commodityId: string): void {
   if (!commodity) return;
   const totalWeight = entry.qty * commodity.weightKg;
   const totalCost   = entry.qty * commodity.basePrice;
-  const freeKg = playerState.cargoCapacity - computeCargoWeightKg(playerState.cargoHold);
-  if (freeKg < totalWeight || playerState.credits < totalCost) return;
-  playerState.credits -= totalCost;
+  const freeKg = player.cargoCapacity - player.cargoWeightKg;
+  if (freeKg < totalWeight || player.credits < totalCost) return;
+  player.spendCredits(totalCost);
   stock.splice(idx, 1);
-  const held = playerState.cargoHold.find(e => e.commodityId === commodityId);
-  if (held) {
-    held.qty += entry.qty;
-  } else {
-    playerState.cargoHold.push({ commodityId, qty: entry.qty });
-  }
+  player.addCargo(commodityId, entry.qty);
 }
 
 function onSell(commodityId: string): void {
-  const holdIdx = playerState.cargoHold.findIndex(e => e.commodityId === commodityId);
-  if (holdIdx === -1) return;
-  const entry = playerState.cargoHold[holdIdx];
+  const heldEntry = player.cargoHold.find(e => e.commodityId === commodityId);
+  if (!heldEntry) return;
   const commodity = getCommodity(commodityId);
   if (!commodity) return;
-  playerState.credits += entry.qty * commodity.basePrice;
-  playerState.cargoHold.splice(holdIdx, 1);
-  const stock = getOrCreateTraderStock(currentDestinationId!);
+  player.addCredits(heldEntry.qty * commodity.basePrice);
+  player.removeCargo(commodityId);
+  const stock = getOrCreateTraderStock(player.destinationId!);
   const traderEntry = stock.find(e => e.commodityId === commodityId);
-  if (traderEntry) {
-    traderEntry.qty += entry.qty;
-  } else {
-    stock.push({ commodityId, qty: entry.qty });
-  }
+  if (traderEntry) traderEntry.qty += heldEntry.qty;
+  else stock.push({ commodityId, qty: heldEntry.qty });
 }
 ```
 
@@ -232,11 +221,10 @@ function onSell(commodityId: string): void {
 
 ```typescript
 const goToTrader = () => {
-  const stock = getOrCreateTraderStock(currentDestinationId!);
+  const stock = getOrCreateTraderStock(player.destinationId!);
   currentScene = new TraderScene(
-    input, context,
-    currentDestinationId!,
-    playerState,
+    input, context, player,
+    player.destinationId!,
     stock,
     onBuy,
     onSell,
@@ -248,20 +236,13 @@ const goToTrader = () => {
 
 #### e) Update `goToShip`
 
-Pass `cargoWeightKg` (computed) and add `goToCargo`:
+`player` is passed directly (feature 033 already wired this up). Only new change here
+is adding `goToCargo` as the final callback:
 
 ```typescript
 const goToShip = () => {
   currentScene = new ShipScene(
-    input, context,
-    currentSystemId, currentDestinationId,
-    {
-      fuelL:         playerState.fuelL,
-      fuelCapacityL: playerState.fuelCapacityL,
-      cargoWeightKg: computeCargoWeightKg(playerState.cargoHold),
-      cargoCapacity: playerState.cargoCapacity,
-      credits:       playerState.credits,
-    },
+    input, context, player,
     goToTravelMenu, goToStation, goToCargo,
   );
 };
@@ -272,9 +253,7 @@ const goToShip = () => {
 ```typescript
 const goToCargo = () => {
   currentScene = new CargoScene(
-    input, context,
-    playerState.cargoHold,
-    playerState.cargoCapacity,
+    input, context, player,
     goToShip,
   );
 };
@@ -289,21 +268,18 @@ Complete overhaul of the BUY/SELL logic. Delete the hardcoded `TRADERS` constant
 
 #### New constructor signature
 
-```typescript
-import type { CargoEntry, TraderStockEntry } from '../world/types';
-import { getCommodity } from '../world/world-data';
+`PlayerStateRef` is removed; use `PlayerState` directly (from feature 033):
 
-interface PlayerStateRef {
-  cargoHold: CargoEntry[];
-  cargoCapacity: number;
-  credits: number;
-}
+```typescript
+import type { TraderStockEntry } from '../world/types';
+import { getCommodity } from '../world/world-data';
+import type { PlayerState } from '../PlayerState';
 
 constructor(
   inputHandler: InputHandler,
   context: GameContext,
+  player: PlayerState,
   destinationId: string,
-  playerState: PlayerStateRef,
   traderStock: TraderStockEntry[],      // mutable reference; live data
   onBuy: (commodityId: string) => void,
   onSell: (commodityId: string) => void,
@@ -312,7 +288,7 @@ constructor(
 )
 ```
 
-Store refs to `playerState`, `traderStock`, `onBuy`, `onSell` as private fields.
+Store refs to `player`, `traderStock`, `onBuy`, `onSell` as private fields.
 Remove the `trader` and `traderName` fields. Keep `traderName` derived from the
 destination's `npcs.trader` as before.
 
@@ -326,7 +302,7 @@ private currentItems(): Array<{ commodityId: string; qty: number; price: number;
       return { commodityId: e.commodityId, qty: e.qty, price: c.basePrice, name: c.name };
     });
   } else {
-    return this.playerState.cargoHold.map(e => {
+    return [...this.player.cargoHold].map(e => {
       const c = getCommodity(e.commodityId)!;
       return { commodityId: e.commodityId, qty: e.qty, price: c.basePrice, name: c.name };
     });
@@ -372,28 +348,17 @@ Show a hold-capacity footer line above the hint (both tabs):
 HOLD: 46/2000 KG
 ```
 
-Compute weight using `computeCargoWeightKg` — import it from `world-data.ts`.
+Compute weight using `this.player.cargoWeightKg` and capacity via
+`this.player.cargoCapacity`.
 
 ---
 
 ### 8 · `src/game/scenes/ShipScene.ts`
 
-#### a) Update `PlayerStateView`
+`PlayerStateView` is deleted by feature 033. `ShipScene` already receives `player:
+PlayerState`. This feature extends it with cargo display and the cargo scene action.
 
-```typescript
-interface PlayerStateView {
-  fuelL: number;
-  fuelCapacityL: number;
-  cargoWeightKg: number;   // ← replaces cargo: number
-  cargoCapacity: number;
-  credits: number;
-}
-```
-
-Remove the `INITIAL_STATE` constant and the internal `state` field (already done by
-feature 030; skip if already gone).
-
-#### b) Update the constructor
+#### a) Update the constructor
 
 Add `onCargo: () => void` as a new parameter after `onDock`:
 
@@ -401,9 +366,7 @@ Add `onCargo: () => void` as a new parameter after `onDock`:
 constructor(
   inputHandler: InputHandler,
   context: GameContext,
-  systemId: string,
-  destinationId: string | null,
-  playerState: PlayerStateView,
+  player: PlayerState,
   onTravel: () => void,
   onDock: () => void,
   onCargo: () => void,   // ← new
@@ -412,7 +375,7 @@ constructor(
 
 Store as `private readonly onCargo`.
 
-#### c) Add CARGO keyboard action
+#### b) Add CARGO keyboard action
 
 In `inputHandler.onAction`:
 
@@ -423,7 +386,7 @@ In `inputHandler.onAction`:
 }
 ```
 
-#### d) Add cargo panel tap for touch
+#### c) Add cargo panel tap for touch
 
 In `inputHandler.onTap`, add a handler that fires only when the tap lands in the
 right (cargo) panel of the stat bar. The stat bar lives at `statRow = 2`; the
@@ -440,15 +403,15 @@ if (row === 2 && col >= half) {
 
 Tapping the left (fuel) panel or any other row does not open CargoScene.
 
-#### e) Update status bar rendering
+#### d) Update status bar rendering
 
-Replace `this.state.cargo` / `this.state.cargoCapacity` with the new fields:
+Extend status bar to include cargo (reads from `this.player`):
 
 ```typescript
-const statusText = `FUEL:${playerState.fuelL}/${playerState.fuelCapacityL}L | CARGO:${playerState.cargoWeightKg}/${playerState.cargoCapacity}KG | CR:${playerState.credits}`;
+const statusText = `FUEL:${this.player.fuelL}/${this.player.fuelCapacityL}L | CARGO:${this.player.cargoWeightKg}/${this.player.cargoCapacity}KG | CR:${this.player.credits}`;
 ```
 
-#### f) Update footer hint
+#### e) Update footer hint
 
 ```typescript
 const hint = this.context.primaryInput === 'touch'
@@ -465,25 +428,22 @@ Read-only scene showing the contents of the player's cargo hold.
 ```typescript
 import type { InputHandler, GameContext, CharBuffer, Scene } from '../../shared/types';
 import { writeText, writeCentered } from '../../shared/buffer-utils';
-import { getCommodity, computeCargoWeightKg } from '../world/world-data';
-import type { CargoEntry } from '../world/types';
+import { getCommodity } from '../world/world-data';
+import type { PlayerState } from '../PlayerState';
 
 export class CargoScene implements Scene {
   private readonly context: GameContext;
-  private readonly cargoHold: CargoEntry[];
-  private readonly cargoCapacity: number;
+  private readonly player: PlayerState;
   private activated = false;
 
   constructor(
     inputHandler: InputHandler,
     context: GameContext,
-    cargoHold: CargoEntry[],
-    cargoCapacity: number,
+    player: PlayerState,
     onBack: () => void,
   ) {
     this.context = context;
-    this.cargoHold = cargoHold;
-    this.cargoCapacity = cargoCapacity;
+    this.player  = player;
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
@@ -527,7 +487,7 @@ Item rendering:
 
 ```typescript
 const contentWidth = w - 2; // subtract left/right margin
-for (const entry of this.cargoHold) {
+for (const entry of this.player.cargoHold) {
   const commodity = getCommodity(entry.commodityId)!;
   const name    = commodity.name.slice(0, 16);
   const qty     = `x${entry.qty}`;
@@ -544,7 +504,7 @@ for (const entry of this.cargoHold) {
 Empty hold:
 
 ```typescript
-if (this.cargoHold.length === 0) {
+if (this.player.cargoHold.length === 0) {
   writeCentered(buffer, 8, 'CARGO HOLD EMPTY', 'bright-black', 'black');
 }
 ```
@@ -552,8 +512,7 @@ if (this.cargoHold.length === 0) {
 Total row:
 
 ```typescript
-const usedKg = computeCargoWeightKg(this.cargoHold);
-writeText(buffer, h - 3, 2, `TOTAL: ${usedKg}/${this.cargoCapacity} KG`, 'bright-cyan', 'black');
+writeText(buffer, h - 3, 2, `TOTAL: ${this.player.cargoWeightKg}/${this.player.cargoCapacity} KG`, 'bright-cyan', 'black');
 ```
 
 Hint row: as above per `context.primaryInput`.
@@ -598,8 +557,8 @@ Remove tests that relied on hardcoded `TRADERS` data.
 
 ### `src/game/scenes/ship-scene.test.ts` (update, ~3 tests)
 
-Update constructor call to include `onCargo` callback and pass `cargoWeightKg` in
-`playerState`. Verify:
+Update constructor call to include `onCargo` callback. Use the shared `makePlayer()`
+helper (from feature 033) to build the `PlayerState`. Verify:
 
 | # | Test |
 |---|------|

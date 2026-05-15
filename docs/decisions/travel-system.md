@@ -9,19 +9,21 @@ The travel system covers movement both within a star system (between destination
 1. **From ship** (`currentDestinationId: string`) — player is docked at a destination. The DESTINATIONS tab shows all locations in the current system; the player's current location is displayed in `bright-black` and is not selectable.
 2. **Arrival mode** (`currentDestinationId: null`) — player has just jumped; they are "in space" with no docked destination. No item is greyed out.
 
-**Constructor signature:**
+**Constructor signature** (after feature 033):
 ```typescript
 constructor(
   inputHandler: InputHandler,
   context: GameContext,
-  systemId: string,
-  currentDestinationId: string | null,
+  player: PlayerState,
   onDestinationSelected: (destinationId: string) => void,
   onJumpSelected: (targetSystemId: string) => void,
   onFlyIntoSpace: () => void,
   onShip: () => void,
 )
 ```
+
+`player.systemId`, `player.destinationId`, `player.fuelL`, `player.fuelCapacityL`,
+and `player.driveId` replace the former individual parameters.
 
 **Tabs:** LEFT/RIGHT switch between DESTINATIONS and JUMPS. The active tab is highlighted `bright-green`; the inactive tab is `white`. Switching a tab resets the cursor to 0.
 
@@ -42,19 +44,21 @@ constructor(
 - No station glyph is rendered in the starfield
 - Cursor navigation wraps over one item only (TRAVEL)
 
-## Game state: currentDestinationId
+## Game state: destinationId
 
-`currentDestinationId: string | null` is the single source of truth for whether the ship is docked:
+`player.destinationId: string | null` (on `PlayerState`) is the single source of
+truth for whether the ship is docked:
 
 - `string` → docked at a known destination
 - `null` → in space (no destination)
 
-The orchestrators (`main.ts`, `terminal.ts`) set this:
-- To a destination id on `onDestinationSelected` (in-system travel)
-- To `null` on `goToFlyIntoSpace` (player chose FLY INTO SPACE from a dock)
-- To `null` on `goToArrival` (after a jump completes)
+The orchestrators update it exclusively via named methods:
+- `player.dock(destinationId)` on `onDestinationSelected` (in-system travel)
+- `player.undock()` on `goToFlyIntoSpace`
+- `player.jumpTo(systemId)` on `onJumpSelected` (also updates `systemId`, clears destination)
 
-All scenes that depend on dock/space state (ShipScene, TravelMenuScene) derive their behaviour from this single field.
+All scenes that depend on dock/space state (ShipScene, TravelMenuScene) read
+`player.destinationId` directly.
 
 ## Animation scenes
 
