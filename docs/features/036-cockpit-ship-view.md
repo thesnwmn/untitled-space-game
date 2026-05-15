@@ -8,7 +8,7 @@ Replace the current ship view with an animated cockpit-style display: a coloured
 
 ## Acceptance criteria
 
-- The screen is divided into four horizontal zones: gauge strip (2 rows), starfield viewport (variable, grows with grid height), bottom panels (7 rows), info/comms ticker (1 row)
+- The screen is divided into six horizontal zones: screen chrome header (2 rows + gap), gauge strip (2 rows), starfield viewport (variable, grows with grid height), bottom panels (5 rows), info/comms ticker (1 row), screen chrome footer nav bar (1 row)
 - Four gauges render as label char + 10 fill cells each; filled cells use a solid coloured background, empty cells use `bright-black` background
 - Fuel and cargo gauges are stacked (row 2 / row 3) on the left side of the gauge strip; shields and hull gauges are stacked on the right side; each pair is flanked by button clusters
 - Shield and hull gauges display placeholder full values until those player stats are added in a later feature
@@ -46,6 +46,12 @@ Replace the current ship view with an animated cockpit-style display: a coloured
 
 ## Technical notes
 
+### Screen chrome
+
+`ScreenChrome` is rendered with `showHeader: true` and `showFooter: true`. The footer nav bar carries a single option: CARGO (triggers `onCargo`). This keeps the CARGO shortcut visible now that the `[C] CARGO` hint inside the viewport is removed.
+
+The chrome occupies rows 0–1 (header) and row `h-1` (footer). Row 2 is the chrome gap and is cleared to black by the scene before any other rendering. The gauge strip begins at row 3.
+
 ### New file
 
 `src/game/scenes/ship-cockpit-scene.ts` — exports `ShipCockpitScene`, a class implementing the `Scene` interface. This file replaces `ship-scene.ts` in the orchestrators; `ship-scene.ts` is deleted.
@@ -71,16 +77,18 @@ The optional `starfieldSeed` parameter follows the pattern introduced in feature
 > strong suggestion — row allocations reflect explicit design intent
 
 ```
-rows 0–1      : screen chrome header (ScreenChrome, showHeader: true, showFooter: false)
-rows 2–3      : gauge strip
-rows 4–(h-9)  : starfield viewport
-rows (h-8)–(h-2) : bottom panels (7 rows total)
-row  (h-1)    : info/comms ticker
+rows 0–1      : screen chrome header
+row  2        : chrome gap (cleared to black)
+rows 3–4      : gauge strip
+rows 5–(h-8)  : starfield viewport
+rows (h-7)–(h-3) : bottom panels (5 rows)
+row  (h-2)    : info/comms ticker
+row  (h-1)    : screen chrome footer nav bar
 ```
 
-`h` is the live buffer height. The starfield and bottom panels together occupy `h - 10` rows; the starfield gets all variable rows and the bottom panels are always 7 rows.
+`h` is the live buffer height. The starfield is the only variable zone; at `h = 30` it occupies 18 rows, at `h = 50` it occupies 38 rows.
 
-### Gauge strip (rows 2–3)
+### Gauge strip (rows 3–4)
 
 Five zones left to right across 40 columns:
 
@@ -98,11 +106,11 @@ The blink for low gauges is keyed to a single accumulated phase in `update()` th
 
 Button clusters in the strip use fixed but irregular col/row offsets — not a uniform grid. The exact positions are the Engineer's choice; the intent is deliberate asymmetry. Button state timers are per-button random values.
 
-### Starfield viewport (rows 4 to h-9)
+### Starfield viewport (rows 5 to h-8)
 
-Reuse `Starfield` unchanged. Pass the viewport bounds (rows 4 to `h-9`, cols 0 to 39) into `render()`.
+Reuse `Starfield` unchanged. Pass the viewport bounds (rows 5 to `h-8`, cols 0 to 39) into `render()`.
 
-**HUD overlay** — row 4, written after the starfield renders so stars behind the text are overwritten:
+**HUD overlay** — row 5, written after the starfield renders so stars behind the text are overwritten:
 
 > suggestion: `VEL:----` left-aligned at col 1, `ATT:---°` centred, `ROT:--°` right-aligned at col 38. All `bright-black` fg, `black` bg (transparent over starfield).
 
@@ -110,7 +118,7 @@ Reuse `Starfield` unchanged. Pass the viewport bounds (rows 4 to `h-9`, cols 0 t
 
 > suggestion: corners at ±5 cols, ±3 rows from centre. Engineer may adjust for visual balance.
 
-### Bottom panels (rows h-8 to h-2, 7 rows)
+### Bottom panels (rows h-7 to h-3, 5 rows)
 
 Three zones across 40 columns:
 
@@ -122,12 +130,12 @@ Three zones across 40 columns:
 
 **Radar zone**: fill every cell with a space on `bright-black` background — no border characters. Place 3–6 contacts at construction time with random positions and slow random drift velocities (sub-cell per second; accumulate fractional position). Contact chars alternate between `○` and `◈` on a slow individual timer for a flickering effect. Contacts wrap at the radar boundary. Edge detection: after updating positions, scan each edge row/column for contacts within 2 cells; place the arrow char on the nearest edge cell if found.
 
-**Button panels**: same construction approach as the gauge strip clusters. TRAVEL / DOCK are full-width word buttons positioned in one of the bottom two rows of their panel. They use a coloured background across their column span:
+**Button panels**: same construction approach as the gauge strip clusters. TRAVEL / DOCK are full-width word buttons positioned in the bottom row of their panel (row `h-3`). They use a coloured background across their column span:
 - TRAVEL: `black` fg on `yellow` bg; when cursor is on TRAVEL, swap to `bright-yellow` bg
 - DOCK active: `black` fg on `cyan` bg; when cursor is on DOCK, swap to `bright-cyan` bg
 - DOCK inactive (no destination): `bright-black` fg on `bright-black` bg
 
-### Info/comms ticker (row h-1)
+### Info/comms ticker (row h-2)
 
 Left 27 cols: a scrolling display. Maintains an internal message queue (hardcoded array of 6–10 flavour strings, e.g. system status messages, ambient chatter). Scrolls the current message leftward one character every ~80 ms (accumulate dt). When a message fully exits the left edge, wait ~500 ms then begin the next. Prefix each message with `> `.
 
@@ -141,9 +149,10 @@ In both `main.ts` and `terminal.ts`: replace the `ShipScene` import with `ShipCo
 
 | Region | Action |
 |---|---|
-| Rows 2–3, cols spanning cargo gauge | `onCargo()` |
-| TRAVEL word row within left bottom panel | `onTravel()` |
-| DOCK word row within right bottom panel | `onDock()` if destination exists |
+| Rows 3–4, cols spanning cargo gauge | `onCargo()` |
+| Row h-3, cols within left bottom panel | `onTravel()` |
+| Row h-3, cols within right bottom panel | `onDock()` if destination exists |
+| Footer nav bar CARGO option (via ScreenChrome hit-test) | `onCargo()` |
 
 ---
 
