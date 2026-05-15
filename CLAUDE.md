@@ -65,3 +65,5 @@ If the harness has pre-assigned a branch for this session, use it as-is.
 Otherwise, create a branch following these conventions:
 - Features: `feature/NNN-short-description`
 - Bug fixes: `fix/short-description`
+
+**Prefer standard git commands** (`git`, via Bash) over GitHub MCP tools for all git operations — commits, pushes, branch creation, status checks, diffs, logs, etc. Only fall back to GitHub MCP tools when the operation is genuinely impossible with standard git (e.g. creating a PR, reading PR review comments, or interacting with GitHub-specific metadata).
