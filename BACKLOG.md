@@ -12,10 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-See BACKLOG_HISTORY.md — 030 · Fuel Management
-
----
-
 ### 031 · Cargo Trading
 
 Introduce a persistent cargo hold, live trading (buy/sell) at any trader, and a
@@ -79,3 +75,9 @@ _(none)_
 ## IN PROGRESS
 
 _(none)_
+
+---
+
+## DONE
+
+See [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md) for all completed items.

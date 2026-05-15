@@ -32,9 +32,7 @@ Never begin implementation without confirming which feature is being worked on.
 10. Update the backlogs on the feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
-    - In **BACKLOG.md**, replace the item entry with a one-liner pointer:
-      `See BACKLOG_HISTORY.md — NNN · Title`
-      (or remove it entirely if the DONE section already has a pointer to that file).
+    - Remove the item from **BACKLOG.md** entirely.
 11. Archive the feature spec:
     - If a `docs/features/NNN-*.md` spec exists for this item, replace it with a
       short summary in `docs/features/history/NNN-*.md` (same filename, new directory).
