@@ -8,7 +8,7 @@ Replace the current ship view with an animated cockpit-style display: a coloured
 
 ## Acceptance criteria
 
-- The screen is divided into six horizontal zones: screen chrome header (2 rows + gap), gauge strip (2 rows), starfield viewport (variable, grows with grid height), bottom panels (5 rows), info/comms ticker (1 row), screen chrome footer nav bar (1 row)
+- The screen is divided into six horizontal zones: screen chrome header (2 rows + gap), gauge strip (2 rows), starfield viewport (variable, grows with grid height), bottom panels (5 rows), info/comms ticker (1 row), screen chrome footer separator (1 row, no nav options)
 - Four gauges render as label char + 10 fill cells each; filled cells use a solid coloured background, empty cells use `bright-black` background
 - Fuel and cargo gauges are stacked (row 2 / row 3) on the left side of the gauge strip; shields and hull gauges are stacked on the right side; each pair is flanked by button clusters
 - Shield and hull gauges display placeholder full values until those player stats are added in a later feature
@@ -25,7 +25,7 @@ Replace the current ship view with an animated cockpit-style display: a coloured
 - Pressing SELECT with cursor on TRAVEL (or tapping the TRAVEL area) triggers `onTravel`; pressing SELECT with cursor on DOCK (or tapping the DOCK area) triggers `onDock` when a destination exists
 - UP / DOWN keyboard navigation moves the cursor between TRAVEL and DOCK
 - The active action (cursor position) is indicated by a brighter or inverted state on the corresponding word
-- Tapping the cargo gauge area (rows 2–3, cargo gauge columns) triggers `onCargo`
+- Tapping the cargo gauge area (rows 3–4, cargo gauge columns) or pressing C triggers `onCargo`
 - The bottom-of-screen ticker row is split left (~27 cols) and right (~13 cols); the left portion scrolls a queue of preset flavour strings leftward; the right portion shows a speaker icon `◁` and the text `CLEAR` as a static placeholder, on a `bright-black` background to visually separate it
 - Ticker messages are prefixed with `>` and separated by a brief pause and dot-separator between entries
 - All animations (button flickers, radar drift, ticker scroll) are driven by the `dt` argument passed to `update()`; no `setTimeout` or `Date.now()` calls
@@ -48,7 +48,7 @@ Replace the current ship view with an animated cockpit-style display: a coloured
 
 ### Screen chrome
 
-`ScreenChrome` is rendered with `showHeader: true` and `showFooter: true`. The footer nav bar carries a single option: CARGO (triggers `onCargo`). This keeps the CARGO shortcut visible now that the `[C] CARGO` hint inside the viewport is removed.
+`ScreenChrome` is rendered with `showHeader: true` and `showFooter: true, navOptions: []`. The footer renders as a separator line with no nav options. CARGO is accessed via the `C` key (existing `CARGO` game action) or by tapping the cargo gauge area — no footer button is needed.
 
 The chrome occupies rows 0–1 (header) and row `h-1` (footer). Row 2 is the chrome gap and is cleared to black by the scene before any other rendering. The gauge strip begins at row 3.
 
@@ -152,7 +152,6 @@ In both `main.ts` and `terminal.ts`: replace the `ShipScene` import with `ShipCo
 | Rows 3–4, cols spanning cargo gauge | `onCargo()` |
 | Row h-3, cols within left bottom panel | `onTravel()` |
 | Row h-3, cols within right bottom panel | `onDock()` if destination exists |
-| Footer nav bar CARGO option (via ScreenChrome hit-test) | `onCargo()` |
 
 ---
 
