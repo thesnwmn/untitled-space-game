@@ -44,12 +44,12 @@ const TICKER_MESSAGES = [
   '> TRANSPONDER HANDSHAKE: ACCEPTED',
 ];
 
-// Guaranteed single-column-wide chars only — avoids ambiguous-width Unicode issues
-const BUTTON_CHARS = ['■', '◆', '▪', '▶'] as const;
+// Single square char for all buttons — unambiguous 1-column width
+const BUTTON_CHAR = '■';
 const BUTTON_COLORS: Color[] = ['green', 'yellow', 'cyan', 'magenta', 'white', 'red'];
 
-// Single-column radar contact chars
-const RADAR_CHARS = ['◆', '*', '.', '+'] as const;
+// ASCII-only radar contact chars — guaranteed 1-column width
+const RADAR_CHARS = ['*', '.', '+', 'x'] as const;
 
 function lcgRand(seed: number): () => number {
   let s = seed >>> 0;
@@ -80,7 +80,7 @@ interface RadarContact {
 function makeButton(rand: () => number, col: number, row: number): Button {
   return {
     col, row,
-    char: BUTTON_CHARS[Math.floor(rand() * BUTTON_CHARS.length)],
+    char: BUTTON_CHAR,
     color: BUTTON_COLORS[Math.floor(rand() * BUTTON_COLORS.length)],
     phase: rand() * 10000,
     period: 3000 + rand() * 9000,
