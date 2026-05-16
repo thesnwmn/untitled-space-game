@@ -38,10 +38,40 @@ See `docs/features/036-cockpit-ship-view.md` for the full spec.
 
 ---
 
+### 037 · Mission Foundation
+
+Establish the core mission data model, world data additions (`DeliveryItem[]`, `NpcNames`), `MissionGenerator`, and `PlayerState` extensions (`activeMissions`, `missionItems`, accept/collect/complete/cancel methods) that all subsequent mission features depend on.
+See `docs/features/037-mission-foundation.md` for the full spec.
+
+---
+
+### 038 · Mission Board Live
+
+Replace the hardcoded `MissionBoardScene` placeholder with live generated missions (TTL-cached in `Game`). Add `MissionDetailScene` with full mission info, cargo check, and ACCEPT/BACK navigation. Accepted missions are removed from the board.
+See `docs/features/038-mission-board-live.md` for the full spec.
+
+---
+
+### 039 · Global Menu & Mission Log
+
+Wire the dormant `[M] MENU` chrome button (and new `MENU` game action) to open a tabbed `GlobalMenuScene`. The `MISSIONS` tab lists active missions with live status sub-lines. Selecting a mission opens a `ModalConfirmDialog` for cancellation.
+See `docs/features/039-global-menu-mission-log.md` for the full spec.
+
+---
+
+### 040 · Station Mission Actions
+
+Add COLLECT and DELIVER mission items to `StationMenuScene` (above normal options, with a separator). Show mission items distinctly in `CargoScene` (bright-yellow, separate section). Complete deliveries with a reward modal.
+See `docs/features/040-station-mission-actions.md` for the full spec.
+
+---
+
 
 ## NEEDS SPEC
 
-_(none)_
+### 041 · Mission Flavour Text
+
+Mission `description` text is assembled from world-data components: sentence fragments for job types, item/commodity names, destination flavour, and NPC voice. The fragment lists live in `docs/world/` and are loaded into `WorldData`. `MissionGenerator` picks and concatenates fragments based on mission type, replacing the placeholder prose strings added in feature 037. Full spec to be written.
 
 ---
 
