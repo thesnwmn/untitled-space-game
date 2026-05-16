@@ -108,6 +108,10 @@ const html = `<!DOCTYPE html>
     <a class="tile" href="map/index.html">
       <span class="tile-label">[ GALAXY MAP ]</span>
     </a>
+    <a class="tile" href="font-report/index.html">
+      <span class="tile-label">[ FONT REPORT ]</span>
+      <span class="tile-sub">Share Tech Mono</span>
+    </a>
   </div>
   <footer>UNTITLED SPACE GAME</footer>
 </body>

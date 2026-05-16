@@ -14,6 +14,33 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 036 · Cockpit Ship View — DONE
+
+**Built:**
+- `src/game/scenes/ship-cockpit-scene.ts` — new `ShipCockpitScene` class implementing `Scene`; replaces `ShipScene` entirely
+- `src/game/game.ts` — import swapped from `ShipScene` to `ShipCockpitScene`; `goToShip()` updated accordingly
+- `src/game/scenes/ship-scene.ts` — deleted
+- `src/game/scenes/ship-scene.test.ts` — deleted; replaced by `ship-cockpit-scene.test.ts`
+- `src/game/scenes/ship-cockpit-scene.test.ts` — 48 tests covering chrome, gauges, starfield, crosshair, HUD, bottom panels, radar, ticker, keyboard and tap navigation
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- Tests: 547 passed, 1 skipped (32 test files)
+- `init.sh`: passed clean before and after
+
+**Play-test instructions:**
+1. Undock from a station — confirm four coloured gauges (F/yellow, C/blue, S/cyan, H/green) render in the gauge strip (rows 3–4)
+2. Watch for ~10 s — button lights (●○▪◉) should flicker independently in the gauge strip and bottom panels
+3. Confirm the starfield fills the full 40-column width with no border frame
+4. Confirm HUD text (VEL/ATT/ROT) appears at the top of the starfield and the ╋ crosshair floats with clear space around it
+5. Watch the radar for ~15 s — contacts drift; edge arrows (▴▾◂▸) appear/disappear as contacts approach edges
+6. Press UP/DOWN — TRAVEL brightens (bright-yellow) or DOCK brightens (bright-cyan); pressing SELECT navigates away
+7. Confirm DOCK is dimmed (bright-black) while in open space (undocked with no destination)
+8. Watch the ticker row — messages scroll leftward and cycle
+9. Resize browser to a tall aspect — viewport grows, TRAVEL/DOCK remain anchored at row h-3
+
+---
+
 ### 035 · Landing/Take-Off Animations and Terminology — DONE
 
 **Built:**

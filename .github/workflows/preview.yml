@@ -39,6 +39,7 @@ jobs:
           npm run build -- --base=/untitled-space-game/preview/${{ steps.branch.outputs.slug }}/game/
           bun scripts/build-docs.ts
           bun scripts/build-map.ts
+          bun scripts/build-font-report.ts
           bun scripts/build-landing.ts
 
       - name: Deploy preview
