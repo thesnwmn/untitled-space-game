@@ -54,6 +54,58 @@ considered. The spec is better for it.
 - **Technical notes:** any non-obvious implementation detail. See guidance below.
 - **Dependencies:** backlog items that must be complete first.
 
+### Template
+
+```markdown
+# Feature NNN · [Short Title]
+
+## Goal
+
+[One sentence: what does this add or change for the player?]
+
+---
+
+## Acceptance criteria
+
+- [Specific, testable outcome]
+- [Specific, testable outcome]
+- [...]
+
+---
+
+## Out of scope
+
+- [What this feature explicitly does not include]
+- [...]
+
+---
+
+## Technical notes
+
+### [Subsection heading]
+
+[Design decisions, interface contracts, affected files, behavioural constraints, edge cases.]
+
+---
+
+## Play-test instructions
+
+### Browser (`npm run dev`)
+
+1. [Step]
+2. [Step]
+
+### Terminal (`npm run terminal`)
+
+Repeat all steps using keyboard navigation.
+
+---
+
+## Dependencies
+
+[Feature NNN (Name), or "None"]
+```
+
 ## What belongs in technical notes
 
 Technical notes communicate design decisions and interface contracts — not
