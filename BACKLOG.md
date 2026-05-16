@@ -12,19 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 025 · Randomise Station Star Patterns
-
-Each visit to a destination generates a new random `Starfield` seed, producing a
-unique star layout. The seed is preserved across dock/undock cycles at the same
-destination and only cleared when the player fully navigates away (main menu, story
-screen, or future jump). `ShipScene` gains a required `starfieldSeed: number`
-constructor parameter. The orchestrators (`main.ts`, `terminal.ts`) hold a
-`destinationSeed` variable: generated fresh on first `goToShip` when null, reused
-on subsequent undocks, cleared on `goToMainMenu` / `goToStory`.
-See `docs/features/025-randomise-station-star-patterns.md` for the full spec.
-
----
-
 ### 036 · Cockpit Ship View
 
 Replace the current ship view with a fully animated cockpit display:
@@ -35,6 +22,13 @@ radar block (drifting contacts, edge arrow indicators), a scrolling
 info/comms ticker, and a screen chrome footer nav bar. TRAVEL and DOCK are
 embedded as coloured-background words inside the bottom panels.
 See `docs/features/036-cockpit-ship-view.md` for the full spec.
+
+---
+
+### 025 · Overhaul Star Field & Destination Display
+
+Each destination has a unique, stable starfield pattern derived deterministically from its ID (no orchestrator seed state needed). A type-appropriate foreground object — space station, asteroid, or planet — is rendered in the viewport with variant also selected by destination ID. Depends on feature 036.
+See `docs/features/025-overhaul-star-field-display.md` for the full spec.
 
 ---
 
