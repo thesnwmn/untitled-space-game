@@ -87,20 +87,15 @@
   <header><a href="../">[ HOME ]</a> &gt; <span>[ FONT REFERENCE ]</span></header>
   <main>
 <style>
+  .fg-white { color: var(--white); }
+  .fg-black { color: var(--black); }
+  .bg-black { background: var(--black); }
+  .bg-green  { background: var(--green); }
   .font-grid {
     display: grid;
-    grid-template-columns: 6em repeat(16, 2em);
+    grid-template-columns: repeat(auto-fill, 4em);
     gap: 2px;
     margin: 1rem 0 2.5rem;
-  }
-  .row-label {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 0.6em;
-    font-size: 0.7em;
-    color: #555;
-    border: 1px solid transparent;
   }
   .font-grid pre {
     display: flex;
@@ -110,10 +105,11 @@
     margin: 0;
     padding: 0;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 1em;
+    font-size: 1.4em;
+    line-height: 1;
     white-space: pre;
-    border: 1px solid #222;
   }
+
   .font-grid pre:hover {
     outline: 1px solid #ffff00;
     z-index: 1;
@@ -121,496 +117,226 @@
 </style>
 <h1>Font Character Reference — Share Tech Mono</h1>
 <p>
-  All 214 printable glyphs in Share Tech Mono (Google Fonts v16),
-  each in its own cell at single-column advance width.
-  Hover any cell to see its code point. Characters not shown here fall back to
-  the system monospace font in the game.
+  All 214 printable glyphs in Share Tech Mono (Google Fonts v16).
+  Each cell shows the character white-on-black (game default) then black-on-green
+  (highlighted / active-cell rendering). Hover any cell to see its code point.
+  Characters not shown here fall back to the system monospace font in the game.
 </p>
-
-<h2>Game palette</h2>
-<p>White text on black background — matches the game's default renderer output.</p>
 <div class="font-grid">
-<div class="row-label">U+0020</div>
-<pre style="background:#000000;color:#ffffff" title="U+0020   "> </pre>
-<pre style="background:#000000;color:#ffffff" title="U+0021  !">!</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0022  &quot;">&quot;</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0023  #">#</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0024  $">$</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0025  %">%</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0026  &amp;">&amp;</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0027  '">'</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0028  (">(</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0029  )">)</pre>
-<pre style="background:#000000;color:#ffffff" title="U+002A  *">*</pre>
-<pre style="background:#000000;color:#ffffff" title="U+002B  +">+</pre>
-<pre style="background:#000000;color:#ffffff" title="U+002C  ,">,</pre>
-<pre style="background:#000000;color:#ffffff" title="U+002D  -">-</pre>
-<pre style="background:#000000;color:#ffffff" title="U+002E  .">.</pre>
-<pre style="background:#000000;color:#ffffff" title="U+002F  /">/</pre>
-<div class="row-label">U+0030</div>
-<pre style="background:#000000;color:#ffffff" title="U+0030  0">0</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0031  1">1</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0032  2">2</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0033  3">3</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0034  4">4</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0035  5">5</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0036  6">6</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0037  7">7</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0038  8">8</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0039  9">9</pre>
-<pre style="background:#000000;color:#ffffff" title="U+003A  :">:</pre>
-<pre style="background:#000000;color:#ffffff" title="U+003B  ;">;</pre>
-<pre style="background:#000000;color:#ffffff" title="U+003C  &lt;">&lt;</pre>
-<pre style="background:#000000;color:#ffffff" title="U+003D  =">=</pre>
-<pre style="background:#000000;color:#ffffff" title="U+003E  &gt;">&gt;</pre>
-<pre style="background:#000000;color:#ffffff" title="U+003F  ?">?</pre>
-<div class="row-label">U+0040</div>
-<pre style="background:#000000;color:#ffffff" title="U+0040  @">@</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0041  A">A</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0042  B">B</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0043  C">C</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0044  D">D</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0045  E">E</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0046  F">F</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0047  G">G</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0048  H">H</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0049  I">I</pre>
-<pre style="background:#000000;color:#ffffff" title="U+004A  J">J</pre>
-<pre style="background:#000000;color:#ffffff" title="U+004B  K">K</pre>
-<pre style="background:#000000;color:#ffffff" title="U+004C  L">L</pre>
-<pre style="background:#000000;color:#ffffff" title="U+004D  M">M</pre>
-<pre style="background:#000000;color:#ffffff" title="U+004E  N">N</pre>
-<pre style="background:#000000;color:#ffffff" title="U+004F  O">O</pre>
-<div class="row-label">U+0050</div>
-<pre style="background:#000000;color:#ffffff" title="U+0050  P">P</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0051  Q">Q</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0052  R">R</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0053  S">S</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0054  T">T</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0055  U">U</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0056  V">V</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0057  W">W</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0058  X">X</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0059  Y">Y</pre>
-<pre style="background:#000000;color:#ffffff" title="U+005A  Z">Z</pre>
-<pre style="background:#000000;color:#ffffff" title="U+005B  [">[</pre>
-<pre style="background:#000000;color:#ffffff" title="U+005C  \">\</pre>
-<pre style="background:#000000;color:#ffffff" title="U+005D  ]">]</pre>
-<pre style="background:#000000;color:#ffffff" title="U+005E  ^">^</pre>
-<pre style="background:#000000;color:#ffffff" title="U+005F  _">_</pre>
-<div class="row-label">U+0060</div>
-<pre style="background:#000000;color:#ffffff" title="U+0060  `">`</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0061  a">a</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0062  b">b</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0063  c">c</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0064  d">d</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0065  e">e</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0066  f">f</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0067  g">g</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0068  h">h</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0069  i">i</pre>
-<pre style="background:#000000;color:#ffffff" title="U+006A  j">j</pre>
-<pre style="background:#000000;color:#ffffff" title="U+006B  k">k</pre>
-<pre style="background:#000000;color:#ffffff" title="U+006C  l">l</pre>
-<pre style="background:#000000;color:#ffffff" title="U+006D  m">m</pre>
-<pre style="background:#000000;color:#ffffff" title="U+006E  n">n</pre>
-<pre style="background:#000000;color:#ffffff" title="U+006F  o">o</pre>
-<div class="row-label">U+0070</div>
-<pre style="background:#000000;color:#ffffff" title="U+0070  p">p</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0071  q">q</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0072  r">r</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0073  s">s</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0074  t">t</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0075  u">u</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0076  v">v</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0077  w">w</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0078  x">x</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0079  y">y</pre>
-<pre style="background:#000000;color:#ffffff" title="U+007A  z">z</pre>
-<pre style="background:#000000;color:#ffffff" title="U+007B  {">{</pre>
-<pre style="background:#000000;color:#ffffff" title="U+007C  |">|</pre>
-<pre style="background:#000000;color:#ffffff" title="U+007D  }">}</pre>
-<pre style="background:#000000;color:#ffffff" title="U+007E  ~">~</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A0   "> </pre>
-<div class="row-label">U+00A1</div>
-<pre style="background:#000000;color:#ffffff" title="U+00A1  ¡">¡</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A2  ¢">¢</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A3  £">£</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A4  ¤">¤</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A5  ¥">¥</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A6  ¦">¦</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A7  §">§</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A8  ¨">¨</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00A9  ©">©</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00AA  ª">ª</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00AB  «">«</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00AC  ¬">¬</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00AD  ­">­</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00AE  ®">®</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00AF  ¯">¯</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B0  °">°</pre>
-<div class="row-label">U+00B1</div>
-<pre style="background:#000000;color:#ffffff" title="U+00B1  ±">±</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B2  ²">²</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B3  ³">³</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B4  ´">´</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B5  µ">µ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B6  ¶">¶</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B7  ·">·</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B8  ¸">¸</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00B9  ¹">¹</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00BA  º">º</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00BB  »">»</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00BC  ¼">¼</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00BD  ½">½</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00BE  ¾">¾</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00BF  ¿">¿</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C0  À">À</pre>
-<div class="row-label">U+00C1</div>
-<pre style="background:#000000;color:#ffffff" title="U+00C1  Á">Á</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C2  Â">Â</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C3  Ã">Ã</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C4  Ä">Ä</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C5  Å">Å</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C6  Æ">Æ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C7  Ç">Ç</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C8  È">È</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00C9  É">É</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00CA  Ê">Ê</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00CB  Ë">Ë</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00CC  Ì">Ì</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00CD  Í">Í</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00CE  Î">Î</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00CF  Ï">Ï</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D0  Ð">Ð</pre>
-<div class="row-label">U+00D1</div>
-<pre style="background:#000000;color:#ffffff" title="U+00D1  Ñ">Ñ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D2  Ò">Ò</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D3  Ó">Ó</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D4  Ô">Ô</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D5  Õ">Õ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D6  Ö">Ö</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D7  ×">×</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D8  Ø">Ø</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00D9  Ù">Ù</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00DA  Ú">Ú</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00DB  Û">Û</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00DC  Ü">Ü</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00DD  Ý">Ý</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00DE  Þ">Þ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00DF  ß">ß</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E0  à">à</pre>
-<div class="row-label">U+00E1</div>
-<pre style="background:#000000;color:#ffffff" title="U+00E1  á">á</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E2  â">â</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E3  ã">ã</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E4  ä">ä</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E5  å">å</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E6  æ">æ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E7  ç">ç</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E8  è">è</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00E9  é">é</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00EA  ê">ê</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00EB  ë">ë</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00EC  ì">ì</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00ED  í">í</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00EE  î">î</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00EF  ï">ï</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F0  ð">ð</pre>
-<div class="row-label">U+00F1</div>
-<pre style="background:#000000;color:#ffffff" title="U+00F1  ñ">ñ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F2  ò">ò</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F3  ó">ó</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F4  ô">ô</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F5  õ">õ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F6  ö">ö</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F7  ÷">÷</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F8  ø">ø</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00F9  ù">ù</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00FA  ú">ú</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00FB  û">û</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00FC  ü">ü</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00FD  ý">ý</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00FE  þ">þ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+00FF  ÿ">ÿ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0131  ı">ı</pre>
-<div class="row-label">U+0152</div>
-<pre style="background:#000000;color:#ffffff" title="U+0152  Œ">Œ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+0153  œ">œ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+02C6  ˆ">ˆ</pre>
-<pre style="background:#000000;color:#ffffff" title="U+02DA  ˚">˚</pre>
-<pre style="background:#000000;color:#ffffff" title="U+02DC  ˜">˜</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2013  –">–</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2014  —">—</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2018  ‘">‘</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2019  ’">’</pre>
-<pre style="background:#000000;color:#ffffff" title="U+201A  ‚">‚</pre>
-<pre style="background:#000000;color:#ffffff" title="U+201C  “">“</pre>
-<pre style="background:#000000;color:#ffffff" title="U+201D  ”">”</pre>
-<pre style="background:#000000;color:#ffffff" title="U+201E  „">„</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2022  •">•</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2026  …">…</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2039  ‹">‹</pre>
-<div class="row-label">U+203A</div>
-<pre style="background:#000000;color:#ffffff" title="U+203A  ›">›</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2044  ⁄">⁄</pre>
-<pre style="background:#000000;color:#ffffff" title="U+20AC  €">€</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2122  ™">™</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2212  −">−</pre>
-<pre style="background:#000000;color:#ffffff" title="U+2215  ∕">∕</pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-<pre style="background:#000000;opacity:0.05"> </pre>
-</div>
-
-<h2>Inverted palette</h2>
-<p>Black text on green background — matches highlighted / active-cell rendering.</p>
-<div class="font-grid">
-<div class="row-label">U+0020</div>
-<pre style="background:#00ff00;color:#000000" title="U+0020   "> </pre>
-<pre style="background:#00ff00;color:#000000" title="U+0021  !">!</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0022  &quot;">&quot;</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0023  #">#</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0024  $">$</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0025  %">%</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0026  &amp;">&amp;</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0027  '">'</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0028  (">(</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0029  )">)</pre>
-<pre style="background:#00ff00;color:#000000" title="U+002A  *">*</pre>
-<pre style="background:#00ff00;color:#000000" title="U+002B  +">+</pre>
-<pre style="background:#00ff00;color:#000000" title="U+002C  ,">,</pre>
-<pre style="background:#00ff00;color:#000000" title="U+002D  -">-</pre>
-<pre style="background:#00ff00;color:#000000" title="U+002E  .">.</pre>
-<pre style="background:#00ff00;color:#000000" title="U+002F  /">/</pre>
-<div class="row-label">U+0030</div>
-<pre style="background:#00ff00;color:#000000" title="U+0030  0">0</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0031  1">1</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0032  2">2</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0033  3">3</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0034  4">4</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0035  5">5</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0036  6">6</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0037  7">7</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0038  8">8</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0039  9">9</pre>
-<pre style="background:#00ff00;color:#000000" title="U+003A  :">:</pre>
-<pre style="background:#00ff00;color:#000000" title="U+003B  ;">;</pre>
-<pre style="background:#00ff00;color:#000000" title="U+003C  &lt;">&lt;</pre>
-<pre style="background:#00ff00;color:#000000" title="U+003D  =">=</pre>
-<pre style="background:#00ff00;color:#000000" title="U+003E  &gt;">&gt;</pre>
-<pre style="background:#00ff00;color:#000000" title="U+003F  ?">?</pre>
-<div class="row-label">U+0040</div>
-<pre style="background:#00ff00;color:#000000" title="U+0040  @">@</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0041  A">A</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0042  B">B</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0043  C">C</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0044  D">D</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0045  E">E</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0046  F">F</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0047  G">G</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0048  H">H</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0049  I">I</pre>
-<pre style="background:#00ff00;color:#000000" title="U+004A  J">J</pre>
-<pre style="background:#00ff00;color:#000000" title="U+004B  K">K</pre>
-<pre style="background:#00ff00;color:#000000" title="U+004C  L">L</pre>
-<pre style="background:#00ff00;color:#000000" title="U+004D  M">M</pre>
-<pre style="background:#00ff00;color:#000000" title="U+004E  N">N</pre>
-<pre style="background:#00ff00;color:#000000" title="U+004F  O">O</pre>
-<div class="row-label">U+0050</div>
-<pre style="background:#00ff00;color:#000000" title="U+0050  P">P</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0051  Q">Q</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0052  R">R</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0053  S">S</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0054  T">T</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0055  U">U</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0056  V">V</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0057  W">W</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0058  X">X</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0059  Y">Y</pre>
-<pre style="background:#00ff00;color:#000000" title="U+005A  Z">Z</pre>
-<pre style="background:#00ff00;color:#000000" title="U+005B  [">[</pre>
-<pre style="background:#00ff00;color:#000000" title="U+005C  \">\</pre>
-<pre style="background:#00ff00;color:#000000" title="U+005D  ]">]</pre>
-<pre style="background:#00ff00;color:#000000" title="U+005E  ^">^</pre>
-<pre style="background:#00ff00;color:#000000" title="U+005F  _">_</pre>
-<div class="row-label">U+0060</div>
-<pre style="background:#00ff00;color:#000000" title="U+0060  `">`</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0061  a">a</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0062  b">b</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0063  c">c</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0064  d">d</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0065  e">e</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0066  f">f</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0067  g">g</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0068  h">h</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0069  i">i</pre>
-<pre style="background:#00ff00;color:#000000" title="U+006A  j">j</pre>
-<pre style="background:#00ff00;color:#000000" title="U+006B  k">k</pre>
-<pre style="background:#00ff00;color:#000000" title="U+006C  l">l</pre>
-<pre style="background:#00ff00;color:#000000" title="U+006D  m">m</pre>
-<pre style="background:#00ff00;color:#000000" title="U+006E  n">n</pre>
-<pre style="background:#00ff00;color:#000000" title="U+006F  o">o</pre>
-<div class="row-label">U+0070</div>
-<pre style="background:#00ff00;color:#000000" title="U+0070  p">p</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0071  q">q</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0072  r">r</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0073  s">s</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0074  t">t</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0075  u">u</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0076  v">v</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0077  w">w</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0078  x">x</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0079  y">y</pre>
-<pre style="background:#00ff00;color:#000000" title="U+007A  z">z</pre>
-<pre style="background:#00ff00;color:#000000" title="U+007B  {">{</pre>
-<pre style="background:#00ff00;color:#000000" title="U+007C  |">|</pre>
-<pre style="background:#00ff00;color:#000000" title="U+007D  }">}</pre>
-<pre style="background:#00ff00;color:#000000" title="U+007E  ~">~</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A0   "> </pre>
-<div class="row-label">U+00A1</div>
-<pre style="background:#00ff00;color:#000000" title="U+00A1  ¡">¡</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A2  ¢">¢</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A3  £">£</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A4  ¤">¤</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A5  ¥">¥</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A6  ¦">¦</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A7  §">§</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A8  ¨">¨</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00A9  ©">©</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00AA  ª">ª</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00AB  «">«</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00AC  ¬">¬</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00AD  ­">­</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00AE  ®">®</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00AF  ¯">¯</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B0  °">°</pre>
-<div class="row-label">U+00B1</div>
-<pre style="background:#00ff00;color:#000000" title="U+00B1  ±">±</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B2  ²">²</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B3  ³">³</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B4  ´">´</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B5  µ">µ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B6  ¶">¶</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B7  ·">·</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B8  ¸">¸</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00B9  ¹">¹</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00BA  º">º</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00BB  »">»</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00BC  ¼">¼</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00BD  ½">½</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00BE  ¾">¾</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00BF  ¿">¿</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C0  À">À</pre>
-<div class="row-label">U+00C1</div>
-<pre style="background:#00ff00;color:#000000" title="U+00C1  Á">Á</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C2  Â">Â</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C3  Ã">Ã</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C4  Ä">Ä</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C5  Å">Å</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C6  Æ">Æ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C7  Ç">Ç</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C8  È">È</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00C9  É">É</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00CA  Ê">Ê</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00CB  Ë">Ë</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00CC  Ì">Ì</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00CD  Í">Í</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00CE  Î">Î</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00CF  Ï">Ï</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D0  Ð">Ð</pre>
-<div class="row-label">U+00D1</div>
-<pre style="background:#00ff00;color:#000000" title="U+00D1  Ñ">Ñ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D2  Ò">Ò</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D3  Ó">Ó</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D4  Ô">Ô</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D5  Õ">Õ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D6  Ö">Ö</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D7  ×">×</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D8  Ø">Ø</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00D9  Ù">Ù</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00DA  Ú">Ú</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00DB  Û">Û</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00DC  Ü">Ü</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00DD  Ý">Ý</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00DE  Þ">Þ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00DF  ß">ß</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E0  à">à</pre>
-<div class="row-label">U+00E1</div>
-<pre style="background:#00ff00;color:#000000" title="U+00E1  á">á</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E2  â">â</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E3  ã">ã</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E4  ä">ä</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E5  å">å</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E6  æ">æ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E7  ç">ç</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E8  è">è</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00E9  é">é</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00EA  ê">ê</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00EB  ë">ë</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00EC  ì">ì</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00ED  í">í</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00EE  î">î</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00EF  ï">ï</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F0  ð">ð</pre>
-<div class="row-label">U+00F1</div>
-<pre style="background:#00ff00;color:#000000" title="U+00F1  ñ">ñ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F2  ò">ò</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F3  ó">ó</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F4  ô">ô</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F5  õ">õ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F6  ö">ö</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F7  ÷">÷</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F8  ø">ø</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00F9  ù">ù</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00FA  ú">ú</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00FB  û">û</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00FC  ü">ü</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00FD  ý">ý</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00FE  þ">þ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+00FF  ÿ">ÿ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0131  ı">ı</pre>
-<div class="row-label">U+0152</div>
-<pre style="background:#00ff00;color:#000000" title="U+0152  Œ">Œ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+0153  œ">œ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+02C6  ˆ">ˆ</pre>
-<pre style="background:#00ff00;color:#000000" title="U+02DA  ˚">˚</pre>
-<pre style="background:#00ff00;color:#000000" title="U+02DC  ˜">˜</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2013  –">–</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2014  —">—</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2018  ‘">‘</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2019  ’">’</pre>
-<pre style="background:#00ff00;color:#000000" title="U+201A  ‚">‚</pre>
-<pre style="background:#00ff00;color:#000000" title="U+201C  “">“</pre>
-<pre style="background:#00ff00;color:#000000" title="U+201D  ”">”</pre>
-<pre style="background:#00ff00;color:#000000" title="U+201E  „">„</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2022  •">•</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2026  …">…</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2039  ‹">‹</pre>
-<div class="row-label">U+203A</div>
-<pre style="background:#00ff00;color:#000000" title="U+203A  ›">›</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2044  ⁄">⁄</pre>
-<pre style="background:#00ff00;color:#000000" title="U+20AC  €">€</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2122  ™">™</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2212  −">−</pre>
-<pre style="background:#00ff00;color:#000000" title="U+2215  ∕">∕</pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
-<pre style="background:#00ff00;opacity:0.05"> </pre>
+<pre title="U+0020   "><span class="fg-white bg-black"> </span><span class="fg-black bg-green"> </span></pre>
+<pre title="U+0021  !"><span class="fg-white bg-black">!</span><span class="fg-black bg-green">!</span></pre>
+<pre title="U+0022  &quot;"><span class="fg-white bg-black">&quot;</span><span class="fg-black bg-green">&quot;</span></pre>
+<pre title="U+0023  #"><span class="fg-white bg-black">#</span><span class="fg-black bg-green">#</span></pre>
+<pre title="U+0024  $"><span class="fg-white bg-black">$</span><span class="fg-black bg-green">$</span></pre>
+<pre title="U+0025  %"><span class="fg-white bg-black">%</span><span class="fg-black bg-green">%</span></pre>
+<pre title="U+0026  &amp;"><span class="fg-white bg-black">&amp;</span><span class="fg-black bg-green">&amp;</span></pre>
+<pre title="U+0027  '"><span class="fg-white bg-black">'</span><span class="fg-black bg-green">'</span></pre>
+<pre title="U+0028  ("><span class="fg-white bg-black">(</span><span class="fg-black bg-green">(</span></pre>
+<pre title="U+0029  )"><span class="fg-white bg-black">)</span><span class="fg-black bg-green">)</span></pre>
+<pre title="U+002A  *"><span class="fg-white bg-black">*</span><span class="fg-black bg-green">*</span></pre>
+<pre title="U+002B  +"><span class="fg-white bg-black">+</span><span class="fg-black bg-green">+</span></pre>
+<pre title="U+002C  ,"><span class="fg-white bg-black">,</span><span class="fg-black bg-green">,</span></pre>
+<pre title="U+002D  -"><span class="fg-white bg-black">-</span><span class="fg-black bg-green">-</span></pre>
+<pre title="U+002E  ."><span class="fg-white bg-black">.</span><span class="fg-black bg-green">.</span></pre>
+<pre title="U+002F  /"><span class="fg-white bg-black">/</span><span class="fg-black bg-green">/</span></pre>
+<pre title="U+0030  0"><span class="fg-white bg-black">0</span><span class="fg-black bg-green">0</span></pre>
+<pre title="U+0031  1"><span class="fg-white bg-black">1</span><span class="fg-black bg-green">1</span></pre>
+<pre title="U+0032  2"><span class="fg-white bg-black">2</span><span class="fg-black bg-green">2</span></pre>
+<pre title="U+0033  3"><span class="fg-white bg-black">3</span><span class="fg-black bg-green">3</span></pre>
+<pre title="U+0034  4"><span class="fg-white bg-black">4</span><span class="fg-black bg-green">4</span></pre>
+<pre title="U+0035  5"><span class="fg-white bg-black">5</span><span class="fg-black bg-green">5</span></pre>
+<pre title="U+0036  6"><span class="fg-white bg-black">6</span><span class="fg-black bg-green">6</span></pre>
+<pre title="U+0037  7"><span class="fg-white bg-black">7</span><span class="fg-black bg-green">7</span></pre>
+<pre title="U+0038  8"><span class="fg-white bg-black">8</span><span class="fg-black bg-green">8</span></pre>
+<pre title="U+0039  9"><span class="fg-white bg-black">9</span><span class="fg-black bg-green">9</span></pre>
+<pre title="U+003A  :"><span class="fg-white bg-black">:</span><span class="fg-black bg-green">:</span></pre>
+<pre title="U+003B  ;"><span class="fg-white bg-black">;</span><span class="fg-black bg-green">;</span></pre>
+<pre title="U+003C  &lt;"><span class="fg-white bg-black">&lt;</span><span class="fg-black bg-green">&lt;</span></pre>
+<pre title="U+003D  ="><span class="fg-white bg-black">=</span><span class="fg-black bg-green">=</span></pre>
+<pre title="U+003E  &gt;"><span class="fg-white bg-black">&gt;</span><span class="fg-black bg-green">&gt;</span></pre>
+<pre title="U+003F  ?"><span class="fg-white bg-black">?</span><span class="fg-black bg-green">?</span></pre>
+<pre title="U+0040  @"><span class="fg-white bg-black">@</span><span class="fg-black bg-green">@</span></pre>
+<pre title="U+0041  A"><span class="fg-white bg-black">A</span><span class="fg-black bg-green">A</span></pre>
+<pre title="U+0042  B"><span class="fg-white bg-black">B</span><span class="fg-black bg-green">B</span></pre>
+<pre title="U+0043  C"><span class="fg-white bg-black">C</span><span class="fg-black bg-green">C</span></pre>
+<pre title="U+0044  D"><span class="fg-white bg-black">D</span><span class="fg-black bg-green">D</span></pre>
+<pre title="U+0045  E"><span class="fg-white bg-black">E</span><span class="fg-black bg-green">E</span></pre>
+<pre title="U+0046  F"><span class="fg-white bg-black">F</span><span class="fg-black bg-green">F</span></pre>
+<pre title="U+0047  G"><span class="fg-white bg-black">G</span><span class="fg-black bg-green">G</span></pre>
+<pre title="U+0048  H"><span class="fg-white bg-black">H</span><span class="fg-black bg-green">H</span></pre>
+<pre title="U+0049  I"><span class="fg-white bg-black">I</span><span class="fg-black bg-green">I</span></pre>
+<pre title="U+004A  J"><span class="fg-white bg-black">J</span><span class="fg-black bg-green">J</span></pre>
+<pre title="U+004B  K"><span class="fg-white bg-black">K</span><span class="fg-black bg-green">K</span></pre>
+<pre title="U+004C  L"><span class="fg-white bg-black">L</span><span class="fg-black bg-green">L</span></pre>
+<pre title="U+004D  M"><span class="fg-white bg-black">M</span><span class="fg-black bg-green">M</span></pre>
+<pre title="U+004E  N"><span class="fg-white bg-black">N</span><span class="fg-black bg-green">N</span></pre>
+<pre title="U+004F  O"><span class="fg-white bg-black">O</span><span class="fg-black bg-green">O</span></pre>
+<pre title="U+0050  P"><span class="fg-white bg-black">P</span><span class="fg-black bg-green">P</span></pre>
+<pre title="U+0051  Q"><span class="fg-white bg-black">Q</span><span class="fg-black bg-green">Q</span></pre>
+<pre title="U+0052  R"><span class="fg-white bg-black">R</span><span class="fg-black bg-green">R</span></pre>
+<pre title="U+0053  S"><span class="fg-white bg-black">S</span><span class="fg-black bg-green">S</span></pre>
+<pre title="U+0054  T"><span class="fg-white bg-black">T</span><span class="fg-black bg-green">T</span></pre>
+<pre title="U+0055  U"><span class="fg-white bg-black">U</span><span class="fg-black bg-green">U</span></pre>
+<pre title="U+0056  V"><span class="fg-white bg-black">V</span><span class="fg-black bg-green">V</span></pre>
+<pre title="U+0057  W"><span class="fg-white bg-black">W</span><span class="fg-black bg-green">W</span></pre>
+<pre title="U+0058  X"><span class="fg-white bg-black">X</span><span class="fg-black bg-green">X</span></pre>
+<pre title="U+0059  Y"><span class="fg-white bg-black">Y</span><span class="fg-black bg-green">Y</span></pre>
+<pre title="U+005A  Z"><span class="fg-white bg-black">Z</span><span class="fg-black bg-green">Z</span></pre>
+<pre title="U+005B  ["><span class="fg-white bg-black">[</span><span class="fg-black bg-green">[</span></pre>
+<pre title="U+005C  \"><span class="fg-white bg-black">\</span><span class="fg-black bg-green">\</span></pre>
+<pre title="U+005D  ]"><span class="fg-white bg-black">]</span><span class="fg-black bg-green">]</span></pre>
+<pre title="U+005E  ^"><span class="fg-white bg-black">^</span><span class="fg-black bg-green">^</span></pre>
+<pre title="U+005F  _"><span class="fg-white bg-black">_</span><span class="fg-black bg-green">_</span></pre>
+<pre title="U+0060  `"><span class="fg-white bg-black">`</span><span class="fg-black bg-green">`</span></pre>
+<pre title="U+0061  a"><span class="fg-white bg-black">a</span><span class="fg-black bg-green">a</span></pre>
+<pre title="U+0062  b"><span class="fg-white bg-black">b</span><span class="fg-black bg-green">b</span></pre>
+<pre title="U+0063  c"><span class="fg-white bg-black">c</span><span class="fg-black bg-green">c</span></pre>
+<pre title="U+0064  d"><span class="fg-white bg-black">d</span><span class="fg-black bg-green">d</span></pre>
+<pre title="U+0065  e"><span class="fg-white bg-black">e</span><span class="fg-black bg-green">e</span></pre>
+<pre title="U+0066  f"><span class="fg-white bg-black">f</span><span class="fg-black bg-green">f</span></pre>
+<pre title="U+0067  g"><span class="fg-white bg-black">g</span><span class="fg-black bg-green">g</span></pre>
+<pre title="U+0068  h"><span class="fg-white bg-black">h</span><span class="fg-black bg-green">h</span></pre>
+<pre title="U+0069  i"><span class="fg-white bg-black">i</span><span class="fg-black bg-green">i</span></pre>
+<pre title="U+006A  j"><span class="fg-white bg-black">j</span><span class="fg-black bg-green">j</span></pre>
+<pre title="U+006B  k"><span class="fg-white bg-black">k</span><span class="fg-black bg-green">k</span></pre>
+<pre title="U+006C  l"><span class="fg-white bg-black">l</span><span class="fg-black bg-green">l</span></pre>
+<pre title="U+006D  m"><span class="fg-white bg-black">m</span><span class="fg-black bg-green">m</span></pre>
+<pre title="U+006E  n"><span class="fg-white bg-black">n</span><span class="fg-black bg-green">n</span></pre>
+<pre title="U+006F  o"><span class="fg-white bg-black">o</span><span class="fg-black bg-green">o</span></pre>
+<pre title="U+0070  p"><span class="fg-white bg-black">p</span><span class="fg-black bg-green">p</span></pre>
+<pre title="U+0071  q"><span class="fg-white bg-black">q</span><span class="fg-black bg-green">q</span></pre>
+<pre title="U+0072  r"><span class="fg-white bg-black">r</span><span class="fg-black bg-green">r</span></pre>
+<pre title="U+0073  s"><span class="fg-white bg-black">s</span><span class="fg-black bg-green">s</span></pre>
+<pre title="U+0074  t"><span class="fg-white bg-black">t</span><span class="fg-black bg-green">t</span></pre>
+<pre title="U+0075  u"><span class="fg-white bg-black">u</span><span class="fg-black bg-green">u</span></pre>
+<pre title="U+0076  v"><span class="fg-white bg-black">v</span><span class="fg-black bg-green">v</span></pre>
+<pre title="U+0077  w"><span class="fg-white bg-black">w</span><span class="fg-black bg-green">w</span></pre>
+<pre title="U+0078  x"><span class="fg-white bg-black">x</span><span class="fg-black bg-green">x</span></pre>
+<pre title="U+0079  y"><span class="fg-white bg-black">y</span><span class="fg-black bg-green">y</span></pre>
+<pre title="U+007A  z"><span class="fg-white bg-black">z</span><span class="fg-black bg-green">z</span></pre>
+<pre title="U+007B  {"><span class="fg-white bg-black">{</span><span class="fg-black bg-green">{</span></pre>
+<pre title="U+007C  |"><span class="fg-white bg-black">|</span><span class="fg-black bg-green">|</span></pre>
+<pre title="U+007D  }"><span class="fg-white bg-black">}</span><span class="fg-black bg-green">}</span></pre>
+<pre title="U+007E  ~"><span class="fg-white bg-black">~</span><span class="fg-black bg-green">~</span></pre>
+<pre title="U+00A0   "><span class="fg-white bg-black"> </span><span class="fg-black bg-green"> </span></pre>
+<pre title="U+00A1  ¡"><span class="fg-white bg-black">¡</span><span class="fg-black bg-green">¡</span></pre>
+<pre title="U+00A2  ¢"><span class="fg-white bg-black">¢</span><span class="fg-black bg-green">¢</span></pre>
+<pre title="U+00A3  £"><span class="fg-white bg-black">£</span><span class="fg-black bg-green">£</span></pre>
+<pre title="U+00A4  ¤"><span class="fg-white bg-black">¤</span><span class="fg-black bg-green">¤</span></pre>
+<pre title="U+00A5  ¥"><span class="fg-white bg-black">¥</span><span class="fg-black bg-green">¥</span></pre>
+<pre title="U+00A6  ¦"><span class="fg-white bg-black">¦</span><span class="fg-black bg-green">¦</span></pre>
+<pre title="U+00A7  §"><span class="fg-white bg-black">§</span><span class="fg-black bg-green">§</span></pre>
+<pre title="U+00A8  ¨"><span class="fg-white bg-black">¨</span><span class="fg-black bg-green">¨</span></pre>
+<pre title="U+00A9  ©"><span class="fg-white bg-black">©</span><span class="fg-black bg-green">©</span></pre>
+<pre title="U+00AA  ª"><span class="fg-white bg-black">ª</span><span class="fg-black bg-green">ª</span></pre>
+<pre title="U+00AB  «"><span class="fg-white bg-black">«</span><span class="fg-black bg-green">«</span></pre>
+<pre title="U+00AC  ¬"><span class="fg-white bg-black">¬</span><span class="fg-black bg-green">¬</span></pre>
+<pre title="U+00AD  ­"><span class="fg-white bg-black">­</span><span class="fg-black bg-green">­</span></pre>
+<pre title="U+00AE  ®"><span class="fg-white bg-black">®</span><span class="fg-black bg-green">®</span></pre>
+<pre title="U+00AF  ¯"><span class="fg-white bg-black">¯</span><span class="fg-black bg-green">¯</span></pre>
+<pre title="U+00B0  °"><span class="fg-white bg-black">°</span><span class="fg-black bg-green">°</span></pre>
+<pre title="U+00B1  ±"><span class="fg-white bg-black">±</span><span class="fg-black bg-green">±</span></pre>
+<pre title="U+00B2  ²"><span class="fg-white bg-black">²</span><span class="fg-black bg-green">²</span></pre>
+<pre title="U+00B3  ³"><span class="fg-white bg-black">³</span><span class="fg-black bg-green">³</span></pre>
+<pre title="U+00B4  ´"><span class="fg-white bg-black">´</span><span class="fg-black bg-green">´</span></pre>
+<pre title="U+00B5  µ"><span class="fg-white bg-black">µ</span><span class="fg-black bg-green">µ</span></pre>
+<pre title="U+00B6  ¶"><span class="fg-white bg-black">¶</span><span class="fg-black bg-green">¶</span></pre>
+<pre title="U+00B7  ·"><span class="fg-white bg-black">·</span><span class="fg-black bg-green">·</span></pre>
+<pre title="U+00B8  ¸"><span class="fg-white bg-black">¸</span><span class="fg-black bg-green">¸</span></pre>
+<pre title="U+00B9  ¹"><span class="fg-white bg-black">¹</span><span class="fg-black bg-green">¹</span></pre>
+<pre title="U+00BA  º"><span class="fg-white bg-black">º</span><span class="fg-black bg-green">º</span></pre>
+<pre title="U+00BB  »"><span class="fg-white bg-black">»</span><span class="fg-black bg-green">»</span></pre>
+<pre title="U+00BC  ¼"><span class="fg-white bg-black">¼</span><span class="fg-black bg-green">¼</span></pre>
+<pre title="U+00BD  ½"><span class="fg-white bg-black">½</span><span class="fg-black bg-green">½</span></pre>
+<pre title="U+00BE  ¾"><span class="fg-white bg-black">¾</span><span class="fg-black bg-green">¾</span></pre>
+<pre title="U+00BF  ¿"><span class="fg-white bg-black">¿</span><span class="fg-black bg-green">¿</span></pre>
+<pre title="U+00C0  À"><span class="fg-white bg-black">À</span><span class="fg-black bg-green">À</span></pre>
+<pre title="U+00C1  Á"><span class="fg-white bg-black">Á</span><span class="fg-black bg-green">Á</span></pre>
+<pre title="U+00C2  Â"><span class="fg-white bg-black">Â</span><span class="fg-black bg-green">Â</span></pre>
+<pre title="U+00C3  Ã"><span class="fg-white bg-black">Ã</span><span class="fg-black bg-green">Ã</span></pre>
+<pre title="U+00C4  Ä"><span class="fg-white bg-black">Ä</span><span class="fg-black bg-green">Ä</span></pre>
+<pre title="U+00C5  Å"><span class="fg-white bg-black">Å</span><span class="fg-black bg-green">Å</span></pre>
+<pre title="U+00C6  Æ"><span class="fg-white bg-black">Æ</span><span class="fg-black bg-green">Æ</span></pre>
+<pre title="U+00C7  Ç"><span class="fg-white bg-black">Ç</span><span class="fg-black bg-green">Ç</span></pre>
+<pre title="U+00C8  È"><span class="fg-white bg-black">È</span><span class="fg-black bg-green">È</span></pre>
+<pre title="U+00C9  É"><span class="fg-white bg-black">É</span><span class="fg-black bg-green">É</span></pre>
+<pre title="U+00CA  Ê"><span class="fg-white bg-black">Ê</span><span class="fg-black bg-green">Ê</span></pre>
+<pre title="U+00CB  Ë"><span class="fg-white bg-black">Ë</span><span class="fg-black bg-green">Ë</span></pre>
+<pre title="U+00CC  Ì"><span class="fg-white bg-black">Ì</span><span class="fg-black bg-green">Ì</span></pre>
+<pre title="U+00CD  Í"><span class="fg-white bg-black">Í</span><span class="fg-black bg-green">Í</span></pre>
+<pre title="U+00CE  Î"><span class="fg-white bg-black">Î</span><span class="fg-black bg-green">Î</span></pre>
+<pre title="U+00CF  Ï"><span class="fg-white bg-black">Ï</span><span class="fg-black bg-green">Ï</span></pre>
+<pre title="U+00D0  Ð"><span class="fg-white bg-black">Ð</span><span class="fg-black bg-green">Ð</span></pre>
+<pre title="U+00D1  Ñ"><span class="fg-white bg-black">Ñ</span><span class="fg-black bg-green">Ñ</span></pre>
+<pre title="U+00D2  Ò"><span class="fg-white bg-black">Ò</span><span class="fg-black bg-green">Ò</span></pre>
+<pre title="U+00D3  Ó"><span class="fg-white bg-black">Ó</span><span class="fg-black bg-green">Ó</span></pre>
+<pre title="U+00D4  Ô"><span class="fg-white bg-black">Ô</span><span class="fg-black bg-green">Ô</span></pre>
+<pre title="U+00D5  Õ"><span class="fg-white bg-black">Õ</span><span class="fg-black bg-green">Õ</span></pre>
+<pre title="U+00D6  Ö"><span class="fg-white bg-black">Ö</span><span class="fg-black bg-green">Ö</span></pre>
+<pre title="U+00D7  ×"><span class="fg-white bg-black">×</span><span class="fg-black bg-green">×</span></pre>
+<pre title="U+00D8  Ø"><span class="fg-white bg-black">Ø</span><span class="fg-black bg-green">Ø</span></pre>
+<pre title="U+00D9  Ù"><span class="fg-white bg-black">Ù</span><span class="fg-black bg-green">Ù</span></pre>
+<pre title="U+00DA  Ú"><span class="fg-white bg-black">Ú</span><span class="fg-black bg-green">Ú</span></pre>
+<pre title="U+00DB  Û"><span class="fg-white bg-black">Û</span><span class="fg-black bg-green">Û</span></pre>
+<pre title="U+00DC  Ü"><span class="fg-white bg-black">Ü</span><span class="fg-black bg-green">Ü</span></pre>
+<pre title="U+00DD  Ý"><span class="fg-white bg-black">Ý</span><span class="fg-black bg-green">Ý</span></pre>
+<pre title="U+00DE  Þ"><span class="fg-white bg-black">Þ</span><span class="fg-black bg-green">Þ</span></pre>
+<pre title="U+00DF  ß"><span class="fg-white bg-black">ß</span><span class="fg-black bg-green">ß</span></pre>
+<pre title="U+00E0  à"><span class="fg-white bg-black">à</span><span class="fg-black bg-green">à</span></pre>
+<pre title="U+00E1  á"><span class="fg-white bg-black">á</span><span class="fg-black bg-green">á</span></pre>
+<pre title="U+00E2  â"><span class="fg-white bg-black">â</span><span class="fg-black bg-green">â</span></pre>
+<pre title="U+00E3  ã"><span class="fg-white bg-black">ã</span><span class="fg-black bg-green">ã</span></pre>
+<pre title="U+00E4  ä"><span class="fg-white bg-black">ä</span><span class="fg-black bg-green">ä</span></pre>
+<pre title="U+00E5  å"><span class="fg-white bg-black">å</span><span class="fg-black bg-green">å</span></pre>
+<pre title="U+00E6  æ"><span class="fg-white bg-black">æ</span><span class="fg-black bg-green">æ</span></pre>
+<pre title="U+00E7  ç"><span class="fg-white bg-black">ç</span><span class="fg-black bg-green">ç</span></pre>
+<pre title="U+00E8  è"><span class="fg-white bg-black">è</span><span class="fg-black bg-green">è</span></pre>
+<pre title="U+00E9  é"><span class="fg-white bg-black">é</span><span class="fg-black bg-green">é</span></pre>
+<pre title="U+00EA  ê"><span class="fg-white bg-black">ê</span><span class="fg-black bg-green">ê</span></pre>
+<pre title="U+00EB  ë"><span class="fg-white bg-black">ë</span><span class="fg-black bg-green">ë</span></pre>
+<pre title="U+00EC  ì"><span class="fg-white bg-black">ì</span><span class="fg-black bg-green">ì</span></pre>
+<pre title="U+00ED  í"><span class="fg-white bg-black">í</span><span class="fg-black bg-green">í</span></pre>
+<pre title="U+00EE  î"><span class="fg-white bg-black">î</span><span class="fg-black bg-green">î</span></pre>
+<pre title="U+00EF  ï"><span class="fg-white bg-black">ï</span><span class="fg-black bg-green">ï</span></pre>
+<pre title="U+00F0  ð"><span class="fg-white bg-black">ð</span><span class="fg-black bg-green">ð</span></pre>
+<pre title="U+00F1  ñ"><span class="fg-white bg-black">ñ</span><span class="fg-black bg-green">ñ</span></pre>
+<pre title="U+00F2  ò"><span class="fg-white bg-black">ò</span><span class="fg-black bg-green">ò</span></pre>
+<pre title="U+00F3  ó"><span class="fg-white bg-black">ó</span><span class="fg-black bg-green">ó</span></pre>
+<pre title="U+00F4  ô"><span class="fg-white bg-black">ô</span><span class="fg-black bg-green">ô</span></pre>
+<pre title="U+00F5  õ"><span class="fg-white bg-black">õ</span><span class="fg-black bg-green">õ</span></pre>
+<pre title="U+00F6  ö"><span class="fg-white bg-black">ö</span><span class="fg-black bg-green">ö</span></pre>
+<pre title="U+00F7  ÷"><span class="fg-white bg-black">÷</span><span class="fg-black bg-green">÷</span></pre>
+<pre title="U+00F8  ø"><span class="fg-white bg-black">ø</span><span class="fg-black bg-green">ø</span></pre>
+<pre title="U+00F9  ù"><span class="fg-white bg-black">ù</span><span class="fg-black bg-green">ù</span></pre>
+<pre title="U+00FA  ú"><span class="fg-white bg-black">ú</span><span class="fg-black bg-green">ú</span></pre>
+<pre title="U+00FB  û"><span class="fg-white bg-black">û</span><span class="fg-black bg-green">û</span></pre>
+<pre title="U+00FC  ü"><span class="fg-white bg-black">ü</span><span class="fg-black bg-green">ü</span></pre>
+<pre title="U+00FD  ý"><span class="fg-white bg-black">ý</span><span class="fg-black bg-green">ý</span></pre>
+<pre title="U+00FE  þ"><span class="fg-white bg-black">þ</span><span class="fg-black bg-green">þ</span></pre>
+<pre title="U+00FF  ÿ"><span class="fg-white bg-black">ÿ</span><span class="fg-black bg-green">ÿ</span></pre>
+<pre title="U+0131  ı"><span class="fg-white bg-black">ı</span><span class="fg-black bg-green">ı</span></pre>
+<pre title="U+0152  Œ"><span class="fg-white bg-black">Œ</span><span class="fg-black bg-green">Œ</span></pre>
+<pre title="U+0153  œ"><span class="fg-white bg-black">œ</span><span class="fg-black bg-green">œ</span></pre>
+<pre title="U+02C6  ˆ"><span class="fg-white bg-black">ˆ</span><span class="fg-black bg-green">ˆ</span></pre>
+<pre title="U+02DA  ˚"><span class="fg-white bg-black">˚</span><span class="fg-black bg-green">˚</span></pre>
+<pre title="U+02DC  ˜"><span class="fg-white bg-black">˜</span><span class="fg-black bg-green">˜</span></pre>
+<pre title="U+2013  –"><span class="fg-white bg-black">–</span><span class="fg-black bg-green">–</span></pre>
+<pre title="U+2014  —"><span class="fg-white bg-black">—</span><span class="fg-black bg-green">—</span></pre>
+<pre title="U+2018  ‘"><span class="fg-white bg-black">‘</span><span class="fg-black bg-green">‘</span></pre>
+<pre title="U+2019  ’"><span class="fg-white bg-black">’</span><span class="fg-black bg-green">’</span></pre>
+<pre title="U+201A  ‚"><span class="fg-white bg-black">‚</span><span class="fg-black bg-green">‚</span></pre>
+<pre title="U+201C  “"><span class="fg-white bg-black">“</span><span class="fg-black bg-green">“</span></pre>
+<pre title="U+201D  ”"><span class="fg-white bg-black">”</span><span class="fg-black bg-green">”</span></pre>
+<pre title="U+201E  „"><span class="fg-white bg-black">„</span><span class="fg-black bg-green">„</span></pre>
+<pre title="U+2022  •"><span class="fg-white bg-black">•</span><span class="fg-black bg-green">•</span></pre>
+<pre title="U+2026  …"><span class="fg-white bg-black">…</span><span class="fg-black bg-green">…</span></pre>
+<pre title="U+2039  ‹"><span class="fg-white bg-black">‹</span><span class="fg-black bg-green">‹</span></pre>
+<pre title="U+203A  ›"><span class="fg-white bg-black">›</span><span class="fg-black bg-green">›</span></pre>
+<pre title="U+2044  ⁄"><span class="fg-white bg-black">⁄</span><span class="fg-black bg-green">⁄</span></pre>
+<pre title="U+20AC  €"><span class="fg-white bg-black">€</span><span class="fg-black bg-green">€</span></pre>
+<pre title="U+2122  ™"><span class="fg-white bg-black">™</span><span class="fg-black bg-green">™</span></pre>
+<pre title="U+2212  −"><span class="fg-white bg-black">−</span><span class="fg-black bg-green">−</span></pre>
+<pre title="U+2215  ∕"><span class="fg-white bg-black">∕</span><span class="fg-black bg-green">∕</span></pre>
 </div>
 </main>
   <footer>UNTITLED SPACE GAME — WORLD DOCS</footer>
