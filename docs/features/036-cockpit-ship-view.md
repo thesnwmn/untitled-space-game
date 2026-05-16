@@ -66,11 +66,10 @@ constructor(
   onTravel: () => void,
   onDock: () => void,
   onCargo: () => void,
-  starfieldSeed?: number,
 )
 ```
 
-The optional `starfieldSeed` parameter follows the pattern introduced in feature 025. If 025 is already merged, wire it the same way. If not, default to seed 42 and add a `// TODO 025` comment.
+The starfield uses a fixed seed of 42 for this feature. Feature 025 (which depends on this one) will replace it with deterministic seeding derived from `player.destinationId`.
 
 ### Row layout
 
@@ -176,9 +175,5 @@ Repeat steps 1, 6, 7, 8 using keyboard navigation.
 ---
 
 ## Dependencies
-
-Feature 025 (randomise station star patterns) and feature 036 both touch `ShipScene` (now `ShipCockpitScene`) and the orchestrators. Either:
-- Complete 025 first, then 036 adopts its `starfieldSeed` wiring as described above, or
-- Complete 036 first with the seed stub, and treat 025 as superseded (the orchestrator seed logic in 025 should be applied to `ShipCockpitScene` instead)
 
 Feature 035 (landing/take-off animations) does not modify `ShipScene` internally and can be merged in either order with this feature.
