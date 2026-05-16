@@ -14,6 +14,38 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 039 · Global Menu Shell — DONE
+
+**Built:**
+- `src/game/scenes/global-menu-scene.ts` — new `GlobalMenuScene` extending `BaseMenuScene`; accepts `GlobalMenuEntry[]` and `onClose` callback; renders `NO OPTIONS AVAILABLE` (disabled) when entries is empty; footer shows `[1] GAME`; BACK, NAV_1, and a second M press all call `onClose`; sets `onMenuCallback = onClose` so the base MENU intercept also works
+- `src/game/ui/screen-chrome.ts` — adds `hitTestHeader(col, row)` method: stores `headerWidth` during `render()` when header is shown; returns `'menu'` when row 0 and col falls in the `[M] MENU` right-zone range `[w-10, w-2)`
+- `src/game/scenes/base-menu-scene.ts` — adds `protected onMenuCallback` field; intercepts `MENU` action before `handleNavAction`; calls `hitTestHeader` in the tap handler to support header taps
+- `src/game/scenes/ship-cockpit-scene.ts` — adds `onMenu` constructor parameter; handles `MENU` action and header tap via `chrome.hitTestHeader`
+- `src/game/scenes/station-menu-scene.ts`, `trader-scene.ts`, `mission-board-scene.ts` — each gains `onMenu` parameter and sets `this.onMenuCallback`
+- `src/game/scenes/cargo-scene.ts` — gains `onMenu` parameter; handles `MENU` keyboard action
+- `src/shared/types.ts` — adds `'MENU'` to `GameAction` union
+- `src/platform/dom/dom-input-handler.ts` — maps `m`/`M` keys to `'MENU'`
+- `src/platform/terminal/terminal-input-handler.ts` — maps `m`/`M` keys to `'MENU'`
+- `src/game/game.ts` — adds `sceneBeforeMenu`, `buildMenuEntries()`, `goToGlobalMenu()`, `returnFromMenu()`; all 5 supported scenes receive `() => this.goToGlobalMenu()`
+- `src/game/scenes/global-menu-scene.test.ts` — 13 tests covering: empty state placeholder, entry rendering, entry SELECT, close via BACK/MENU/NAV_1/footer tap, activated-once guard, header tap
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 640 passed, 1 skipped (35 test files)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Start the game (`npm run dev`) and progress to the ship view
+2. Press `M` — confirm the global menu opens with `NO OPTIONS AVAILABLE` and footer `[1] GAME`
+3. Press `[1]` or `M` again — confirm you return to the ship view
+4. Navigate to a station hub and press `M` — confirm the menu opens and closes back to the hub
+5. Navigate to the trader, press `M` — confirm close returns to the trader
+6. Navigate to the mission board, press `M` — confirm close returns to the mission board
+7. Open cargo (`C`) and press `M` — confirm close returns to cargo (via ship, per fallback)
+8. In browser, tap the `[M] MENU` text in the header — confirm the menu opens from any supported scene
+
+---
+
 ### 038 · Mission Board Live — DONE
 
 **Built:**
