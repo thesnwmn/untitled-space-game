@@ -40,7 +40,7 @@ export class MissionLogScene extends BaseMenuScene {
     super(
       'MISSIONS',
       [],
-      [{ id: 'back', label: 'BACK' }, { id: 'game', label: 'GAME' }],
+      [{ id: 'game', label: 'GAME' }, { id: 'menu', label: 'MENU' }],
       inputHandler,
       context,
       player,
@@ -104,22 +104,22 @@ export class MissionLogScene extends BaseMenuScene {
   }
 
   protected override handleNavAction(action: string): void {
-    if ((action === 'BACK' || action === 'NAV_1') && !this.activated) {
-      this.activated = true;
-      this.onBack();
-    } else if (action === 'NAV_2' && !this.activated) {
+    if (action === 'NAV_1' && !this.activated) {
       this.activated = true;
       this.onGame();
+    } else if ((action === 'BACK' || action === 'NAV_2') && !this.activated) {
+      this.activated = true;
+      this.onBack();
     }
   }
 
   protected override handleNavTap(navId: string): void {
-    if (navId === 'back' && !this.activated) {
-      this.activated = true;
-      this.onBack();
-    } else if (navId === 'game' && !this.activated) {
+    if (navId === 'game' && !this.activated) {
       this.activated = true;
       this.onGame();
+    } else if (navId === 'menu' && !this.activated) {
+      this.activated = true;
+      this.onBack();
     }
   }
 }

@@ -273,7 +273,15 @@ export class Game {
   private goToMissionLog(): void {
     this.currentScene = new MissionLogScene(
       this.input, this.context, this.player,
-      () => this.goToGlobalMenu(),
+      () => this.goToGlobalMenuFromSubScene(),
+      () => this.returnFromMenu(),
+    );
+  }
+
+  private goToGlobalMenuFromSubScene(): void {
+    this.currentScene = new GlobalMenuScene(
+      this.input, this.context, this.player,
+      this.buildMenuEntries(),
       () => this.returnFromMenu(),
     );
   }

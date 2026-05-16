@@ -111,16 +111,16 @@ describe('MissionLogScene', () => {
       expect(onBack).not.toHaveBeenCalled();
     });
 
-    it('footer shows [1] BACK and [2] GAME', () => {
+    it('footer shows [1] GAME and [2] MENU', () => {
       const input = new MockInputHandler();
       const { scene } = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const footer = rowText(buf, FOOTER_ROW);
       expect(footer).toContain('[1]');
-      expect(footer).toContain('BACK');
-      expect(footer).toContain('[2]');
       expect(footer).toContain('GAME');
+      expect(footer).toContain('[2]');
+      expect(footer).toContain('MENU');
     });
   });
 
@@ -281,37 +281,47 @@ describe('MissionLogScene', () => {
   });
 
   describe('navigation', () => {
-    it('BACK action calls onBack', () => {
+    it('BACK action calls onBack (returns to global menu)', () => {
       const input = new MockInputHandler();
       const { onBack } = makeScene(input);
       input.triggerAction('BACK');
       expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('NAV_1 action calls onBack', () => {
+    it('NAV_2 action calls onBack', () => {
       const input = new MockInputHandler();
       const { onBack } = makeScene(input);
-      input.triggerAction('NAV_1');
+      input.triggerAction('NAV_2');
       expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('NAV_2 action calls onGame', () => {
+    it('NAV_1 action calls onGame', () => {
       const input = new MockInputHandler();
       const { onGame } = makeScene(input);
-      input.triggerAction('NAV_2');
+      input.triggerAction('NAV_1');
       expect(onGame).toHaveBeenCalledTimes(1);
     });
 
-    it('[1] BACK footer tap calls onBack', () => {
+    it('[1] GAME footer tap calls onGame', () => {
+      const input = new MockInputHandler();
+      const { scene, onGame } = makeScene(input);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(3, FOOTER_ROW);
+      expect(onGame).toHaveBeenCalledTimes(1);
+    });
+
+    it('[2] MENU footer tap calls onBack', () => {
       const input = new MockInputHandler();
       const { scene, onBack } = makeScene(input);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(3, FOOTER_ROW);
+      // [2] MENU starts after "[1] GAME::" — col 3 + "[1] GAME" len(8) + "::"(2) = col 13
+      input.triggerTap(13, FOOTER_ROW);
       expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('MENU action calls onGame', () => {
+    it('MENU action calls onGame (toggle closes menu)', () => {
       const input = new MockInputHandler();
       const { onGame } = makeScene(input);
       input.triggerAction('MENU');
