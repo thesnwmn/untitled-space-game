@@ -299,12 +299,20 @@ export abstract class BaseMenuScene implements Scene {
         writeText(buffer, row, 2, cursorChar, cursorFg, 'black');
         writeText(buffer, row, 3, item.icon, item.iconFg ?? cursorFg, 'black');
         if (item.info !== undefined) {
-          const dotLen = Math.max(1, maxWidth - 1 - iconLen - item.label.length - 2 - item.info.length);
-          writeText(buffer, row, 3 + iconLen, item.label + ' ', cursorFg, 'black');
-          writeText(buffer, row, 3 + iconLen + item.label.length + 1, '.'.repeat(dotLen), 'bright-black', 'black');
-          writeText(buffer, row, 3 + iconLen + item.label.length + 1 + dotLen + 1, item.info, infoFg, 'black');
+          const infoLen = item.info.length;
+          const maxLabelLen = Math.max(0, maxWidth - 1 - iconLen - 2 - infoLen - 1);
+          const truncLabel = item.label.length > maxLabelLen ? item.label.slice(0, maxLabelLen) : item.label;
+          const dotLen = Math.max(1, maxWidth - 1 - iconLen - truncLabel.length - 2 - infoLen);
+          writeText(buffer, row, 3 + iconLen, truncLabel + ' ', cursorFg, 'black');
+          writeText(buffer, row, 3 + iconLen + truncLabel.length + 1, '.'.repeat(dotLen), 'bright-black', 'black');
+          writeText(buffer, row, 3 + iconLen + truncLabel.length + 1 + dotLen + 1, item.info, infoFg, 'black');
         } else {
           writeText(buffer, row, 3 + iconLen, item.label.slice(0, maxWidth - 1 - iconLen), cursorFg, 'black');
+        }
+        for (let d = 0; d < (item.details?.length ?? 0); d++) {
+          if (row + 1 + d <= lastContentRow) {
+            writeText(buffer, row + 1 + d, 2, ('  ' + item.details![d]).slice(0, maxWidth), 'bright-black', 'black');
+          }
         }
       } else if (item.info !== undefined) {
         const prefix = isCursor ? '> ' : '  ';

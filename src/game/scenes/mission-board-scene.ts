@@ -1,30 +1,12 @@
 import type { InputHandler, GameContext } from '../../shared/types';
 import type { PlayerState } from '../player-state';
+import type { MissionSpec } from '../world/types';
 import { getDestination } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 
-interface Mission {
-  id: string;
-  type: 'rescue' | 'delivery' | 'combat' | 'salvage';
-  title: string;
-  reward: number;
-}
-
-const MISSIONS: Mission[] = [
-  { id: 'M001', type: 'rescue',   title: 'Find the Lost Crew',       reward: 500 },
-  { id: 'M002', type: 'delivery', title: 'Deliver Fuel Core',         reward: 300 },
-  { id: 'M003', type: 'combat',   title: 'Clear Pirate Outpost',      reward: 750 },
-  { id: 'M004', type: 'salvage',  title: 'Salvage Station Debris',    reward: 400 },
-  { id: 'M005', type: 'rescue',   title: 'Rescue Stranded Vessel',    reward: 600 },
-  { id: 'M006', type: 'delivery', title: 'Transport Supplies',        reward: 250 },
-  { id: 'M007', type: 'combat',   title: 'Eliminate Smugglers',       reward: 800 },
-];
-
-const TYPE_ICONS: Record<Mission['type'], string> = {
-  rescue:   '[R] ',
+const TYPE_ICONS: Record<MissionSpec['type'], string> = {
   delivery: '[D] ',
-  combat:   '[C] ',
-  salvage:  '[S] ',
+  supply:   '[S] ',
 };
 
 export class MissionBoardScene extends BaseMenuScene {
@@ -36,19 +18,28 @@ export class MissionBoardScene extends BaseMenuScene {
     context: GameContext,
     player: PlayerState,
     destinationId: string,
+    getMissions: () => MissionSpec[],
+    onMissionSelected: (spec: MissionSpec) => void,
     onHub: () => void,
     onUndock: () => void,
   ) {
     getDestination(destinationId)!;
 
-    const items: MenuItemDef[] = MISSIONS.map(m => ({
-      label: m.title,
-      icon: TYPE_ICONS[m.type],
-      iconFg: 'bright-yellow',
-      info: `${m.reward} CR`,
-      infoFg: 'bright-green',
-      action: () => console.log(`[MissionBoard] Selected: ${m.title}`),
-    }));
+    const missions = getMissions();
+    let items: MenuItemDef[];
+
+    if (missions.length === 0) {
+      items = [{ label: 'NO MISSIONS AVAILABLE', disabled: true, action: () => {} }];
+    } else {
+      items = missions.map(m => ({
+        label: m.title,
+        icon: TYPE_ICONS[m.type],
+        iconFg: 'bright-yellow' as const,
+        info: `${m.reward} CR`,
+        infoFg: 'bright-green' as const,
+        action: () => onMissionSelected(m),
+      }));
+    }
 
     super(
       'MISSION BOARD',
@@ -61,13 +52,6 @@ export class MissionBoardScene extends BaseMenuScene {
 
     this.onHub = onHub;
     this.onUndock = onUndock;
-  }
-
-  protected override activateCurrent(): void {
-    if (this.items.length === 0) return;
-    const item = this.items[this.cursorIdx];
-    if (item.disabled) return;
-    item.action();
   }
 
   protected override handleNavAction(action: string): void {

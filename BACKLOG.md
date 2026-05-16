@@ -19,13 +19,6 @@ See `docs/features/025-overhaul-star-field-display.md` for the full spec.
 
 ---
 
-### 038 · Mission Board Live
-
-Replace the hardcoded `MissionBoardScene` placeholder with live generated missions (TTL-cached in `Game`). Add `MissionDetailScene` with full mission info, cargo check, and ACCEPT/BACK navigation. Accepted missions are removed from the board.
-See `docs/features/038-mission-board-live.md` for the full spec.
-
----
-
 ### 039 · Global Menu Shell
 
 Wire the dormant `[M] MENU` chrome button (and new `MENU` game action) to open a new `GlobalMenuScene`. The menu is a flat, extensible list of entries — no tabs. Starts empty; subsequent features add their own entries. Establishes the save/restore flow for returning to the game after closing the menu.

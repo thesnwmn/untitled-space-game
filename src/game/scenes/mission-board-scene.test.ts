@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { MissionBoardScene } from './mission-board-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import type { MissionSpec } from '../world/types';
 import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -40,15 +41,73 @@ const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
 };
 
-// CONTENT_TOP = 3; MISSION_ROW_START = CONTENT_TOP + 3 = 6
-const MISSION_ROW_START = 6;
-
+// Items start at CONTENT_TOP + 3 = 6 (no infoLines)
+const ITEM_START = 6;
 // Footer at row 29 (h-1 for 40×30)
 const FOOTER_ROW = 29;
-// ":: [1] UNDOCK :: [2] HUB :::..."
-// UNDOCK button: cols 3-12; HUB button: cols 17-23
+// Nav button columns (from screen-chrome rendering):
+// "::[1] UNDOCK::[2] HUB::..."
 const NAV_UNDOCK_COL = 3;
 const NAV_HUB_COL = 17;
+
+function makeMissions(count = 3): MissionSpec[] {
+  const all: MissionSpec[] = [
+    {
+      id: 'm-001',
+      type: 'delivery',
+      title: 'Test Package',
+      description: 'A test delivery.',
+      reward: 500,
+      issuingDestinationId: 'elysium-station',
+      giverName: 'John Doe',
+      itemName: 'Test Package',
+      itemWeightKg: 50,
+      pickupDestinationId: 'elysium-station',
+      deliveryDestinationId: 'ceti-landfall',
+    },
+    {
+      id: 'm-002',
+      type: 'supply',
+      title: 'Sol Station',
+      description: 'Supplies needed.',
+      reward: 300,
+      issuingDestinationId: 'elysium-station',
+      giverName: 'Jane Smith',
+      requirements: [{ commodityId: 'rations', qty: 2 }],
+      deliveryDestinationId: 'elysium-station',
+    },
+    {
+      id: 'm-003',
+      type: 'delivery',
+      title: 'Emergency Parts',
+      description: 'Urgent delivery.',
+      reward: 700,
+      issuingDestinationId: 'elysium-station',
+      giverName: 'Al Chen',
+      itemName: 'Emergency Parts',
+      itemWeightKg: 100,
+      pickupDestinationId: 'elysium-station',
+      deliveryDestinationId: 'mars-anchor',
+    },
+  ];
+  return all.slice(0, count);
+}
+
+function makeScene(
+  input: MockInputHandler,
+  missions: MissionSpec[],
+  onMissionSelected = vi.fn(),
+  onHub = vi.fn(),
+  onUndock = vi.fn(),
+) {
+  return new MissionBoardScene(
+    input, keyboardContext, makePlayer(), 'elysium-station',
+    () => missions,
+    onMissionSelected,
+    onHub,
+    onUndock,
+  );
+}
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -56,7 +115,7 @@ describe('MissionBoardScene', () => {
   describe('render — layout', () => {
     it('does not render a border', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[0][0].char).not.toBe('+');
@@ -64,7 +123,7 @@ describe('MissionBoardScene', () => {
 
     it('chrome header row 0 contains system name SOL', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 0)).toContain('SOL');
@@ -72,7 +131,7 @@ describe('MissionBoardScene', () => {
 
     it('chrome footer row h-1 contains [1] UNDOCK and [2] HUB', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, FOOTER_ROW)).toContain('[1]');
@@ -83,107 +142,129 @@ describe('MissionBoardScene', () => {
 
     it('renders MISSION BOARD title at row 3 in bright-white', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 3)).toContain('MISSION BOARD');
       expect(buf[3].find((c, i) => c.char !== ' ' && i >= 2)?.fg).toBe('bright-white');
     });
 
-    it("renders ' underline at row 4 in bright-black", () => {
+    it("renders underline at row 4 in bright-black", () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 4)).toContain("'");
       expect(buf[4].find(c => c.char === "'")?.fg).toBe('bright-black');
     });
 
-    it('renders mission list starting at row 5', () => {
+    it('empty board shows NO MISSIONS AVAILABLE at item start row', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, []);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, MISSION_ROW_START)).toContain('Find the Lost Crew');
-      expect(rowText(buf, MISSION_ROW_START + 1)).toContain('Deliver Fuel Core');
-      expect(rowText(buf, MISSION_ROW_START + 6)).toContain('Eliminate Smugglers');
+      expect(rowText(buf, ITEM_START)).toContain('NO MISSIONS AVAILABLE');
     });
 
-    it('renders type icons in bright-yellow', () => {
+    it('renders delivery mission [D] icon in bright-yellow at item start', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // [R] icon at row 5: cursor at col 2, [ at col 3
-      expect(buf[MISSION_ROW_START][3].char).toBe('[');
-      expect(buf[MISSION_ROW_START][3].fg).toBe('bright-yellow');
-      expect(buf[MISSION_ROW_START][4].char).toBe('R');
-      expect(buf[MISSION_ROW_START][4].fg).toBe('bright-yellow');
+      // Icon starts at col 3: '[', 'D', ']', ' '
+      expect(buf[ITEM_START][3].char).toBe('[');
+      expect(buf[ITEM_START][3].fg).toBe('bright-yellow');
+      expect(buf[ITEM_START][4].char).toBe('D');
+      expect(buf[ITEM_START][4].fg).toBe('bright-yellow');
     });
 
-    it('renders rewards in bright-green', () => {
+    it('renders supply mission [S] icon for second mission', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, MISSION_ROW_START)).toContain('500 CR');
-      const rewardStart = buf[MISSION_ROW_START].findIndex((_, i) =>
-        buf[MISSION_ROW_START].slice(i, i + 3).map(c => c.char).join('') === '500'
+      // Mission 1 (supply) is at ITEM_START + 1 (each mission takes 1 row)
+      expect(buf[ITEM_START + 1][4].char).toBe('S');
+      expect(buf[ITEM_START + 1][4].fg).toBe('bright-yellow');
+    });
+
+    it('renders mission title', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, makeMissions());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_START)).toContain('Test Package');
+    });
+
+    it('renders reward in bright-green', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, makeMissions());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEM_START)).toContain('500 CR');
+      const rewardStart = buf[ITEM_START].findIndex((_, i) =>
+        buf[ITEM_START].slice(i, i + 3).map(c => c.char).join('') === '500'
       );
-      expect(buf[MISSION_ROW_START][rewardStart].fg).toBe('bright-green');
+      expect(buf[ITEM_START][rewardStart].fg).toBe('bright-green');
     });
 
     it('cursor starts on first mission', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[MISSION_ROW_START][2].char).toBe('>');
-      expect(buf[MISSION_ROW_START][2].fg).toBe('bright-green');
+      expect(buf[ITEM_START][2].char).toBe('>');
+      expect(buf[ITEM_START][2].fg).toBe('bright-green');
     });
   });
 
   describe('keyboard navigation', () => {
-    it('DOWN moves cursor to next mission', () => {
+    it('DOWN moves cursor from mission 0 to mission 1', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[MISSION_ROW_START + 1][2].char).toBe('>');
+      // Mission 1 is at ITEM_START + 1 (each item takes 1 row)
+      expect(buf[ITEM_START + 1][2].char).toBe('>');
     });
 
     it('UP from first mission wraps to last', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions(3));
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[MISSION_ROW_START + 6][2].char).toBe('>');
+      // Mission 2 (last) is at ITEM_START + 2
+      expect(buf[ITEM_START + 2][2].char).toBe('>');
     });
 
     it('DOWN wraps from last mission back to first', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
-      for (let i = 0; i < 7; i++) input.triggerAction('DOWN');
+      const scene = makeScene(input, makeMissions(3));
+      // Move to last then DOWN
+      input.triggerAction('DOWN');
+      input.triggerAction('DOWN');
+      input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[MISSION_ROW_START][2].char).toBe('>');
+      // Wraps back to mission 0
+      expect(buf[ITEM_START][2].char).toBe('>');
     });
 
-    it('SELECT on mission logs placeholder with title', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    it('SELECT calls onMissionSelected with the correct spec', () => {
+      const onMissionSelected = vi.fn();
+      const missions = makeMissions();
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      makeScene(input, missions, onMissionSelected);
       input.triggerAction('SELECT');
-      expect(consoleSpy).toHaveBeenCalledWith('[MissionBoard] Selected: Find the Lost Crew');
-      consoleSpy.mockRestore();
+      expect(onMissionSelected).toHaveBeenCalledWith(missions[0]);
     });
 
     it('BACK calls onHub and silences further input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
+      makeScene(input, makeMissions(), vi.fn(), onHub);
       input.triggerAction('BACK');
       expect(onHub).toHaveBeenCalledTimes(1);
       input.triggerAction('BACK');
@@ -193,7 +274,7 @@ describe('MissionBoardScene', () => {
     it('NAV_2 calls onHub', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
+      makeScene(input, makeMissions(), vi.fn(), onHub);
       input.triggerAction('NAV_2');
       expect(onHub).toHaveBeenCalledTimes(1);
     });
@@ -201,26 +282,34 @@ describe('MissionBoardScene', () => {
     it('NAV_1 calls onUndock', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), onUndock);
+      makeScene(input, makeMissions(), vi.fn(), vi.fn(), onUndock);
       input.triggerAction('NAV_1');
       expect(onUndock).toHaveBeenCalledTimes(1);
+    });
+
+    it('empty board: SELECT does nothing (disabled item)', () => {
+      const onMissionSelected = vi.fn();
+      const input = new MockInputHandler();
+      makeScene(input, [], onMissionSelected);
+      input.triggerAction('SELECT');
+      expect(onMissionSelected).not.toHaveBeenCalled();
     });
   });
 
   describe('touch navigation', () => {
-    it('tap on mission row selects it and logs placeholder', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    it('tap on mission title row calls onMissionSelected with correct spec', () => {
+      const onMissionSelected = vi.fn();
+      const missions = makeMissions();
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
-      input.triggerTap(5, MISSION_ROW_START + 2);
-      expect(consoleSpy).toHaveBeenCalledWith('[MissionBoard] Selected: Clear Pirate Outpost');
-      consoleSpy.mockRestore();
+      makeScene(input, missions, onMissionSelected);
+      input.triggerTap(5, ITEM_START);
+      expect(onMissionSelected).toHaveBeenCalledWith(missions[0]);
     });
 
-    it('tap on footer UNDOCK button fires onUndock and silences input', () => {
+    it('tap on footer UNDOCK fires onUndock and silences input', () => {
       const onUndock = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), onUndock);
+      const scene = makeScene(input, makeMissions(), vi.fn(), vi.fn(), onUndock);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_UNDOCK_COL, FOOTER_ROW);
@@ -229,10 +318,10 @@ describe('MissionBoardScene', () => {
       expect(onUndock).toHaveBeenCalledTimes(1);
     });
 
-    it('tap on footer HUB button fires onHub and silences input', () => {
+    it('tap on footer HUB fires onHub and silences input', () => {
       const onHub = vi.fn();
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
+      const scene = makeScene(input, makeMissions(), vi.fn(), onHub);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       input.triggerTap(NAV_HUB_COL, FOOTER_ROW);
@@ -242,24 +331,22 @@ describe('MissionBoardScene', () => {
     });
 
     it('tap on non-mission row does nothing', () => {
+      const onMissionSelected = vi.fn();
       const onHub = vi.fn();
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const input = new MockInputHandler();
-      new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', onHub, vi.fn());
+      makeScene(input, makeMissions(), onMissionSelected, onHub);
       input.triggerTap(5, 0);
-      // row 4 is underline row, row 12 is past missions
       input.triggerTap(5, 4);
-      input.triggerTap(5, 20);
+      input.triggerTap(5, 20); // past missions area
       expect(onHub).not.toHaveBeenCalled();
-      expect(consoleSpy).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(onMissionSelected).not.toHaveBeenCalled();
     });
   });
 
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new MissionBoardScene(input, keyboardContext, makePlayer(), 'elysium-station', vi.fn(), vi.fn());
+      const scene = makeScene(input, makeMissions());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
