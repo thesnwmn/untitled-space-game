@@ -15,6 +15,7 @@ export class TravelMenuScene extends BaseMenuScene {
     onJumpSelected: (targetSystemId: string) => void,
     onFlyIntoSpace: () => void,
     onShip: () => void,
+    onGalaxyMap: () => void,
   ) {
     const system = getSystem(player.systemId)!;
     const drive = getDrive(player.driveId)!;
@@ -32,7 +33,7 @@ export class TravelMenuScene extends BaseMenuScene {
       },
     ];
 
-    const jumpItems: MenuItemDef[] = getRoutesFrom(player.systemId).map(route => {
+    const routeItems: MenuItemDef[] = getRoutesFrom(player.systemId).map(route => {
       const targetId = route.from === player.systemId ? route.to : route.from;
       const targetSystem = getSystem(targetId)!;
       const stability = route.stability.toUpperCase();
@@ -43,6 +44,11 @@ export class TravelMenuScene extends BaseMenuScene {
         action: () => onJumpSelected(targetId),
       };
     });
+
+    const jumpItems: MenuItemDef[] = [
+      ...routeItems,
+      { label: 'GALAXY MAP...', action: onGalaxyMap },
+    ];
 
     const tabs: TabDef[] = [
       { label: 'DESTINATIONS', items: destItems },

@@ -58,6 +58,10 @@ export function getCommodities(): Commodity[] {
   return getWorld().commodities;
 }
 
+export function getPublicSystems(): StarSystem[] {
+  return getWorld().systems.filter(s => s.playerKnowledge === 'public');
+}
+
 export function computeCargoWeightKg(cargoHold: CargoEntry[]): number {
   return cargoHold.reduce((total, entry) => {
     const commodity = getCommodity(entry.commodityId);

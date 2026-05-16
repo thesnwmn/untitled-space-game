@@ -6,6 +6,7 @@ import { MissionBoardScene } from './scenes/mission-board-scene';
 import { ShipScene } from './scenes/ship-scene';
 import { CargoScene } from './scenes/cargo-scene';
 import { TravelMenuScene } from './scenes/travel-menu-scene';
+import { GalaxyMapScene } from './scenes/galaxy-map-scene';
 import { JumpAnimationScene } from './scenes/jump-animation-scene';
 import { InSystemTravelAnimationScene } from './scenes/in-system-travel-animation-scene';
 import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation-scene';
@@ -215,6 +216,7 @@ export class Game {
       (id: string) => this.onJumpSelected(id),
       () => this.goToFlyIntoSpace(),
       () => this.goToShip(),
+      () => this.goToGalaxyMap(),
     );
   }
 
@@ -225,6 +227,14 @@ export class Game {
       (id: string) => this.onJumpSelected(id),
       () => this.goToFlyIntoSpace(),
       () => this.goToShip(),
+      () => this.goToGalaxyMap(),
+    );
+  }
+
+  private goToGalaxyMap(): void {
+    this.currentScene = new GalaxyMapScene(
+      this.input, this.context, this.player,
+      () => this.goToTravelMenu(),
     );
   }
 
