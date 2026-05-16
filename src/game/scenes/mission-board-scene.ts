@@ -22,6 +22,7 @@ export class MissionBoardScene extends BaseMenuScene {
     onMissionSelected: (spec: MissionSpec) => void,
     onHub: () => void,
     onUndock: () => void,
+    onMenu: () => void,
   ) {
     getDestination(destinationId)!;
 
@@ -52,6 +53,7 @@ export class MissionBoardScene extends BaseMenuScene {
 
     this.onHub = onHub;
     this.onUndock = onUndock;
+    this.onMenuCallback = onMenu;
   }
 
   protected override handleNavAction(action: string): void {

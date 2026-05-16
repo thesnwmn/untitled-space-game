@@ -24,6 +24,7 @@ export class TraderScene extends BaseMenuScene {
     onSell: (commodityId: string, qty: number) => void,
     onHub: () => void,
     onUndock: () => void,
+    onMenu: () => void,
   ) {
     const dest = getDestination(destinationId)!;
     const traderName = dest.npcs.trader?.toUpperCase() ?? 'TRADER';
@@ -49,6 +50,7 @@ export class TraderScene extends BaseMenuScene {
     this.onSell = onSell;
     this.onHub = onHub;
     this.onUndock = onUndock;
+    this.onMenuCallback = onMenu;
 
     // Populate tabs and set cursor before any actions can fire
     this.syncItems();

@@ -71,7 +71,7 @@ describe('ShipCockpitScene', () => {
   describe('render — chrome header', () => {
     it('header row 0 contains the system name SOL', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 0)).toContain('SOL');
@@ -79,7 +79,7 @@ describe('ShipCockpitScene', () => {
 
     it('header row 1 contains destination name ELYSIUM STATION', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, 1)).toContain('ELYSIUM STATION');
@@ -90,7 +90,7 @@ describe('ShipCockpitScene', () => {
       const scene = new ShipCockpitScene(
         input, keyboardContext,
         makePlayer({ destinationId: null }),
-        vi.fn(), vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -102,7 +102,7 @@ describe('ShipCockpitScene', () => {
       const scene = new ShipCockpitScene(
         input, keyboardContext,
         makePlayer({ systemId: 'alpha-centauri', destinationId: null }),
-        vi.fn(), vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -113,7 +113,7 @@ describe('ShipCockpitScene', () => {
   describe('render — gauge strip (rows 3–4)', () => {
     it('renders fuel gauge label F at gauge top row', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[GAUGE_TOP][FUEL_LABEL_COL].char).toBe('F');
@@ -122,7 +122,7 @@ describe('ShipCockpitScene', () => {
 
     it('renders cargo gauge label C at gauge bottom row', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[GAUGE_BOT][CARGO_LABEL_COL].char).toBe('C');
@@ -131,7 +131,7 @@ describe('ShipCockpitScene', () => {
 
     it('renders shields gauge label S with cyan colour', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[GAUGE_TOP][SHIELD_LABEL_COL].char).toBe('S');
@@ -140,7 +140,7 @@ describe('ShipCockpitScene', () => {
 
     it('renders hull gauge label H with green colour', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[GAUGE_BOT][HULL_LABEL_COL].char).toBe('H');
@@ -149,7 +149,7 @@ describe('ShipCockpitScene', () => {
 
     it('fuel gauge fill cells use yellow background when full', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let i = 0; i < 10; i++) {
@@ -159,7 +159,7 @@ describe('ShipCockpitScene', () => {
 
     it('empty cargo gauge fill cells use bright-black background', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // cargo is 0 — all cells should be empty (bright-black)
@@ -170,7 +170,7 @@ describe('ShipCockpitScene', () => {
 
     it('shields gauge fill cells are fully filled (placeholder = 1.0)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let i = 0; i < 10; i++) {
@@ -180,7 +180,7 @@ describe('ShipCockpitScene', () => {
 
     it('hull gauge fill cells are fully filled (placeholder = 1.0)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let i = 0; i < 10; i++) {
@@ -192,7 +192,7 @@ describe('ShipCockpitScene', () => {
   describe('render — starfield viewport (rows 5–22)', () => {
     it('viewport contains non-space cells (starfield rendered)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       let nonSpace = false;
@@ -206,7 +206,7 @@ describe('ShipCockpitScene', () => {
 
     it('viewport has no border characters at col 0 or col 39', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let r = VIEWPORT_TOP; r <= VIEWPORT_BOT; r++) {
@@ -217,7 +217,7 @@ describe('ShipCockpitScene', () => {
 
     it('HUD overlay appears on second viewport row (first row is border)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, VIEWPORT_TOP + 1)).toContain('VEL:');
@@ -227,7 +227,7 @@ describe('ShipCockpitScene', () => {
 
     it('starfield borders render as - at viewport top and bottom rows', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[VIEWPORT_TOP][0].char).toBe('-');
@@ -238,7 +238,7 @@ describe('ShipCockpitScene', () => {
 
     it('crosshair centre character + appears in viewport in bright-green', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       let found = false;
@@ -252,7 +252,7 @@ describe('ShipCockpitScene', () => {
 
     it('crosshair corner + chars appear in bright-green at expected positions', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const centerRow = Math.floor((VIEWPORT_TOP + 1 + VIEWPORT_BOT - 1) / 2);
@@ -271,7 +271,7 @@ describe('ShipCockpitScene', () => {
 
     it('starfield changes after update with large dt', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf1 = makeBuffer(40, 30);
       scene.render(buf1);
       scene.update(5000);
@@ -292,7 +292,7 @@ describe('ShipCockpitScene', () => {
   describe('render — bottom panels', () => {
     it('TRAVEL word appears at action row left panel with yellow background', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ACTION_ROW)).toContain('TRAVEL');
@@ -303,7 +303,7 @@ describe('ShipCockpitScene', () => {
 
     it('DOCK word appears at action row right panel with cyan background when destination exists', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ACTION_ROW)).toContain('DOCK');
@@ -316,7 +316,7 @@ describe('ShipCockpitScene', () => {
       const scene = new ShipCockpitScene(
         input, keyboardContext,
         makePlayer({ destinationId: null }),
-        vi.fn(), vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -326,7 +326,7 @@ describe('ShipCockpitScene', () => {
 
     it('radar zone (cols 13–26) has bright-black background', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const radarRow = BOTTOM_TOP;
@@ -337,7 +337,7 @@ describe('ShipCockpitScene', () => {
 
     it('cursor on TRAVEL → bright-yellow bg; cursor on DOCK → bright-cyan bg', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
 
@@ -357,7 +357,7 @@ describe('ShipCockpitScene', () => {
   describe('render — ticker (row 28)', () => {
     it('ticker row is full width with black background', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let c = 0; c < 40; c++) {
@@ -367,7 +367,7 @@ describe('ShipCockpitScene', () => {
 
     it('ticker row is rendered without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       expect(() => scene.render(buf)).not.toThrow();
     });
@@ -376,7 +376,7 @@ describe('ShipCockpitScene', () => {
   describe('render — speaker indicator', () => {
     it('action row radar zone shows <)) speaker indicator between TRAVEL and DOCK', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const radarZoneText = buf[ACTION_ROW].slice(RADAR_START, RADAR_END).map(c => c.char).join('');
@@ -385,7 +385,7 @@ describe('ShipCockpitScene', () => {
 
     it('action row radar zone speaker has bright-black background', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let c = RADAR_START; c < RADAR_END; c++) {
@@ -397,19 +397,19 @@ describe('ShipCockpitScene', () => {
   describe('render — layout at varying heights', () => {
     it('renders without error at MIN_GRID_HEIGHT (30)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       expect(() => scene.render(makeBuffer(40, 30))).not.toThrow();
     });
 
     it('renders without error at MAX_GRID_HEIGHT (50)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       expect(() => scene.render(makeBuffer(40, 50))).not.toThrow();
     });
 
     it('viewport grows with height (TRAVEL/DOCK always at h-3)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf50 = makeBuffer(40, 50);
       scene.render(buf50);
       const actionRow50 = 50 - 3;
@@ -421,7 +421,7 @@ describe('ShipCockpitScene', () => {
   describe('keyboard navigation', () => {
     it('cursor starts on TRAVEL (bright-yellow bg at left panel)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[ACTION_ROW][0].bg).toBe('bright-yellow');
@@ -429,7 +429,7 @@ describe('ShipCockpitScene', () => {
 
     it('DOWN moves cursor to DOCK (left panel becomes yellow, right becomes bright-cyan)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -439,7 +439,7 @@ describe('ShipCockpitScene', () => {
 
     it('UP from TRAVEL wraps to DOCK', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -449,7 +449,7 @@ describe('ShipCockpitScene', () => {
 
     it('DOWN from DOCK wraps back to TRAVEL', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
@@ -460,7 +460,7 @@ describe('ShipCockpitScene', () => {
     it('SELECT on TRAVEL calls onTravel', () => {
       const onTravel = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn());
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('SELECT');
       expect(onTravel).toHaveBeenCalledTimes(1);
     });
@@ -468,7 +468,7 @@ describe('ShipCockpitScene', () => {
     it('SELECT on TRAVEL silences further input', () => {
       const onTravel = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn());
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn(), vi.fn());
       input.triggerAction('SELECT');
       input.triggerAction('SELECT');
       expect(onTravel).toHaveBeenCalledTimes(1);
@@ -477,7 +477,7 @@ describe('ShipCockpitScene', () => {
     it('SELECT on DOCK calls onDock when destination exists', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn());
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
       expect(onDock).toHaveBeenCalledTimes(1);
@@ -486,7 +486,7 @@ describe('ShipCockpitScene', () => {
     it('SELECT on DOCK silences further input', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn());
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn(), vi.fn());
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
       input.triggerAction('SELECT');
@@ -499,7 +499,7 @@ describe('ShipCockpitScene', () => {
       new ShipCockpitScene(
         input, keyboardContext,
         makePlayer({ destinationId: null }),
-        vi.fn(), onDock, vi.fn(),
+        vi.fn(), onDock, vi.fn(), vi.fn(),
       );
       input.triggerAction('DOWN');
       input.triggerAction('SELECT');
@@ -509,18 +509,30 @@ describe('ShipCockpitScene', () => {
     it('CARGO action calls onCargo and silences further input', () => {
       const onCargo = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo);
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo, vi.fn());
       input.triggerAction('CARGO');
       expect(onCargo).toHaveBeenCalledTimes(1);
       input.triggerAction('CARGO');
       expect(onCargo).toHaveBeenCalledTimes(1);
     });
 
+    it('MENU action calls onMenu but does not silence further input', () => {
+      const onMenu = vi.fn();
+      const onTravel = vi.fn();
+      const input = new MockInputHandler();
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn(), onMenu);
+      input.triggerAction('MENU');
+      expect(onMenu).toHaveBeenCalledTimes(1);
+      // Scene still responds after menu invocation
+      input.triggerAction('SELECT');
+      expect(onTravel).toHaveBeenCalledTimes(1);
+    });
+
     it('BACK action does nothing', () => {
       const onTravel = vi.fn();
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, onDock, vi.fn());
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, onDock, vi.fn(), vi.fn());
       input.triggerAction('BACK');
       expect(onTravel).not.toHaveBeenCalled();
       expect(onDock).not.toHaveBeenCalled();
@@ -532,7 +544,7 @@ describe('ShipCockpitScene', () => {
       const scene = new ShipCockpitScene(
         input, keyboardContext,
         makePlayer({ destinationId: null }),
-        vi.fn(), onDock, vi.fn(),
+        vi.fn(), onDock, vi.fn(), vi.fn(),
       );
       // Even after DOWN, cursor stays on TRAVEL (only 1 nav option)
       input.triggerAction('DOWN');
@@ -546,7 +558,7 @@ describe('ShipCockpitScene', () => {
     it('tap on TRAVEL area (action row, left panel) calls onTravel', () => {
       const onTravel = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn());
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn(), vi.fn());
       input.triggerTap(5, ACTION_ROW);
       expect(onTravel).toHaveBeenCalledTimes(1);
     });
@@ -554,7 +566,7 @@ describe('ShipCockpitScene', () => {
     it('tap on DOCK area (action row, right panel) calls onDock when destination exists', () => {
       const onDock = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn());
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), onDock, vi.fn(), vi.fn());
       input.triggerTap(32, ACTION_ROW);
       expect(onDock).toHaveBeenCalledTimes(1);
     });
@@ -565,7 +577,7 @@ describe('ShipCockpitScene', () => {
       new ShipCockpitScene(
         input, keyboardContext,
         makePlayer({ destinationId: null }),
-        vi.fn(), onDock, vi.fn(),
+        vi.fn(), onDock, vi.fn(), vi.fn(),
       );
       input.triggerTap(32, ACTION_ROW);
       expect(onDock).not.toHaveBeenCalled();
@@ -574,7 +586,7 @@ describe('ShipCockpitScene', () => {
     it('tap on cargo gauge area (row 3–4, cols 6–16) calls onCargo', () => {
       const onCargo = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo);
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo, vi.fn());
       input.triggerTap(10, 3);
       expect(onCargo).toHaveBeenCalledTimes(1);
     });
@@ -582,7 +594,7 @@ describe('ShipCockpitScene', () => {
     it('tap on cargo gauge area row 4 also calls onCargo', () => {
       const onCargo = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo);
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo, vi.fn());
       input.triggerTap(10, 4);
       expect(onCargo).toHaveBeenCalledTimes(1);
     });
@@ -590,7 +602,7 @@ describe('ShipCockpitScene', () => {
     it('tap on fuel gauge area (col < 6) does not call onCargo', () => {
       const onCargo = vi.fn();
       const input = new MockInputHandler();
-      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo);
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), onCargo, vi.fn());
       input.triggerTap(3, 3);
       expect(onCargo).not.toHaveBeenCalled();
     });
@@ -599,13 +611,13 @@ describe('ShipCockpitScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
 
     it('update() advances animation state (buttons, radar, ticker)', () => {
       const input = new MockInputHandler();
-      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       expect(() => {
         for (let i = 0; i < 10; i++) scene.update(100);
       }).not.toThrow();

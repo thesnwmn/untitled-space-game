@@ -14,17 +14,23 @@ export class CargoScene implements Scene {
     _context: GameContext,
     player: PlayerState,
     onBack: () => void,
+    onMenu: () => void,
   ) {
     this.player = player;
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
-      if (action === 'BACK' || action === 'CARGO') {
+      if (action === 'MENU') {
+        onMenu();
+      } else if (action === 'BACK' || action === 'CARGO') {
         this.activated = true;
         onBack();
       }
     });
   }
+
+  suspend(): void { this.activated = true; }
+  resume(): void { this.activated = false; }
 
   update(_dt: number): void {}
 

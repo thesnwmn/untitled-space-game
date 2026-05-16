@@ -19,13 +19,6 @@ See `docs/features/025-overhaul-star-field-display.md` for the full spec.
 
 ---
 
-### 039 · Global Menu Shell
-
-Wire the dormant `[M] MENU` chrome button (and new `MENU` game action) to open a new `GlobalMenuScene`. The menu is a flat, extensible list of entries — no tabs. Starts empty; subsequent features add their own entries. Establishes the save/restore flow for returning to the game after closing the menu.
-See `docs/features/039-global-menu-shell.md` for the full spec.
-
----
-
 ### 040 · Global Menu · Mission Log
 
 Add a `MISSIONS` entry to the global menu that opens a dedicated Mission Log screen. Lists active missions with status sub-lines and allows cancellation via a `ModalConfirmDialog`. Depends on feature 039.

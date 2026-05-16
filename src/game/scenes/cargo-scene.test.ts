@@ -48,7 +48,7 @@ describe('CargoScene', () => {
   describe('render — empty hold', () => {
     it('shows CARGO HOLD EMPTY when hold is empty', () => {
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, makePlayer(), vi.fn());
+      const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(bufferText(buf)).toContain('CARGO HOLD EMPTY');
@@ -56,7 +56,7 @@ describe('CargoScene', () => {
 
     it('shows the title CARGO HOLD', () => {
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, makePlayer(), vi.fn());
+      const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(bufferText(buf)).toContain('CARGO HOLD');
@@ -64,7 +64,7 @@ describe('CargoScene', () => {
 
     it('shows total weight 0 and capacity for a fresh player', () => {
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, makePlayer(), vi.fn());
+      const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // Freighter capacity = 2000kg
@@ -77,7 +77,7 @@ describe('CargoScene', () => {
       const player = makePlayer();
       player.addCargo('iron-ore', 3); // iron-ore: 40 kg/unit
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, player, vi.fn());
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = bufferText(buf);
@@ -91,7 +91,7 @@ describe('CargoScene', () => {
       player.addCargo('iron-ore', 2);
       player.addCargo('electronics', 1);
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, player, vi.fn());
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = bufferText(buf);
@@ -104,7 +104,7 @@ describe('CargoScene', () => {
       player.addCargo('iron-ore', 2);    // 2 × 40 = 80 kg
       player.addCargo('electronics', 5); // 5 × 8  = 40 kg  → total = 120 kg
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, player, vi.fn());
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(bufferText(buf)).toContain('120/2000KG');
@@ -114,7 +114,7 @@ describe('CargoScene', () => {
       const player = makePlayer({ shipId: 'freighter' });
       player.addCargo('rations', 1);
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, player, vi.fn());
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(bufferText(buf)).toContain('/2000KG');
@@ -125,7 +125,7 @@ describe('CargoScene', () => {
     it('BACK action fires onBack', () => {
       const onBack = vi.fn();
       const input = new MockInputHandler();
-      new CargoScene(input, context, makePlayer(), onBack);
+      new CargoScene(input, context, makePlayer(), onBack, vi.fn());
       input.triggerAction('BACK');
       expect(onBack).toHaveBeenCalledTimes(1);
     });
@@ -133,7 +133,7 @@ describe('CargoScene', () => {
     it('BACK silences further input after firing', () => {
       const onBack = vi.fn();
       const input = new MockInputHandler();
-      new CargoScene(input, context, makePlayer(), onBack);
+      new CargoScene(input, context, makePlayer(), onBack, vi.fn());
       input.triggerAction('BACK');
       input.triggerAction('BACK');
       expect(onBack).toHaveBeenCalledTimes(1);
@@ -142,7 +142,7 @@ describe('CargoScene', () => {
     it('CARGO action fires onBack', () => {
       const onBack = vi.fn();
       const input = new MockInputHandler();
-      new CargoScene(input, context, makePlayer(), onBack);
+      new CargoScene(input, context, makePlayer(), onBack, vi.fn());
       input.triggerAction('CARGO');
       expect(onBack).toHaveBeenCalledTimes(1);
     });
@@ -151,7 +151,7 @@ describe('CargoScene', () => {
   describe('Scene interface', () => {
     it('update() accepts dt without throwing', () => {
       const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, makePlayer(), vi.fn());
+      const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });

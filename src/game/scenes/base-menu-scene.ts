@@ -49,6 +49,7 @@ export abstract class BaseMenuScene implements Scene {
   private lastPageCount = 1;
   protected activated = false;
   protected modal: ModalInputDialog | null = null;
+  protected onMenuCallback: (() => void) | null = null;
 
   constructor(
     title: string,
@@ -102,6 +103,8 @@ export abstract class BaseMenuScene implements Scene {
         this.resetCursor();
       } else if (action === 'SELECT') {
         this.activateCurrent();
+      } else if (action === 'MENU' && this.onMenuCallback !== null) {
+        this.onMenuCallback();
       } else {
         this.handleNavAction(action);
       }
@@ -119,6 +122,11 @@ export abstract class BaseMenuScene implements Scene {
         const navId = this.chrome.hitTestNav(col, row);
         if (navId !== null) {
           this.handleNavTap(navId);
+          return;
+        }
+        const headerId = this.chrome.hitTestHeader(col, row);
+        if (headerId === 'menu' && this.onMenuCallback !== null) {
+          this.onMenuCallback();
           return;
         }
         // Tab bar hit test
@@ -195,6 +203,9 @@ export abstract class BaseMenuScene implements Scene {
     }
     this.cursorIdx = -1;
   }
+
+  public suspend(): void { this.activated = true; }
+  public resume(): void { this.activated = false; }
 
   protected handleNavAction(_action: string): void {}
   protected handleNavTap(_navId: string): void {}

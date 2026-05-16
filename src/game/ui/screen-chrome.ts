@@ -38,6 +38,7 @@ export class ScreenChrome {
   private readonly player: PlayerState;
   private buttonRanges: ButtonRange[] | null = null;
   private footerRow = -1;
+  private headerWidth = -1;
 
   constructor(context: GameContext, player: PlayerState) {
     this.context = context;
@@ -51,9 +52,12 @@ export class ScreenChrome {
     this.buttonRanges = null;
 
     if (config.showHeader) {
+      this.headerWidth = w;
       this.renderHeaderRow0(buffer, w, config.systemLabel);
       this.renderHeaderRow1(buffer, w, config.destinationLabel);
       // Row 2 is the gap — already cleared by the scene
+    } else {
+      this.headerWidth = -1;
     }
 
     if (config.showFooter) {
@@ -179,5 +183,14 @@ export class ScreenChrome {
       }
     }
     return null;
+  }
+
+  hitTestHeader(col: number, row: number): string | null {
+    if (this.headerWidth < 0) return null;
+    if (row !== 0) return null;
+    // '[M] MENU' occupies the first 8 chars of the 10-char right zone (last 2 are '::')
+    const menuStart = this.headerWidth - 10;
+    const menuEnd = this.headerWidth - 2;
+    return (col >= menuStart && col < menuEnd) ? 'menu' : null;
   }
 }

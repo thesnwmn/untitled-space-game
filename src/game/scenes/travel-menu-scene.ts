@@ -16,6 +16,7 @@ export class TravelMenuScene extends BaseMenuScene {
     onFlyIntoSpace: () => void,
     onShip: () => void,
     onGalaxyMap: () => void,
+    onMenu: () => void = () => {},
   ) {
     const system = getSystem(player.systemId)!;
     const drive = getDrive(player.driveId)!;
@@ -58,6 +59,7 @@ export class TravelMenuScene extends BaseMenuScene {
     super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, player, [], tabs);
 
     this.onShip = onShip;
+    this.onMenuCallback = onMenu;
   }
 
   protected override handleNavAction(action: string): void {

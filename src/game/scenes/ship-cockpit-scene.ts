@@ -127,6 +127,7 @@ export class ShipCockpitScene implements Scene {
     onTravel: () => void,
     onDock: () => void,
     onCargo: () => void,
+    onMenu: () => void,
   ) {
     this.player = player;
     this.chrome = new ScreenChrome(context, player);
@@ -158,7 +159,9 @@ export class ShipCockpitScene implements Scene {
 
     inputHandler.onAction((action) => {
       if (this.activated) return;
-      if (action === 'CARGO') {
+      if (action === 'MENU') {
+        onMenu();
+      } else if (action === 'CARGO') {
         this.activated = true;
         onCargo();
       } else if (action === 'UP') {
@@ -179,6 +182,10 @@ export class ShipCockpitScene implements Scene {
     if (inputHandler.onTap) {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
+        if (this.chrome.hitTestHeader(col, row) === 'menu') {
+          onMenu();
+          return;
+        }
         const h = this.h;
         if ((row === 3 || row === 4) &&
             col >= CARGO_LABEL_COL && col < CARGO_LABEL_COL + 1 + GAUGE_FILL_COUNT) {
@@ -194,6 +201,9 @@ export class ShipCockpitScene implements Scene {
       });
     }
   }
+
+  suspend(): void { this.activated = true; }
+  resume(): void { this.activated = false; }
 
   update(dt: number): void {
     this.starfield.update(dt);
