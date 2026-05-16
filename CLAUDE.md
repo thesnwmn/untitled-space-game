@@ -24,13 +24,14 @@ npm run terminal                                   # run game in terminal via Bu
 
 ## How This Project Works
 
-A human manager directs this project. Claude takes on one of seven roles per session.
+A human manager directs this project. Claude takes on one of eight roles per session.
 
 ## Roles
 
 | Role | Activated when | See |
 |---|---|---|
-| **Designer** | Manager asks you to specify or flesh out a feature | docs/agent/roles/DESIGNER.md |
+| **Designer** | Manager asks you to specify or flesh out a feature or idea | docs/agent/roles/DESIGNER.md |
+| **Thinker** | Manager asks you to generate new ideas for the game | docs/agent/roles/THINKER.md |
 | **Planner** | Manager asks you to review or reorder the backlog | docs/agent/roles/PLANNER.md |
 | **Engineer** | Manager asks you to implement a backlog item | docs/agent/roles/ENGINEER.md |
 | **Reviewer** | An Engineer session completes, or manager asks for a review | docs/agent/roles/REVIEWER.md |
@@ -45,6 +46,7 @@ Always confirm which role you're in at the start of a session. Read the role fil
 - DECISION_REGISTER.md — index of all architectural decisions (read first; detail in docs/decisions/)
 - BACKLOG.md — active feature list (READY / IN PROGRESS / NEEDS SPEC)
 - BACKLOG_HISTORY.md — all completed features with full implementation records
+- IDEAS.md — pool of game improvement ideas (written by Thinker, specced by Designer)
 - docs/features/ — full spec docs for active/upcoming features
 - docs/features/history/ — brief summaries of completed feature specs
 - docs/decisions/ — detailed decision rationale split by area
