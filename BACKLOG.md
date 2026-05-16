@@ -12,6 +12,17 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
+### 046 · Base Scene Architecture
+
+All scenes except `MainMenuScene` extend a new `BaseScene` abstract class that centralises
+buffer clearing, `ScreenChrome`, title + underline, summary lines, and tab bar. `BaseMenuScene`
+and `BaseTransitionScene` are refactored to inherit from it. `CargoScene` is rewritten with
+standard chrome and two tabs (COMMODITIES / MISSION GOODS). Shared `drawSeparator` and
+`renderPager` helpers are added to `buffer-utils`. Build this before 025, 044, and 045.
+See `docs/features/046-base-scene-architecture.md` for the full spec.
+
+---
+
 ### 025 · Overhaul Star Field & Destination Display
 
 Each destination has a unique, stable starfield pattern derived deterministically from its ID (no orchestrator seed state needed). A type-appropriate foreground object — space station, asteroid, or planet — is rendered in the viewport with variant also selected by destination ID. Depends on feature 036.
