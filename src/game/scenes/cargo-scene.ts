@@ -21,7 +21,6 @@ export class CargoScene implements Scene {
     inputHandler.onAction((action) => {
       if (this.activated) return;
       if (action === 'MENU') {
-        this.activated = true;
         onMenu();
       } else if (action === 'BACK' || action === 'CARGO') {
         this.activated = true;

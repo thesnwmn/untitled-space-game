@@ -123,9 +123,8 @@ describe('GlobalMenuScene', () => {
     it('[1] GAME footer tap calls onClose', () => {
       const onClose = vi.fn();
       const input = new MockInputHandler();
-      makeScene(input, [], onClose);
+      const scene = makeScene(input, [], onClose);
       const buf = makeBuffer(40, 30);
-      const scene = new GlobalMenuScene(input, context, makePlayer(), [], onClose);
       scene.render(buf);
       // Footer [1] GAME button starts at col 2 in footer row 29
       input.triggerTap(3, 29);
@@ -178,9 +177,8 @@ describe('GlobalMenuScene', () => {
     it('header tap on [M] MENU area (row 0) calls onClose', () => {
       const onClose = vi.fn();
       const input = new MockInputHandler();
-      makeScene(input, [], onClose);
+      const scene = makeScene(input, [], onClose);
       const buf = makeBuffer(40, 30);
-      const scene = new GlobalMenuScene(input, context, makePlayer(), [], onClose);
       scene.render(buf);
       // [M] MENU starts at col w-10 = 30 for w=40
       input.triggerTap(30, 0);

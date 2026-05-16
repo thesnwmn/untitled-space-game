@@ -160,7 +160,6 @@ export class ShipCockpitScene implements Scene {
     inputHandler.onAction((action) => {
       if (this.activated) return;
       if (action === 'MENU') {
-        this.activated = true;
         onMenu();
       } else if (action === 'CARGO') {
         this.activated = true;
@@ -184,7 +183,6 @@ export class ShipCockpitScene implements Scene {
       inputHandler.onTap((col, row) => {
         if (this.activated) return;
         if (this.chrome.hitTestHeader(col, row) === 'menu') {
-          this.activated = true;
           onMenu();
           return;
         }

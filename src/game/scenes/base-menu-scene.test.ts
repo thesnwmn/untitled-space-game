@@ -60,6 +60,7 @@ class TestMenuScene extends BaseMenuScene {
   openTestModal(modal: ModalInputDialog): void { this.openModal(modal); }
   closeTestModal(): void { this.closeModal(); }
   isActivated(): boolean { return this.activated; }
+  setMenuCallback(cb: () => void): void { this.onMenuCallback = cb; }
 }
 
 // itemStartRow = CONTENT_TOP(3) + 3 = 6 (when no infoLines)
@@ -346,6 +347,36 @@ describe('BaseMenuScene', () => {
 
       input.triggerAction('SELECT'); // now routes to parent
       expect(itemAction).toHaveBeenCalledOnce();
+    });
+
+    it('MENU action invokes onMenuCallback without silencing the scene', () => {
+      const onMenu = vi.fn();
+      const selectAction = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: selectAction }], input);
+      scene.setMenuCallback(onMenu);
+      input.triggerAction('MENU');
+      expect(onMenu).toHaveBeenCalledTimes(1);
+      expect(scene.isActivated()).toBe(false);
+      // Scene still responds to input after menu is invoked
+      input.triggerAction('SELECT');
+      expect(selectAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('header tap on [M] MENU area invokes onMenuCallback without silencing the scene', () => {
+      const onMenu = vi.fn();
+      const selectAction = vi.fn();
+      const input = new MockInputHandler();
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: selectAction }], input);
+      scene.setMenuCallback(onMenu);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // [M] MENU occupies cols 30–37 in a w=40 buffer; row 0 is the header
+      input.triggerTap(30, 0);
+      expect(onMenu).toHaveBeenCalledTimes(1);
+      expect(scene.isActivated()).toBe(false);
+      input.triggerAction('SELECT');
+      expect(selectAction).toHaveBeenCalledTimes(1);
     });
 
     it('modal renders on top of scene buffer', () => {

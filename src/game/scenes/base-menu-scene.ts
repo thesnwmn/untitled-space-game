@@ -104,7 +104,6 @@ export abstract class BaseMenuScene implements Scene {
       } else if (action === 'SELECT') {
         this.activateCurrent();
       } else if (action === 'MENU' && this.onMenuCallback !== null) {
-        this.activated = true;
         this.onMenuCallback();
       } else {
         this.handleNavAction(action);
@@ -127,7 +126,6 @@ export abstract class BaseMenuScene implements Scene {
         }
         const headerId = this.chrome.hitTestHeader(col, row);
         if (headerId === 'menu' && this.onMenuCallback !== null) {
-          this.activated = true;
           this.onMenuCallback();
           return;
         }

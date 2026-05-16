@@ -516,6 +516,18 @@ describe('ShipCockpitScene', () => {
       expect(onCargo).toHaveBeenCalledTimes(1);
     });
 
+    it('MENU action calls onMenu but does not silence further input', () => {
+      const onMenu = vi.fn();
+      const onTravel = vi.fn();
+      const input = new MockInputHandler();
+      new ShipCockpitScene(input, keyboardContext, makePlayer(), onTravel, vi.fn(), vi.fn(), onMenu);
+      input.triggerAction('MENU');
+      expect(onMenu).toHaveBeenCalledTimes(1);
+      // Scene still responds after menu invocation
+      input.triggerAction('SELECT');
+      expect(onTravel).toHaveBeenCalledTimes(1);
+    });
+
     it('BACK action does nothing', () => {
       const onTravel = vi.fn();
       const onDock = vi.fn();
