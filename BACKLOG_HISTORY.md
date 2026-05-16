@@ -14,6 +14,35 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 040 · Global Menu · Mission Log — DONE
+
+**Built:**
+- `src/game/ui/modal.ts` — `Modal` interface (`handleAction`, `handleCharInput`, `handleTap`, `render`) shared by both dialog types
+- `src/game/ui/modal-confirm-dialog.ts` — `ModalConfirmDialog` implementing `Modal`; renders a centred box with title, word-wrapped body, and one or two footer buttons; LEFT/RIGHT/TAB cycles focus; BACK dismisses (calls `onConfirm`); accepts `ModalConfirmDialogOptions`
+- `src/game/scenes/mission-log-scene.ts` — `MissionLogScene` extending `BaseMenuScene`; dynamically computes items from `player.activeMissions` via overridden `items` getter; shows `[D]`/`[S]` type icon, title, reward, and colour-coded status sub-line; selecting a mission opens `ModalConfirmDialog` with OKAY (dismiss) and CANCEL MISSION (destructive); footer: `[1] BACK` → `GlobalMenuScene`, `[2] GAME` → underlying game scene; overrides `activateCurrent` to avoid setting `activated`
+- `src/game/scenes/base-menu-scene.ts` — adds `detailsFg?: Color` to `MenuItemDef`; changes `modal` field and `openModal` to use `Modal` interface; removes direct `ModalInputDialog` import
+- `src/game/game.ts` — `buildMenuEntries()` returns `[{ label: 'MISSIONS', ... }]`; adds `goToMissionLog()` method
+- `src/game/scenes/mission-log-scene.test.ts` — 19 tests covering: empty list, all four status colours, type icons, modal open/close, CANCEL MISSION flow, OKAY/BACK dismiss, and all navigation paths
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 667 passed, 1 skipped (36 test files)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Start the game (`npm run dev`) and progress past the story to any scene
+2. Press `M` — confirm the global menu opens with `MISSIONS` as an entry
+3. Select `MISSIONS` — confirm `MissionLogScene` opens showing `NO ACTIVE MISSIONS`
+4. Press `[1] BACK` — confirm return to global menu
+5. Accept a mission from any station mission board; press `M`, select `MISSIONS`
+6. Confirm the mission appears with its type icon, title, `XXX CR`, and a coloured status sub-line
+7. Select the mission — confirm a modal opens with the mission title, description, `[ OKAY ]` and `[ CANCEL MISSION ]`
+8. Press OKAY or BACK — confirm modal closes, mission remains in list
+9. Select the mission again; press RIGHT to focus `CANCEL MISSION`; press SELECT — confirm mission disappears and `NO ACTIVE MISSIONS` appears
+10. Press `[2] GAME` from the mission log — confirm return to the underlying game scene (not global menu)
+
+---
+
 ### 039 · Global Menu Shell — DONE
 
 **Built:**

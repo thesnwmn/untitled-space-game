@@ -3,13 +3,14 @@ import { writeText } from '../../shared/buffer-utils';
 import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
 import type { NavOption, ChromeConfig } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
-import { ModalInputDialog } from '../ui/modal-input-dialog';
+import type { Modal } from '../ui/modal';
 
 export interface MenuItemDef {
   label: string;
   info?: string;
   infoFg?: Color;       // overrides default fg for the info text
   details?: string[];
+  detailsFg?: Color;    // overrides default fg for the details lines
   disabled?: boolean;
   icon?: string;        // prefix text rendered before the label (e.g. '[R] ')
   iconFg?: Color;       // fg for the icon text
@@ -48,7 +49,7 @@ export abstract class BaseMenuScene implements Scene {
   private pageIndex = 0;
   private lastPageCount = 1;
   protected activated = false;
-  protected modal: ModalInputDialog | null = null;
+  protected modal: Modal | null = null;
   protected onMenuCallback: (() => void) | null = null;
 
   constructor(
@@ -210,7 +211,7 @@ export abstract class BaseMenuScene implements Scene {
   protected handleNavAction(_action: string): void {}
   protected handleNavTap(_navId: string): void {}
 
-  protected openModal(modal: ModalInputDialog): void {
+  protected openModal(modal: Modal): void {
     this.modal = modal;
   }
 
@@ -322,7 +323,7 @@ export abstract class BaseMenuScene implements Scene {
         }
         for (let d = 0; d < (item.details?.length ?? 0); d++) {
           if (row + 1 + d <= lastContentRow) {
-            writeText(buffer, row + 1 + d, 2, ('  ' + item.details![d]).slice(0, maxWidth), 'bright-black', 'black');
+            writeText(buffer, row + 1 + d, 2, ('  ' + item.details![d]).slice(0, maxWidth), item.detailsFg ?? 'bright-black', 'black');
           }
         }
       } else if (item.info !== undefined) {
@@ -336,7 +337,7 @@ export abstract class BaseMenuScene implements Scene {
         writeText(buffer, row, 2, (prefix + item.label).slice(0, maxWidth), cursorFg, 'black');
         for (let d = 0; d < item.details.length; d++) {
           if (row + 1 + d <= lastContentRow) {
-            writeText(buffer, row + 1 + d, 2, ('  ' + item.details[d]).slice(0, maxWidth), 'bright-black', 'black');
+            writeText(buffer, row + 1 + d, 2, ('  ' + item.details[d]).slice(0, maxWidth), item.detailsFg ?? 'bright-black', 'black');
           }
         }
       } else {
