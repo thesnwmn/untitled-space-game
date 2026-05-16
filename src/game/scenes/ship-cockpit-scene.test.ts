@@ -354,13 +354,13 @@ describe('ShipCockpitScene', () => {
   });
 
   describe('render — ticker (row 28)', () => {
-    it('ticker row right portion has bright-black background', () => {
+    it('ticker row is full width with black background', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      for (let c = 27; c < 40; c++) {
-        expect(buf[TICKER_ROW][c].bg).toBe('bright-black');
+      for (let c = 0; c < 40; c++) {
+        expect(buf[TICKER_ROW][c].bg).toBe('black');
       }
     });
 
@@ -369,6 +369,27 @@ describe('ShipCockpitScene', () => {
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       expect(() => scene.render(buf)).not.toThrow();
+    });
+  });
+
+  describe('render — speaker indicator', () => {
+    it('action row radar zone shows CLEAR between TRAVEL and DOCK', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const radarZoneText = buf[ACTION_ROW].slice(RADAR_START, RADAR_END).map(c => c.char).join('');
+      expect(radarZoneText).toContain('CLEAR');
+    });
+
+    it('action row radar zone speaker has bright-black background', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      for (let c = RADAR_START; c < RADAR_END; c++) {
+        expect(buf[ACTION_ROW][c].bg).toBe('bright-black');
+      }
     });
   });
 

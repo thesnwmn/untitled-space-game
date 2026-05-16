@@ -5,33 +5,30 @@ import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
 
 // Gauge strip column layout — symmetric with 1-col blank separators (cols 0–39, w=40)
-// L-btns: 0–4 | gap:5 | Fuel/Cargo: 6–16 | gap:17 | Mid-btns: 18–21 | gap:22 | Shield/Hull: 23–33 | gap:34 | R-btns: 35–39
+// L-btns: 0–4 | gap:5 | Fuel/Cargo: 6–16 | center-gap: 17–22 | Shield/Hull: 23–33 | gap:34 | R-btns: 35–39
 const FUEL_LABEL_COL    = 6;
 const CARGO_LABEL_COL   = 6;
 const SHIELD_LABEL_COL  = 23;
 const HULL_LABEL_COL    = 23;
 const GAUGE_FILL_COUNT  = 10;
 
-// Gauge button zones (cols inclusive) — blank separators at 5, 17, 22, 34
+// Gauge button zones — no mid zone; center gap (cols 17–22) is left blank
 const GAUGE_LEFT_START  = 0;
 const GAUGE_LEFT_END    = 4;
-const GAUGE_MID_START   = 18;
-const GAUGE_MID_END     = 21;
 const GAUGE_RIGHT_START = 35;
 const GAUGE_RIGHT_END   = 39;
 
 // Bottom panel column layout — blank separator cols at 12 and 27
-// L-btns: 0–11 | gap:12 | Radar: 13–26 | gap:27 | R-btns: 28–39
-const LEFT_PANEL_W      = 12;   // TRAVEL button width (cols 0–11)
-const RADAR_START       = 13;   // cols 13–26
-const RADAR_END         = 27;
-const RIGHT_PANEL_START = 28;   // DOCK button / right buttons start
-const RIGHT_PANEL_W     = 12;
+// L-btns: 0–8 (fewer) | blank:9–12 | Radar: 13–26 | gap:27 | R-btns: 28–39
+const LEFT_PANEL_W         = 12;   // TRAVEL button width (cols 0–11)
+const LEFT_BTN_END         = 8;    // buttons only fill cols 0–8 in non-action rows
+const RADAR_START           = 13;
+const RADAR_END             = 27;
+const RIGHT_PANEL_START     = 28;
+const RIGHT_PANEL_W         = 12;
 
-// Ticker — right portion is always 13 cols regardless of panel layout
-const TICKER_SPLIT     = 27;
-const TICKER_RIGHT_W   = 13;
-const SCROLL_MS        = 200;   // ms per character scroll step (reduced speed)
+const TICKER_W   = 40;   // ticker spans full display width
+const SCROLL_MS  = 200;  // ms per character scroll step (reduced speed)
 
 const TICKER_MESSAGES = [
   '> SYSTEM STATUS: ALL CLEAR',
@@ -137,11 +134,10 @@ export class ShipCockpitScene implements Scene {
     const rand = lcgRand(99);
     this.gaugeBtns = [
       ...buildZone(rand, GAUGE_LEFT_START,  GAUGE_LEFT_END,  [3, 4]),
-      ...buildZone(rand, GAUGE_MID_START,   GAUGE_MID_END,   [3, 4]),
       ...buildZone(rand, GAUGE_RIGHT_START, GAUGE_RIGHT_END, [3, 4]),
     ];
-    // Dense panels: cols 0–11 (left) and 28–39 (right), 4 non-action rows
-    this.leftBtns  = buildZone(rand, 0,                 LEFT_PANEL_W - 1, [0, 1, 2, 3]);
+    // Left panel buttons fill cols 0–8 (fewer than radar width); right fills 28–39
+    this.leftBtns  = buildZone(rand, 0,                 LEFT_BTN_END,     [0, 1, 2, 3]);
     this.rightBtns = buildZone(rand, RIGHT_PANEL_START, 39,               [0, 1, 2, 3]);
 
     // Radar contacts — bounce at boundaries so they never teleport
@@ -229,7 +225,7 @@ export class ShipCockpitScene implements Scene {
         this.tickerAccum -= SCROLL_MS;
         this.tickerScroll++;
         const msg = TICKER_MESSAGES[this.msgIdx];
-        if (this.tickerScroll >= msg.length + TICKER_SPLIT - 1) {
+        if (this.tickerScroll >= msg.length + TICKER_W - 1) {
           this.tickerScroll = 0;
           this.msgIdx = (this.msgIdx + 1) % TICKER_MESSAGES.length;
           this.tickerPause = 500;
@@ -373,6 +369,10 @@ export class ShipCockpitScene implements Scene {
       dockFg = 'black';
     }
     writeText(buffer, bottomBot, RIGHT_PANEL_START, this.centerPad('DOCK', RIGHT_PANEL_W), dockFg, dockBg);
+
+    // Speaker/CLEAR indicator in radar zone between TRAVEL and DOCK
+    const speakerW = RADAR_END - RADAR_START;   // 14
+    writeText(buffer, bottomBot, RADAR_START, this.centerPad('◁ CLEAR', speakerW), 'white', 'bright-black');
   }
 
   private renderRadar(buffer: CharBuffer, bottomTop: number, radarRows: number): void {
@@ -386,14 +386,10 @@ export class ShipCockpitScene implements Scene {
 
   private renderTicker(buffer: CharBuffer, row: number): void {
     const msg = TICKER_MESSAGES[this.msgIdx];
-    for (let c = 0; c < TICKER_SPLIT; c++) {
-      const charIdx = this.tickerScroll - TICKER_SPLIT + 1 + c;
+    for (let c = 0; c < TICKER_W; c++) {
+      const charIdx = this.tickerScroll - TICKER_W + 1 + c;
       const ch = (charIdx >= 0 && charIdx < msg.length) ? msg[charIdx] : ' ';
       buffer[row][c] = { char: ch, fg: 'white', bg: 'black' };
-    }
-    const rightText = ' ◁ CLEAR      ';
-    for (let c = 0; c < TICKER_RIGHT_W; c++) {
-      buffer[row][TICKER_SPLIT + c] = { char: rightText[c] ?? ' ', fg: 'white', bg: 'bright-black' };
     }
   }
 
