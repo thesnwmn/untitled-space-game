@@ -178,7 +178,9 @@ export class Game {
         this.player.addFuel(litres);
         this.goToStation();
       },
-      () => this.goToTrader(), () => this.goToMissionBoard(), () => this.goToTakeOffOrUndock(),
+      () => this.goToTrader(), () => this.goToMissionBoard(),
+      () => this.goToStation(),
+      () => this.goToTakeOffOrUndock(),
       () => this.goToGlobalMenu(),
     );
   }

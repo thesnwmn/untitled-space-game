@@ -19,13 +19,6 @@ See `docs/features/025-overhaul-star-field-display.md` for the full spec.
 
 ---
 
-### 041 · Station Mission Actions
-
-Add COLLECT and DELIVER mission items to `StationMenuScene` (above normal options, with a separator). Show mission items distinctly in `CargoScene` (bright-yellow, separate section). Complete deliveries with a reward modal.
-See `docs/features/041-station-mission-actions.md` for the full spec.
-
----
-
 ### 043 · Knowledge Base — Discovery
 
 The game silently records visited systems and destinations as the player travels. On entering a system the names of its destinations and direct jump-route neighbours are noted. On docking, the destination is marked fully visited. NPC mention hooks are defined for future use. Data only — no UI screens.
