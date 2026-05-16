@@ -3,6 +3,7 @@ import { StoryScene } from './scenes/story-scene';
 import { StationMenuScene } from './scenes/station-menu-scene';
 import { TraderScene } from './scenes/trader-scene';
 import { MissionBoardScene } from './scenes/mission-board-scene';
+import { MissionDetailScene } from './scenes/mission-detail-scene';
 import { ShipCockpitScene } from './scenes/ship-cockpit-scene';
 import { CargoScene } from './scenes/cargo-scene';
 import { TravelMenuScene } from './scenes/travel-menu-scene';
@@ -16,16 +17,23 @@ import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animat
 import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
-import type { TraderStockEntry } from './world/types';
-import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity } from './world/world-data';
+import type { TraderStockEntry, MissionSpec } from './world/types';
+import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld } from './world/world-data';
 import { PlayerState } from './player-state';
 import { FUEL_PER_LY } from './constants';
+import { generateMissions } from './mission-generator';
 
 const MAX_DT = 100;
 const STOCK_TTL_MS = 2 * 60 * 1000; // 2 minutes
+const MISSION_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 interface StockCache {
   entries: TraderStockEntry[];
+  generatedAt: number;
+}
+
+interface MissionBoardCache {
+  specs: MissionSpec[];
   generatedAt: number;
 }
 
@@ -36,6 +44,7 @@ export class Game {
   private readonly player: PlayerState;
   private currentScene: Scene;
   private readonly traderStockCache = new Map<string, StockCache>();
+  private readonly missionBoardCache = new Map<string, MissionBoardCache>();
 
   constructor(renderer: Renderer, input: InputHandler, context: GameContext) {
     this.renderer = renderer;
@@ -90,6 +99,20 @@ export class Game {
     }));
     this.traderStockCache.set(destinationId, { entries, generatedAt: now });
     return entries;
+  }
+
+  private getOrCreateMissionBoard(destinationId: string): MissionSpec[] {
+    const now = Date.now();
+    const cached = this.missionBoardCache.get(destinationId);
+    if (cached && now - cached.generatedAt < MISSION_TTL_MS) {
+      return cached.specs;
+    }
+    const destination = getDestination(destinationId)!;
+    const worldData = getWorld();
+    const seed = Math.floor(Math.random() * 0xFFFFFFFF);
+    const specs = generateMissions(destination, worldData, seed);
+    this.missionBoardCache.set(destinationId, { specs, generatedAt: now });
+    return specs;
   }
 
   private onBuy(commodityId: string, qty: number, traderStock: TraderStockEntry[]): void {
@@ -190,10 +213,32 @@ export class Game {
   }
 
   private goToMissionBoard(): void {
+    const destinationId = this.player.destinationId!;
     this.currentScene = new MissionBoardScene(
-      this.input, this.context, this.player, this.player.destinationId!,
-      () => this.goToStation(), () => this.goToShip(),
+      this.input, this.context, this.player, destinationId,
+      () => this.getOrCreateMissionBoard(destinationId),
+      (spec) => this.goToMissionDetail(spec, destinationId),
+      () => this.goToStation(),
+      () => this.goToShip(),
     );
+  }
+
+  private goToMissionDetail(spec: MissionSpec, boardDestinationId: string): void {
+    this.currentScene = new MissionDetailScene(
+      this.input, this.context, this.player, spec,
+      (giveItemNow) => this.onMissionAccepted(spec, giveItemNow, boardDestinationId),
+      () => this.goToMissionBoard(),
+    );
+  }
+
+  private onMissionAccepted(spec: MissionSpec, giveItemNow: boolean, boardDestinationId: string): void {
+    const cached = this.missionBoardCache.get(boardDestinationId);
+    if (cached) {
+      const idx = cached.specs.findIndex(s => s.id === spec.id);
+      if (idx >= 0) cached.specs.splice(idx, 1);
+    }
+    this.player.acceptMission(spec, giveItemNow);
+    this.goToMissionBoard();
   }
 
   private goToShip(): void {

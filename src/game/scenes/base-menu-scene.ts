@@ -306,6 +306,11 @@ export abstract class BaseMenuScene implements Scene {
         } else {
           writeText(buffer, row, 3 + iconLen, item.label.slice(0, maxWidth - 1 - iconLen), cursorFg, 'black');
         }
+        for (let d = 0; d < (item.details?.length ?? 0); d++) {
+          if (row + 1 + d <= lastContentRow) {
+            writeText(buffer, row + 1 + d, 2, ('  ' + item.details![d]).slice(0, maxWidth), 'bright-black', 'black');
+          }
+        }
       } else if (item.info !== undefined) {
         const prefix = isCursor ? '> ' : '  ';
         const dotLen = Math.max(1, maxWidth - 2 - item.label.length - 2 - item.info.length);

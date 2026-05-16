@@ -14,6 +14,30 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 038 · Mission Board Live — DONE
+
+**Built:**
+- `src/game/scenes/mission-board-scene.ts` — complete rewrite; now accepts `getMissions: () => MissionSpec[]` and `onMissionSelected` callbacks; renders `[D]`/`[S]` type icons in `bright-yellow`, reward in `bright-green`, giver name as details sub-line in `bright-black`; empty board shows "NO MISSIONS AVAILABLE" (disabled row)
+- `src/game/scenes/mission-detail-scene.ts` — new `MissionDetailScene` extending `BaseMenuScene`; displays full mission info (type, giver + optional faction, pickup/deliver, weight cargo check, word-wrapped description, reward); ACCEPT/BACK nav computed from `canAcceptMission`; `giveItemNow` passed to `onAccept` callback
+- `src/game/scenes/base-menu-scene.ts` — minor patch: icon items now also render `details` sub-lines (previously the `details` field was ignored when an `icon` was present)
+- `src/game/game.ts` — adds `missionBoardCache` (15-minute TTL, keyed by destination ID); `getOrCreateMissionBoard()` generates via `MissionGenerator` on cache miss; `goToMissionBoard()` updated to pass live callbacks; new `goToMissionDetail()` and `onMissionAccepted()` methods (splice accepted spec from cache, call `player.acceptMission`, return to board)
+- `src/game/scenes/mission-board-scene.test.ts` — complete rewrite: 26 tests covering empty board, populated board icon/reward/giver rendering, cursor navigation, SELECT → onMissionSelected, nav button wiring, touch hit-testing
+- `src/game/scenes/mission-detail-scene.test.ts` — new: 24 tests covering delivery/supply rendering, cargo check colours, faction display, accept/reject paths, nav button wiring
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 619 passed, 1 skipped (34 test files)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Start the game (`npm run dev`) and progress through story to a station with a mission board (e.g. Elysium Station)
+2. Select MISSION BOARD from the hub — confirm a live list of 3–6 missions appears with `[D]`/`[S]` icons, titles, CR rewards, and giver names as sub-lines
+3. Select a mission — confirm the detail scene shows type, giver (with faction if present), pickup/deliver locations, weight check in green/red, description, reward, and `[1] ACCEPT  [2] BACK` footer
+4. Accept a mission — confirm returning to the board shows that mission removed from the list; confirm `player.activeMissions` has one entry
+5. Fill cargo hold near capacity and view a heavy delivery mission — confirm weight shows `✗` in red, ACCEPT is absent from the footer, and reason `[!] Insufficient cargo space` appears in content
+
+---
+
 ### 037 · Mission Foundation — DONE
 
 **Built:**
