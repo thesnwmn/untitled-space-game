@@ -53,7 +53,7 @@ const HUB_COL = 17;
 const deliverySpec: MissionSpec = {
   id: 'test-d1',
   type: 'delivery',
-  title: 'Deliver: Encrypted Core',
+  title: 'Encrypted Core',
   description: 'A secure package needs delivery.',
   reward: 500,
   issuingDestinationId: 'elysium-station',
@@ -76,7 +76,7 @@ const deliverySpecInSystem: MissionSpec = {
 const supplySpec: MissionSpec = {
   id: 'test-s1',
   type: 'supply',
-  title: 'Supply Run: Mars Anchor',
+  title: 'Mars Anchor',
   description: 'Mars Anchor needs supplies urgently.',
   reward: 300,
   issuingDestinationId: 'elysium-station',
@@ -176,7 +176,7 @@ describe('MissionDetailScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, DETAIL_START)).toContain('[D]');
-      expect(rowText(buf, DETAIL_START)).toContain('Deliver: Encrypted Core');
+      expect(rowText(buf, DETAIL_START)).toContain('Encrypted Core');
       expect(buf[DETAIL_START].find(c => c.char === '[')?.fg).toBe('bright-yellow');
     });
 

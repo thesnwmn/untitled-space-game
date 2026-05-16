@@ -55,7 +55,7 @@ function makeMissions(count = 3): MissionSpec[] {
     {
       id: 'm-001',
       type: 'delivery',
-      title: 'Deliver: Test Package',
+      title: 'Test Package',
       description: 'A test delivery.',
       reward: 500,
       issuingDestinationId: 'elysium-station',
@@ -68,7 +68,7 @@ function makeMissions(count = 3): MissionSpec[] {
     {
       id: 'm-002',
       type: 'supply',
-      title: 'Supply Run: Sol Station',
+      title: 'Sol Station',
       description: 'Supplies needed.',
       reward: 300,
       issuingDestinationId: 'elysium-station',
@@ -79,7 +79,7 @@ function makeMissions(count = 3): MissionSpec[] {
     {
       id: 'm-003',
       type: 'delivery',
-      title: 'Deliver: Emergency Parts',
+      title: 'Emergency Parts',
       description: 'Urgent delivery.',
       reward: 700,
       issuingDestinationId: 'elysium-station',
@@ -193,7 +193,7 @@ describe('MissionBoardScene', () => {
       const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, ITEM_START)).toContain('Deliver: Test Package');
+      expect(rowText(buf, ITEM_START)).toContain('Test Package');
     });
 
     it('renders reward in bright-green', () => {
