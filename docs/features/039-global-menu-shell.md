@@ -1,6 +1,4 @@
-# Feature · Global Menu Shell
-
-> **Number TBD** — to be assigned and sequenced by the Planner. Must be built **before** feature 039.
+# Feature 039 · Global Menu Shell
 
 ## Goal
 

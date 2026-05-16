@@ -1,8 +1,8 @@
-# Feature 039 · Global Menu · Mission Log
+# Feature 040 · Global Menu · Mission Log
 
-> **Revised spec.** The original 039 planned a standalone tabbed `GlobalMenuScene`. With the Global Menu Shell feature now establishing the page-based navigation infrastructure, 039 instead adds a `MISSIONS` entry to that shell and implements the Mission Log as a dedicated scene. The tabbed layout and SHIP / PLAYER / OPTIONS placeholder tabs are removed.
+> **Prerequisite**: feature 039 (Global Menu Shell) must be built first.
 >
-> **Prerequisite**: the Global Menu Shell feature must be built first.
+> **Note**: this spec replaces the original feature 039 (tabbed GlobalMenuScene). The mission log is now a dedicated scene added as an entry to the global menu shell; the tabbed layout and placeholder SHIP / PLAYER / OPTIONS tabs are removed.
 
 ## Goal
 

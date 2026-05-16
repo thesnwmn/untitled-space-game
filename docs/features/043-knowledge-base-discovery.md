@@ -1,6 +1,6 @@
-# Feature · Knowledge Base — Discovery
+# Feature 043 · Knowledge Base — Discovery
 
-> **Number TBD** — to be assigned and sequenced by the Planner. Depends on the Global Menu Shell feature. Must be built before the Knowledge Base Screens feature.
+> **Prerequisites**: feature 039 (Global Menu Shell) must be built first. Feature 044 (Knowledge Base Screens) depends on this feature.
 
 ## Goal
 
