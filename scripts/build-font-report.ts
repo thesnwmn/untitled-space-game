@@ -72,7 +72,8 @@ const GRID_CSS = `
     margin: 0;
     padding: 0;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 1em;
+    font-size: 1.4em;
+    line-height: 1;
     white-space: pre;
   }
 
