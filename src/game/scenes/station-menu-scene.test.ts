@@ -81,7 +81,7 @@ function makeScene(
   const player = makePlayer({ credits });
   // Consume fuel to reach the desired fuelL (player starts at full capacity 100)
   if (fuelL < fuelCapacityL) player.consumeFuel(fuelCapacityL - fuelL);
-  return new StationMenuScene(input, ctx, player, 'elysium-station', onRefuel, onTrader, onMissionBoard, onShip);
+  return new StationMenuScene(input, ctx, player, 'elysium-station', onRefuel, onTrader, onMissionBoard, onShip, vi.fn());
 }
 
 // ── tests ─────────────────────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ describe('StationMenuScene', () => {
     it('does not show TRADER item when amenities.trader is false', () => {
       const input = new MockInputHandler();
       // tycho-orbital: trader=false; only MISSION BOARD
-      const scene = new StationMenuScene(input, keyboardContext, makePlayer({ destinationId: 'tycho-orbital' }), 'tycho-orbital', vi.fn(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new StationMenuScene(input, keyboardContext, makePlayer({ destinationId: 'tycho-orbital' }), 'tycho-orbital', vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // First item should be MISSION BOARD
@@ -431,7 +431,7 @@ describe('StationMenuScene', () => {
       const player = makePlayer({ destinationId });
       return new StationMenuScene(
         input, keyboardContext, player, destinationId,
-        vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
     }
 

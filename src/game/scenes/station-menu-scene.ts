@@ -20,6 +20,7 @@ export class StationMenuScene extends BaseMenuScene {
     onTrader: () => void,
     onMissionBoard: () => void,
     onShip: () => void,
+    onMenu: () => void,
   ) {
     const dest = getDestination(destinationId)!;
     const items: MenuItemDef[] = [];
@@ -57,6 +58,7 @@ export class StationMenuScene extends BaseMenuScene {
     this.onShip = onShip;
     this.onRefuel = onRefuel;
     this.fuelItemIdx = fuelIdx;
+    this.onMenuCallback = onMenu;
   }
 
   protected override activateCurrent(): void {

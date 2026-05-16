@@ -92,6 +92,7 @@ function makeScene(
     opts.onSell ?? vi.fn(),
     opts.onHub ?? vi.fn(),
     opts.onUndock ?? vi.fn(),
+    vi.fn(),
   );
 }
 
@@ -202,7 +203,7 @@ describe('TraderScene', () => {
       player.addCargo('rations', 3); // rations basePrice=60 per unit
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
-        makeStock(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+        makeStock(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
@@ -281,7 +282,7 @@ describe('TraderScene', () => {
       player.addCargo('rations', 3);
       new TraderScene(
         input, keyboardContext, player, 'elysium-station',
-        makeStock(), vi.fn(), onSell, vi.fn(), vi.fn(),
+        makeStock(), vi.fn(), onSell, vi.fn(), vi.fn(), vi.fn(),
       );
       input.triggerAction('RIGHT');
       input.triggerAction('SELECT'); // opens modal — initial qty=3 (full hold)
@@ -412,7 +413,7 @@ describe('TraderScene', () => {
       const player = makePlayer({ credits: 50 });
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
-        [{ commodityId: 'iron-ore', qty: 5 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+        [{ commodityId: 'iron-ore', qty: 5 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -426,7 +427,7 @@ describe('TraderScene', () => {
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
         [{ commodityId: 'iron-ore', qty: 5 }, { commodityId: 'rations', qty: 8 }],
-        vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -442,7 +443,7 @@ describe('TraderScene', () => {
       const player = makePlayer({ credits: 50 });
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
-        [{ commodityId: 'iron-ore', qty: 5 }], onBuy, vi.fn(), vi.fn(), vi.fn(),
+        [{ commodityId: 'iron-ore', qty: 5 }], onBuy, vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
@@ -460,7 +461,7 @@ describe('TraderScene', () => {
       const player = makePlayer({ credits: 50 });
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
-        [{ commodityId: 'iron-ore', qty: 5 }], onBuy, vi.fn(), vi.fn(), vi.fn(),
+        [{ commodityId: 'iron-ore', qty: 5 }], onBuy, vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);

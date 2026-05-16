@@ -106,6 +106,7 @@ function makeScene(
     onMissionSelected,
     onHub,
     onUndock,
+    vi.fn(),
   );
 }
 

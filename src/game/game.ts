@@ -1,4 +1,5 @@
 import { MainMenuScene } from './scenes/main-menu-scene';
+import { GlobalMenuScene, type GlobalMenuEntry } from './scenes/global-menu-scene';
 import { StoryScene } from './scenes/story-scene';
 import { StationMenuScene } from './scenes/station-menu-scene';
 import { TraderScene } from './scenes/trader-scene';
@@ -43,6 +44,7 @@ export class Game {
   private readonly context: GameContext;
   private readonly player: PlayerState;
   private currentScene: Scene;
+  private sceneBeforeMenu: Scene | null = null;
   private readonly traderStockCache = new Map<string, StockCache>();
   private readonly missionBoardCache = new Map<string, MissionBoardCache>();
 
@@ -176,6 +178,7 @@ export class Game {
         this.goToStation();
       },
       () => this.goToTrader(), () => this.goToMissionBoard(), () => this.goToTakeOffOrUndock(),
+      () => this.goToGlobalMenu(),
     );
   }
 
@@ -209,6 +212,7 @@ export class Game {
       (commodityId, qty) => this.onBuy(commodityId, qty, stock),
       (commodityId, qty) => this.onSell(commodityId, qty, stock),
       () => this.goToStation(), () => this.goToShip(),
+      () => this.goToGlobalMenu(),
     );
   }
 
@@ -220,6 +224,7 @@ export class Game {
       (spec) => this.goToMissionDetail(spec, destinationId),
       () => this.goToStation(),
       () => this.goToShip(),
+      () => this.goToGlobalMenu(),
     );
   }
 
@@ -247,13 +252,38 @@ export class Game {
     this.currentScene = new ShipCockpitScene(
       this.input, this.context, this.player,
       () => this.goToTravelMenu(), () => this.goToLandOrDock(), () => this.goToCargo(),
+      () => this.goToGlobalMenu(),
     );
   }
 
   private goToCargo(): void {
     this.currentScene = new CargoScene(
       this.input, this.context, this.player, () => this.goToShip(),
+      () => this.goToGlobalMenu(),
     );
+  }
+
+  private buildMenuEntries(): GlobalMenuEntry[] {
+    return [];
+  }
+
+  private goToGlobalMenu(): void {
+    this.sceneBeforeMenu = this.currentScene;
+    this.currentScene = new GlobalMenuScene(
+      this.input, this.context, this.player,
+      this.buildMenuEntries(),
+      () => this.returnFromMenu(),
+    );
+  }
+
+  private returnFromMenu(): void {
+    const prior = this.sceneBeforeMenu;
+    this.sceneBeforeMenu = null;
+    if (prior !== null) {
+      this.currentScene = prior;
+    } else {
+      this.goToShip();
+    }
   }
 
   private goToTravelMenu(): void {
