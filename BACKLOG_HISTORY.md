@@ -14,6 +14,33 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 037 · Mission Foundation — DONE
+
+**Built:**
+- `src/game/world/types.ts` — new types: `MissionType`, `MissionStatus`, `DeliveryMissionSpec`, `SupplyMissionSpec`, `MissionBase`, `MissionSpec` (discriminated union), `ActiveMission`, `MissionItem`, `DeliveryItem`, `NpcNames`; `WorldData` gains `deliveryItems` and `npcNames` fields
+- `docs/world/delivery-items.md` — 14 delivery items, 5–200 kg (data cores, medical supplies, machinery parts, etc.)
+- `docs/world/npc-names.md` — 8 special names, 14 first names, 14 last names
+- `src/game/world/world-parser.ts` — parses `delivery-items.md` and `npc-names.md` into `WorldData`
+- `src/game/world/world-data.ts` — `getDeliveryItems()` and `getNpcNames()` getters
+- `src/game/mission-generator.ts` — `generateMissions(destination, worldData, seed)`: seeded LCG (same pattern as Starfield), returns 3–6 `MissionSpec` objects deterministically; mixes delivery and supply missions; giver names are special ~30% of the time
+- `src/game/player-state.ts` — `activeMissions`, `missionItems`, `missionItemsWeightKg`; `cargoWeightKg` includes mission items; `acceptMission`, `collectMissionItem`, `completeMission`, `cancelMission`, `getMissionsForPickup`, `getMissionsForDelivery`; pure exported functions `getMissionStatus` and `canAcceptMission`
+- `src/game/mission-generator.test.ts` — 8 new tests covering structure, delivery/supply shapes, determinism, reward values
+- `src/game/player-state.test.ts` — 41 new tests covering all mission methods, status transitions, capacity checks
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 590 passed, 1 skipped (33 test files)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+
+This feature adds no UI — it is backend data and logic only. Verify via unit tests:
+1. `npm test` — confirm all tests pass, including `mission-generator.test.ts` and the mission sections of `player-state.test.ts`
+2. Inspect `docs/world/delivery-items.md` and `docs/world/npc-names.md` to confirm seed world data is present
+3. For manual inspection: open browser console after `npm run dev`, instantiate `generateMissions` via the module loader to confirm deterministic output for a given seed
+
+---
+
 ### 036 · Cockpit Ship View — DONE
 
 **Built:**
