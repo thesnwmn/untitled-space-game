@@ -43,9 +43,13 @@ const keyboardContext: GameContext = {
 
 const DETAIL_START = 6; // CONTENT_TOP (3) + 3 = 6
 const FOOTER_ROW = 29;
-const ACCEPT_COL = 3; // "[1] ACCEPT" starts at col 3
+// Items start at CONTENT_TOP + 3 + DETAIL_SPACER_LINES = 3 + 3 + 16 = 22
+const ITEMS_START = 22;
+// Nav footer: "[1] UNDOCK::[2] HUB::..."
+const UNDOCK_COL = 3;
+const HUB_COL = 17;
 
-// Delivery mission where pickup === issuing destination
+// Delivery mission — pickup === issuing destination (same station)
 const deliverySpec: MissionSpec = {
   id: 'test-d1',
   type: 'delivery',
@@ -60,11 +64,12 @@ const deliverySpec: MissionSpec = {
   deliveryDestinationId: 'ceti-landfall',
 };
 
-// Delivery mission with faction
-const deliverySpecWithFaction: MissionSpec = {
+// Delivery mission with faction and in-system delivery destination
+const deliverySpecInSystem: MissionSpec = {
   ...deliverySpec,
-  id: 'test-d2',
+  id: 'test-d3',
   giverFactionId: 'terran-union',
+  deliveryDestinationId: 'mars-anchor', // same system (sol) but different destination
 };
 
 // Supply mission
@@ -87,7 +92,7 @@ const supplySpec: MissionSpec = {
 const heavyDeliverySpec: MissionSpec = {
   ...deliverySpec,
   id: 'test-d-heavy',
-  itemWeightKg: 9999, // exceeds any ship cargo
+  itemWeightKg: 9999,
 };
 
 function makeScene(
@@ -95,30 +100,84 @@ function makeScene(
   spec: MissionSpec,
   onAccept = vi.fn(),
   onBack = vi.fn(),
-  cargoKg = 0,
+  onHub = vi.fn(),
+  onUndock = vi.fn(),
 ) {
   const player = makePlayer();
-  // Add cargo to simulate partial hold usage if needed
-  if (cargoKg > 0) {
-    // rations = 1 kg each
-    player.addCargo('rations', cargoKg);
-  }
-  return new MissionDetailScene(input, keyboardContext, player, spec, onAccept, onBack);
+  return new MissionDetailScene(input, keyboardContext, player, spec, onAccept, onBack, onHub, onUndock);
 }
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
 describe('MissionDetailScene', () => {
-  describe('render — delivery mission', () => {
-    it('renders title with [D] icon in bright-yellow', () => {
+  describe('render — layout and chrome', () => {
+    it('renders MISSION BOARD title at row 3', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, 3)).toContain('MISSION BOARD');
+    });
+
+    it('footer shows UNDOCK and HUB nav buttons', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, FOOTER_ROW)).toContain('UNDOCK');
+      expect(rowText(buf, FOOTER_ROW)).toContain('HUB');
+      expect(rowText(buf, FOOTER_ROW)).not.toContain('ACCEPT');
+      expect(rowText(buf, FOOTER_ROW)).not.toContain('BACK');
+    });
+
+    it('ACCEPT MISSION and BACK items appear below detail content', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEMS_START)).toContain('ACCEPT MISSION');
+      expect(rowText(buf, ITEMS_START + 1)).toContain('BACK');
+    });
+
+    it('ACCEPT MISSION item is disabled with reason when player cannot accept', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, heavyDeliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEMS_START)).toContain('ACCEPT MISSION');
+      // Reason sub-line appears below ACCEPT MISSION
+      expect(rowText(buf, ITEMS_START + 1)).toContain('Insufficient cargo space');
+      // BACK item is below the reason
+      expect(rowText(buf, ITEMS_START + 2)).toContain('BACK');
+    });
+
+    it('cursor starts on ACCEPT when player can accept', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(buf[ITEMS_START][2].char).toBe('>');
+    });
+
+    it('cursor starts on BACK when ACCEPT is disabled', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, heavyDeliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // With disabled ACCEPT (2 rows: label + reason), BACK is at ITEMS_START + 2
+      expect(buf[ITEMS_START + 2][2].char).toBe('>');
+    });
+  });
+
+  describe('render — delivery mission detail', () => {
+    it('renders [D] icon and title in bright-yellow', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, deliverySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, DETAIL_START)).toContain('[D]');
       expect(rowText(buf, DETAIL_START)).toContain('Deliver: Encrypted Core');
-      const cell = buf[DETAIL_START].find(c => c.char === '[');
-      expect(cell?.fg).toBe('bright-yellow');
+      expect(buf[DETAIL_START].find(c => c.char === '[')?.fg).toBe('bright-yellow');
     });
 
     it('renders giver name in bright-black', () => {
@@ -133,14 +192,13 @@ describe('MissionDetailScene', () => {
 
     it('renders giver faction in brackets when present', () => {
       const input = new MockInputHandler();
-      const scene = makeScene(input, deliverySpecWithFaction);
+      const scene = makeScene(input, deliverySpecInSystem);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Faction "Terran Union" appears in brackets
       expect(rowText(buf, DETAIL_START + 1)).toContain('[Terran Union]');
     });
 
-    it('renders pickup and deliver destinations', () => {
+    it('renders pickup and deliver labels', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, deliverySpec);
       const buf = makeBuffer(40, 30);
@@ -150,18 +208,57 @@ describe('MissionDetailScene', () => {
       expect(allText).toContain('Deliver:');
     });
 
-    it('renders weight check in bright-green when cargo is sufficient', () => {
+    it('pickup destination is bright-green when it is the current destination', () => {
       const input = new MockInputHandler();
-      const scene = makeScene(input, deliverySpec); // player has 2000 kg cap, 0 used
+      // player is at elysium-station; pickup is elysium-station
+      const scene = makeScene(input, deliverySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Find the row with Weight:
+      // Find the Pickup: row
+      const pickupRow = Array.from({ length: 30 }, (_, r) => r)
+        .find(r => rowText(buf, r).includes('Pickup:'))!;
+      expect(pickupRow).toBeDefined();
+      // Name starts after "Pickup:  " (9 chars from col 2 = col 11)
+      const nameStart = 2 + 'Pickup:  '.length;
+      expect(buf[pickupRow][nameStart].fg).toBe('bright-green');
+    });
+
+    it('delivery destination is bright-yellow when it is in the same system', () => {
+      const input = new MockInputHandler();
+      // player is in sol; mars-anchor is in sol but not current destination
+      const scene = makeScene(input, deliverySpecInSystem);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Title row also contains "Deliver:", so match the label row specifically
+      const deliverRow = Array.from({ length: 30 }, (_, r) => r)
+        .find(r => rowText(buf, r).trimStart().startsWith('Deliver:') && !rowText(buf, r).includes('[D]'))!;
+      expect(deliverRow).toBeDefined();
+      const nameStart = 2 + 'Deliver: '.length;
+      expect(buf[deliverRow][nameStart].fg).toBe('bright-yellow');
+    });
+
+    it('delivery destination is white when in a different system', () => {
+      const input = new MockInputHandler();
+      // ceti-landfall is in tau-ceti, player is in sol
+      const scene = makeScene(input, deliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const deliverRow = Array.from({ length: 30 }, (_, r) => r)
+        .find(r => rowText(buf, r).trimStart().startsWith('Deliver:') && !rowText(buf, r).includes('[D]'))!;
+      expect(deliverRow).toBeDefined();
+      const nameStart = 2 + 'Deliver: '.length;
+      expect(buf[deliverRow][nameStart].fg).toBe('white');
+    });
+
+    it('renders weight check in bright-green when cargo is sufficient', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
       const weightRow = Array.from({ length: 30 }, (_, r) => r)
         .find(r => rowText(buf, r).includes('Weight:'))!;
       expect(weightRow).toBeDefined();
-      // The check mark (✓) should appear on that row in bright-green
       const checkCell = buf[weightRow].find(c => c.char === '✓');
-      expect(checkCell).toBeDefined();
       expect(checkCell?.fg).toBe('bright-green');
     });
 
@@ -174,7 +271,6 @@ describe('MissionDetailScene', () => {
         .find(r => rowText(buf, r).includes('Weight:'))!;
       expect(weightRow).toBeDefined();
       const xCell = buf[weightRow].find(c => c.char === '✗');
-      expect(xCell).toBeDefined();
       expect(xCell?.fg).toBe('red');
     });
 
@@ -199,45 +295,29 @@ describe('MissionDetailScene', () => {
       const firstNonSpace = buf[rewardRow].find(c => c.char !== ' ');
       expect(firstNonSpace?.fg).toBe('bright-green');
     });
-
-    it('shows reason in red when player cannot accept', () => {
-      const input = new MockInputHandler();
-      const scene = makeScene(input, heavyDeliverySpec);
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      const allText = Array.from({ length: 30 }, (_, r) => rowText(buf, r)).join('\n');
-      expect(allText).toContain('[!]');
-      expect(allText).toContain('Insufficient cargo space');
-    });
-
-    it('does not show reason when player can accept', () => {
-      const input = new MockInputHandler();
-      const scene = makeScene(input, deliverySpec);
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      const allText = Array.from({ length: 30 }, (_, r) => rowText(buf, r)).join('\n');
-      expect(allText).not.toContain('[!]');
-    });
   });
 
-  describe('render — supply mission', () => {
+  describe('render — supply mission detail', () => {
     it('renders [S] icon in bright-yellow', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, supplySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, DETAIL_START)).toContain('[S]');
-      const cell = buf[DETAIL_START].find(c => c.char === '[');
-      expect(cell?.fg).toBe('bright-yellow');
+      expect(buf[DETAIL_START].find(c => c.char === '[')?.fg).toBe('bright-yellow');
     });
 
-    it('renders delivery location', () => {
+    it('delivery destination is bright-yellow when in same system', () => {
       const input = new MockInputHandler();
+      // mars-anchor is in sol, same as player
       const scene = makeScene(input, supplySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const allText = Array.from({ length: 30 }, (_, r) => rowText(buf, r)).join('\n');
-      expect(allText).toContain('Deliver to:');
+      const deliverRow = Array.from({ length: 30 }, (_, r) => r)
+        .find(r => rowText(buf, r).includes('Deliver to:'))!;
+      expect(deliverRow).toBeDefined();
+      const nameStart = 2 + 'Deliver to: '.length;
+      expect(buf[deliverRow][nameStart].fg).toBe('bright-yellow');
     });
 
     it('renders requirements', () => {
@@ -251,54 +331,77 @@ describe('MissionDetailScene', () => {
     });
   });
 
-  describe('render — nav footer', () => {
-    it('shows ACCEPT and BACK when player can accept', () => {
-      const input = new MockInputHandler();
-      const scene = makeScene(input, deliverySpec);
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, FOOTER_ROW)).toContain('ACCEPT');
-      expect(rowText(buf, FOOTER_ROW)).toContain('BACK');
-    });
-
-    it('shows only BACK when player cannot accept', () => {
-      const input = new MockInputHandler();
-      const scene = makeScene(input, heavyDeliverySpec);
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(rowText(buf, FOOTER_ROW)).not.toContain('ACCEPT');
-      expect(rowText(buf, FOOTER_ROW)).toContain('BACK');
-    });
-  });
-
-  describe('keyboard navigation', () => {
-    it('NAV_1 calls onAccept with giveItemNow=true for delivery with pickup at issuer', () => {
+  describe('menu item interaction', () => {
+    it('SELECT on ACCEPT calls onAccept with giveItemNow=true for delivery at issuing dest', () => {
       const onAccept = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, deliverySpec, onAccept);
-      input.triggerAction('NAV_1');
+      // cursor starts on ACCEPT
+      input.triggerAction('SELECT');
       expect(onAccept).toHaveBeenCalledWith(true);
     });
 
-    it('NAV_1 calls onBack when player cannot accept', () => {
+    it('SELECT on ACCEPT calls onAccept with giveItemNow=false for supply', () => {
+      const onAccept = vi.fn();
+      const input = new MockInputHandler();
+      makeScene(input, supplySpec, onAccept);
+      input.triggerAction('SELECT');
+      expect(onAccept).toHaveBeenCalledWith(false);
+    });
+
+    it('SELECT on BACK calls onBack', () => {
+      const onBack = vi.fn();
+      const input = new MockInputHandler();
+      // Move cursor to BACK (index 1)
+      makeScene(input, deliverySpec, vi.fn(), onBack);
+      input.triggerAction('DOWN'); // moves cursor to BACK
+      input.triggerAction('SELECT');
+      expect(onBack).toHaveBeenCalledTimes(1);
+    });
+
+    it('when ACCEPT is disabled, cursor starts on BACK, SELECT calls onBack', () => {
       const onAccept = vi.fn();
       const onBack = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, heavyDeliverySpec, onAccept, onBack);
-      input.triggerAction('NAV_1');
+      // cursor is on BACK since ACCEPT is disabled
+      input.triggerAction('SELECT');
       expect(onAccept).not.toHaveBeenCalled();
       expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('NAV_2 calls onBack', () => {
-      const onBack = vi.fn();
+    it('input is silenced after selection', () => {
+      const onAccept = vi.fn();
       const input = new MockInputHandler();
-      makeScene(input, deliverySpec, vi.fn(), onBack);
-      input.triggerAction('NAV_2');
-      expect(onBack).toHaveBeenCalledTimes(1);
+      makeScene(input, deliverySpec, onAccept);
+      input.triggerAction('SELECT');
+      input.triggerAction('SELECT');
+      expect(onAccept).toHaveBeenCalledTimes(1);
     });
 
-    it('BACK calls onBack', () => {
+    it('tap on ACCEPT item row calls onAccept', () => {
+      const onAccept = vi.fn();
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec, onAccept);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(5, ITEMS_START);
+      expect(onAccept).toHaveBeenCalledWith(true);
+    });
+
+    it('tap on BACK item row calls onBack', () => {
+      const onBack = vi.fn();
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec, vi.fn(), onBack);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerTap(5, ITEMS_START + 1);
+      expect(onBack).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('keyboard nav actions', () => {
+    it('BACK key calls onBack', () => {
       const onBack = vi.fn();
       const input = new MockInputHandler();
       makeScene(input, deliverySpec, vi.fn(), onBack);
@@ -306,46 +409,51 @@ describe('MissionDetailScene', () => {
       expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('input is silenced after accepting', () => {
-      const onAccept = vi.fn();
+    it('NAV_1 calls onUndock', () => {
+      const onUndock = vi.fn();
       const input = new MockInputHandler();
-      makeScene(input, deliverySpec, onAccept);
+      makeScene(input, deliverySpec, vi.fn(), vi.fn(), vi.fn(), onUndock);
       input.triggerAction('NAV_1');
-      input.triggerAction('NAV_1');
-      expect(onAccept).toHaveBeenCalledTimes(1);
+      expect(onUndock).toHaveBeenCalledTimes(1);
     });
 
-    it('supply mission: NAV_1 calls onAccept with giveItemNow=false', () => {
-      const onAccept = vi.fn();
+    it('NAV_2 calls onHub', () => {
+      const onHub = vi.fn();
       const input = new MockInputHandler();
-      makeScene(input, supplySpec, onAccept);
+      makeScene(input, deliverySpec, vi.fn(), vi.fn(), onHub);
+      input.triggerAction('NAV_2');
+      expect(onHub).toHaveBeenCalledTimes(1);
+    });
+
+    it('NAV_1/NAV_2 are silenced after first call', () => {
+      const onUndock = vi.fn();
+      const input = new MockInputHandler();
+      makeScene(input, deliverySpec, vi.fn(), vi.fn(), vi.fn(), onUndock);
       input.triggerAction('NAV_1');
-      expect(onAccept).toHaveBeenCalledWith(false);
+      input.triggerAction('NAV_1');
+      expect(onUndock).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('touch navigation', () => {
-    it('tap ACCEPT button calls onAccept when player can accept', () => {
-      const onAccept = vi.fn();
+  describe('touch nav actions', () => {
+    it('tap on UNDOCK nav fires onUndock', () => {
+      const onUndock = vi.fn();
       const input = new MockInputHandler();
-      const scene = makeScene(input, deliverySpec, onAccept);
+      const scene = makeScene(input, deliverySpec, vi.fn(), vi.fn(), vi.fn(), onUndock);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(ACCEPT_COL, FOOTER_ROW);
-      expect(onAccept).toHaveBeenCalledWith(true);
+      input.triggerTap(UNDOCK_COL, FOOTER_ROW);
+      expect(onUndock).toHaveBeenCalledTimes(1);
     });
 
-    it('tap BACK button calls onBack', () => {
-      const onBack = vi.fn();
+    it('tap on HUB nav fires onHub', () => {
+      const onHub = vi.fn();
       const input = new MockInputHandler();
-      const scene = makeScene(input, deliverySpec, vi.fn(), onBack);
+      const scene = makeScene(input, deliverySpec, vi.fn(), vi.fn(), onHub);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // BACK is at position [2] when ACCEPT is present
-      // Find the BACK button col from the footer
-      const backCol = rowText(buf, FOOTER_ROW).indexOf('BACK') - 1; // col of [2] bracket
-      input.triggerTap(backCol, FOOTER_ROW);
-      expect(onBack).toHaveBeenCalledTimes(1);
+      input.triggerTap(HUB_COL, FOOTER_ROW);
+      expect(onHub).toHaveBeenCalledTimes(1);
     });
   });
 

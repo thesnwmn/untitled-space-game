@@ -228,6 +228,8 @@ export class Game {
       this.input, this.context, this.player, spec,
       (giveItemNow) => this.onMissionAccepted(spec, giveItemNow, boardDestinationId),
       () => this.goToMissionBoard(),
+      () => this.goToStation(),
+      () => this.goToShip(),
     );
   }
 

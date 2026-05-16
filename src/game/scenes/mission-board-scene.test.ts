@@ -183,9 +183,9 @@ describe('MissionBoardScene', () => {
       const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 1 (supply) is at ITEM_START + 2 (each mission takes 2 rows: title + giver)
-      expect(buf[ITEM_START + 2][4].char).toBe('S');
-      expect(buf[ITEM_START + 2][4].fg).toBe('bright-yellow');
+      // Mission 1 (supply) is at ITEM_START + 1 (each mission takes 1 row)
+      expect(buf[ITEM_START + 1][4].char).toBe('S');
+      expect(buf[ITEM_START + 1][4].fg).toBe('bright-yellow');
     });
 
     it('renders mission title', () => {
@@ -208,16 +208,6 @@ describe('MissionBoardScene', () => {
       expect(buf[ITEM_START][rewardStart].fg).toBe('bright-green');
     });
 
-    it('renders giver name as sub-line in bright-black', () => {
-      const input = new MockInputHandler();
-      const scene = makeScene(input, makeMissions());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      // Giver sub-line for mission 0 is at ITEM_START + 1
-      expect(rowText(buf, ITEM_START + 1)).toContain('John Doe');
-      expect(buf[ITEM_START + 1].find(c => c.char !== ' ')?.fg).toBe('bright-black');
-    });
-
     it('cursor starts on first mission', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, makeMissions());
@@ -229,14 +219,14 @@ describe('MissionBoardScene', () => {
   });
 
   describe('keyboard navigation', () => {
-    it('DOWN moves cursor from mission 0 to mission 1 (next title row)', () => {
+    it('DOWN moves cursor from mission 0 to mission 1', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, makeMissions());
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 1 is at ITEM_START + 2 (each item takes 2 rows)
-      expect(buf[ITEM_START + 2][2].char).toBe('>');
+      // Mission 1 is at ITEM_START + 1 (each item takes 1 row)
+      expect(buf[ITEM_START + 1][2].char).toBe('>');
     });
 
     it('UP from first mission wraps to last', () => {
@@ -245,8 +235,8 @@ describe('MissionBoardScene', () => {
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 2 (last) is at ITEM_START + 4
-      expect(buf[ITEM_START + 4][2].char).toBe('>');
+      // Mission 2 (last) is at ITEM_START + 2
+      expect(buf[ITEM_START + 2][2].char).toBe('>');
     });
 
     it('DOWN wraps from last mission back to first', () => {
@@ -313,16 +303,6 @@ describe('MissionBoardScene', () => {
       const input = new MockInputHandler();
       makeScene(input, missions, onMissionSelected);
       input.triggerTap(5, ITEM_START);
-      expect(onMissionSelected).toHaveBeenCalledWith(missions[0]);
-    });
-
-    it('tap on giver sub-line row also calls onMissionSelected', () => {
-      const onMissionSelected = vi.fn();
-      const missions = makeMissions();
-      const input = new MockInputHandler();
-      makeScene(input, missions, onMissionSelected);
-      // Sub-line of mission 0 is at ITEM_START + 1
-      input.triggerTap(5, ITEM_START + 1);
       expect(onMissionSelected).toHaveBeenCalledWith(missions[0]);
     });
 

@@ -37,7 +37,6 @@ export class MissionBoardScene extends BaseMenuScene {
         iconFg: 'bright-yellow' as const,
         info: `${m.reward} CR`,
         infoFg: 'bright-green' as const,
-        details: [m.giverName],
         action: () => onMissionSelected(m),
       }));
     }
