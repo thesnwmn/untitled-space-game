@@ -11,6 +11,8 @@ import type {
   Commodity,
   StoryBeat,
   GameSettings,
+  DeliveryItem,
+  NpcNames,
 } from './types';
 
 function parseFrontMatter(source: string): { data: Record<string, unknown>; content: string } {
@@ -43,6 +45,8 @@ export function parseWorldFiles(files: Record<string, string>): WorldData {
     factions: [],
     commodities: [],
     storyBeats: [],
+    deliveryItems: [],
+    npcNames: { special: [], firstNames: [], lastNames: [] },
   };
 
   for (const [path, content] of Object.entries(files)) {
@@ -69,6 +73,10 @@ export function parseWorldFiles(files: Record<string, string>): WorldData {
       world.storyBeats.push(parseStoryBeat(data, body));
     } else if (path === 'game-settings.md') {
       world.settings = parseSettings(data);
+    } else if (path === 'delivery-items.md') {
+      world.deliveryItems = parseDeliveryItems(data);
+    } else if (path === 'npc-names.md') {
+      world.npcNames = parseNpcNames(data);
     }
     // unknown paths silently skipped
   }
@@ -225,5 +233,23 @@ function parseSettings(data: { [key: string]: any }): GameSettings {
       destination: data.starting_location?.destination ?? '',
     },
     startingShip: data.starting_ship ?? '',
+  };
+}
+
+function parseDeliveryItems(data: { [key: string]: any }): DeliveryItem[] {
+  const list: any[] = data.delivery_items ?? [];
+  return list.map((item): DeliveryItem => ({
+    id: item.id,
+    name: item.name,
+    weightKg: item.weight_kg,
+  }));
+}
+
+function parseNpcNames(data: { [key: string]: any }): NpcNames {
+  const names = data.npc_names ?? {};
+  return {
+    special: names.special ?? [],
+    firstNames: names.first_names ?? [],
+    lastNames: names.last_names ?? [],
   };
 }

@@ -1,5 +1,5 @@
 import { getShip, computeCargoWeightKg } from './world/world-data';
-import type { CargoEntry } from './world/types';
+import type { CargoEntry, MissionSpec, ActiveMission, MissionItem, MissionStatus } from './world/types';
 
 interface PlayerStateInit {
   shipId: string;
@@ -7,6 +7,33 @@ interface PlayerStateInit {
   credits: number;
   systemId: string;
   destinationId: string | null;
+}
+
+export function getMissionStatus(mission: ActiveMission, player: PlayerState): MissionStatus {
+  if (mission.type === 'delivery') {
+    if (!mission.pickupComplete) return 'pending-pickup';
+    if (player.destinationId === mission.deliveryDestinationId) return 'ready-to-deliver';
+    return 'in-transit';
+  }
+  // supply mission
+  const hasAll = mission.requirements.every(req => {
+    const entry = player.cargoHold.find(e => e.commodityId === req.commodityId);
+    return entry !== undefined && entry.qty >= req.qty;
+  });
+  return hasAll ? 'ready-to-deliver' : 'needs-supplies';
+}
+
+export function canAcceptMission(
+  player: PlayerState,
+  spec: MissionSpec,
+): { ok: boolean; reason?: string } {
+  if (spec.type === 'delivery') {
+    const available = player.cargoCapacity - player.cargoWeightKg;
+    if (available < spec.itemWeightKg) {
+      return { ok: false, reason: 'Insufficient cargo space' };
+    }
+  }
+  return { ok: true };
 }
 
 export class PlayerState {
@@ -20,6 +47,8 @@ export class PlayerState {
   private _systemId: string;
   private _destinationId: string | null;
   private _cargoHold: CargoEntry[];
+  private _activeMissions: ActiveMission[];
+  private _missionItems: MissionItem[];
 
   constructor(init: PlayerStateInit) {
     const ship = getShip(init.shipId);
@@ -34,6 +63,8 @@ export class PlayerState {
     this._systemId = init.systemId;
     this._destinationId = init.destinationId;
     this._cargoHold = [];
+    this._activeMissions = [];
+    this._missionItems = [];
   }
 
   // Fuel
@@ -80,7 +111,13 @@ export class PlayerState {
     }
   }
 
-  get cargoWeightKg(): number { return computeCargoWeightKg(this._cargoHold); }
+  get missionItemsWeightKg(): number {
+    return this._missionItems.reduce((sum, item) => sum + item.weightKg, 0);
+  }
+
+  get cargoWeightKg(): number {
+    return computeCargoWeightKg(this._cargoHold) + this.missionItemsWeightKg;
+  }
 
   // Location
   get systemId(): string { return this._systemId; }
@@ -97,5 +134,63 @@ export class PlayerState {
   jumpTo(systemId: string): void {
     this._systemId = systemId;
     this._destinationId = null;
+  }
+
+  // Missions
+  get activeMissions(): readonly ActiveMission[] { return this._activeMissions; }
+  get missionItems(): readonly MissionItem[] { return this._missionItems; }
+
+  acceptMission(spec: MissionSpec, giveItemNow: boolean): void {
+    const mission: ActiveMission = {
+      ...spec,
+      acceptedAt: Date.now(),
+      pickupComplete: false,
+    };
+    this._activeMissions.push(mission);
+
+    if (spec.type === 'delivery' && giveItemNow) {
+      this._missionItems.push({
+        missionId: spec.id,
+        itemName: spec.itemName,
+        weightKg: spec.itemWeightKg,
+      });
+      mission.pickupComplete = true;
+    }
+  }
+
+  collectMissionItem(missionId: string): void {
+    const mission = this._activeMissions.find(m => m.id === missionId);
+    if (!mission || mission.type !== 'delivery') return;
+    mission.pickupComplete = true;
+    this._missionItems.push({
+      missionId: mission.id,
+      itemName: mission.itemName,
+      weightKg: mission.itemWeightKg,
+    });
+  }
+
+  completeMission(missionId: string): void {
+    this._activeMissions = this._activeMissions.filter(m => m.id !== missionId);
+    this._missionItems = this._missionItems.filter(i => i.missionId !== missionId);
+  }
+
+  cancelMission(missionId: string): void {
+    this._activeMissions = this._activeMissions.filter(m => m.id !== missionId);
+    this._missionItems = this._missionItems.filter(i => i.missionId !== missionId);
+  }
+
+  getMissionsForPickup(destinationId: string): ActiveMission[] {
+    return this._activeMissions.filter(
+      m => m.type === 'delivery' &&
+           m.pickupDestinationId === destinationId &&
+           !m.pickupComplete,
+    );
+  }
+
+  getMissionsForDelivery(destinationId: string): ActiveMission[] {
+    return this._activeMissions.filter(
+      m => m.deliveryDestinationId === destinationId &&
+           getMissionStatus(m, this) === 'ready-to-deliver',
+    );
   }
 }
