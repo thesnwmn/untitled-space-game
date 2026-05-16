@@ -75,13 +75,7 @@ const GRID_CSS = `
     font-size: 1em;
     white-space: pre;
   }
-  .font-grid pre span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2em;
-    height: 2em;
-  }
+
   .font-grid pre:hover {
     outline: 1px solid #ffff00;
     z-index: 1;
