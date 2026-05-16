@@ -4,20 +4,20 @@ import { Starfield } from './starfield';
 import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
 
-// Gauge strip column layout — symmetric with 1-col blank separators (cols 0–39, w=40)
-// L-btns: 0–2 | gap:3–5 | Fuel/Cargo: 6–16 | mid-btns: 17–22 | Shield/Hull: 23–33 | gap:34–36 | R-btns: 37–39
+// Gauge strip column layout — 1-col blank on each side of every gauge bar (cols 0–39, w=40)
+// L-btns: 0–4 | blank:5 | Fuel/Cargo: 6–16 | blank:17 | mid-btns: 18–21 | blank:22 | Shield/Hull: 23–33 | blank:34 | R-btns: 35–39
 const FUEL_LABEL_COL    = 6;
 const CARGO_LABEL_COL   = 6;
 const SHIELD_LABEL_COL  = 23;
 const HULL_LABEL_COL    = 23;
 const GAUGE_FILL_COUNT  = 10;
 
-// Gauge button zones — 3 outer cols each side; center gap filled with buttons
+// Gauge button zones — fill all cols except the 1-col blanks adjacent to each gauge
 const GAUGE_LEFT_START  = 0;
-const GAUGE_LEFT_END    = 2;   // 3 buttons: cols 0–2
-const GAUGE_MID_START   = 17;  // fill center gap: cols 17–22
-const GAUGE_MID_END     = 22;
-const GAUGE_RIGHT_START = 37;  // 3 buttons: cols 37–39
+const GAUGE_LEFT_END    = 4;   // cols 0–4
+const GAUGE_MID_START   = 18;  // cols 18–21 (between the two gauges)
+const GAUGE_MID_END     = 21;
+const GAUGE_RIGHT_START = 35;  // cols 35–39
 const GAUGE_RIGHT_END   = 39;
 
 // Bottom panel column layout — 1-col blank at 12 and 27 to match action row gaps

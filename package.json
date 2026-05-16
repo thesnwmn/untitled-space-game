@@ -9,7 +9,8 @@
     "build:docs": "bun scripts/build-docs.ts",
     "build:map": "bun scripts/build-map.ts",
     "build:landing": "bun scripts/build-landing.ts",
-    "build:all": "npm run build && npm run build:docs && npm run build:map && npm run build:landing",
+    "build:font-report": "bun scripts/build-font-report.ts",
+    "build:all": "npm run build && npm run build:docs && npm run build:map && npm run build:landing && npm run build:font-report",
     "preview": "vite preview",
     "test": "vitest run",
     "terminal": "bun terminal.ts"
