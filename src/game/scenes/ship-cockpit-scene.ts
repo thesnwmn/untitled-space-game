@@ -4,23 +4,32 @@ import { Starfield } from './starfield';
 import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
 
-// Gauge strip column layout (cols 0–39, w=40)
-// Left buttons: 0–5  |  F gauge: 6–16  |  Mid buttons: 17–20  |  S gauge: 21–31  |  Right buttons: 32–39
-const FUEL_LABEL_COL   = 6;
-const CARGO_LABEL_COL  = 6;
-const SHIELD_LABEL_COL = 21;
-const HULL_LABEL_COL   = 21;
-const GAUGE_FILL_COUNT = 10;
+// Gauge strip column layout — symmetric (cols 0–39, w=40)
+// Left buttons: 0–5  |  Fuel/Cargo: 6–16  |  Mid buttons: 17–22  |  Shield/Hull: 23–33  |  Right buttons: 34–39
+const FUEL_LABEL_COL    = 6;
+const CARGO_LABEL_COL   = 6;
+const SHIELD_LABEL_COL  = 23;
+const HULL_LABEL_COL    = 23;
+const GAUGE_FILL_COUNT  = 10;
+
+// Gauge button zones (cols inclusive)
+const GAUGE_LEFT_START  = 0;
+const GAUGE_LEFT_END    = 5;
+const GAUGE_MID_START   = 17;
+const GAUGE_MID_END     = 22;
+const GAUGE_RIGHT_START = 34;
+const GAUGE_RIGHT_END   = 39;
 
 // Bottom panel column layout
-const LEFT_PANEL_W   = 13;  // cols 0–12
-const RADAR_START    = 13;  // cols 13–26
-const RADAR_END      = 27;
-const RIGHT_PANEL_START = 27;  // cols 27–39
-const RIGHT_PANEL_W  = 13;
+const LEFT_PANEL_W      = 13;   // cols 0–12
+const RADAR_START       = 13;   // cols 13–26
+const RADAR_END         = 27;
+const RIGHT_PANEL_START = 27;   // cols 27–39
+const RIGHT_PANEL_W     = 13;
 
-// Ticker split
+// Ticker
 const TICKER_SPLIT = 27;
+const SCROLL_MS    = 200;   // ms per character scroll step (reduced speed)
 
 const TICKER_MESSAGES = [
   '> SYSTEM STATUS: ALL CLEAR',
@@ -35,6 +44,13 @@ const TICKER_MESSAGES = [
   '> TRANSPONDER HANDSHAKE: ACCEPTED',
 ];
 
+// Guaranteed single-column-wide chars only — avoids ambiguous-width Unicode issues
+const BUTTON_CHARS = ['■', '◆', '▪', '▶'] as const;
+const BUTTON_COLORS: Color[] = ['green', 'yellow', 'cyan', 'magenta', 'white', 'red'];
+
+// Single-column radar contact chars
+const RADAR_CHARS = ['◆', '*', '.', '+'] as const;
+
 function lcgRand(seed: number): () => number {
   let s = seed >>> 0;
   return () => {
@@ -45,8 +61,9 @@ function lcgRand(seed: number): () => number {
 
 interface Button {
   col: number;
-  row: number;   // gauge buttons: absolute row; panel buttons: relative to panel top
+  row: number;   // gauge: absolute; panel: relative to panel top
   char: string;
+  color: Color;
   phase: number;
   period: number;
   active: boolean;
@@ -57,35 +74,26 @@ interface RadarContact {
   y: number;
   vx: number;
   vy: number;
-  charPhase: number;
-  charPeriod: number;
+  char: string;
 }
 
-// Button char + position definitions — deliberately asymmetric
+function makeButton(rand: () => number, col: number, row: number): Button {
+  return {
+    col, row,
+    char: BUTTON_CHARS[Math.floor(rand() * BUTTON_CHARS.length)],
+    color: BUTTON_COLORS[Math.floor(rand() * BUTTON_COLORS.length)],
+    phase: rand() * 10000,
+    period: 3000 + rand() * 9000,
+    active: rand() > 0.3,   // mostly on, dims occasionally
+  };
+}
 
-const GAUGE_BTN_DEFS: [number, number, string][] = [
-  // left cluster (cols 0–5, rows 3–4)
-  [0, 3, '●'], [2, 3, '○'], [4, 3, '▪'],
-  [1, 4, '◉'], [3, 4, '●'],
-  // mid cluster (cols 17–20)
-  [17, 3, '○'], [19, 3, '▪'], [18, 4, '◉'],
-  // right cluster (cols 32–39)
-  [32, 3, '●'], [34, 3, '○'], [36, 3, '▪'], [38, 3, '◉'],
-  [33, 4, '●'], [35, 4, '○'], [39, 4, '▪'],
-];
-
-const LEFT_BTN_DEFS: [number, number, string][] = [
-  [1, 0, '●'], [4, 0, '○'], [7, 1, '▪'],
-  [9, 0, '◉'], [11, 1, '●'], [2, 2, '○'], [6, 2, '▪'],
-];
-
-const RIGHT_BTN_DEFS: [number, number, string][] = [
-  [28, 0, '●'], [31, 0, '○'], [33, 1, '▪'],
-  [36, 0, '◉'], [38, 1, '●'], [29, 2, '○'], [37, 2, '▪'],
-];
-
-function makeButton(rand: () => number, col: number, row: number, char: string): Button {
-  return { col, row, char, phase: rand() * 8000, period: 2000 + rand() * 6000, active: rand() > 0.5 };
+function buildZone(rand: () => number, colStart: number, colEnd: number, rows: number[]): Button[] {
+  const btns: Button[] = [];
+  for (const row of rows)
+    for (let col = colStart; col <= colEnd; col++)
+      btns.push(makeButton(rand, col, row));
+  return btns;
 }
 
 export class ShipCockpitScene implements Scene {
@@ -101,8 +109,8 @@ export class ShipCockpitScene implements Scene {
   private blinkPhase = 0;
 
   private readonly gaugeBtns: Button[];
-  private readonly leftBtns: Button[];
-  private readonly rightBtns: Button[];
+  private readonly leftBtns: Button[];    // relative row 0–3
+  private readonly rightBtns: Button[];   // relative row 0–3
 
   private readonly radarContacts: RadarContact[];
 
@@ -125,10 +133,16 @@ export class ShipCockpitScene implements Scene {
     this.inSpace = player.destinationId === null;
 
     const rand = lcgRand(99);
-    this.gaugeBtns = GAUGE_BTN_DEFS.map(([c, r, ch]) => makeButton(rand, c, r, ch));
-    this.leftBtns  = LEFT_BTN_DEFS.map(([c, r, ch]) => makeButton(rand, c, r, ch));
-    this.rightBtns = RIGHT_BTN_DEFS.map(([c, r, ch]) => makeButton(rand, c, r, ch));
+    this.gaugeBtns = [
+      ...buildZone(rand, GAUGE_LEFT_START,  GAUGE_LEFT_END,  [3, 4]),
+      ...buildZone(rand, GAUGE_MID_START,   GAUGE_MID_END,   [3, 4]),
+      ...buildZone(rand, GAUGE_RIGHT_START, GAUGE_RIGHT_END, [3, 4]),
+    ];
+    // Dense panels: every cell in the 4 non-action rows
+    this.leftBtns  = buildZone(rand, 0,                LEFT_PANEL_W - 1,  [0, 1, 2, 3]);
+    this.rightBtns = buildZone(rand, RIGHT_PANEL_START, 39,               [0, 1, 2, 3]);
 
+    // Radar contacts — bounce at boundaries so they never teleport
     const rRand = lcgRand(77);
     const contactCount = 3 + Math.floor(rRand() * 4);
     this.radarContacts = Array.from({ length: contactCount }, () => ({
@@ -136,8 +150,7 @@ export class ShipCockpitScene implements Scene {
       y: rRand() * 4,
       vx: (rRand() - 0.5) * 2.0,
       vy: (rRand() - 0.5) * 1.5,
-      charPhase: rRand() * 3000,
-      charPeriod: 1200 + rRand() * 800,
+      char: RADAR_CHARS[Math.floor(rRand() * RADAR_CHARS.length)],
     }));
 
     const navCount = () => this.inSpace ? 1 : 2;
@@ -194,23 +207,22 @@ export class ShipCockpitScene implements Scene {
       }
     }
 
+    const radarW = RADAR_END - RADAR_START;   // 14
     const radarH = 5;
-    const radarW = RADAR_END - RADAR_START;
     for (const c of this.radarContacts) {
       c.x += c.vx * dt / 1000;
       c.y += c.vy * dt / 1000;
-      if (c.x < 0) c.x += radarW;
-      if (c.x >= radarW) c.x -= radarW;
-      if (c.y < 0) c.y += radarH;
-      if (c.y >= radarH) c.y -= radarH;
-      c.charPhase = (c.charPhase + dt) % c.charPeriod;
+      // Bounce off walls — no teleport jumps
+      if (c.x < 0)         { c.x  = -c.x;              c.vx = -c.vx; }
+      if (c.x > radarW - 1){ c.x  = 2*(radarW-1) - c.x; c.vx = -c.vx; }
+      if (c.y < 0)         { c.y  = -c.y;              c.vy = -c.vy; }
+      if (c.y > radarH - 1){ c.y  = 2*(radarH-1) - c.y; c.vy = -c.vy; }
     }
 
     if (this.tickerPause > 0) {
       this.tickerPause = Math.max(0, this.tickerPause - dt);
     } else {
       this.tickerAccum += dt;
-      const SCROLL_MS = 80;
       while (this.tickerAccum >= SCROLL_MS) {
         this.tickerAccum -= SCROLL_MS;
         this.tickerScroll++;
@@ -237,8 +249,6 @@ export class ShipCockpitScene implements Scene {
 
     this.chrome.render(buffer, { showHeader: true, showFooter: true, navOptions: [] });
 
-    // Row 2 is the chrome gap — already cleared to black above
-
     const viewportTop = 5;
     const viewportBot = h - 8;
     const bottomTop   = h - 7;
@@ -246,14 +256,31 @@ export class ShipCockpitScene implements Scene {
     const tickerRow   = h - 2;
 
     this.renderGaugeStrip(buffer);
+
     this.starfield.render(buffer, viewportTop, viewportBot, 0, 39);
-    this.renderHUD(buffer, viewportTop);
-    this.renderCrosshair(buffer, viewportTop, viewportBot);
+
+    // Borders across top and bottom of starfield
+    for (let c = 0; c < w; c++) {
+      buffer[viewportTop][c] = { char: '─', fg: 'white', bg: 'black' };
+      buffer[viewportBot][c] = { char: '─', fg: 'white', bg: 'black' };
+    }
+
+    // HUD on second viewport row (first is the border)
+    this.renderHUD(buffer, viewportTop + 1);
+    // Crosshair centred in the inner viewport between the two borders
+    this.renderCrosshair(buffer, viewportTop + 1, viewportBot - 1);
+
     this.renderBottomPanels(buffer, bottomTop, bottomBot);
     this.renderTicker(buffer, tickerRow);
   }
 
   private renderGaugeStrip(buffer: CharBuffer): void {
+    // Buttons first, then gauge chars overwrite their own columns
+    for (const btn of this.gaugeBtns) {
+      const fg: Color = btn.active ? btn.color : 'bright-black';
+      buffer[btn.row][btn.col] = { char: btn.char, fg, bg: 'black' };
+    }
+
     const fuelFrac  = this.player.fuelL / this.player.fuelCapacityL;
     const cargoFrac = this.player.cargoWeightKg / this.player.cargoCapacity;
     const blinkOn   = this.blinkPhase < 500;
@@ -262,11 +289,6 @@ export class ShipCockpitScene implements Scene {
     this.renderGauge(buffer, 4, CARGO_LABEL_COL,  'C', cargoFrac, 'blue',   blinkOn);
     this.renderGauge(buffer, 3, SHIELD_LABEL_COL, 'S', 1.0,       'cyan',   blinkOn);
     this.renderGauge(buffer, 4, HULL_LABEL_COL,   'H', 1.0,       'green',  blinkOn);
-
-    for (const btn of this.gaugeBtns) {
-      const fg: Color = btn.active ? 'white' : 'bright-black';
-      buffer[btn.row][btn.col] = { char: btn.char, fg, bg: 'black' };
-    }
   }
 
   private renderGauge(
@@ -288,14 +310,14 @@ export class ShipCockpitScene implements Scene {
     }
   }
 
-  private renderHUD(buffer: CharBuffer, viewportTop: number): void {
-    writeText(buffer, viewportTop,      1, 'VEL:----', 'bright-black', 'black');
-    writeText(buffer, viewportTop,     16, 'ATT:---°', 'bright-black', 'black');
-    writeText(buffer, viewportTop,     30, 'ROT:--°',  'bright-black', 'black');
+  private renderHUD(buffer: CharBuffer, row: number): void {
+    writeText(buffer, row,  1, 'VEL:----', 'bright-black', 'black');
+    writeText(buffer, row, 16, 'ATT:---°', 'bright-black', 'black');
+    writeText(buffer, row, 30, 'ROT:--°',  'bright-black', 'black');
   }
 
-  private renderCrosshair(buffer: CharBuffer, viewportTop: number, viewportBot: number): void {
-    const centerRow = Math.floor((viewportTop + viewportBot) / 2);
+  private renderCrosshair(buffer: CharBuffer, innerTop: number, innerBot: number): void {
+    const centerRow = Math.floor((innerTop + innerBot) / 2);
     const centerCol = 20;
     buffer[centerRow][centerCol] = { char: '╋', fg: 'bright-green', bg: 'black' };
     const corners: [number, number, string][] = [
@@ -305,7 +327,7 @@ export class ShipCockpitScene implements Scene {
       [centerRow + 3, centerCol + 5, '┘'],
     ];
     for (const [r, c, ch] of corners) {
-      if (r >= viewportTop && r <= viewportBot && c >= 0 && c < 40)
+      if (r >= innerTop && r <= innerBot && c >= 0 && c < 40)
         buffer[r][c] = { char: ch, fg: 'bright-green', bg: 'black' };
     }
   }
@@ -318,27 +340,27 @@ export class ShipCockpitScene implements Scene {
 
     this.renderRadar(buffer, bottomTop, bottomBot - bottomTop + 1);
 
-    // Panel buttons (row is relative to bottomTop; skip the action row)
+    // Panel buttons (4 rows above the action row)
     for (const btn of this.leftBtns) {
       const absRow = bottomTop + btn.row;
       if (absRow < bottomBot) {
-        const fg: Color = btn.active ? 'white' : 'bright-black';
+        const fg: Color = btn.active ? btn.color : 'bright-black';
         buffer[absRow][btn.col] = { char: btn.char, fg, bg: 'black' };
       }
     }
     for (const btn of this.rightBtns) {
       const absRow = bottomTop + btn.row;
       if (absRow < bottomBot) {
-        const fg: Color = btn.active ? 'white' : 'bright-black';
+        const fg: Color = btn.active ? btn.color : 'bright-black';
         buffer[absRow][btn.col] = { char: btn.char, fg, bg: 'black' };
       }
     }
 
-    // TRAVEL word button (bottom row of left panel)
+    // TRAVEL word button
     const travelBg: Color = this.cursorIdx === 0 ? 'bright-yellow' : 'yellow';
     writeText(buffer, bottomBot, 0, this.centerPad('TRAVEL', LEFT_PANEL_W), 'black', travelBg);
 
-    // DOCK word button (bottom row of right panel)
+    // DOCK word button
     let dockBg: Color;
     let dockFg: Color;
     if (this.inSpace) {
@@ -352,31 +374,12 @@ export class ShipCockpitScene implements Scene {
   }
 
   private renderRadar(buffer: CharBuffer, bottomTop: number, radarRows: number): void {
-    const radarW = RADAR_END - RADAR_START;
-    const edgeThreshold = 2;
-    let showTop = false, showBottom = false, showLeft = false, showRight = false;
-
+    // Draw contacts only — no edge arrows (they caused apparent radar movement)
     for (const contact of this.radarContacts) {
-      const cx = Math.floor(contact.x);
-      const cy = Math.floor(contact.y);
-      const bufCol = RADAR_START + Math.min(radarW - 1, Math.max(0, cx));
-      const bufRow = bottomTop + Math.min(radarRows - 1, Math.max(0, cy));
-      const char = contact.charPhase < contact.charPeriod / 2 ? '○' : '◈';
-      buffer[bufRow][bufCol] = { char, fg: 'white', bg: 'bright-black' };
-      if (cy <= edgeThreshold) showTop = true;
-      if (cy >= radarRows - 1 - edgeThreshold) showBottom = true;
-      if (cx <= edgeThreshold) showLeft = true;
-      if (cx >= radarW - 1 - edgeThreshold) showRight = true;
+      const cx = Math.min(RADAR_END - RADAR_START - 1, Math.max(0, Math.floor(contact.x)));
+      const cy = Math.min(radarRows - 1,               Math.max(0, Math.floor(contact.y)));
+      buffer[bottomTop + cy][RADAR_START + cx] = { char: contact.char, fg: 'white', bg: 'bright-black' };
     }
-
-    const midCol = RADAR_START + Math.floor(radarW / 2);
-    const midRow = bottomTop + Math.floor(radarRows / 2);
-    const topRow = bottomTop;
-    const botRow = bottomTop + radarRows - 1;
-    if (showTop)    buffer[topRow][midCol]      = { char: '▴', fg: 'white', bg: 'bright-black' };
-    if (showBottom) buffer[botRow][midCol]      = { char: '▾', fg: 'white', bg: 'bright-black' };
-    if (showLeft)   buffer[midRow][RADAR_START] = { char: '◂', fg: 'white', bg: 'bright-black' };
-    if (showRight)  buffer[midRow][RADAR_END-1] = { char: '▸', fg: 'white', bg: 'bright-black' };
   }
 
   private renderTicker(buffer: CharBuffer, row: number): void {

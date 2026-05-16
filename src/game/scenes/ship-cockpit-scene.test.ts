@@ -58,8 +58,8 @@ const FOOTER_ROW   = 29;
 // Column layout
 const FUEL_LABEL_COL   = 6;
 const CARGO_LABEL_COL  = 6;
-const SHIELD_LABEL_COL = 21;
-const HULL_LABEL_COL   = 21;
+const SHIELD_LABEL_COL = 23;   // symmetric layout
+const HULL_LABEL_COL   = 23;
 const LEFT_PANEL_W     = 13;   // cols 0–12
 const RADAR_START      = 13;
 const RADAR_END        = 27;
@@ -215,14 +215,25 @@ describe('ShipCockpitScene', () => {
       }
     });
 
-    it('HUD overlay appears on viewport top row', () => {
+    it('HUD overlay appears on second viewport row (first row is border)', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, VIEWPORT_TOP)).toContain('VEL:');
-      expect(rowText(buf, VIEWPORT_TOP)).toContain('ATT:');
-      expect(rowText(buf, VIEWPORT_TOP)).toContain('ROT:');
+      expect(rowText(buf, VIEWPORT_TOP + 1)).toContain('VEL:');
+      expect(rowText(buf, VIEWPORT_TOP + 1)).toContain('ATT:');
+      expect(rowText(buf, VIEWPORT_TOP + 1)).toContain('ROT:');
+    });
+
+    it('starfield borders render as ─ at viewport top and bottom rows', () => {
+      const input = new MockInputHandler();
+      const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(buf[VIEWPORT_TOP][0].char).toBe('─');
+      expect(buf[VIEWPORT_TOP][20].char).toBe('─');
+      expect(buf[VIEWPORT_BOT][0].char).toBe('─');
+      expect(buf[VIEWPORT_BOT][20].char).toBe('─');
     });
 
     it('crosshair centre character ╋ appears in viewport', () => {
