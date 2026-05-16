@@ -5,23 +5,25 @@ import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
 
 // Gauge strip column layout — symmetric with 1-col blank separators (cols 0–39, w=40)
-// L-btns: 0–4 | gap:5 | Fuel/Cargo: 6–16 | center-gap: 17–22 | Shield/Hull: 23–33 | gap:34 | R-btns: 35–39
+// L-btns: 0–2 | gap:3–5 | Fuel/Cargo: 6–16 | mid-btns: 17–22 | Shield/Hull: 23–33 | gap:34–36 | R-btns: 37–39
 const FUEL_LABEL_COL    = 6;
 const CARGO_LABEL_COL   = 6;
 const SHIELD_LABEL_COL  = 23;
 const HULL_LABEL_COL    = 23;
 const GAUGE_FILL_COUNT  = 10;
 
-// Gauge button zones — no mid zone; center gap (cols 17–22) is left blank
+// Gauge button zones — 3 outer cols each side; center gap filled with buttons
 const GAUGE_LEFT_START  = 0;
-const GAUGE_LEFT_END    = 4;
-const GAUGE_RIGHT_START = 35;
+const GAUGE_LEFT_END    = 2;   // 3 buttons: cols 0–2
+const GAUGE_MID_START   = 17;  // fill center gap: cols 17–22
+const GAUGE_MID_END     = 22;
+const GAUGE_RIGHT_START = 37;  // 3 buttons: cols 37–39
 const GAUGE_RIGHT_END   = 39;
 
-// Bottom panel column layout — blank separator cols at 12 and 27
-// L-btns: 0–8 (fewer) | blank:9–12 | Radar: 13–26 | gap:27 | R-btns: 28–39
+// Bottom panel column layout — 1-col blank at 12 and 27 to match action row gaps
+// L-btns: 0–11 | blank:12 | Radar: 13–26 | blank:27 | R-btns: 28–39
 const LEFT_PANEL_W         = 12;   // TRAVEL button width (cols 0–11)
-const LEFT_BTN_END         = 8;    // buttons only fill cols 0–8 in non-action rows
+const LEFT_BTN_END         = 11;   // buttons fill cols 0–11 in non-action rows (matches TRAVEL edge)
 const RADAR_START           = 13;
 const RADAR_END             = 27;
 const RIGHT_PANEL_START     = 28;
@@ -134,9 +136,10 @@ export class ShipCockpitScene implements Scene {
     const rand = lcgRand(99);
     this.gaugeBtns = [
       ...buildZone(rand, GAUGE_LEFT_START,  GAUGE_LEFT_END,  [3, 4]),
+      ...buildZone(rand, GAUGE_MID_START,   GAUGE_MID_END,   [3, 4]),
       ...buildZone(rand, GAUGE_RIGHT_START, GAUGE_RIGHT_END, [3, 4]),
     ];
-    // Left panel buttons fill cols 0–8 (fewer than radar width); right fills 28–39
+    // Left panel buttons fill cols 0–11 (matches TRAVEL width); right fills 28–39
     this.leftBtns  = buildZone(rand, 0,                 LEFT_BTN_END,     [0, 1, 2, 3]);
     this.rightBtns = buildZone(rand, RIGHT_PANEL_START, 39,               [0, 1, 2, 3]);
 
@@ -370,9 +373,10 @@ export class ShipCockpitScene implements Scene {
     }
     writeText(buffer, bottomBot, RIGHT_PANEL_START, this.centerPad('DOCK', RIGHT_PANEL_W), dockFg, dockBg);
 
-    // Speaker/CLEAR indicator in radar zone between TRAVEL and DOCK
+    // Speaker indicator in radar zone between TRAVEL and DOCK
     const speakerW = RADAR_END - RADAR_START;   // 14
-    writeText(buffer, bottomBot, RADAR_START, this.centerPad('◁ CLEAR', speakerW), 'white', 'bright-black');
+    const speakerText = '◁)) ' + '-'.repeat(speakerW - 4);
+    writeText(buffer, bottomBot, RADAR_START, speakerText, 'white', 'bright-black');
   }
 
   private renderRadar(buffer: CharBuffer, bottomTop: number, radarRows: number): void {

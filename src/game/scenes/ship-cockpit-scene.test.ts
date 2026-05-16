@@ -373,13 +373,13 @@ describe('ShipCockpitScene', () => {
   });
 
   describe('render — speaker indicator', () => {
-    it('action row radar zone shows CLEAR between TRAVEL and DOCK', () => {
+    it('action row radar zone shows ◁)) speaker indicator between TRAVEL and DOCK', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const radarZoneText = buf[ACTION_ROW].slice(RADAR_START, RADAR_END).map(c => c.char).join('');
-      expect(radarZoneText).toContain('CLEAR');
+      expect(radarZoneText).toContain('◁))');
     });
 
     it('action row radar zone speaker has bright-black background', () => {
