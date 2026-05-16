@@ -692,30 +692,20 @@ describe('StationMenuScene', () => {
       expect(player.credits).toBe(1100); // 500 + 600
     });
 
-    it('DELIVER shows error modal if mission item is missing at selection time', () => {
+    it('DELIVER shows error modal if supply cargo is removed after scene construction', () => {
+      // Supply missions check cargo at selection time, not just at construction. Simulate
+      // cargo being removed between scene build and item selection.
       const player = makePlayer({ destinationId: 'elysium-station' });
-      const spec = makeDeliveryDeliverSpec({ reward: 750 });
-      player.acceptMission(spec, true); // mission item added
-      // Directly remove the mission item to simulate it being lost
-      player.completeMission('nonexistent'); // no-op, but won't remove our mission
-      // Use cancelMission on a dummy to not affect our mission; instead manually test via type
-      // Create a fresh scene; the mission item IS present so DELIVER shows
-      // Then remove it via internal means - use a workaround: remove supply mission cargo instead
-      // Actually for delivery: missionItem is there, status is ready-to-deliver
-      // To test the failure modal we need to create a supply mission with missing cargo
-      const player2 = makePlayer({ destinationId: 'elysium-station' });
       const supplySpec = makeSupplyDeliverSpec({ reward: 600 });
-      player2.acceptMission(supplySpec, false);
-      player2.addCargo('iron-ore', 3); // satisfies requirement initially
+      player.acceptMission(supplySpec, false);
+      player.addCargo('iron-ore', 3); // satisfies requirement — DELIVER item is built
       const input = new MockInputHandler();
       const scene = new StationMenuScene(
-        input, keyboardContext, player2, 'elysium-station',
+        input, keyboardContext, player, 'elysium-station',
         vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
-      // Remove cargo AFTER scene construction to simulate loss
-      player2.removeCargo('iron-ore', 3);
-      // Now select DELIVER — re-check at selection time should fail
-      input.triggerAction('SELECT');
+      player.removeCargo('iron-ore', 3); // cargo lost before selection
+      input.triggerAction('SELECT'); // re-check fails → error modal
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(bufferText(buf)).toContain('CANNOT DELIVER');
@@ -727,21 +717,20 @@ describe('StationMenuScene', () => {
       player.acceptMission(supplySpec, false);
       player.addCargo('iron-ore', 3);
       const onHub = vi.fn();
+      const onTrader = vi.fn();
       const input = new MockInputHandler();
-      const scene = new StationMenuScene(
+      new StationMenuScene(
         input, keyboardContext, player, 'elysium-station',
-        vi.fn(), vi.fn(), vi.fn(), onHub, vi.fn(), vi.fn(),
+        vi.fn(), onTrader, vi.fn(), onHub, vi.fn(), vi.fn(),
       );
       player.removeCargo('iron-ore', 3); // make cargo check fail
       input.triggerAction('SELECT'); // opens error modal
-      input.triggerAction('SELECT'); // confirm OKAY
-      expect(onHub).not.toHaveBeenCalled(); // no navigation
-      // Scene is still active — can interact again
-      const onTrader = vi.fn();
-      // Player now has no deliver-able mission; DOWN moves to TRADER
-      input.triggerAction('DOWN'); // separator skipped, goes to next enabled item
+      input.triggerAction('SELECT'); // confirm OKAY — should NOT navigate
+      expect(onHub).not.toHaveBeenCalled();
+      // Scene is re-enabled — navigate to TRADER (separator skipped by cursor)
+      input.triggerAction('DOWN');
       input.triggerAction('SELECT');
-      // onTrader or some amenity should fire — just verify no crash
+      expect(onTrader).toHaveBeenCalledTimes(1);
     });
   });
 });
