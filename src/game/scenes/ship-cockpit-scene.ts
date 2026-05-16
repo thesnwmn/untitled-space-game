@@ -45,8 +45,8 @@ const TICKER_MESSAGES = [
   '> TRANSPONDER HANDSHAKE: ACCEPTED',
 ];
 
-// Single square char for all buttons — unambiguous 1-column width
-const BUTTON_CHAR = '■';
+// # is in Share Tech Mono (Basic Latin); avoids fallback-font width risk
+const BUTTON_CHAR = '#';
 const BUTTON_COLORS: Color[] = ['green', 'cyan', 'white', 'yellow'];
 
 // ASCII-only radar contact chars — guaranteed 1-column width
@@ -262,8 +262,8 @@ export class ShipCockpitScene implements Scene {
 
     // Borders across top and bottom of starfield
     for (let c = 0; c < w; c++) {
-      buffer[viewportTop][c] = { char: '─', fg: 'white', bg: 'black' };
-      buffer[viewportBot][c] = { char: '─', fg: 'white', bg: 'black' };
+      buffer[viewportTop][c] = { char: '-', fg: 'white', bg: 'black' };
+      buffer[viewportBot][c] = { char: '-', fg: 'white', bg: 'black' };
     }
 
     // HUD on second viewport row (first is the border)
@@ -320,16 +320,16 @@ export class ShipCockpitScene implements Scene {
   private renderCrosshair(buffer: CharBuffer, innerTop: number, innerBot: number): void {
     const centerRow = Math.floor((innerTop + innerBot) / 2);
     const centerCol = 20;
-    buffer[centerRow][centerCol] = { char: '╋', fg: 'bright-green', bg: 'black' };
-    const corners: [number, number, string][] = [
-      [centerRow - 3, centerCol - 5, '┌'],
-      [centerRow - 3, centerCol + 5, '┐'],
-      [centerRow + 3, centerCol - 5, '└'],
-      [centerRow + 3, centerCol + 5, '┘'],
-    ];
-    for (const [r, c, ch] of corners) {
+    buffer[centerRow][centerCol] = { char: '+', fg: 'bright-green', bg: 'black' };
+    const cornerPositions = [
+      [centerRow - 3, centerCol - 5],
+      [centerRow - 3, centerCol + 5],
+      [centerRow + 3, centerCol - 5],
+      [centerRow + 3, centerCol + 5],
+    ] as const;
+    for (const [r, c] of cornerPositions) {
       if (r >= innerTop && r <= innerBot && c >= 0 && c < 40)
-        buffer[r][c] = { char: ch, fg: 'bright-green', bg: 'black' };
+        buffer[r][c] = { char: '+', fg: 'bright-green', bg: 'black' };
     }
   }
 
@@ -375,7 +375,7 @@ export class ShipCockpitScene implements Scene {
 
     // Speaker indicator in radar zone between TRAVEL and DOCK
     const speakerW = RADAR_END - RADAR_START;   // 14
-    const speakerText = '◁)) ' + '-'.repeat(speakerW - 4);
+    const speakerText = '<)) ' + '-'.repeat(speakerW - 4);
     writeText(buffer, bottomBot, RADAR_START, speakerText, 'white', 'bright-black');
   }
 

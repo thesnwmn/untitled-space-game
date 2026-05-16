@@ -259,28 +259,42 @@ will fall back to the browser's system `monospace` font.
 
 ---
 
-## Characters used in this game NOT in Share Tech Mono
+## Character display (inverted palette)
 
-These fall back to the browser's system `monospace` font. The fallback is
-visually consistent on most desktops (DejaVu Mono / Consolas / Menlo all
-render these at the same advance width as Share Tech Mono at 24 px), but
-the guarantee is weaker. Suggested ASCII replacements are listed if we ever
-want to eliminate the dependency on fallback rendering.
+All printable glyphs in the font, shown in a fixed-width grid with 16
+columns. The code block background provides the dark-on-light contrast
+equivalent to viewing characters in the game's inverted (white-on-black)
+renderer. Column headers are hex offsets within each row.
 
-| Code point | Char | Unicode name | Used in | Suggested replacement |
-|---|---|---|---|---|
-| `U+2500` | ─ | BOX DRAWINGS LIGHT HORIZONTAL | Starfield top/bottom border | `-` (HYPHEN-MINUS) |
-| `U+250C` | ┌ | BOX DRAWINGS LIGHT DOWN AND RIGHT | Crosshair corner TL | `+` (PLUS SIGN) |
-| `U+2510` | ┐ | BOX DRAWINGS LIGHT DOWN AND LEFT | Crosshair corner TR | `+` |
-| `U+2514` | └ | BOX DRAWINGS LIGHT UP AND RIGHT | Crosshair corner BL | `+` |
-| `U+2518` | ┘ | BOX DRAWINGS LIGHT UP AND LEFT | Crosshair corner BR | `+` |
-| `U+254B` | ╋ | BOX DRAWINGS HEAVY VERTICAL AND HORIZONTAL | Crosshair centre | `+` |
-| `U+25A0` | ■ | BLACK SQUARE | Panel buttons (all screens) | `#` (NUMBER SIGN) |
-| `U+25C1` | ◁ | WHITE LEFT-POINTING TRIANGLE | Speaker indicator (cockpit) | `<` (LESS-THAN SIGN) |
+```
+     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    -------------------------------------------------
+U+0020|    !  "  #  $  %  &  '  (  )  *  +  ,  -  .  /
+U+0030| 0  1  2  3  4  5  6  7  8  9  :  ;  <  =  >  ?
+U+0040| @  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O
+U+0050| P  Q  R  S  T  U  V  W  X  Y  Z  [  \  ]  ^  _
+U+0060| `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
+U+0070| p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~
+U+00A1| ¡  ¢  £  ¤  ¥  ¦  §  ¨  ©  ª  «  ¬  ­  ®  ¯  °
+U+00B1| ±  ²  ³  ´  µ  ¶  ·  ¸  ¹  º  »  ¼  ½  ¾  ¿  À
+U+00C1| Á  Â  Ã  Ä  Å  Æ  Ç  È  É  Ê  Ë  Ì  Í  Î  Ï  Ð
+U+00D1| Ñ  Ò  Ó  Ô  Õ  Ö  ×  Ø  Ù  Ú  Û  Ü  Ý  Þ  ß  à
+U+00E1| á  â  ã  ä  å  æ  ç  è  é  ê  ë  ì  í  î  ï  ð
+U+00F1| ñ  ò  ó  ô  õ  ö  ÷  ø  ù  ú  û  ü  ý  þ  ÿ  ı
+U+0152| Œ  œ  ˆ  ˚  ˜  –  —  '  '  ‚  "  "  „  •  …  ‹
+U+203A| ›  ⁄  €  ™  −  ∕
+```
 
-> **Note on box-drawing characters:** although not in Share Tech Mono's declared
-> `unicode-range`, the major system monospace fallbacks (DejaVu Mono, Consolas,
-> Menlo) all include the full Box Drawing block (U+2500–257F) and render it at
-> single-column width. The practical risk from these characters is low. The
-> highest-risk character is `◁` (U+25C1), which is absent from several common
-> fallback fonts and may render as a replacement box or at a different width.
+---
+
+## Characters formerly used in this game outside Share Tech Mono
+
+All replaced with in-font equivalents as of feature 036.
+
+| Was | Now | Unicode name | Used in |
+|---|---|---|---|
+| `─` U+2500 | `-` | BOX DRAWINGS LIGHT HORIZONTAL | Starfield top/bottom border |
+| `┌┐└┘` U+250C–2518 | `+` | BOX DRAWINGS (corners) | Crosshair corners |
+| `╋` U+254B | `+` | BOX DRAWINGS HEAVY VERTICAL AND HORIZONTAL | Crosshair centre |
+| `■` U+25A0 | `#` | BLACK SQUARE | Panel buttons (all screens) |
+| `◁` U+25C1 | `<` | WHITE LEFT-POINTING TRIANGLE | Speaker indicator (cockpit) |

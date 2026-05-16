@@ -225,46 +225,47 @@ describe('ShipCockpitScene', () => {
       expect(rowText(buf, VIEWPORT_TOP + 1)).toContain('ROT:');
     });
 
-    it('starfield borders render as ─ at viewport top and bottom rows', () => {
+    it('starfield borders render as - at viewport top and bottom rows', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[VIEWPORT_TOP][0].char).toBe('─');
-      expect(buf[VIEWPORT_TOP][20].char).toBe('─');
-      expect(buf[VIEWPORT_BOT][0].char).toBe('─');
-      expect(buf[VIEWPORT_BOT][20].char).toBe('─');
+      expect(buf[VIEWPORT_TOP][0].char).toBe('-');
+      expect(buf[VIEWPORT_TOP][20].char).toBe('-');
+      expect(buf[VIEWPORT_BOT][0].char).toBe('-');
+      expect(buf[VIEWPORT_BOT][20].char).toBe('-');
     });
 
-    it('crosshair centre character ╋ appears in viewport', () => {
+    it('crosshair centre character + appears in viewport in bright-green', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       let found = false;
-      for (let r = VIEWPORT_TOP; r <= VIEWPORT_BOT; r++) {
+      outer: for (let r = VIEWPORT_TOP; r <= VIEWPORT_BOT; r++) {
         for (let c = 0; c < 40; c++) {
-          if (buf[r][c].char === '╋') { found = true; break; }
+          if (buf[r][c].char === '+' && buf[r][c].fg === 'bright-green') { found = true; break outer; }
         }
-        if (found) break;
       }
       expect(found).toBe(true);
     });
 
-    it('crosshair corner brackets appear in viewport in bright-green', () => {
+    it('crosshair corner + chars appear in bright-green at expected positions', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const corners = ['┌', '┐', '└', '┘'];
-      for (const ch of corners) {
-        let found = false;
-        outer: for (let r = VIEWPORT_TOP; r <= VIEWPORT_BOT; r++) {
-          for (let c = 0; c < 40; c++) {
-            if (buf[r][c].char === ch && buf[r][c].fg === 'bright-green') { found = true; break outer; }
-          }
-        }
-        expect(found).toBe(true);
+      const centerRow = Math.floor((VIEWPORT_TOP + 1 + VIEWPORT_BOT - 1) / 2);
+      const centerCol = 20;
+      const expectedCorners = [
+        [centerRow - 3, centerCol - 5],
+        [centerRow - 3, centerCol + 5],
+        [centerRow + 3, centerCol - 5],
+        [centerRow + 3, centerCol + 5],
+      ];
+      for (const [r, c] of expectedCorners) {
+        expect(buf[r][c].char).toBe('+');
+        expect(buf[r][c].fg).toBe('bright-green');
       }
     });
 
@@ -373,13 +374,13 @@ describe('ShipCockpitScene', () => {
   });
 
   describe('render — speaker indicator', () => {
-    it('action row radar zone shows ◁)) speaker indicator between TRAVEL and DOCK', () => {
+    it('action row radar zone shows <)) speaker indicator between TRAVEL and DOCK', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const radarZoneText = buf[ACTION_ROW].slice(RADAR_START, RADAR_END).map(c => c.char).join('');
-      expect(radarZoneText).toContain('◁))');
+      expect(radarZoneText).toContain('<))');
     });
 
     it('action row radar zone speaker has bright-black background', () => {
