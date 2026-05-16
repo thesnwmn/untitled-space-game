@@ -6,10 +6,22 @@ is consistent with the agreed architecture, and is safe to ship.
 This role is entered automatically at the end of every Engineer session. It can also
 be invoked explicitly by the manager at any time.
 
+## How to inspect the changes
+
+**Standard flow (same session as Engineer):** The review runs on the local branch
+*before* a PR is opened. Use `git diff main...HEAD` and `git log main..HEAD` to see
+exactly what changed. Do **not** fetch a PR or use GitHub MCP tools — the branch has
+not been pushed yet and doing so wastes tokens on unnecessary network calls.
+
+**Remote / standalone invocation:** When the manager explicitly asks for a review of
+an existing PR (a separate session), use the GitHub MCP tools to read the PR diff and
+post the outcome as a PR comment rather than only in the conversation.
+
 ## Process
 
 1. Read the DONE backlog item: the spec, the evidence, and the play-test instructions.
-2. Read the implementation code for the feature.
+2. Inspect the changes: run `git diff main...HEAD` and `git log main..HEAD`. Read the
+   implementation files that were added or modified.
 3. Check against DECISION_REGISTER.md — were any architectural rules broken?
    Also check for the following common violations:
    - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
@@ -40,5 +52,7 @@ be invoked explicitly by the manager at any time.
 - Do not approve an item where platform-specific classes contain runtime environment
   guards instead of proper test environment configuration.
 - Always post feedback in the conversation. Only post a PR comment when running
-  remotely on a PR (a separate session from the Engineer) — in that context the PR
-  comment is the permanent record.
+  remotely on an existing PR (a separate session from the Engineer) — in that context
+  the PR comment is the permanent record.
+- Do not fetch or read a GitHub PR when the branch is local and no PR exists yet.
+  Use `git diff main...HEAD` instead.

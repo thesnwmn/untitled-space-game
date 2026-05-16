@@ -26,14 +26,11 @@ Never begin implementation without confirming which feature is being worked on.
    - Tests: run the test suite. All tests must pass.
    - If no tests exist for this feature, write at least one.
 8. Run `init.sh` again. It must pass clean on the finished state.
-9. Push to a branch and open a PR against main. Do not merge it.
-   - If the harness pre-assigned a branch for this session, use it.
-   - Otherwise create one named `feature/NNN-short-description`.
-10. Update the backlogs on the feature branch:
+9. Update the backlogs on the local feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
     - Remove the item from **BACKLOG.md** entirely.
-11. Archive the feature spec:
+10. Archive the feature spec:
     - If a `docs/features/NNN-*.md` spec exists for this item, replace it with a
       short summary in `docs/features/history/NNN-*.md` (same filename, new directory).
     - Summary format (~15–25 lines):
@@ -47,8 +44,13 @@ Never begin implementation without confirming which feature is being worked on.
       [any non-obvious patterns this feature established — omit section if none]
       ```
     - Delete the original from `docs/features/` after writing the summary.
-12. On successful completion, automatically proceed to the Reviewer role. Do not
-    wait for the manager to ask. The review is part of the Engineer session.
+11. Automatically proceed to the Reviewer role. Do not wait for the manager to ask.
+    The review happens **before** opening a PR — the Reviewer inspects the local
+    branch against main. No push is needed for the review step.
+12. Once the Reviewer approves, push the branch and open a PR against main. Do not merge it.
+    - If the harness pre-assigned a branch for this session, use it.
+    - Otherwise create one named `feature/NNN-short-description`.
+    - If the Reviewer finds issues, fix them (returning to step 7) before pushing.
 
 ## Context Management
 
