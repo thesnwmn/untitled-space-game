@@ -4,32 +4,34 @@ import { Starfield } from './starfield';
 import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
 
-// Gauge strip column layout — symmetric (cols 0–39, w=40)
-// Left buttons: 0–5  |  Fuel/Cargo: 6–16  |  Mid buttons: 17–22  |  Shield/Hull: 23–33  |  Right buttons: 34–39
+// Gauge strip column layout — symmetric with 1-col blank separators (cols 0–39, w=40)
+// L-btns: 0–4 | gap:5 | Fuel/Cargo: 6–16 | gap:17 | Mid-btns: 18–21 | gap:22 | Shield/Hull: 23–33 | gap:34 | R-btns: 35–39
 const FUEL_LABEL_COL    = 6;
 const CARGO_LABEL_COL   = 6;
 const SHIELD_LABEL_COL  = 23;
 const HULL_LABEL_COL    = 23;
 const GAUGE_FILL_COUNT  = 10;
 
-// Gauge button zones (cols inclusive)
+// Gauge button zones (cols inclusive) — blank separators at 5, 17, 22, 34
 const GAUGE_LEFT_START  = 0;
-const GAUGE_LEFT_END    = 5;
-const GAUGE_MID_START   = 17;
-const GAUGE_MID_END     = 22;
-const GAUGE_RIGHT_START = 34;
+const GAUGE_LEFT_END    = 4;
+const GAUGE_MID_START   = 18;
+const GAUGE_MID_END     = 21;
+const GAUGE_RIGHT_START = 35;
 const GAUGE_RIGHT_END   = 39;
 
-// Bottom panel column layout
-const LEFT_PANEL_W      = 13;   // cols 0–12
+// Bottom panel column layout — blank separator cols at 12 and 27
+// L-btns: 0–11 | gap:12 | Radar: 13–26 | gap:27 | R-btns: 28–39
+const LEFT_PANEL_W      = 12;   // TRAVEL button width (cols 0–11)
 const RADAR_START       = 13;   // cols 13–26
 const RADAR_END         = 27;
-const RIGHT_PANEL_START = 27;   // cols 27–39
-const RIGHT_PANEL_W     = 13;
+const RIGHT_PANEL_START = 28;   // DOCK button / right buttons start
+const RIGHT_PANEL_W     = 12;
 
-// Ticker
-const TICKER_SPLIT = 27;
-const SCROLL_MS    = 200;   // ms per character scroll step (reduced speed)
+// Ticker — right portion is always 13 cols regardless of panel layout
+const TICKER_SPLIT     = 27;
+const TICKER_RIGHT_W   = 13;
+const SCROLL_MS        = 200;   // ms per character scroll step (reduced speed)
 
 const TICKER_MESSAGES = [
   '> SYSTEM STATUS: ALL CLEAR',
@@ -46,7 +48,7 @@ const TICKER_MESSAGES = [
 
 // Single square char for all buttons — unambiguous 1-column width
 const BUTTON_CHAR = '■';
-const BUTTON_COLORS: Color[] = ['green', 'yellow', 'cyan', 'magenta', 'white', 'red'];
+const BUTTON_COLORS: Color[] = ['green', 'cyan', 'white', 'yellow'];
 
 // ASCII-only radar contact chars — guaranteed 1-column width
 const RADAR_CHARS = ['*', '.', '+', 'x'] as const;
@@ -82,9 +84,9 @@ function makeButton(rand: () => number, col: number, row: number): Button {
     col, row,
     char: BUTTON_CHAR,
     color: BUTTON_COLORS[Math.floor(rand() * BUTTON_COLORS.length)],
-    phase: rand() * 10000,
-    period: 3000 + rand() * 9000,
-    active: rand() > 0.3,   // mostly on, dims occasionally
+    phase: rand() * 20000,
+    period: 10000 + rand() * 10000,   // 10–20 s — dims very infrequently
+    active: rand() > 0.2,             // 80 % start on
   };
 }
 
@@ -138,8 +140,8 @@ export class ShipCockpitScene implements Scene {
       ...buildZone(rand, GAUGE_MID_START,   GAUGE_MID_END,   [3, 4]),
       ...buildZone(rand, GAUGE_RIGHT_START, GAUGE_RIGHT_END, [3, 4]),
     ];
-    // Dense panels: every cell in the 4 non-action rows
-    this.leftBtns  = buildZone(rand, 0,                LEFT_PANEL_W - 1,  [0, 1, 2, 3]);
+    // Dense panels: cols 0–11 (left) and 28–39 (right), 4 non-action rows
+    this.leftBtns  = buildZone(rand, 0,                 LEFT_PANEL_W - 1, [0, 1, 2, 3]);
     this.rightBtns = buildZone(rand, RIGHT_PANEL_START, 39,               [0, 1, 2, 3]);
 
     // Radar contacts — bounce at boundaries so they never teleport
@@ -356,11 +358,11 @@ export class ShipCockpitScene implements Scene {
       }
     }
 
-    // TRAVEL word button
+    // TRAVEL word button (cols 0–11)
     const travelBg: Color = this.cursorIdx === 0 ? 'bright-yellow' : 'yellow';
     writeText(buffer, bottomBot, 0, this.centerPad('TRAVEL', LEFT_PANEL_W), 'black', travelBg);
 
-    // DOCK word button
+    // DOCK word button (cols 28–39)
     let dockBg: Color;
     let dockFg: Color;
     if (this.inSpace) {
@@ -389,8 +391,8 @@ export class ShipCockpitScene implements Scene {
       const ch = (charIdx >= 0 && charIdx < msg.length) ? msg[charIdx] : ' ';
       buffer[row][c] = { char: ch, fg: 'white', bg: 'black' };
     }
-    const rightText = ' ◁ CLEAR     ';
-    for (let c = 0; c < RIGHT_PANEL_W; c++) {
+    const rightText = ' ◁ CLEAR      ';
+    for (let c = 0; c < TICKER_RIGHT_W; c++) {
       buffer[row][TICKER_SPLIT + c] = { char: rightText[c] ?? ' ', fg: 'white', bg: 'bright-black' };
     }
   }

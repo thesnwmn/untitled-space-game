@@ -60,10 +60,10 @@ const FUEL_LABEL_COL   = 6;
 const CARGO_LABEL_COL  = 6;
 const SHIELD_LABEL_COL = 23;   // symmetric layout
 const HULL_LABEL_COL   = 23;
-const LEFT_PANEL_W     = 13;   // cols 0–12
-const RADAR_START      = 13;
-const RADAR_END        = 27;
-const RIGHT_PANEL_START = 27;
+const LEFT_PANEL_W      = 12;   // cols 0–11 (blank separator at col 12)
+const RADAR_START       = 13;
+const RADAR_END         = 27;
+const RIGHT_PANEL_START = 28;   // blank separator at col 27
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
