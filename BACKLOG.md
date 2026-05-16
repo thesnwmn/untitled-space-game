@@ -81,6 +81,13 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
+### 045 · Global Menu · Galaxy Map
+
+Add a `GALAXY MAP` entry to the global menu (below `MISSIONS`) that opens `GalaxyMapScene`. The entry is always present. When opened from the menu, a `[2] GAME` footer button returns directly to the underlying game scene; `[1] BACK` returns to the global menu. The travel-menu access path is unchanged. Depends on feature 039.
+See `docs/features/045-global-menu-galaxy-map.md` for the full spec.
+
+---
+
 
 ## NEEDS SPEC
 
