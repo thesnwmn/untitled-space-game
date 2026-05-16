@@ -4,10 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <title>Untitled Space Game</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
+      @font-face {
+        font-family: '256';
+        src: url('./fonts/256.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { overflow: hidden; touch-action: none; }
       body {
@@ -19,7 +22,7 @@
         height: 100dvh;
       }
       .game-screen {
-        font-family: 'Share Tech Mono', monospace;
+        font-family: '256', monospace;
         font-size: 24px;
         line-height: 1em;
         white-space: pre;
