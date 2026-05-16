@@ -51,6 +51,13 @@ See `docs/features/045-global-menu-galaxy-map.md` for the full spec.
 
 ---
 
+### 047 · Game Balance Settings
+
+All hardcoded gameplay constants (NPC name probability, mission counts and reward ranges, trader stock quantities, cache TTLs, fuel economics) move into `docs/world/settings/balance.md`. `docs/world/game-settings.md` is renamed to `docs/world/settings/new-game.md`. A new `GameBalance` type is added to `types.ts`, parsed by `world-parser.ts`, and exposed via `getGameBalance()` in `world-data.ts`. `constants.ts` is deleted; `mission-generator.ts` and `game.ts` read all balance values from `getGameBalance()`.
+See `docs/features/047-game-balance-settings.md` for the full spec.
+
+---
+
 
 ## NEEDS SPEC
 
