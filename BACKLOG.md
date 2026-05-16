@@ -52,24 +52,45 @@ See `docs/features/038-mission-board-live.md` for the full spec.
 
 ---
 
-### 039 · Global Menu & Mission Log
+### 039 · Global Menu Shell
 
-Wire the dormant `[M] MENU` chrome button (and new `MENU` game action) to open a tabbed `GlobalMenuScene`. The `MISSIONS` tab lists active missions with live status sub-lines. Selecting a mission opens a `ModalConfirmDialog` for cancellation.
-See `docs/features/039-global-menu-mission-log.md` for the full spec.
+Wire the dormant `[M] MENU` chrome button (and new `MENU` game action) to open a new `GlobalMenuScene`. The menu is a flat, extensible list of entries — no tabs. Starts empty; subsequent features add their own entries. Establishes the save/restore flow for returning to the game after closing the menu.
+See `docs/features/039-global-menu-shell.md` for the full spec.
 
 ---
 
-### 040 · Station Mission Actions
+### 040 · Global Menu · Mission Log
+
+Add a `MISSIONS` entry to the global menu that opens a dedicated Mission Log screen. Lists active missions with status sub-lines and allows cancellation via a `ModalConfirmDialog`. Depends on feature 039.
+See `docs/features/040-global-menu-mission-log.md` for the full spec.
+
+---
+
+### 041 · Station Mission Actions
 
 Add COLLECT and DELIVER mission items to `StationMenuScene` (above normal options, with a separator). Show mission items distinctly in `CargoScene` (bright-yellow, separate section). Complete deliveries with a reward modal.
-See `docs/features/040-station-mission-actions.md` for the full spec.
+See `docs/features/041-station-mission-actions.md` for the full spec.
+
+---
+
+### 043 · Knowledge Base — Discovery
+
+The game silently records visited systems and destinations as the player travels. On entering a system the names of its destinations and direct jump-route neighbours are noted. On docking, the destination is marked fully visited. NPC mention hooks are defined for future use. Data only — no UI screens.
+See `docs/features/043-knowledge-base-discovery.md` for the full spec.
+
+---
+
+### 044 · Knowledge Base — Screens
+
+A three-level navigable reference accessible from the global menu: System List → System Detail → Destination Detail. Visited places show full records; known-only places show name with an UNCHARTED label and cannot be navigated into. Depends on features 039 and 043.
+See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
 
 ## NEEDS SPEC
 
-### 041 · Mission Flavour Text
+### 042 · Mission Flavour Text
 
 Mission `description` text is assembled from world-data components: sentence fragments for job types, item/commodity names, destination flavour, and NPC voice. The fragment lists live in `docs/world/` and are loaded into `WorldData`. `MissionGenerator` picks and concatenates fragments based on mission type, replacing the placeholder prose strings added in feature 037. Full spec to be written.
 
