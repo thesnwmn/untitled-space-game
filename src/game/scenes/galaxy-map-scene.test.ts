@@ -53,8 +53,8 @@ describe('GalaxyMapScene render', () => {
     const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // MAP tab active = bg green somewhere in row 3
-    const tabRow = buf[3];
+    // MAP tab active = bg green somewhere in tab row (CONTENT_TOP+3 = row 6)
+    const tabRow = buf[6];
     const hasGreenCell = tabRow.some(c => c.char !== ' ' && c.bg === 'green');
     expect(hasGreenCell).toBe(true);
   });
@@ -67,12 +67,12 @@ describe('GalaxyMapScene render', () => {
     expect(allText(buf)).toContain('SOL');
   });
 
-  it('MAP tab shows system list with * HERE marker for current system', () => {
+  it('MAP tab shows * Current location marker for player system in info row', () => {
     const input = new MockInputHandler();
     const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    expect(allText(buf)).toContain('* HERE');
+    expect(allText(buf)).toContain('* Current loc');
   });
 
   it('ROUTE tab shows FROM: and current system when RIGHT is pressed', () => {
@@ -102,8 +102,8 @@ describe('GalaxyMapScene tab switching', () => {
     input.triggerAction('RIGHT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // ROUTE tab bg = green somewhere in tab row
-    const tabRow = buf[3];
+    // ROUTE tab bg = green somewhere in tab row (CONTENT_TOP+3 = row 6)
+    const tabRow = buf[6];
     const greenCells = tabRow.filter(c => c.bg === 'green').map(c => c.char);
     expect(greenCells.join('')).toContain('R'); // part of 'ROUTE'
   });
@@ -115,8 +115,8 @@ describe('GalaxyMapScene tab switching', () => {
     input.triggerAction('LEFT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // Should show * HERE (MAP-only content)
-    expect(allText(buf)).toContain('* HERE');
+    // Should show neighbor list (MAP-only content)
+    expect(allText(buf)).toContain('ALPHA CENTAURI');
   });
 });
 
@@ -140,8 +140,8 @@ describe('GalaxyMapScene MAP tab navigation', () => {
     input.triggerAction('UP');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // Still shows * HERE (player still at sol = first item)
-    expect(allText(buf)).toContain('* HERE');
+    // Cursor stays on first neighbor (alpha-centauri)
+    expect(allText(buf)).toContain('> ALPHA');
   });
 });
 
@@ -172,21 +172,26 @@ describe('GalaxyMapScene BACK action', () => {
 // ── jump ──────────────────────────────────────────────────────────────────────
 
 describe('GalaxyMapScene jump behaviour', () => {
-  it('SELECT on player system does not call onJump', () => {
+  it('SELECT with insufficient fuel re-centres map without jumping', () => {
     const onJump = vi.fn();
     const input = new MockInputHandler();
-    new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, onJump, vi.fn());
-    // At start, cursor is on SOL (player's system) — SELECT should not jump
+    const player = makePlayer();
+    player.consumeFuel(99); // 1 L remaining — all jumps too expensive
+    const scene = new GalaxyMapScene(input, ctx, player, { canJump: true }, onJump, vi.fn());
+    // Cursor starts on alpha-centauri (first neighbour); not enough fuel → re-centres
     input.triggerAction('SELECT');
     expect(onJump).not.toHaveBeenCalled();
+    // After re-centring on alpha-centauri, SOL should now appear as its neighbour
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    expect(allText(buf)).toContain('SOL');
   });
 
   it('SELECT on a direct neighbour with enough fuel calls onJump', () => {
     const onJump = vi.fn();
     const input = new MockInputHandler();
     new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, onJump, vi.fn());
-    // Move to alpha-centauri (direct neighbour of sol, costs 18 L, player has 100 L)
-    input.triggerAction('DOWN'); // alpha-centauri
+    // Cursor starts at index 0 = alpha-centauri (direct neighbour of sol, costs 18 L, player has 100 L)
     input.triggerAction('SELECT');
     expect(onJump).toHaveBeenCalledTimes(1);
     expect(onJump).toHaveBeenCalledWith('alpha-centauri');
@@ -219,17 +224,17 @@ describe('GalaxyMapScene search', () => {
   it('typing letters filters the visible system list', () => {
     const input = new MockInputHandler();
     const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
-    // 'PROC' uniquely matches Procyon, nothing else
-    for (const ch of 'PROC') input.triggerChar(ch);
+    // 'ALPHA' matches only ALPHA CENTAURI among Sol's neighbours (barnard's, wolf 359 don't match)
+    for (const ch of 'ALPHA') input.triggerChar(ch);
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // Check only list rows (15-22) — chart still shows Sol's neighbors unconditionally
-    const LIST_TOP = 15;
+    // Check only list rows (18-22) — chart still shows all neighbours unconditionally
+    const LIST_TOP = 18;
     const LIST_BOT = 23;
     const listText = buf.slice(LIST_TOP, LIST_BOT).map(row => row.map(c => c.char).join('')).join('\n');
-    expect(listText).toContain('PROCYON');
-    expect(listText).not.toContain('SIRIUS');
-    expect(listText).not.toContain('SOL');
+    expect(listText).toContain('ALPHA CENTAURI');
+    expect(listText).not.toContain("BARNARD");
+    expect(listText).not.toContain('WOLF');
   });
 
   it('search text appears in buffer', () => {
