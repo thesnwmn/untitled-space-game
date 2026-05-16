@@ -19,13 +19,6 @@ See `docs/features/025-overhaul-star-field-display.md` for the full spec.
 
 ---
 
-### 040 · Global Menu · Mission Log
-
-Add a `MISSIONS` entry to the global menu that opens a dedicated Mission Log screen. Lists active missions with status sub-lines and allows cancellation via a `ModalConfirmDialog`. Depends on feature 039.
-See `docs/features/040-global-menu-mission-log.md` for the full spec.
-
----
-
 ### 041 · Station Mission Actions
 
 Add COLLECT and DELIVER mission items to `StationMenuScene` (above normal options, with a separator). Show mission items distinctly in `CargoScene` (bright-yellow, separate section). Complete deliveries with a reward modal.
