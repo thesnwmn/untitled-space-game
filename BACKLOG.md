@@ -19,13 +19,6 @@ See `docs/features/025-overhaul-star-field-display.md` for the full spec.
 
 ---
 
-### 037 · Mission Foundation
-
-Establish the core mission data model, world data additions (`DeliveryItem[]`, `NpcNames`), `MissionGenerator`, and `PlayerState` extensions (`activeMissions`, `missionItems`, accept/collect/complete/cancel methods) that all subsequent mission features depend on.
-See `docs/features/037-mission-foundation.md` for the full spec.
-
----
-
 ### 038 · Mission Board Live
 
 Replace the hardcoded `MissionBoardScene` placeholder with live generated missions (TTL-cached in `Game`). Add `MissionDetailScene` with full mission info, cargo check, and ACCEPT/BACK navigation. Accepted missions are removed from the board.

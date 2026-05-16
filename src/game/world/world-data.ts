@@ -1,4 +1,4 @@
-import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry } from './types';
+import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry, DeliveryItem, NpcNames } from './types';
 
 let _world: WorldData | null = null;
 
@@ -60,6 +60,14 @@ export function getCommodities(): Commodity[] {
 
 export function getPublicSystems(): StarSystem[] {
   return getWorld().systems.filter(s => s.playerKnowledge === 'public');
+}
+
+export function getDeliveryItems(): DeliveryItem[] {
+  return getWorld().deliveryItems;
+}
+
+export function getNpcNames(): NpcNames {
+  return getWorld().npcNames;
 }
 
 export function computeCargoWeightKg(cargoHold: CargoEntry[]): number {

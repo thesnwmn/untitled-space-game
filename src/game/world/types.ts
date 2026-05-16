@@ -134,6 +134,58 @@ export interface TraderStockEntry {
   qty: number;
 }
 
+export type MissionType = 'delivery' | 'supply';
+export type MissionStatus = 'pending-pickup' | 'in-transit' | 'needs-supplies' | 'ready-to-deliver';
+
+export interface DeliveryMissionSpec {
+  type: 'delivery';
+  itemName: string;
+  itemWeightKg: number;
+  pickupDestinationId: string;
+  deliveryDestinationId: string;
+}
+
+export interface SupplyMissionSpec {
+  type: 'supply';
+  requirements: { commodityId: string; qty: number }[];
+  deliveryDestinationId: string;
+}
+
+export interface MissionBase {
+  id: string;
+  title: string;
+  description: string;
+  reward: number;
+  issuingDestinationId: string;
+  giverName: string;
+  giverFactionId?: string;
+}
+
+export type MissionSpec = MissionBase & (DeliveryMissionSpec | SupplyMissionSpec);
+
+export type ActiveMission = MissionSpec & {
+  acceptedAt: number;
+  pickupComplete: boolean;
+};
+
+export interface MissionItem {
+  missionId: string;
+  itemName: string;
+  weightKg: number;
+}
+
+export interface DeliveryItem {
+  id: string;
+  name: string;
+  weightKg: number;
+}
+
+export interface NpcNames {
+  special: string[];
+  firstNames: string[];
+  lastNames: string[];
+}
+
 export interface WorldData {
   settings: GameSettings;
   systems: StarSystem[];
@@ -144,4 +196,6 @@ export interface WorldData {
   factions: Faction[];
   commodities: Commodity[];
   storyBeats: StoryBeat[];
+  deliveryItems: DeliveryItem[];
+  npcNames: NpcNames;
 }

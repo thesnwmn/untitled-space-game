@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { PlayerState } from './player-state';
+import { PlayerState, getMissionStatus, canAcceptMission } from './player-state';
+import type { MissionSpec } from './world/types';
 
 function makePlayer(overrides?: {
   shipId?: string;
@@ -168,5 +169,290 @@ describe('PlayerState', () => {
       expect(p.systemId).toBe('barnards-star');
       expect(p.destinationId).toBeNull();
     });
+  });
+});
+
+// ─── Mission helpers ────────────────────────────────────────────────────────
+
+function makeDeliverySpec(overrides?: Partial<MissionSpec>): MissionSpec {
+  return {
+    id: 'test-delivery-1',
+    type: 'delivery',
+    title: 'Test Delivery',
+    description: 'Deliver a thing.',
+    reward: 300,
+    issuingDestinationId: 'elysium-station',
+    giverName: 'Dispatch',
+    itemName: 'Encrypted Data Core',
+    itemWeightKg: 5,
+    pickupDestinationId: 'elysium-station',
+    deliveryDestinationId: 'portside-market',
+    ...overrides,
+  } as MissionSpec;
+}
+
+function makeSupplySpec(overrides?: Partial<MissionSpec>): MissionSpec {
+  return {
+    id: 'test-supply-1',
+    type: 'supply',
+    title: 'Test Supply',
+    description: 'Bring supplies.',
+    reward: 150,
+    issuingDestinationId: 'elysium-station',
+    giverName: 'Merchant Kess',
+    requirements: [{ commodityId: 'iron-ore', qty: 2 }],
+    deliveryDestinationId: 'elysium-station',
+    ...overrides,
+  } as MissionSpec;
+}
+
+describe('PlayerState — missions', () => {
+  describe('acceptMission', () => {
+    it('adds mission to activeMissions', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), false);
+      expect(p.activeMissions).toHaveLength(1);
+      expect(p.activeMissions[0].id).toBe('test-delivery-1');
+    });
+
+    it('with giveItemNow=false, missionItems stays empty and pickupComplete is false', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), false);
+      expect(p.missionItems).toHaveLength(0);
+      expect(p.activeMissions[0].pickupComplete).toBe(false);
+    });
+
+    it('with giveItemNow=true, adds MissionItem and sets pickupComplete', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), true);
+      expect(p.missionItems).toHaveLength(1);
+      expect(p.missionItems[0].itemName).toBe('Encrypted Data Core');
+      expect(p.missionItems[0].weightKg).toBe(5);
+      expect(p.activeMissions[0].pickupComplete).toBe(true);
+    });
+
+    it('supply mission ignores giveItemNow', () => {
+      const p = makePlayer();
+      p.acceptMission(makeSupplySpec(), true);
+      expect(p.missionItems).toHaveLength(0);
+      expect(p.activeMissions[0].pickupComplete).toBe(false);
+    });
+  });
+
+  describe('missionItemsWeightKg and cargoWeightKg', () => {
+    it('missionItemsWeightKg is 0 with no mission items', () => {
+      const p = makePlayer();
+      expect(p.missionItemsWeightKg).toBe(0);
+    });
+
+    it('missionItemsWeightKg sums weights of all mission items', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec({ id: 'm1', itemWeightKg: 5 } as any), true);
+      p.acceptMission(makeDeliverySpec({ id: 'm2', itemWeightKg: 35 } as any), true);
+      expect(p.missionItemsWeightKg).toBe(40);
+    });
+
+    it('cargoWeightKg includes mission items', () => {
+      const p = makePlayer();
+      p.addCargo('iron-ore', 1); // 40 kg
+      p.acceptMission(makeDeliverySpec(), true); // 5 kg
+      expect(p.cargoWeightKg).toBe(45);
+    });
+  });
+
+  describe('collectMissionItem', () => {
+    it('sets pickupComplete and adds MissionItem', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), false);
+      p.collectMissionItem('test-delivery-1');
+      expect(p.activeMissions[0].pickupComplete).toBe(true);
+      expect(p.missionItems).toHaveLength(1);
+      expect(p.missionItems[0].missionId).toBe('test-delivery-1');
+    });
+
+    it('is a no-op for unknown mission id', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), false);
+      p.collectMissionItem('nonexistent');
+      expect(p.activeMissions[0].pickupComplete).toBe(false);
+      expect(p.missionItems).toHaveLength(0);
+    });
+
+    it('is a no-op for supply missions', () => {
+      const p = makePlayer();
+      p.acceptMission(makeSupplySpec(), false);
+      p.collectMissionItem('test-supply-1');
+      expect(p.missionItems).toHaveLength(0);
+    });
+  });
+
+  describe('completeMission', () => {
+    it('removes mission from activeMissions', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), true);
+      p.completeMission('test-delivery-1');
+      expect(p.activeMissions).toHaveLength(0);
+    });
+
+    it('removes associated MissionItem', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), true);
+      expect(p.missionItems).toHaveLength(1);
+      p.completeMission('test-delivery-1');
+      expect(p.missionItems).toHaveLength(0);
+    });
+  });
+
+  describe('cancelMission', () => {
+    it('removes mission and its item, same as completeMission', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), true);
+      p.cancelMission('test-delivery-1');
+      expect(p.activeMissions).toHaveLength(0);
+      expect(p.missionItems).toHaveLength(0);
+    });
+  });
+
+  describe('getMissionsForPickup', () => {
+    it('returns delivery missions where pickupDestinationId matches and pickupComplete is false', () => {
+      const p = makePlayer({ destinationId: 'elysium-station' });
+      p.acceptMission(makeDeliverySpec(), false);
+      const result = p.getMissionsForPickup('elysium-station');
+      expect(result).toHaveLength(1);
+    });
+
+    it('excludes missions already picked up', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec(), true); // giveItemNow=true marks pickupComplete
+      const result = p.getMissionsForPickup('elysium-station');
+      expect(result).toHaveLength(0);
+    });
+
+    it('excludes missions for a different pickup destination', () => {
+      const p = makePlayer();
+      p.acceptMission(makeDeliverySpec({ pickupDestinationId: 'portside-market' } as any), false);
+      const result = p.getMissionsForPickup('elysium-station');
+      expect(result).toHaveLength(0);
+    });
+
+    it('does not include supply missions', () => {
+      const p = makePlayer();
+      p.acceptMission(makeSupplySpec({ pickupDestinationId: 'elysium-station' } as any), false);
+      const result = p.getMissionsForPickup('elysium-station');
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('getMissionsForDelivery', () => {
+    it('returns delivery mission when at delivery destination with item collected', () => {
+      const p = makePlayer({ destinationId: 'portside-market' });
+      p.acceptMission(makeDeliverySpec(), true); // item given, pickup complete
+      const result = p.getMissionsForDelivery('portside-market');
+      expect(result).toHaveLength(1);
+    });
+
+    it('excludes delivery mission when player is not at delivery destination', () => {
+      const p = makePlayer({ destinationId: 'elysium-station' });
+      p.acceptMission(makeDeliverySpec(), true);
+      const result = p.getMissionsForDelivery('portside-market');
+      expect(result).toHaveLength(0); // status is in-transit, not ready-to-deliver
+    });
+
+    it('excludes delivery mission when pickup not complete', () => {
+      const p = makePlayer({ destinationId: 'portside-market' });
+      p.acceptMission(makeDeliverySpec(), false);
+      const result = p.getMissionsForDelivery('portside-market');
+      expect(result).toHaveLength(0);
+    });
+
+    it('returns supply mission when player has all required commodities', () => {
+      const p = makePlayer({ destinationId: 'elysium-station' });
+      p.acceptMission(makeSupplySpec(), false);
+      p.addCargo('iron-ore', 2);
+      const result = p.getMissionsForDelivery('elysium-station');
+      expect(result).toHaveLength(1);
+    });
+
+    it('excludes supply mission when player is missing commodities', () => {
+      const p = makePlayer({ destinationId: 'elysium-station' });
+      p.acceptMission(makeSupplySpec(), false);
+      const result = p.getMissionsForDelivery('elysium-station');
+      expect(result).toHaveLength(0);
+    });
+  });
+});
+
+describe('getMissionStatus', () => {
+  it('delivery with pickupComplete=false returns pending-pickup', () => {
+    const p = makePlayer({ destinationId: 'portside-market' });
+    p.acceptMission(makeDeliverySpec(), false);
+    expect(getMissionStatus(p.activeMissions[0], p)).toBe('pending-pickup');
+  });
+
+  it('delivery with pickupComplete=true at delivery destination returns ready-to-deliver', () => {
+    const p = makePlayer({ destinationId: 'portside-market' });
+    p.acceptMission(makeDeliverySpec(), true);
+    expect(getMissionStatus(p.activeMissions[0], p)).toBe('ready-to-deliver');
+  });
+
+  it('delivery with pickupComplete=true at other destination returns in-transit', () => {
+    const p = makePlayer({ destinationId: 'elysium-station' });
+    p.acceptMission(makeDeliverySpec(), true);
+    expect(getMissionStatus(p.activeMissions[0], p)).toBe('in-transit');
+  });
+
+  it('supply with all commodities returns ready-to-deliver', () => {
+    const p = makePlayer();
+    p.acceptMission(makeSupplySpec(), false);
+    p.addCargo('iron-ore', 2);
+    expect(getMissionStatus(p.activeMissions[0], p)).toBe('ready-to-deliver');
+  });
+
+  it('supply missing commodities returns needs-supplies', () => {
+    const p = makePlayer();
+    p.acceptMission(makeSupplySpec(), false);
+    expect(getMissionStatus(p.activeMissions[0], p)).toBe('needs-supplies');
+  });
+
+  it('supply with partial quantity returns needs-supplies', () => {
+    const p = makePlayer();
+    p.acceptMission(makeSupplySpec(), false); // requires 2× iron-ore
+    p.addCargo('iron-ore', 1); // only 1
+    expect(getMissionStatus(p.activeMissions[0], p)).toBe('needs-supplies');
+  });
+});
+
+describe('canAcceptMission', () => {
+  it('returns ok for delivery mission that fits in cargo', () => {
+    const p = makePlayer(); // freighter: 2000 kg capacity, empty
+    const result = canAcceptMission(p, makeDeliverySpec());
+    expect(result.ok).toBe(true);
+  });
+
+  it('returns not-ok when delivery item exceeds available cargo space', () => {
+    const p = makePlayer();
+    p.addCargo('iron-ore', 49); // 49 × 40 kg = 1960 kg used, 40 kg left
+    const spec = makeDeliverySpec({ itemWeightKg: 50 } as any);
+    const result = canAcceptMission(p, spec);
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBeTruthy();
+  });
+
+  it('mission items count toward cargo space in acceptance check', () => {
+    const p = makePlayer();
+    // Accept a heavy delivery first (1950 kg), leaving 50 kg
+    p.acceptMission(makeDeliverySpec({ id: 'm1', itemWeightKg: 1950 } as any), true);
+    // Now try to accept a 100 kg item — should fail
+    const spec = makeDeliverySpec({ id: 'm2', itemWeightKg: 100 } as any);
+    const result = canAcceptMission(p, spec);
+    expect(result.ok).toBe(false);
+  });
+
+  it('supply missions always return ok', () => {
+    const p = makePlayer();
+    // Fill cargo to near-capacity
+    p.addCargo('iron-ore', 49);
+    const result = canAcceptMission(p, makeSupplySpec());
+    expect(result.ok).toBe(true);
   });
 });
