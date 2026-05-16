@@ -4,13 +4,8 @@ import { ScreenChrome, CONTENT_TOP } from '../ui/screen-chrome';
 import type { NavOption } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
 import type { StarSystem } from '../world/types';
-import { getPublicSystems, getRoutesFrom, getRoute, getDrive } from '../world/world-data';
-import { FUEL_PER_LY } from '../constants';
+import { getPublicSystems, getRoutesFrom, getRoute } from '../world/world-data';
 import { findRoute } from '../utils/route-finder';
-
-export interface GalaxyMapConfig {
-  canJump: boolean;
-}
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 //
@@ -58,15 +53,9 @@ function nameBox(name: string, boxLen: number): string {
   return '[' + padEnd(name.toUpperCase(), boxLen - 2) + ']';
 }
 
-function fuelCost(distance: number, fuelEfficiency: number): number {
-  return Math.ceil(FUEL_PER_LY * distance * fuelEfficiency);
-}
-
 export class GalaxyMapScene implements Scene {
   private readonly chrome: ScreenChrome;
   private readonly player: PlayerState;
-  private readonly canJump: boolean;
-  private readonly onJump: (systemId: string) => void;
   private readonly onBack: () => void;
 
   private activeTab: 'map' | 'route' = 'map';
@@ -85,14 +74,10 @@ export class GalaxyMapScene implements Scene {
     inputHandler: InputHandler,
     context: GameContext,
     player: PlayerState,
-    config: GalaxyMapConfig,
-    onJump: (systemId: string) => void,
     onBack: () => void,
   ) {
     this.chrome = new ScreenChrome(context, player);
     this.player = player;
-    this.canJump = config.canJump;
-    this.onJump = onJump;
     this.onBack = onBack;
 
     this.publicSystems = getPublicSystems()
@@ -148,10 +133,11 @@ export class GalaxyMapScene implements Scene {
           const neighbors = this.getMapNeighbors();
           const tapIdx = row - LIST_TOP_ROW;
           if (tapIdx >= 0 && tapIdx < neighbors.length) {
-            this.mapCursorIdx = tapIdx;
+            this.mapBrowsingSystemId = neighbors[tapIdx].id;
+            this.mapCursorIdx = 0;
+            this.searchText = '';
           }
         }
-        // Route tab destination list: rows CONTENT_TOP+8 to CONTENT_TOP+14 (11–17)
         if (this.activeTab === 'route' && row >= CONTENT_TOP + 8 && row <= CONTENT_TOP + 14) {
           const tapIdx = row - (CONTENT_TOP + 8);
           if (tapIdx >= 0 && tapIdx < this.otherSystems.length) {
@@ -191,20 +177,6 @@ export class GalaxyMapScene implements Scene {
     } else if (action === 'SELECT') {
       const sys = neighbors[cursor];
       if (!sys) return;
-      // Jump if browsing player's own system and this neighbor is reachable
-      if (this.mapBrowsingSystemId === this.player.systemId && this.canJump) {
-        const route = getRoute(this.player.systemId, sys.id);
-        if (route) {
-          const drive = getDrive(this.player.driveId);
-          const fuel = drive ? fuelCost(route.distance, drive.fuelEfficiency) : 0;
-          if (fuel <= this.player.fuelL) {
-            this.activated = true;
-            this.onJump(sys.id);
-            return;
-          }
-        }
-      }
-      // Otherwise re-centre on the selected neighbour
       this.mapBrowsingSystemId = sys.id;
       this.mapCursorIdx = 0;
       this.searchText = '';
@@ -216,28 +188,7 @@ export class GalaxyMapScene implements Scene {
       this.routeDestIdx = Math.max(0, this.routeDestIdx - 1);
     } else if (action === 'DOWN') {
       this.routeDestIdx = Math.min(this.otherSystems.length - 1, this.routeDestIdx + 1);
-    } else if ((action === 'SELECT') && this.canJump) {
-      const route = this.computeRoute();
-      if (route && route.length >= 2) {
-        const r = getRoute(route[0], route[1]);
-        if (r) {
-          const drive = getDrive(this.player.driveId);
-          const fuel = drive ? fuelCost(r.distance, drive.fuelEfficiency) : 0;
-          if (fuel <= this.player.fuelL) {
-            this.activated = true;
-            this.onJump(route[1]);
-          }
-        }
-      }
     }
-  }
-
-  private hasFuel(systemId: string): boolean {
-    const route = getRoute(this.player.systemId, systemId);
-    if (!route) return false;
-    const drive = getDrive(this.player.driveId);
-    if (!drive) return false;
-    return fuelCost(route.distance, drive.fuelEfficiency) <= this.player.fuelL;
   }
 
   private computeRoute(): string[] | null {
@@ -378,18 +329,11 @@ export class GalaxyMapScene implements Scene {
     const route = getRoute(center.id, selected.id);
     if (!route) return;
 
-    if (centerIsPlayer && this.canJump) {
-      const drive = getDrive(this.player.driveId);
-      const fuel = drive ? fuelCost(route.distance, drive.fuelEfficiency) : 0;
-      const ok = fuel <= this.player.fuelL;
-      const hint = ok ? '[SELECT] jump' : 'Insufficient fuel';
-      const line2 = `${selected.name.toUpperCase()}  ${fuel}L  ${hint}`;
-      writeText(buffer, INFO_ROW + 1, 2, line2.slice(0, w - 4), ok ? 'white' : 'bright-red', 'black');
-    } else if (!centerIsPlayer) {
-      const hops = findRoute(this.player.systemId, selected.id);
-      const hint = hops ? `${hops.length - 1} hop${hops.length - 1 !== 1 ? 's' : ''} from your location` : 'Not reachable';
-      writeText(buffer, INFO_ROW + 1, 2, `${selected.name.toUpperCase()}  ${hint}`.slice(0, w - 4), 'bright-black', 'black');
-    }
+    const hops = findRoute(this.player.systemId, selected.id);
+    const hopsStr = hops
+      ? (hops.length === 1 ? '(your location)' : `${hops.length - 1} hop${hops.length - 1 !== 1 ? 's' : ''} from you`)
+      : '(unreachable)';
+    writeText(buffer, INFO_ROW + 1, 2, `${selected.name.toUpperCase()}  ${route.distance}LY  ${hopsStr}`.slice(0, w - 4), 'bright-black', 'black');
   }
 
   // ── ROUTE tab ────────────────────────────────────────────────────────────────
@@ -403,7 +347,6 @@ export class GalaxyMapScene implements Scene {
     const sep1    = listTop + listH;   // 18
     const resTop  = sep1 + 1;          // 19
     const sep2    = resTop + 6;        // 25
-    const fuelRow = sep2 + 1;          // 26
 
     const fromSys = this.publicSystems.find(s => s.id === this.player.systemId);
     writeText(buffer, fromRow, 2, 'FROM:', 'bright-black', 'black');
@@ -437,7 +380,6 @@ export class GalaxyMapScene implements Scene {
     const hops = route.length - 1;
     writeText(buffer, resTop, 2, `Route: ${hops} hop${hops !== 1 ? 's' : ''}`, 'bright-white', 'black');
 
-    const drive = getDrive(this.player.driveId);
     for (let i = 0; i < hops; i++) {
       const r = getRoute(route[i], route[i + 1]);
       if (!r) continue;
@@ -446,14 +388,6 @@ export class GalaxyMapScene implements Scene {
       const fromName = (this.publicSystems.find(s => s.id === route[i])?.name ?? route[i]).toUpperCase().slice(0, 9);
       const toName   = (this.publicSystems.find(s => s.id === route[i + 1])?.name ?? route[i + 1]).toUpperCase().slice(0, 9);
       writeText(buffer, hopRow, 4, `${fromName} -> ${toName}  ${r.distance}LY  ${r.stability}`.slice(0, w - 6), 'white', 'black');
-    }
-
-    if (fuelRow < buffer.length - 1 && drive) {
-      const firstRoute = getRoute(route[0], route[1]);
-      const firstFuel = firstRoute ? fuelCost(firstRoute.distance, drive.fuelEfficiency) : 0;
-      const ok = firstFuel <= this.player.fuelL;
-      const hint = this.canJump ? (ok ? '  [SELECT] jump first hop' : '  Insufficient fuel') : '';
-      writeText(buffer, fuelRow, 2, `First hop: ${firstFuel}L / ${this.player.fuelL}L avail${hint}`.slice(0, w - 4), ok ? 'bright-black' : 'bright-red', 'black');
     }
   }
 }

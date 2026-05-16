@@ -34,13 +34,13 @@ const ctx: GameContext = { environment: 'browser', primaryInput: 'keyboard', deb
 describe('GalaxyMapScene render', () => {
   it('does not throw for a player at sol', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     expect(() => scene.render(makeBuffer(40, 30))).not.toThrow();
   });
 
   it('renders MAP and ROUTE tabs', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     const text = allText(buf);
@@ -50,7 +50,7 @@ describe('GalaxyMapScene render', () => {
 
   it('MAP tab is highlighted by default', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     // MAP tab active = bg green somewhere in tab row (CONTENT_TOP+3 = row 6)
@@ -61,7 +61,7 @@ describe('GalaxyMapScene render', () => {
 
   it('MAP tab shows the current system name', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     expect(allText(buf)).toContain('SOL');
@@ -69,7 +69,7 @@ describe('GalaxyMapScene render', () => {
 
   it('MAP tab shows * Current location marker for player system in info row', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     expect(allText(buf)).toContain('* Current loc');
@@ -77,7 +77,7 @@ describe('GalaxyMapScene render', () => {
 
   it('ROUTE tab shows FROM: and current system when RIGHT is pressed', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerAction('RIGHT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
@@ -88,7 +88,7 @@ describe('GalaxyMapScene render', () => {
 
   it('does not throw for a 50-row buffer', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     expect(() => scene.render(makeBuffer(40, 50))).not.toThrow();
   });
 });
@@ -98,7 +98,7 @@ describe('GalaxyMapScene render', () => {
 describe('GalaxyMapScene tab switching', () => {
   it('RIGHT switches to ROUTE tab', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerAction('RIGHT');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
@@ -110,7 +110,7 @@ describe('GalaxyMapScene tab switching', () => {
 
   it('LEFT returns to MAP tab from ROUTE tab', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerAction('RIGHT');
     input.triggerAction('LEFT');
     const buf = makeBuffer(40, 30);
@@ -125,23 +125,53 @@ describe('GalaxyMapScene tab switching', () => {
 describe('GalaxyMapScene MAP tab navigation', () => {
   it('DOWN moves cursor to next system', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
-    // Initially at SOL (index 0); DOWN → alpha-centauri
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerAction('DOWN');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // Cursor should be on alpha-centauri (bright-cyan, not the player yellow)
     expect(allText(buf)).toContain('ALPHA CENTAURI');
   });
 
   it('UP from first item stays at first', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerAction('UP');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
     // Cursor stays on first neighbor (alpha-centauri)
     expect(allText(buf)).toContain('> ALPHA');
+  });
+});
+
+// ── SELECT re-centres ─────────────────────────────────────────────────────────
+
+describe('GalaxyMapScene SELECT re-centres chart', () => {
+  it('SELECT re-centres chart on the highlighted neighbour', () => {
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
+    // Cursor starts on alpha-centauri (first Sol neighbour)
+    input.triggerAction('SELECT');
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    // After re-centring on alpha-centauri, SOL should appear as its neighbour
+    const LIST_TOP = 18;
+    const LIST_BOT = 23;
+    const listText = buf.slice(LIST_TOP, LIST_BOT).map(row => row.map(c => c.char).join('')).join('\n');
+    expect(listText).toContain('SOL');
+  });
+
+  it('tap on list item re-centres chart on that system', () => {
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
+    // LIST_TOP_ROW = 18; tap row 18 = first neighbour (alpha-centauri)
+    input.triggerTap(5, 18);
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    // After re-centring on alpha-centauri, SOL should appear as its neighbour
+    const LIST_TOP = 18;
+    const LIST_BOT = 23;
+    const listText = buf.slice(LIST_TOP, LIST_BOT).map(row => row.map(c => c.char).join('')).join('\n');
+    expect(listText).toContain('SOL');
   });
 });
 
@@ -151,7 +181,7 @@ describe('GalaxyMapScene BACK action', () => {
   it('BACK calls onBack', () => {
     const onBack = vi.fn();
     const input = new MockInputHandler();
-    new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), onBack);
+    new GalaxyMapScene(input, ctx, makePlayer(), onBack);
     input.triggerAction('BACK');
     expect(onBack).toHaveBeenCalledTimes(1);
   });
@@ -159,7 +189,7 @@ describe('GalaxyMapScene BACK action', () => {
   it('BACK clears search text instead of going back when text is present', () => {
     const onBack = vi.fn();
     const input = new MockInputHandler();
-    new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), onBack);
+    new GalaxyMapScene(input, ctx, makePlayer(), onBack);
     input.triggerChar('S');
     input.triggerAction('BACK');
     expect(onBack).not.toHaveBeenCalled();
@@ -169,61 +199,12 @@ describe('GalaxyMapScene BACK action', () => {
   });
 });
 
-// ── jump ──────────────────────────────────────────────────────────────────────
-
-describe('GalaxyMapScene jump behaviour', () => {
-  it('SELECT with insufficient fuel re-centres map without jumping', () => {
-    const onJump = vi.fn();
-    const input = new MockInputHandler();
-    const player = makePlayer();
-    player.consumeFuel(99); // 1 L remaining — all jumps too expensive
-    const scene = new GalaxyMapScene(input, ctx, player, { canJump: true }, onJump, vi.fn());
-    // Cursor starts on alpha-centauri (first neighbour); not enough fuel → re-centres
-    input.triggerAction('SELECT');
-    expect(onJump).not.toHaveBeenCalled();
-    // After re-centring on alpha-centauri, SOL should now appear as its neighbour
-    const buf = makeBuffer(40, 30);
-    scene.render(buf);
-    expect(allText(buf)).toContain('SOL');
-  });
-
-  it('SELECT on a direct neighbour with enough fuel calls onJump', () => {
-    const onJump = vi.fn();
-    const input = new MockInputHandler();
-    new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, onJump, vi.fn());
-    // Cursor starts at index 0 = alpha-centauri (direct neighbour of sol, costs 18 L, player has 100 L)
-    input.triggerAction('SELECT');
-    expect(onJump).toHaveBeenCalledTimes(1);
-    expect(onJump).toHaveBeenCalledWith('alpha-centauri');
-  });
-
-  it('SELECT on a direct neighbour with insufficient fuel does NOT call onJump', () => {
-    const onJump = vi.fn();
-    const input = new MockInputHandler();
-    const player = makePlayer();
-    player.consumeFuel(95); // 5 L remaining — not enough for any jump
-    new GalaxyMapScene(input, ctx, player, { canJump: true }, onJump, vi.fn());
-    input.triggerAction('DOWN'); // alpha-centauri
-    input.triggerAction('SELECT');
-    expect(onJump).not.toHaveBeenCalled();
-  });
-
-  it('SELECT does not call onJump when canJump is false', () => {
-    const onJump = vi.fn();
-    const input = new MockInputHandler();
-    new GalaxyMapScene(input, ctx, makePlayer(), { canJump: false }, onJump, vi.fn());
-    input.triggerAction('DOWN');
-    input.triggerAction('SELECT');
-    expect(onJump).not.toHaveBeenCalled();
-  });
-});
-
 // ── search ────────────────────────────────────────────────────────────────────
 
 describe('GalaxyMapScene search', () => {
   it('typing letters filters the visible system list', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     // 'ALPHA' matches only ALPHA CENTAURI among Sol's neighbours (barnard's, wolf 359 don't match)
     for (const ch of 'ALPHA') input.triggerChar(ch);
     const buf = makeBuffer(40, 30);
@@ -233,13 +214,13 @@ describe('GalaxyMapScene search', () => {
     const LIST_BOT = 23;
     const listText = buf.slice(LIST_TOP, LIST_BOT).map(row => row.map(c => c.char).join('')).join('\n');
     expect(listText).toContain('ALPHA CENTAURI');
-    expect(listText).not.toContain("BARNARD");
+    expect(listText).not.toContain('BARNARD');
     expect(listText).not.toContain('WOLF');
   });
 
   it('search text appears in buffer', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerChar('P');
     const buf = makeBuffer(40, 30);
     scene.render(buf);
@@ -252,30 +233,21 @@ describe('GalaxyMapScene search', () => {
 describe('GalaxyMapScene ROUTE tab', () => {
   it('shows a route when destination is reachable', () => {
     const input = new MockInputHandler();
-    const scene = new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, vi.fn(), vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerAction('RIGHT'); // switch to ROUTE tab
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // Should show "Route:" with hop count
     expect(allText(buf)).toContain('Route:');
   });
 
-  it('ROUTE tab SELECT calls onJump with first-hop system when fuel ok', () => {
-    const onJump = vi.fn();
+  it('DOWN on ROUTE tab moves destination cursor', () => {
     const input = new MockInputHandler();
-    new GalaxyMapScene(input, ctx, makePlayer(), { canJump: true }, onJump, vi.fn());
-    input.triggerAction('RIGHT'); // ROUTE tab
-    // Default destination is first other system (alpha-centauri, direct neighbour)
-    input.triggerAction('SELECT');
-    expect(onJump).toHaveBeenCalledTimes(1);
-  });
-
-  it('ROUTE tab SELECT does not call onJump when canJump is false', () => {
-    const onJump = vi.fn();
-    const input = new MockInputHandler();
-    new GalaxyMapScene(input, ctx, makePlayer(), { canJump: false }, onJump, vi.fn());
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), vi.fn());
     input.triggerAction('RIGHT');
-    input.triggerAction('SELECT');
-    expect(onJump).not.toHaveBeenCalled();
+    input.triggerAction('DOWN'); // move to second destination
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    // Route tab should still show Route: for the new destination
+    expect(allText(buf)).toContain('Route:');
   });
 });

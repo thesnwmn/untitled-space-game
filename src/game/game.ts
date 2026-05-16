@@ -234,8 +234,6 @@ export class Game {
   private goToGalaxyMap(): void {
     this.currentScene = new GalaxyMapScene(
       this.input, this.context, this.player,
-      { canJump: true },
-      (id: string) => this.onJumpSelected(id),
       () => this.goToTravelMenu(),
     );
   }
