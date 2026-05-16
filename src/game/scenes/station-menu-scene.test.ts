@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { StationMenuScene } from './station-menu-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
+import type { MissionSpec } from '../world/types';
 import { makePlayer } from '../../tests/makePlayer';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -49,6 +50,10 @@ function rowFg(buffer: CharBuffer, row: number, col: number): Color {
   return buffer[row][col].fg;
 }
 
+function bufferText(buffer: CharBuffer): string {
+  return buffer.map(row => row.map(c => c.char).join('')).join('\n');
+}
+
 const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
 };
@@ -81,7 +86,56 @@ function makeScene(
   const player = makePlayer({ credits });
   // Consume fuel to reach the desired fuelL (player starts at full capacity 100)
   if (fuelL < fuelCapacityL) player.consumeFuel(fuelCapacityL - fuelL);
-  return new StationMenuScene(input, ctx, player, 'elysium-station', onRefuel, onTrader, onMissionBoard, onShip, vi.fn());
+  return new StationMenuScene(input, ctx, player, 'elysium-station', onRefuel, onTrader, onMissionBoard, vi.fn(), onShip, vi.fn());
+}
+
+// Delivery mission spec for pickup at elysium-station
+function makeDeliveryPickupSpec(overrides: Partial<{ reward: number; itemName: string }> = {}): MissionSpec {
+  return {
+    id: 'test-delivery-pickup',
+    type: 'delivery',
+    title: 'Test Delivery',
+    description: 'A test delivery mission',
+    reward: overrides.reward ?? 500,
+    issuingDestinationId: 'elysium-station',
+    giverName: 'Test NPC',
+    itemName: overrides.itemName ?? 'Mystery Package',
+    itemWeightKg: 50,
+    pickupDestinationId: 'elysium-station',
+    deliveryDestinationId: 'tycho-orbital',
+  };
+}
+
+// Delivery mission spec for delivery at elysium-station (item already picked up)
+function makeDeliveryDeliverSpec(overrides: Partial<{ reward: number; title: string }> = {}): MissionSpec {
+  return {
+    id: 'test-delivery-deliver',
+    type: 'delivery',
+    title: overrides.title ?? 'Deliver Package',
+    description: 'A test delivery mission',
+    reward: overrides.reward ?? 750,
+    issuingDestinationId: 'tycho-orbital',
+    giverName: 'Test NPC',
+    itemName: 'Sealed Crate',
+    itemWeightKg: 80,
+    pickupDestinationId: 'tycho-orbital',
+    deliveryDestinationId: 'elysium-station',
+  };
+}
+
+// Supply mission spec for delivery at elysium-station
+function makeSupplyDeliverSpec(overrides: Partial<{ reward: number }> = {}): MissionSpec {
+  return {
+    id: 'test-supply-deliver',
+    type: 'supply',
+    title: 'Supply Run',
+    description: 'Bring iron ore',
+    reward: overrides.reward ?? 600,
+    issuingDestinationId: 'elysium-station',
+    giverName: 'Test NPC',
+    requirements: [{ commodityId: 'iron-ore', qty: 3 }],
+    deliveryDestinationId: 'elysium-station',
+  };
 }
 
 // ── tests ─────────────────────────────────────────────────────────────────────
@@ -181,7 +235,7 @@ describe('StationMenuScene', () => {
     it('does not show TRADER item when amenities.trader is false', () => {
       const input = new MockInputHandler();
       // tycho-orbital: trader=false; only MISSION BOARD
-      const scene = new StationMenuScene(input, keyboardContext, makePlayer({ destinationId: 'tycho-orbital' }), 'tycho-orbital', vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+      const scene = new StationMenuScene(input, keyboardContext, makePlayer({ destinationId: 'tycho-orbital' }), 'tycho-orbital', vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // First item should be MISSION BOARD
@@ -431,7 +485,7 @@ describe('StationMenuScene', () => {
       const player = makePlayer({ destinationId });
       return new StationMenuScene(
         input, keyboardContext, player, destinationId,
-        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
     }
 
@@ -466,6 +520,217 @@ describe('StationMenuScene', () => {
       const footer = buf[29].map(c => c.char).join('');
       expect(footer).toContain('TAKE OFF');
       expect(footer).not.toContain('UNDOCK');
+    });
+  });
+
+  // ── Mission action tests ──────────────────────────────────────────────────
+
+  describe('COLLECT flow', () => {
+    it('renders COLLECT item above amenities when pickup mission is present', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeDeliveryPickupSpec({ itemName: 'Mystery Package' }), false);
+      const input = new MockInputHandler();
+      const scene = new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('COLLECT: Mystery Package');
+    });
+
+    it('COLLECT item renders in bright-yellow when not selected', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeDeliveryPickupSpec(), false);
+      const input = new MockInputHandler();
+      const scene = new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      // Move cursor away from COLLECT (cursor starts on first non-disabled item = COLLECT)
+      input.triggerAction('DOWN'); // move to next item (separator is skipped, so TRADER)
+      scene.render(buf);
+      // COLLECT row is MENU_ROW_START (row 10), now not cursor → bright-yellow
+      const collectRow = buf[MENU_ROW_START];
+      const firstChar = collectRow.find((c, i) => c.char !== ' ' && i >= 2);
+      expect(firstChar?.fg).toBe('bright-yellow');
+    });
+
+    it('separator row appears between mission items and amenity items', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeDeliveryPickupSpec(), false);
+      const input = new MockInputHandler();
+      const scene = new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // COLLECT at row 10, separator at row 11, TRADER at row 12
+      expect(rowText(buf, MENU_ROW_START + 1)).toContain('─');
+      expect(rowText(buf, MENU_ROW_START + 2)).toContain('TRADER');
+    });
+
+    it('selecting COLLECT calls collectMissionItem on player', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      const spec = makeDeliveryPickupSpec();
+      player.acceptMission(spec, false);
+      expect(player.missionItems.length).toBe(0);
+      const input = new MockInputHandler();
+      const onHub = vi.fn();
+      new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), onHub, vi.fn(), vi.fn(),
+      );
+      // cursor starts on COLLECT item (first non-disabled)
+      input.triggerAction('SELECT');
+      expect(player.missionItems.length).toBe(1);
+      expect(player.missionItems[0].itemName).toBe('Mystery Package');
+    });
+
+    it('selecting COLLECT calls onHub to rebuild station menu', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeDeliveryPickupSpec(), false);
+      const input = new MockInputHandler();
+      const onHub = vi.fn();
+      new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), onHub, vi.fn(), vi.fn(),
+      );
+      input.triggerAction('SELECT');
+      expect(onHub).toHaveBeenCalledTimes(1);
+    });
+
+    it('separator is absent when no mission items are present', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, keyboardContext);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // rows 10 and 11 should be TRADER and MISSION BOARD, no separator dashes
+      expect(rowText(buf, MENU_ROW_START)).not.toContain('─');
+      expect(rowText(buf, MENU_ROW_START + 1)).not.toContain('─');
+    });
+  });
+
+  describe('DELIVER flow', () => {
+    it('renders DELIVER item above amenities when delivery mission is ready', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      const spec = makeDeliveryDeliverSpec({ title: 'Deliver Package', reward: 750 });
+      player.acceptMission(spec, true); // giveItemNow → pickupComplete = true
+      const input = new MockInputHandler();
+      const scene = new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('DELIVER: Deliver Package → 750 CR');
+    });
+
+    it('selecting DELIVER (delivery mission) completes mission and adds credits', () => {
+      const player = makePlayer({ destinationId: 'elysium-station', credits: 1000 });
+      const spec = makeDeliveryDeliverSpec({ reward: 750 });
+      player.acceptMission(spec, true);
+      expect(player.activeMissions.length).toBe(1);
+      const input = new MockInputHandler();
+      new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      // cursor starts on DELIVER item
+      input.triggerAction('SELECT');
+      expect(player.activeMissions.length).toBe(0);
+      expect(player.credits).toBe(1750); // 1000 + 750
+    });
+
+    it('selecting DELIVER opens completion modal with reward info', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      const spec = makeDeliveryDeliverSpec({ reward: 750 });
+      player.acceptMission(spec, true);
+      const input = new MockInputHandler();
+      const scene = new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      input.triggerAction('SELECT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('MISSION COMPLETE');
+      expect(bufferText(buf)).toContain('750 CR');
+    });
+
+    it('closing completion modal calls onHub', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeDeliveryDeliverSpec({ reward: 750 }), true);
+      const input = new MockInputHandler();
+      const onHub = vi.fn();
+      new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), onHub, vi.fn(), vi.fn(),
+      );
+      input.triggerAction('SELECT'); // select DELIVER → opens modal
+      expect(onHub).not.toHaveBeenCalled();
+      input.triggerAction('SELECT'); // confirm modal OKAY
+      expect(onHub).toHaveBeenCalledTimes(1);
+    });
+
+    it('selecting DELIVER (supply mission) removes cargo and completes mission', () => {
+      const player = makePlayer({ destinationId: 'elysium-station', credits: 500 });
+      const spec = makeSupplyDeliverSpec({ reward: 600 });
+      player.acceptMission(spec, false);
+      player.addCargo('iron-ore', 3);
+      const input = new MockInputHandler();
+      new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      input.triggerAction('SELECT');
+      // Mission complete, cargo removed, credits added
+      expect(player.activeMissions.length).toBe(0);
+      expect(player.cargoHold.find(e => e.commodityId === 'iron-ore')).toBeUndefined();
+      expect(player.credits).toBe(1100); // 500 + 600
+    });
+
+    it('DELIVER shows error modal if supply cargo is removed after scene construction', () => {
+      // Supply missions check cargo at selection time, not just at construction. Simulate
+      // cargo being removed between scene build and item selection.
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      const supplySpec = makeSupplyDeliverSpec({ reward: 600 });
+      player.acceptMission(supplySpec, false);
+      player.addCargo('iron-ore', 3); // satisfies requirement — DELIVER item is built
+      const input = new MockInputHandler();
+      const scene = new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      player.removeCargo('iron-ore', 3); // cargo lost before selection
+      input.triggerAction('SELECT'); // re-check fails → error modal
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('CANNOT DELIVER');
+    });
+
+    it('error modal OKAY re-enables scene input without navigating', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      const supplySpec = makeSupplyDeliverSpec({ reward: 600 });
+      player.acceptMission(supplySpec, false);
+      player.addCargo('iron-ore', 3);
+      const onHub = vi.fn();
+      const onTrader = vi.fn();
+      const input = new MockInputHandler();
+      new StationMenuScene(
+        input, keyboardContext, player, 'elysium-station',
+        vi.fn(), onTrader, vi.fn(), onHub, vi.fn(), vi.fn(),
+      );
+      player.removeCargo('iron-ore', 3); // make cargo check fail
+      input.triggerAction('SELECT'); // opens error modal
+      input.triggerAction('SELECT'); // confirm OKAY — should NOT navigate
+      expect(onHub).not.toHaveBeenCalled();
+      // Scene is re-enabled — navigate to TRADER (separator skipped by cursor)
+      input.triggerAction('DOWN');
+      input.triggerAction('SELECT');
+      expect(onTrader).toHaveBeenCalledTimes(1);
     });
   });
 });

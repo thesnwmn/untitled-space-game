@@ -155,4 +155,106 @@ describe('CargoScene', () => {
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
+
+  describe('mission items display', () => {
+    function makeMissionSpec(overrides: Partial<{ id: string; itemName: string; itemWeightKg: number }> = {}) {
+      return {
+        id: overrides.id ?? 'test-mission-1',
+        type: 'delivery' as const,
+        title: 'Test Delivery',
+        description: 'Deliver this',
+        reward: 500,
+        issuingDestinationId: 'elysium-station',
+        giverName: 'NPC',
+        itemName: overrides.itemName ?? 'Mystery Package',
+        itemWeightKg: overrides.itemWeightKg ?? 50,
+        pickupDestinationId: 'elysium-station',
+        deliveryDestinationId: 'tycho-orbital',
+      };
+    }
+
+    it('shows CARGO HOLD EMPTY when both hold and missionItems are empty', () => {
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('CARGO HOLD EMPTY');
+    });
+
+    it('does not show CARGO HOLD EMPTY when only mission items are present', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeMissionSpec(), true); // giveItemNow adds mission item
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).not.toContain('CARGO HOLD EMPTY');
+    });
+
+    it('renders MISSION CARGO header in bright-yellow', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeMissionSpec(), true);
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('MISSION CARGO');
+      // Find the row with MISSION CARGO and verify fg is bright-yellow
+      const missionRow = buf.findIndex(row => row.map(c => c.char).join('').includes('MISSION CARGO'));
+      expect(missionRow).toBeGreaterThan(-1);
+      const firstNonSpace = buf[missionRow].find((c, i) => c.char !== ' ' && i >= 2);
+      expect(firstNonSpace?.fg).toBe('bright-yellow');
+    });
+
+    it('renders mission item name with [MISSION] prefix in bright-yellow', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeMissionSpec({ itemName: 'Sealed Crate' }), true);
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const text = bufferText(buf);
+      expect(text).toContain('[MISSION]');
+      expect(text).toContain('Sealed Crate');
+      // Find the item row and check fg
+      const itemRow = buf.findIndex(row => row.map(c => c.char).join('').includes('[MISSION]'));
+      expect(itemRow).toBeGreaterThan(-1);
+      const firstNonSpace = buf[itemRow].find((c, i) => c.char !== ' ' && i >= 2);
+      expect(firstNonSpace?.fg).toBe('bright-yellow');
+    });
+
+    it('renders mission item weight', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeMissionSpec({ itemWeightKg: 75 }), true);
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('75KG');
+    });
+
+    it('total weight includes mission item weight', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.acceptMission(makeMissionSpec({ itemWeightKg: 150 }), true);
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('150/2000KG');
+    });
+
+    it('shows both regular cargo and mission items', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.addCargo('iron-ore', 2);
+      player.acceptMission(makeMissionSpec({ itemName: 'Data Chip' }), true);
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const text = bufferText(buf);
+      expect(text).toContain('Iron Ore');
+      expect(text).toContain('Data Chip');
+      expect(text).toContain('MISSION CARGO');
+    });
+  });
 });

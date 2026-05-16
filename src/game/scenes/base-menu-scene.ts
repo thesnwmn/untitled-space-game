@@ -14,6 +14,7 @@ export interface MenuItemDef {
   disabled?: boolean;
   icon?: string;        // prefix text rendered before the label (e.g. '[R] ')
   iconFg?: Color;       // fg for the icon text
+  accentFg?: Color;     // overrides 'white' for non-cursor, non-disabled items
   action: () => void;
 }
 
@@ -299,7 +300,7 @@ export abstract class BaseMenuScene implements Scene {
     for (const i of pageItems) {
       const item = items[i];
       const isCursor = i === this.cursorIdx;
-      const cursorFg: Color = item.disabled ? 'bright-black' : isCursor ? 'bright-green' : 'white';
+      const cursorFg: Color = item.disabled ? 'bright-black' : isCursor ? 'bright-green' : (item.accentFg ?? 'white');
       const infoFg: Color = item.infoFg ?? cursorFg;
 
       const maxWidth = w - 4; // 2-char gutter each side

@@ -14,6 +14,31 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 041 · Station Mission Actions — DONE
+
+**Built:**
+- `src/game/scenes/station-menu-scene.ts` — constructor queries `getMissionsForPickup` and `getMissionsForDelivery`; inserts `COLLECT: [itemName]` and `DELIVER: [title] → [reward] CR` items in `bright-yellow` above amenity items with a disabled dash separator; real actions are attached after `super()` via closure mutation; COLLECT calls `collectMissionItem` then `onHub`; DELIVER re-checks cargo at selection time (shows `ModalConfirmDialog` error on failure, or completes mission, awards credits, shows completion modal, then calls `onHub`); new `onHub: () => void` constructor parameter added
+- `src/game/scenes/cargo-scene.ts` — added MISSION CARGO section rendered in `bright-yellow`; each item shown as `[MISSION] itemName  weightKg KG`; empty-hold guard now checks both `cargoHold` and `missionItems`
+- `src/game/scenes/base-menu-scene.ts` — added `accentFg?: Color` to `MenuItemDef`; render uses `accentFg ?? 'white'` for non-cursor non-disabled items
+- `src/game/game.ts` — `goToStation()` passes `() => this.goToStation()` as the new `onHub` argument
+- Tests: 21 new tests across `station-menu-scene.test.ts`, `cargo-scene.test.ts`, and `trader-scene.test.ts`
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 689 passed, 1 skipped (36 test files)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Accept a delivery mission from the Mission Board at a station (`MISSION BOARD` → find a delivery mission → accept).
+2. Open the station hub (`HUB`). A `COLLECT: [itemName]` row appears above TRADER in `bright-yellow`. Press SELECT to collect the item.
+3. The menu rebuilds. Travel to the delivery destination and dock.
+4. Open the station hub at the delivery destination. A `DELIVER: [title] → [reward] CR` row appears. Press SELECT.
+5. A `MISSION COMPLETE` modal appears confirming the reward. Press OKAY.
+6. Open CARGO from the cockpit to verify the `[MISSION]` prefixed item disappears after delivery.
+7. For CARGO view: while carrying a mission item, open `CARGO` from the cockpit. A `MISSION CARGO` header and item row appear in `bright-yellow`, below any regular commodities.
+
+---
+
 ### 040 · Global Menu · Mission Log — DONE
 
 **Built:**

@@ -49,10 +49,13 @@ export class CargoScene implements Scene {
     writeText(buffer, 2, underlineCol, "'".repeat(TITLE.length), 'bright-black', 'black');
 
     const hold = this.player.cargoHold;
+    const missionItems = this.player.missionItems;
     const capacity = this.player.cargoCapacity;
     const weight = this.player.cargoWeightKg;
 
-    if (hold.length === 0) {
+    const hasAnything = hold.length > 0 || missionItems.length > 0;
+
+    if (!hasAnything) {
       writeCentered(buffer, Math.floor(h / 2), 'CARGO HOLD EMPTY', 'bright-black', 'black');
     } else {
       let row = 4;
@@ -69,6 +72,25 @@ export class CargoScene implements Scene {
         const line = `${name}${suffix}`;
         writeText(buffer, row, 2, line, 'white', 'black');
         row++;
+      }
+
+      if (missionItems.length > 0) {
+        if (hold.length > 0 && row < h - 3) row++; // blank line between sections
+        if (row < h - 3) {
+          writeText(buffer, row, 2, 'MISSION CARGO', 'bright-yellow', 'black');
+          row++;
+        }
+        for (const item of missionItems) {
+          if (row >= h - 3) break;
+          const prefix = '[MISSION] ';
+          const suffix = `  ${item.weightKg}KG`;
+          const maxNameWidth = Math.max(6, w - 4 - prefix.length - suffix.length);
+          const name = item.itemName.length > maxNameWidth
+            ? item.itemName.slice(0, maxNameWidth)
+            : item.itemName;
+          writeText(buffer, row, 2, `${prefix}${name}${suffix}`, 'bright-yellow', 'black');
+          row++;
+        }
       }
 
       // Separator

@@ -478,4 +478,35 @@ describe('TraderScene', () => {
       expect(() => scene.update(16.7)).not.toThrow();
     });
   });
+
+  describe('mission items not in sell list', () => {
+    it('mission item name does not appear in the SELL tab rows', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      // Give player a delivery mission item in missionItems (not cargoHold)
+      player.acceptMission({
+        id: 'test-mission',
+        type: 'delivery',
+        title: 'Test',
+        description: 'Test',
+        reward: 500,
+        issuingDestinationId: 'tycho-orbital',
+        giverName: 'NPC',
+        itemName: 'Secret Cargo',
+        itemWeightKg: 50,
+        pickupDestinationId: 'tycho-orbital',
+        deliveryDestinationId: 'elysium-station',
+      }, true); // giveItemNow → item in missionItems only, not cargoHold
+      const input = new MockInputHandler();
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      // Switch to SELL tab
+      input.triggerAction('RIGHT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const text = buf.map(row => row.map(c => c.char).join('')).join('\n');
+      expect(text).not.toContain('Secret Cargo');
+    });
+  });
 });
