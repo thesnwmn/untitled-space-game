@@ -1,6 +1,12 @@
 # Share Tech Mono — Character Reference
 
-Font version loaded from Google Fonts (v16, WOFF2).
+> **Font:** Share Tech Mono — Google Fonts v16 (WOFF2)
+> **Used by:** the game's browser renderer (`font-family: 'Share Tech Mono', monospace` in `index.html`)
+> **Visual reference:** open **[font-report.html](font-report.html)** in a browser — it loads Share Tech Mono
+> directly and renders every glyph in a bordered grid at game-accurate single-column width.
+> This Markdown file will render its character tables in whatever monospace font your viewer uses,
+> which may not match the game.
+
 **Total glyphs:** 216
 
 Characters are grouped by Unicode block. Anything not listed here
@@ -261,10 +267,12 @@ will fall back to the browser's system `monospace` font.
 
 ## Character display (inverted palette)
 
+> **Note:** this code block renders in your viewer's default monospace font, not necessarily
+> Share Tech Mono. For an authoritative view in the correct font with bordered cells and
+> hover tooltips, open **[font-report.html](font-report.html)** in a browser.
+
 All printable glyphs in the font, shown in a fixed-width grid with 16
-columns. The code block background provides the dark-on-light contrast
-equivalent to viewing characters in the game's inverted (white-on-black)
-renderer. Column headers are hex offsets within each row.
+columns. Column headers are hex offsets within each row.
 
 ```
      0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
