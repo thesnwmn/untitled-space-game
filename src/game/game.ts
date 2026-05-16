@@ -3,7 +3,7 @@ import { StoryScene } from './scenes/story-scene';
 import { StationMenuScene } from './scenes/station-menu-scene';
 import { TraderScene } from './scenes/trader-scene';
 import { MissionBoardScene } from './scenes/mission-board-scene';
-import { ShipScene } from './scenes/ship-scene';
+import { ShipCockpitScene } from './scenes/ship-cockpit-scene';
 import { CargoScene } from './scenes/cargo-scene';
 import { TravelMenuScene } from './scenes/travel-menu-scene';
 import { GalaxyMapScene } from './scenes/galaxy-map-scene';
@@ -197,7 +197,7 @@ export class Game {
   }
 
   private goToShip(): void {
-    this.currentScene = new ShipScene(
+    this.currentScene = new ShipCockpitScene(
       this.input, this.context, this.player,
       () => this.goToTravelMenu(), () => this.goToLandOrDock(), () => this.goToCargo(),
     );
