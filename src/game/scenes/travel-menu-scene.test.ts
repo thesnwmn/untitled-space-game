@@ -339,3 +339,31 @@ describe('TravelMenuScene FLY INTO SPACE', () => {
     expect(onFlyIntoSpace).not.toHaveBeenCalled();
   });
 });
+
+// ── global menu ───────────────────────────────────────────────────────────────
+
+describe('TravelMenuScene global menu', () => {
+  it('MENU action calls onMenu without silencing the scene', () => {
+    const onMenu = vi.fn();
+    const onShip = vi.fn();
+    const input = new MockInputHandler();
+    new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), onShip, vi.fn(), onMenu);
+    input.triggerAction('MENU');
+    expect(onMenu).toHaveBeenCalledTimes(1);
+    // scene still alive: BACK should still call onShip
+    input.triggerAction('BACK');
+    expect(onShip).toHaveBeenCalledTimes(1);
+  });
+
+  it('suspend() silences the scene; resume() restores it', () => {
+    const onShip = vi.fn();
+    const input = new MockInputHandler();
+    const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), onShip, vi.fn());
+    scene.suspend();
+    input.triggerAction('BACK');
+    expect(onShip).not.toHaveBeenCalled();
+    scene.resume();
+    input.triggerAction('BACK');
+    expect(onShip).toHaveBeenCalledTimes(1);
+  });
+});

@@ -251,3 +251,45 @@ describe('GalaxyMapScene ROUTE tab', () => {
     expect(allText(buf)).toContain('Route:');
   });
 });
+
+// ── global menu ───────────────────────────────────────────────────────────────
+
+describe('GalaxyMapScene global menu', () => {
+  it('MENU action calls onMenu without silencing the scene', () => {
+    const onBack = vi.fn();
+    const onMenu = vi.fn();
+    const input = new MockInputHandler();
+    new GalaxyMapScene(input, ctx, makePlayer(), onBack, onMenu);
+    input.triggerAction('MENU');
+    expect(onMenu).toHaveBeenCalledTimes(1);
+    // scene still alive: BACK should still call onBack
+    input.triggerAction('BACK');
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('header tap on [M] MENU area calls onMenu without silencing the scene', () => {
+    const onBack = vi.fn();
+    const onMenu = vi.fn();
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack, onMenu);
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    // [M] MENU starts at col w-10 = 30 for w=40
+    input.triggerTap(30, 0);
+    expect(onMenu).toHaveBeenCalledTimes(1);
+    input.triggerAction('BACK');
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('suspend() silences the scene; resume() restores it', () => {
+    const onBack = vi.fn();
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack);
+    scene.suspend();
+    input.triggerAction('BACK');
+    expect(onBack).not.toHaveBeenCalled();
+    scene.resume();
+    input.triggerAction('BACK');
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});

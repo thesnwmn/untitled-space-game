@@ -269,6 +269,7 @@ export class Game {
 
   private goToGlobalMenu(): void {
     this.sceneBeforeMenu = this.currentScene;
+    if ('suspend' in this.currentScene) (this.currentScene as { suspend(): void }).suspend();
     this.currentScene = new GlobalMenuScene(
       this.input, this.context, this.player,
       this.buildMenuEntries(),
@@ -280,6 +281,7 @@ export class Game {
     const prior = this.sceneBeforeMenu;
     this.sceneBeforeMenu = null;
     if (prior !== null) {
+      if ('resume' in prior) (prior as { resume(): void }).resume();
       this.currentScene = prior;
     } else {
       this.goToShip();
@@ -294,6 +296,7 @@ export class Game {
       () => this.goToFlyIntoSpace(),
       () => this.goToShip(),
       () => this.goToGalaxyMap(),
+      () => this.goToGlobalMenu(),
     );
   }
 
@@ -305,6 +308,7 @@ export class Game {
       () => this.goToFlyIntoSpace(),
       () => this.goToShip(),
       () => this.goToGalaxyMap(),
+      () => this.goToGlobalMenu(),
     );
   }
 
@@ -312,6 +316,7 @@ export class Game {
     this.currentScene = new GalaxyMapScene(
       this.input, this.context, this.player,
       () => this.goToTravelMenu(),
+      () => this.goToGlobalMenu(),
     );
   }
 

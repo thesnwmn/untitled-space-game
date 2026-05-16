@@ -57,6 +57,7 @@ export class GalaxyMapScene implements Scene {
   private readonly chrome: ScreenChrome;
   private readonly player: PlayerState;
   private readonly onBack: () => void;
+  private readonly onMenu: () => void;
 
   private activeTab: 'map' | 'route' = 'map';
   // mapBrowsingSystemId = center of the chart (the system being inspected)
@@ -75,10 +76,12 @@ export class GalaxyMapScene implements Scene {
     context: GameContext,
     player: PlayerState,
     onBack: () => void,
+    onMenu: () => void = () => {},
   ) {
     this.chrome = new ScreenChrome(context, player);
     this.player = player;
     this.onBack = onBack;
+    this.onMenu = onMenu;
 
     this.publicSystems = getPublicSystems()
       .sort((a, b) => a.distanceFromSol - b.distanceFromSol);
@@ -102,6 +105,8 @@ export class GalaxyMapScene implements Scene {
     inputHandler.onAction((action) => {
       if (this.activated) return;
 
+      if (action === 'MENU') { this.onMenu(); return; }
+
       if (action === 'BACK') {
         if (this.searchText.length > 0) { this.searchText = ''; return; }
         this.activated = true;
@@ -124,6 +129,7 @@ export class GalaxyMapScene implements Scene {
         if (this.activated) return;
         const navId = this.chrome.hitTestNav(col, row);
         if (navId === 'back') { this.searchText = ''; this.activated = true; this.onBack(); return; }
+        if (this.chrome.hitTestHeader(col, row) === 'menu') { this.onMenu(); return; }
         if (row === TAB_ROW) {
           if (col >= 3 && col <= 7)  { this.activeTab = 'map';   this.searchText = ''; }
           else if (col >= 9 && col <= 16) { this.activeTab = 'route'; this.searchText = ''; }
@@ -196,6 +202,9 @@ export class GalaxyMapScene implements Scene {
     if (!dest) return null;
     return findRoute(this.player.systemId, dest.id);
   }
+
+  suspend(): void { this.activated = true; }
+  resume(): void { this.activated = false; }
 
   update(_dt: number): void {}
 

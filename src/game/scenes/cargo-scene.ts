@@ -29,6 +29,9 @@ export class CargoScene implements Scene {
     });
   }
 
+  suspend(): void { this.activated = true; }
+  resume(): void { this.activated = false; }
+
   update(_dt: number): void {}
 
   render(buffer: CharBuffer): void {

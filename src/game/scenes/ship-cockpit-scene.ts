@@ -202,6 +202,9 @@ export class ShipCockpitScene implements Scene {
     }
   }
 
+  suspend(): void { this.activated = true; }
+  resume(): void { this.activated = false; }
+
   update(dt: number): void {
     this.starfield.update(dt);
 

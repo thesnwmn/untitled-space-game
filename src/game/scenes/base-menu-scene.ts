@@ -204,6 +204,9 @@ export abstract class BaseMenuScene implements Scene {
     this.cursorIdx = -1;
   }
 
+  public suspend(): void { this.activated = true; }
+  public resume(): void { this.activated = false; }
+
   protected handleNavAction(_action: string): void {}
   protected handleNavTap(_navId: string): void {}
 
