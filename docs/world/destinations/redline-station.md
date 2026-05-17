@@ -4,6 +4,7 @@ name: Redline Station
 system: barnards-star
 location_type: orbital
 type: civilian
+owning_faction: free-captains
 
 amenities:
   trader: true

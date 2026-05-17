@@ -12,6 +12,11 @@ tags:
   - self-governing
   - industrial
   - frontier-adjacent
+rivals:
+  - helios-directorate
+allies:
+  - terran-union
+  - independent-miners-guild
 ---
 
 # Eridani Colonial Council

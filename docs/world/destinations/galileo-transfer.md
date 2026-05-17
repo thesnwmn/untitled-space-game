@@ -4,6 +4,7 @@ name: Galileo Transfer Hub
 system: sol
 location_type: orbital
 type: civilian
+owning_faction: terran-union
 
 amenities:
   trader: true

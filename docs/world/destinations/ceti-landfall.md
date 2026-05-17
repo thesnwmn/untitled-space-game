@@ -4,6 +4,7 @@ name: Ceti Landfall
 system: tau-ceti
 location_type: surface
 type: civilian
+owning_faction: eridani-colonial-council
 
 amenities:
   trader: true

@@ -13,6 +13,9 @@ tags:
   - licensing
   - academic
   - neutral
+rivals: []
+allies:
+  - centauri-trade-league
 ---
 
 # Procyon Institute

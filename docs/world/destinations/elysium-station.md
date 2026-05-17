@@ -4,6 +4,7 @@ name: Elysium Station
 system: sol
 location_type: orbital
 type: civilian
+owning_faction: helios-directorate
 
 amenities:
   trader: true

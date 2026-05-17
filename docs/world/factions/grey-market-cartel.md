@@ -11,6 +11,10 @@ tags:
   - smuggling
   - contraband
   - violent
+rivals:
+  - terran-union
+allies:
+  - free-captains
 ---
 
 # Grey Market Cartel

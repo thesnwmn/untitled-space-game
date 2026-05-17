@@ -1,6 +1,7 @@
 import { MainMenuScene } from './scenes/main-menu-scene';
 import { GlobalMenuScene, type GlobalMenuEntry } from './scenes/global-menu-scene';
 import { MissionLogScene } from './scenes/mission-log-scene';
+import { ReputationScene } from './scenes/reputation-scene';
 import { StoryScene } from './scenes/story-scene';
 import { StationMenuScene } from './scenes/station-menu-scene';
 import { TraderScene } from './scenes/trader-scene';
@@ -268,11 +269,20 @@ export class Game {
   private buildMenuEntries(): GlobalMenuEntry[] {
     return [
       { label: 'MISSIONS', action: () => this.goToMissionLog() },
+      { label: 'REPUTATION', action: () => this.goToReputation() },
     ];
   }
 
   private goToMissionLog(): void {
     this.currentScene = new MissionLogScene(
+      this.input, this.context, this.player,
+      () => this.goToGlobalMenuFromSubScene(),
+      () => this.returnFromMenu(),
+    );
+  }
+
+  private goToReputation(): void {
+    this.currentScene = new ReputationScene(
       this.input, this.context, this.player,
       () => this.goToGlobalMenuFromSubScene(),
       () => this.returnFromMenu(),

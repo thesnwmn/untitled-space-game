@@ -198,6 +198,7 @@ function parseDestination(data: { [key: string]: any }, body: string): Destinati
     dangerLevel: data.danger_level,
     tags: data.tags ?? [],
     description: extractDescription(body),
+    owningFactionId: data.owning_faction,
   };
 }
 
@@ -211,6 +212,8 @@ function parseFaction(data: { [key: string]: any }, body: string): Faction {
     influence: data.influence ?? [],
     tags: data.tags ?? [],
     description: extractDescription(body),
+    rivals: data.rivals ?? [],
+    allies: data.allies ?? [],
   };
 }
 

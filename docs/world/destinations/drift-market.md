@@ -4,6 +4,7 @@ name: Drift Market
 system: wolf-359
 location_type: orbital
 type: black-market
+owning_faction: grey-market-cartel
 
 amenities:
   trader: true

@@ -11,6 +11,10 @@ tags:
   - labour
   - self-governing
   - frontier
+rivals:
+  - centauri-trade-league
+allies:
+  - eridani-colonial-council
 ---
 
 # Independent Miners Guild

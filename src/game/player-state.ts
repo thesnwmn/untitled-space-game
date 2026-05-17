@@ -1,5 +1,6 @@
-import { getShip, computeCargoWeightKg } from './world/world-data';
-import type { CargoEntry, MissionSpec, ActiveMission, MissionItem, MissionStatus } from './world/types';
+import { getShip, computeCargoWeightKg, getWorld } from './world/world-data';
+import type { CargoEntry, MissionSpec, ActiveMission, MissionItem, MissionStatus, GameBalance } from './world/types';
+import { isReputationEligible } from './reputation-utils';
 
 interface PlayerStateInit {
   shipId: string;
@@ -49,6 +50,7 @@ export class PlayerState {
   private _cargoHold: CargoEntry[];
   private _activeMissions: ActiveMission[];
   private _missionItems: MissionItem[];
+  private _factionReputation: Map<string, number>;
 
   constructor(init: PlayerStateInit) {
     const ship = getShip(init.shipId);
@@ -65,6 +67,13 @@ export class PlayerState {
     this._cargoHold = [];
     this._activeMissions = [];
     this._missionItems = [];
+
+    this._factionReputation = new Map();
+    for (const faction of getWorld().factions) {
+      if (isReputationEligible(faction)) {
+        this._factionReputation.set(faction.id, 0);
+      }
+    }
   }
 
   // Fuel
@@ -192,5 +201,16 @@ export class PlayerState {
       m => m.deliveryDestinationId === destinationId &&
            getMissionStatus(m, this) === 'ready-to-deliver',
     );
+  }
+
+  // Reputation
+  getFactionReputation(factionId: string): number {
+    return this._factionReputation.get(factionId) ?? 0;
+  }
+
+  modifyFactionReputation(factionId: string, delta: number, balance: GameBalance): void {
+    const current = this.getFactionReputation(factionId);
+    const updated = Math.min(balance.reputation.pointsMax, Math.max(balance.reputation.pointsMin, current + delta));
+    this._factionReputation.set(factionId, updated);
   }
 }

@@ -4,6 +4,7 @@ name: Eridani Anchorage
 system: epsilon-eridani
 location_type: asteroid
 type: civilian
+owning_faction: eridani-colonial-council
 
 amenities:
   trader: true

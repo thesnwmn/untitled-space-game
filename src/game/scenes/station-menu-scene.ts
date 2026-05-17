@@ -2,7 +2,7 @@ import type { InputHandler, GameContext } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import { getMissionStatus } from '../player-state';
 import { wrapText } from '../../shared/buffer-utils';
-import { getDestination, getGameBalance } from '../world/world-data';
+import { getDestination, getGameBalance, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
@@ -75,6 +75,13 @@ export class StationMenuScene extends BaseMenuScene {
     const descLines = wrapText(dest.description, 36).slice(0, 3);
     const dangerLine = `DANGER: ${dest.dangerLevel.toUpperCase()}`;
     const infoLines = [...descLines, dangerLine];
+
+    if (dest.owningFactionId) {
+      const faction = getWorld().factions.find(f => f.id === dest.owningFactionId);
+      if (faction) {
+        infoLines.push(`OPERATED BY: ${faction.name}`);
+      }
+    }
     const undockLabel = (dest.locationType === 'surface' || dest.locationType === 'asteroid') ? 'TAKE OFF' : 'UNDOCK';
 
     super(

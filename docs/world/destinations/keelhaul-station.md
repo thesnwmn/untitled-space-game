@@ -4,6 +4,7 @@ name: Keelhaul Station
 system: epsilon-eridani
 location_type: orbital
 type: military
+owning_faction: eridani-colonial-council
 
 amenities:
   trader: false

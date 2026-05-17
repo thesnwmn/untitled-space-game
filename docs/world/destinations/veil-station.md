@@ -4,6 +4,7 @@ name: Veil Station
 system: procyon
 location_type: orbital
 type: research
+owning_faction: procyon-institute
 
 amenities:
   trader: true
