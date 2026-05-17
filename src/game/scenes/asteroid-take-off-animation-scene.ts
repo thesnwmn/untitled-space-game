@@ -11,7 +11,7 @@ export class AsteroidTakeOffAnimationScene extends BaseTransitionScene {
     super(player, context, DURATION, onComplete);
   }
 
-  protected override renderContent(buffer: CharBuffer): void {
+  protected override renderContent(buffer: CharBuffer, _top: number, _bottom: number): void {
     const h = buffer.length;
     const mid = Math.floor(h / 2);
     const frameIdx = Math.floor(this.elapsed / 300) % 3;

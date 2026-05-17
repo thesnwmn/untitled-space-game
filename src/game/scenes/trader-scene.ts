@@ -43,6 +43,7 @@ export class TraderScene extends BaseMenuScene {
       player,
       [],
       tabs,
+      onMenu,
     );
 
     this.traderStock = traderStock;
@@ -50,7 +51,6 @@ export class TraderScene extends BaseMenuScene {
     this.onSell = onSell;
     this.onHub = onHub;
     this.onUndock = onUndock;
-    this.onMenuCallback = onMenu;
 
     // Populate tabs and set cursor before any actions can fire
     this.syncItems();

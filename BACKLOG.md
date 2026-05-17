@@ -12,17 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 046 · Base Scene Architecture
-
-All scenes except `MainMenuScene` extend a new `BaseScene` abstract class that centralises
-buffer clearing, `ScreenChrome`, title + underline, summary lines, and tab bar. `BaseMenuScene`
-and `BaseTransitionScene` are refactored to inherit from it. `CargoScene` is rewritten with
-standard chrome and two tabs (COMMODITIES / MISSION GOODS). Shared `drawSeparator` and
-`renderPager` helpers are added to `buffer-utils`. Build this before 025, 044, and 045.
-See `docs/features/046-base-scene-architecture.md` for the full spec.
-
----
-
 ### 047 · Game Balance Settings
 
 All hardcoded gameplay constants (NPC name probability, mission counts and reward ranges, trader stock quantities, cache TTLs, fuel economics) move into `docs/world/settings/balance.md`. `docs/world/game-settings.md` is renamed to `docs/world/settings/new-game.md`. A new `GameBalance` type is added to `types.ts`, parsed by `world-parser.ts`, and exposed via `getGameBalance()` in `world-data.ts`. `constants.ts` is deleted; `mission-generator.ts` and `game.ts` read all balance values from `getGameBalance()`.

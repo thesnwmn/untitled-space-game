@@ -49,11 +49,13 @@ export class MissionBoardScene extends BaseMenuScene {
       inputHandler,
       context,
       player,
+      [],
+      null,
+      onMenu,
     );
 
     this.onHub = onHub;
     this.onUndock = onUndock;
-    this.onMenuCallback = onMenu;
   }
 
   protected override handleNavAction(action: string): void {

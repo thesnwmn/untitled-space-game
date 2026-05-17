@@ -85,13 +85,14 @@ export class StationMenuScene extends BaseMenuScene {
       context,
       player,
       infoLines,
+      null,
+      onMenu,
     );
 
     this.onShip = onShip;
     this.onRefuel = onRefuel;
     this.onHub = onHub;
     this.fuelItemIdx = fuelIdx;
-    this.onMenuCallback = onMenu;
 
     // Attach real actions to collect items (after super so `this` is valid)
     for (let i = 0; i < pickupMissions.length; i++) {

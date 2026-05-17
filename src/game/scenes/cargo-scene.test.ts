@@ -46,12 +46,12 @@ const context: GameContext = { environment: 'browser', primaryInput: 'keyboard',
 
 describe('CargoScene', () => {
   describe('render — empty hold', () => {
-    it('shows CARGO HOLD EMPTY when hold is empty', () => {
+    it('shows NO COMMODITIES when commodities tab is empty', () => {
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(bufferText(buf)).toContain('CARGO HOLD EMPTY');
+      expect(bufferText(buf)).toContain('NO COMMODITIES');
     });
 
     it('shows the title CARGO HOLD', () => {
@@ -173,61 +173,61 @@ describe('CargoScene', () => {
       };
     }
 
-    it('shows CARGO HOLD EMPTY when both hold and missionItems are empty', () => {
+    it('shows NO COMMODITIES on commodities tab when hold is empty', () => {
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(bufferText(buf)).toContain('CARGO HOLD EMPTY');
+      expect(bufferText(buf)).toContain('NO COMMODITIES');
     });
 
-    it('does not show CARGO HOLD EMPTY when only mission items are present', () => {
-      const player = makePlayer({ destinationId: 'elysium-station' });
-      player.acceptMission(makeMissionSpec(), true); // giveItemNow adds mission item
-      const input = new MockInputHandler();
-      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
-      const buf = makeBuffer(40, 30);
-      scene.render(buf);
-      expect(bufferText(buf)).not.toContain('CARGO HOLD EMPTY');
-    });
-
-    it('renders MISSION CARGO header in bright-yellow', () => {
+    it('commodities tab shows NO COMMODITIES even when only mission items are present', () => {
       const player = makePlayer({ destinationId: 'elysium-station' });
       player.acceptMission(makeMissionSpec(), true);
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(bufferText(buf)).toContain('MISSION CARGO');
-      // Find the row with MISSION CARGO and verify fg is bright-yellow
-      const missionRow = buf.findIndex(row => row.map(c => c.char).join('').includes('MISSION CARGO'));
-      expect(missionRow).toBeGreaterThan(-1);
-      const firstNonSpace = buf[missionRow].find((c, i) => c.char !== ' ' && i >= 2);
-      expect(firstNonSpace?.fg).toBe('bright-yellow');
+      // Tab 0 (COMMODITIES) has no regular cargo
+      expect(bufferText(buf)).toContain('NO COMMODITIES');
     });
 
-    it('renders mission item name with [MISSION] prefix in bright-yellow', () => {
+    it('mission goods tab shows NO MISSION GOODS when no missions', () => {
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
+      // Switch to MISSION GOODS tab
+      input.triggerAction('RIGHT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('NO MISSION GOODS');
+    });
+
+    it('renders mission item name in white on mission goods tab', () => {
       const player = makePlayer({ destinationId: 'elysium-station' });
       player.acceptMission(makeMissionSpec({ itemName: 'Sealed Crate' }), true);
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      // Switch to MISSION GOODS tab
+      input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = bufferText(buf);
-      expect(text).toContain('[MISSION]');
+      expect(text).not.toContain('[MISSION]');
       expect(text).toContain('Sealed Crate');
-      // Find the item row and check fg
-      const itemRow = buf.findIndex(row => row.map(c => c.char).join('').includes('[MISSION]'));
+      // Find the item row and check fg is white (no special colour)
+      const itemRow = buf.findIndex(row => row.map(c => c.char).join('').includes('Sealed Crate'));
       expect(itemRow).toBeGreaterThan(-1);
       const firstNonSpace = buf[itemRow].find((c, i) => c.char !== ' ' && i >= 2);
-      expect(firstNonSpace?.fg).toBe('bright-yellow');
+      expect(firstNonSpace?.fg).toBe('white');
     });
 
-    it('renders mission item weight', () => {
+    it('renders mission item weight on mission goods tab', () => {
       const player = makePlayer({ destinationId: 'elysium-station' });
       player.acceptMission(makeMissionSpec({ itemWeightKg: 75 }), true);
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      // Switch to MISSION GOODS tab
+      input.triggerAction('RIGHT');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(bufferText(buf)).toContain('75KG');
@@ -243,7 +243,7 @@ describe('CargoScene', () => {
       expect(bufferText(buf)).toContain('150/2000KG');
     });
 
-    it('shows both regular cargo and mission items', () => {
+    it('commodities tab shows regular cargo', () => {
       const player = makePlayer({ destinationId: 'elysium-station' });
       player.addCargo('iron-ore', 2);
       player.acceptMission(makeMissionSpec({ itemName: 'Data Chip' }), true);
@@ -251,10 +251,21 @@ describe('CargoScene', () => {
       const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const text = bufferText(buf);
-      expect(text).toContain('Iron Ore');
-      expect(text).toContain('Data Chip');
-      expect(text).toContain('MISSION CARGO');
+      // Tab 0 shows commodities
+      expect(bufferText(buf)).toContain('Iron Ore');
+    });
+
+    it('mission goods tab shows mission items', () => {
+      const player = makePlayer({ destinationId: 'elysium-station' });
+      player.addCargo('iron-ore', 2);
+      player.acceptMission(makeMissionSpec({ itemName: 'Data Chip' }), true);
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
+      // Switch to MISSION GOODS tab
+      input.triggerAction('RIGHT');
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(bufferText(buf)).toContain('Data Chip');
     });
   });
 });

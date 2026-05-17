@@ -1,20 +1,22 @@
-import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
-import { writeText } from '../../shared/buffer-utils';
-import { ScreenChrome, CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
-import type { NavOption, ChromeConfig } from '../ui/screen-chrome';
+import type { InputHandler, GameContext, CharBuffer, Color, GameAction } from '../../shared/types';
+import { writeText, renderPager } from '../../shared/buffer-utils';
+import { contentBottom } from '../ui/screen-chrome';
+import type { NavOption } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
 import type { Modal } from '../ui/modal';
+import { BaseScene } from './base-scene';
+import { CONTENT_TOP } from '../ui/screen-chrome';
 
 export interface MenuItemDef {
   label: string;
   info?: string;
-  infoFg?: Color;       // overrides default fg for the info text
+  infoFg?: Color;
   details?: string[];
-  detailsFg?: Color;    // overrides default fg for the details lines
+  detailsFg?: Color;
   disabled?: boolean;
-  icon?: string;        // prefix text rendered before the label (e.g. '[R] ')
-  iconFg?: Color;       // fg for the icon text
-  accentFg?: Color;     // overrides 'white' for non-cursor, non-disabled items
+  icon?: string;
+  iconFg?: Color;
+  accentFg?: Color;
   action: () => void;
 }
 
@@ -23,35 +25,25 @@ export interface TabDef {
   items: MenuItemDef[];
 }
 
-// Layout
-// Row CONTENT_TOP (3):   title in bright-white
-// Row CONTENT_TOP+1 (4): underline in bright-black
-// Row CONTENT_TOP+2 (5): blank (separator)
-// If tabs:
-//   Row CONTENT_TOP+3 (6): tab bar
-//   Row CONTENT_TOP+4 (7): blank (separator below tabs)
+// Layout (with title, no summary, no tabs):
+//   Row CONTENT_TOP (3):   title
+//   Row CONTENT_TOP+1 (4): underline
+//   Row CONTENT_TOP+2 (5): blank
+//   Row CONTENT_TOP+3 (6): items start
+// With tabs (no summary):
+//   Row CONTENT_TOP+3 (6): tab bar (rendered by BaseScene)
+//   Row CONTENT_TOP+4 (7): blank
 //   Row CONTENT_TOP+5 (8): items start
-// Else:
-//   Row CONTENT_TOP+3+infoLines.length (6+): items start
-//   (infoLines at CONTENT_TOP+2 … CONTENT_TOP+1+n, then implicit blank)
 
-export abstract class BaseMenuScene implements Scene {
-  private readonly title: string;
+export abstract class BaseMenuScene extends BaseScene {
   private readonly _staticItems: MenuItemDef[];
   protected readonly tabs: TabDef[] | null;
-  protected activeTabIdx = 0;
-  private readonly context: GameContext;
-  protected readonly player: PlayerState;
-  protected readonly chrome: ScreenChrome;
-  private readonly navOptions: ReadonlyArray<NavOption>;
   protected readonly infoLines: string[];
-  protected readonly itemStartRow: number;
   protected cursorIdx = -1;
   private pageIndex = 0;
   private lastPageCount = 1;
-  protected activated = false;
   protected modal: Modal | null = null;
-  protected onMenuCallback: (() => void) | null = null;
+  protected lastContentTop = 0;
 
   constructor(
     title: string,
@@ -62,95 +54,21 @@ export abstract class BaseMenuScene implements Scene {
     player: PlayerState,
     infoLines: string[] = [],
     tabs: TabDef[] | null = null,
+    onMenu?: () => void,
   ) {
-    this.title = title;
+    super(inputHandler, context, player, {
+      navOptions,
+      title,
+      summary: infoLines,
+      tabs: tabs !== null ? tabs.map(t => t.label) : undefined,
+      onMenu,
+    });
     this._staticItems = items;
     this.tabs = tabs;
-    this.context = context;
-    this.player = player;
-    this.chrome = new ScreenChrome(context, player);
-    this.navOptions = navOptions;
     this.infoLines = infoLines;
-    this.itemStartRow = tabs !== null
-      ? CONTENT_TOP + 5          // tab bar at CONTENT_TOP+3, blank at +4, items at +5
-      : CONTENT_TOP + 3 + infoLines.length;
-
-    if (inputHandler.onCharInput) {
-      inputHandler.onCharInput((char) => {
-        if (this.modal !== null) this.modal.handleCharInput(char);
-      });
-    }
-
-    inputHandler.onAction((action) => {
-      if (this.modal !== null) {
-        this.modal.handleAction(action);
-        return;
-      }
-      if (this.activated) return;
-      if (action === 'UP') {
-        this.moveCursor(-1);
-      } else if (action === 'DOWN') {
-        this.moveCursor(1);
-      } else if (action === 'LEFT' && this.tabs !== null) {
-        this.activeTabIdx = Math.max(0, this.activeTabIdx - 1);
-        this.resetCursor();
-      } else if (action === 'RIGHT' && this.tabs !== null) {
-        this.activeTabIdx = Math.min(this.tabs.length - 1, this.activeTabIdx + 1);
-        this.resetCursor();
-      } else if (action === 'PAGE_UP') {
-        this.pageIndex = (this.pageIndex - 1 + this.lastPageCount) % this.lastPageCount;
-        this.resetCursor();
-      } else if (action === 'PAGE_DOWN') {
-        this.pageIndex = (this.pageIndex + 1) % this.lastPageCount;
-        this.resetCursor();
-      } else if (action === 'SELECT') {
-        this.activateCurrent();
-      } else if (action === 'MENU' && this.onMenuCallback !== null) {
-        this.onMenuCallback();
-      } else {
-        this.handleNavAction(action);
-      }
-    });
-
+    const N = infoLines.length;
+    this.lastContentTop = tabs !== null ? CONTENT_TOP + 5 + N : CONTENT_TOP + 3 + N;
     this.resetCursor();
-
-    if (inputHandler.onTap) {
-      inputHandler.onTap((col, row) => {
-        if (this.modal !== null) {
-          this.modal.handleTap(col, row);
-          return;
-        }
-        if (this.activated) return;
-        const navId = this.chrome.hitTestNav(col, row);
-        if (navId !== null) {
-          this.handleNavTap(navId);
-          return;
-        }
-        const headerId = this.chrome.hitTestHeader(col, row);
-        if (headerId === 'menu' && this.onMenuCallback !== null) {
-          this.onMenuCallback();
-          return;
-        }
-        // Tab bar hit test
-        if (this.tabs !== null && row === CONTENT_TOP + 3) {
-          let c = 3; // content starts after opening | at col 2
-          for (let i = 0; i < this.tabs.length; i++) {
-            const len = this.tabs[i].label.length + 2; // ' LABEL '
-            if (col >= c && col < c + len) {
-              this.activeTabIdx = i;
-              this.resetCursor();
-              return;
-            }
-            c += len + 1; // +1 for | separator
-          }
-        }
-        const itemIdx = this.rowToVisibleItemIndex(row);
-        if (itemIdx !== null && !this.items[itemIdx].disabled) {
-          this.cursorIdx = itemIdx;
-          this.activateCurrent();
-        }
-      });
-    }
   }
 
   protected get items(): MenuItemDef[] {
@@ -158,6 +76,58 @@ export abstract class BaseMenuScene implements Scene {
       return this.tabs[this.activeTabIdx]?.items ?? [];
     }
     return this._staticItems;
+  }
+
+  protected override preHandleAction(action: GameAction): boolean {
+    if (this.modal !== null) {
+      this.modal.handleAction(action);
+      return true;
+    }
+    return false;
+  }
+
+  protected override preHandleTap(col: number, row: number): boolean {
+    if (this.modal !== null) {
+      this.modal.handleTap(col, row);
+      return true;
+    }
+    return false;
+  }
+
+  protected override handleCharInput(char: string): void {
+    if (this.modal !== null) {
+      this.modal.handleCharInput(char);
+    }
+  }
+
+  protected override onTabChange(_newIdx: number): void {
+    this.resetCursor();
+  }
+
+  protected override handleAction(action: GameAction): void {
+    if (action === 'UP') {
+      this.moveCursor(-1);
+    } else if (action === 'DOWN') {
+      this.moveCursor(1);
+    } else if (action === 'PAGE_UP') {
+      this.pageIndex = (this.pageIndex - 1 + this.lastPageCount) % this.lastPageCount;
+      this.resetCursor();
+    } else if (action === 'PAGE_DOWN') {
+      this.pageIndex = (this.pageIndex + 1) % this.lastPageCount;
+      this.resetCursor();
+    } else if (action === 'SELECT') {
+      this.activateCurrent();
+    } else {
+      this.handleNavAction(action);
+    }
+  }
+
+  protected override handleTap(col: number, row: number): void {
+    const itemIdx = this.rowToVisibleItemIndex(row);
+    if (itemIdx !== null && !this.items[itemIdx].disabled) {
+      this.cursorIdx = itemIdx;
+      this.activateCurrent();
+    }
   }
 
   private moveCursor(delta: number): void {
@@ -185,7 +155,7 @@ export abstract class BaseMenuScene implements Scene {
   }
 
   private rowToVisibleItemIndex(row: number): number | null {
-    let r = this.itemStartRow;
+    let r = this.lastContentTop;
     const items = this.items;
     for (let i = 0; i < items.length; i++) {
       const itemHeight = 1 + (items[i].details?.length ?? 0);
@@ -195,7 +165,7 @@ export abstract class BaseMenuScene implements Scene {
     return null;
   }
 
-  private resetCursor(): void {
+  protected resetCursor(): void {
     const items = this.items;
     for (let i = 0; i < items.length; i++) {
       if (!items[i].disabled) {
@@ -206,70 +176,25 @@ export abstract class BaseMenuScene implements Scene {
     this.cursorIdx = -1;
   }
 
-  public suspend(): void { this.activated = true; }
-  public resume(): void { this.activated = false; }
-
   protected handleNavAction(_action: string): void {}
-  protected handleNavTap(_navId: string): void {}
 
   protected openModal(modal: Modal): void {
     this.modal = modal;
+    this.activated = false;
   }
 
   protected closeModal(): void {
     this.modal = null;
   }
 
-  protected buildChromeConfig(): ChromeConfig {
-    return { showHeader: true, showFooter: true, navOptions: this.navOptions };
-  }
+  protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
+    this.lastContentTop = top;
 
-  update(_dt: number): void {}
-
-  render(buffer: CharBuffer): void {
     const h = buffer.length;
     const w = h > 0 ? buffer[0].length : 0;
 
-    for (let r = 0; r < h; r++)
-      for (let c = 0; c < w; c++)
-        buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-
-    const config = this.buildChromeConfig();
-    this.chrome.render(buffer, config);
-
-    // Title (bright-white) and underline
-    writeText(buffer, CONTENT_TOP, 2, this.title, 'bright-white', 'black');
-    writeText(buffer, CONTENT_TOP + 1, 2, "'".repeat(this.title.length), 'bright-black', 'black');
-
-    // Info lines (start at CONTENT_TOP+2; blank gap at CONTENT_TOP+2+n is implicit)
-    for (let i = 0; i < this.infoLines.length; i++) {
-      writeText(buffer, CONTENT_TOP + 2 + i, 2, this.infoLines[i], 'bright-black', 'black');
-    }
-
-    // Tab bar (only when tabs are configured)
-    if (this.tabs !== null) {
-      const tabRow = CONTENT_TOP + 3;
-      let tc = 2;
-      buffer[tabRow][tc] = { char: '|', fg: 'bright-black', bg: 'black' };
-      tc++;
-      for (let i = 0; i < this.tabs.length; i++) {
-        const isActive = i === this.activeTabIdx;
-        const content = ` ${this.tabs[i].label} `;
-        const fg: Color = isActive ? 'black' : 'white';
-        const bg: Color = isActive ? 'green' : 'black';
-        for (const ch of content) {
-          if (tc < w) buffer[tabRow][tc] = { char: ch, fg, bg };
-          tc++;
-        }
-        if (tc < w) buffer[tabRow][tc] = { char: '|', fg: 'bright-black', bg: 'black' };
-        tc++;
-      }
-    }
-
-    // Pagination
-    const contentEnd = contentBottom(h, config.showFooter);
-    const lastContentRow = contentEnd - 1;
-    const availableRows = lastContentRow - this.itemStartRow;
+    const lastContentRow = bottom - 1;
+    const availableRows = lastContentRow - top;
     const items = this.items;
     const allHeights = items.map(item => 1 + (item.details?.length ?? 0));
     const totalHeight = allHeights.reduce((a, b) => a + b, 0);
@@ -296,17 +221,16 @@ export abstract class BaseMenuScene implements Scene {
 
     const pageItems = pages[this.pageIndex] ?? [];
 
-    let row = this.itemStartRow;
+    let row = top;
     for (const i of pageItems) {
       const item = items[i];
       const isCursor = i === this.cursorIdx;
       const cursorFg: Color = item.disabled ? 'bright-black' : isCursor ? 'bright-green' : (item.accentFg ?? 'white');
       const infoFg: Color = item.infoFg ?? cursorFg;
 
-      const maxWidth = w - 4; // 2-char gutter each side
+      const maxWidth = w - 4;
 
       if (item.icon !== undefined) {
-        // Icon items: cursor(1) + icon + label + dots + info
         const iconLen = item.icon.length;
         const cursorChar = isCursor ? '>' : ' ';
         writeText(buffer, row, 2, cursorChar, cursorFg, 'black');
@@ -349,12 +273,7 @@ export abstract class BaseMenuScene implements Scene {
     }
 
     if (needsPager) {
-      const pageStr = `${this.pageIndex + 1}/${this.lastPageCount}`;
-      const pagerRow = lastContentRow;
-      writeText(buffer, pagerRow, 0, '|<|', 'white', 'black');
-      const centerCol = Math.floor((w - pageStr.length) / 2);
-      writeText(buffer, pagerRow, centerCol, pageStr, 'bright-black', 'black');
-      writeText(buffer, pagerRow, w - 3, '|>|', 'white', 'black');
+      renderPager(buffer, lastContentRow, w, this.pageIndex, this.lastPageCount);
     }
 
     if (this.modal !== null) {

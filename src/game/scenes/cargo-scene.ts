@@ -1,111 +1,113 @@
-import type { InputHandler, GameContext, CharBuffer, Scene } from '../../shared/types';
+import type { InputHandler, GameContext, CharBuffer } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import { getCommodity } from '../world/world-data';
-import { writeText, writeCentered } from '../../shared/buffer-utils';
+import { writeText } from '../../shared/buffer-utils';
+import { BaseScene } from './base-scene';
 
-const TITLE = 'CARGO HOLD';
-
-export class CargoScene implements Scene {
-  private readonly player: PlayerState;
-  private activated = false;
+export class CargoScene extends BaseScene {
+  private readonly onBack: () => void;
 
   constructor(
     inputHandler: InputHandler,
-    _context: GameContext,
+    context: GameContext,
     player: PlayerState,
     onBack: () => void,
     onMenu: () => void,
   ) {
-    this.player = player;
-
-    inputHandler.onAction((action) => {
-      if (this.activated) return;
-      if (action === 'MENU') {
-        onMenu();
-      } else if (action === 'BACK' || action === 'CARGO') {
-        this.activated = true;
-        onBack();
-      }
+    super(inputHandler, context, player, {
+      title: 'CARGO HOLD',
+      tabs: ['COMMODITIES', 'MISSION GOODS'],
+      navOptions: [{ id: 'back', label: 'BACK' }],
+      onMenu,
     });
+    this.onBack = onBack;
   }
 
-  suspend(): void { this.activated = true; }
-  resume(): void { this.activated = false; }
+  protected override handleNavTap(navId: string): void {
+    if (navId === 'back') {
+      this.activated = true;
+      this.onBack();
+    }
+  }
 
-  update(_dt: number): void {}
+  protected override handleAction(action: string): void {
+    if (action === 'BACK' || action === 'CARGO') {
+      this.activated = true;
+      this.onBack();
+    }
+  }
 
-  render(buffer: CharBuffer): void {
+  protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
     const h = buffer.length;
     const w = h > 0 ? buffer[0].length : 0;
-
-    for (let r = 0; r < h; r++)
-      for (let c = 0; c < w; c++)
-        buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-
-    // Title centred at row 1
-    writeCentered(buffer, 1, TITLE, 'bright-white', 'black');
-    // Underline
-    const underlineCol = Math.max(0, Math.floor((w - TITLE.length) / 2));
-    writeText(buffer, 2, underlineCol, "'".repeat(TITLE.length), 'bright-black', 'black');
 
     const hold = this.player.cargoHold;
     const missionItems = this.player.missionItems;
     const capacity = this.player.cargoCapacity;
     const weight = this.player.cargoWeightKg;
 
-    const hasAnything = hold.length > 0 || missionItems.length > 0;
+    const totalRow = bottom - 1;
 
-    if (!hasAnything) {
-      writeCentered(buffer, Math.floor(h / 2), 'CARGO HOLD EMPTY', 'bright-black', 'black');
+    if (this.activeTabIdx === 0) {
+      this.renderCommoditiesTab(buffer, top, totalRow, w, hold);
     } else {
-      let row = 4;
-
-      for (const entry of hold) {
-        if (row >= h - 3) break;
-        const commodity = getCommodity(entry.commodityId);
-        if (!commodity) continue;
-        const entryWeight = entry.qty * commodity.weightKg;
-        const suffix = `  x${entry.qty}  ${commodity.basePrice}CR  ${entryWeight}KG`;
-        const maxNameWidth = Math.max(6, w - 4 - suffix.length);
-        const rawName = commodity.name;
-        const name = rawName.length > maxNameWidth ? rawName.slice(0, maxNameWidth) : rawName;
-        const line = `${name}${suffix}`;
-        writeText(buffer, row, 2, line, 'white', 'black');
-        row++;
-      }
-
-      if (missionItems.length > 0) {
-        if (hold.length > 0 && row < h - 3) row++; // blank line between sections
-        if (row < h - 3) {
-          writeText(buffer, row, 2, 'MISSION CARGO', 'bright-yellow', 'black');
-          row++;
-        }
-        for (const item of missionItems) {
-          if (row >= h - 3) break;
-          const prefix = '[MISSION] ';
-          const suffix = `  ${item.weightKg}KG`;
-          const maxNameWidth = Math.max(6, w - 4 - prefix.length - suffix.length);
-          const name = item.itemName.length > maxNameWidth
-            ? item.itemName.slice(0, maxNameWidth)
-            : item.itemName;
-          writeText(buffer, row, 2, `${prefix}${name}${suffix}`, 'bright-yellow', 'black');
-          row++;
-        }
-      }
-
-      // Separator
-      const sepRow = h - 4;
-      if (sepRow > 3) {
-        writeText(buffer, sepRow, 2, '-'.repeat(w - 4), 'bright-black', 'black');
-      }
+      this.renderMissionGoodsTab(buffer, top, totalRow, w, missionItems);
     }
 
-    // Total weight / capacity line
-    const totalRow = h - 3;
+    // Total weight/capacity always visible at bottom - 1
     const totalText = `TOTAL: ${weight}/${capacity}KG`;
     writeText(buffer, totalRow, 2, totalText, 'bright-black', 'black');
+  }
 
-    // Hint at bottom
-    writeText(buffer, h - 1, 2, '[ESC] BACK', 'bright-black', 'black');
+  private renderCommoditiesTab(
+    buffer: CharBuffer,
+    top: number,
+    totalRow: number,
+    w: number,
+    hold: PlayerState['cargoHold'],
+  ): void {
+    if (hold.length === 0) {
+      writeText(buffer, top, 2, 'NO COMMODITIES', 'bright-black', 'black');
+      return;
+    }
+
+    let row = top;
+    for (const entry of hold) {
+      if (row >= totalRow - 1) break;
+      const commodity = getCommodity(entry.commodityId);
+      if (!commodity) continue;
+      const entryWeight = entry.qty * commodity.weightKg;
+      const suffix = `  x${entry.qty}  ${commodity.basePrice}CR  ${entryWeight}KG`;
+      const maxNameWidth = Math.max(6, w - 4 - suffix.length);
+      const rawName = commodity.name;
+      const name = rawName.length > maxNameWidth ? rawName.slice(0, maxNameWidth) : rawName;
+      writeText(buffer, row, 2, `${name}${suffix}`, 'white', 'black');
+      row++;
+    }
+  }
+
+  private renderMissionGoodsTab(
+    buffer: CharBuffer,
+    top: number,
+    totalRow: number,
+    w: number,
+    missionItems: PlayerState['missionItems'],
+  ): void {
+    if (missionItems.length === 0) {
+      writeText(buffer, top, 2, 'NO MISSION GOODS', 'bright-black', 'black');
+      return;
+    }
+
+    let row = top;
+    for (const item of missionItems) {
+      if (row >= totalRow - 1) break;
+      const suffix = `  ${item.weightKg}KG`;
+      const maxNameWidth = Math.max(6, w - 4 - suffix.length);
+      const name = item.itemName.length > maxNameWidth
+        ? item.itemName.slice(0, maxNameWidth)
+        : item.itemName;
+      writeText(buffer, row, 2, `${name}${suffix}`, 'white', 'black');
+      row++;
+    }
   }
 }

@@ -14,6 +14,28 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 046 · Base Scene Architecture — DONE
+
+**Built:**
+- `src/game/scenes/base-scene.ts` — NEW: abstract `BaseScene` class centralising buffer clearing, `ScreenChrome` render, title + underline, summary lines, tab bar render, and input routing (action, tap, char); `BaseSceneOptions` interface; `preHandleAction`/`preHandleTap` hooks for subclasses; `suspend`/`resume`/`update` lifecycle
+- `src/game/scenes/base-transition-scene.ts` — refactored to extend `BaseScene`; `getChromeConfig` renamed to `buildChromeConfig`
+- `src/game/scenes/base-menu-scene.ts` — refactored to extend `BaseScene`; `onMenuCallback` replaced by `onMenu` passed to super; `lastContentTop` properly initialised in constructor; `openModal` resets `activated = false` so modals receive subsequent input
+- `src/game/scenes/cargo-scene.ts` — rewritten as `BaseScene` subclass with two tabs (COMMODITIES / MISSION GOODS) and standard chrome
+- `src/game/scenes/galaxy-map-scene.ts` — refactored to extend `BaseScene`; tab state uses `activeTabIdx`; `lastTop` properly initialised
+- `src/game/scenes/ship-cockpit-scene.ts` — refactored to extend `BaseScene`
+- `src/game/scenes/story-scene.ts` — refactored to extend `BaseScene`
+- 8 animation scene files — updated `renderContent` signature (added `top`, `bottom` params)
+- All `BaseMenuScene` subclasses — updated `super()` call to pass `onMenu`
+- `src/shared/buffer-utils.ts` — added `drawSeparator` and `renderPager` helpers
+- `src/game/scenes/cargo-scene.test.ts` — updated for new two-tab design
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 690 passed, 1 skipped (36 test files)
+- `init.sh` (before and after): passes clean
+
+---
+
 ### 041 · Station Mission Actions — DONE
 
 **Built:**

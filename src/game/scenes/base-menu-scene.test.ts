@@ -52,15 +52,14 @@ const ctx: GameContext = {
 
 // Concrete subclass — no nav overrides needed for most tests
 class TestMenuScene extends BaseMenuScene {
-  constructor(items: MenuItemDef[], input: MockInputHandler, infoLines: string[] = []) {
-    super('TEST MENU', items, [], input, ctx, makePlayer(), infoLines);
+  constructor(items: MenuItemDef[], input: MockInputHandler, infoLines: string[] = [], onMenu?: () => void) {
+    super('TEST MENU', items, [], input, ctx, makePlayer(), infoLines, null, onMenu);
   }
 
   // Expose for modal routing tests
   openTestModal(modal: ModalInputDialog): void { this.openModal(modal); }
   closeTestModal(): void { this.closeModal(); }
   isActivated(): boolean { return this.activated; }
-  setMenuCallback(cb: () => void): void { this.onMenuCallback = cb; }
 }
 
 // itemStartRow = CONTENT_TOP(3) + 3 = 6 (when no infoLines)
@@ -349,12 +348,11 @@ describe('BaseMenuScene', () => {
       expect(itemAction).toHaveBeenCalledOnce();
     });
 
-    it('MENU action invokes onMenuCallback without silencing the scene', () => {
+    it('MENU action invokes onMenu without silencing the scene', () => {
       const onMenu = vi.fn();
       const selectAction = vi.fn();
       const input = new MockInputHandler();
-      const scene = new TestMenuScene([{ label: 'ALPHA', action: selectAction }], input);
-      scene.setMenuCallback(onMenu);
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: selectAction }], input, [], onMenu);
       input.triggerAction('MENU');
       expect(onMenu).toHaveBeenCalledTimes(1);
       expect(scene.isActivated()).toBe(false);
@@ -363,12 +361,11 @@ describe('BaseMenuScene', () => {
       expect(selectAction).toHaveBeenCalledTimes(1);
     });
 
-    it('header tap on [M] MENU area invokes onMenuCallback without silencing the scene', () => {
+    it('header tap on [M] MENU area invokes onMenu without silencing the scene', () => {
       const onMenu = vi.fn();
       const selectAction = vi.fn();
       const input = new MockInputHandler();
-      const scene = new TestMenuScene([{ label: 'ALPHA', action: selectAction }], input);
-      scene.setMenuCallback(onMenu);
+      const scene = new TestMenuScene([{ label: 'ALPHA', action: selectAction }], input, [], onMenu);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // [M] MENU occupies cols 30–37 in a w=40 buffer; row 0 is the header

@@ -13,11 +13,11 @@ export class JumpAnimationScene extends BaseTransitionScene {
     super(player, context, JUMP_DURATION, onArrival);
   }
 
-  protected override getChromeConfig(): ChromeConfig {
+  protected override buildChromeConfig(): ChromeConfig {
     return { showHeader: true, showFooter: true, navOptions: [], systemLabel: 'IN TRANSIT', destinationLabel: null };
   }
 
-  protected override renderContent(buffer: CharBuffer): void {
+  protected override renderContent(buffer: CharBuffer, _top: number, _bottom: number): void {
     const h = buffer.length;
     const mid = Math.floor(h / 2);
     const frameIdx = Math.floor(this.elapsed / 500) % 3;
