@@ -46,39 +46,9 @@ Never begin implementation without confirming which feature is being worked on.
       Record: what was built, tsc output, test results, and play-test instructions.
     - Remove the item from **BACKLOG.md** entirely.
 12. Archive the feature spec:
-    - If a `docs/features/NNN-*.md` spec exists for this item, replace it with a
-      short summary in `docs/features/history/NNN-*.md` (same filename, new directory).
-    - Summary format (~15–25 lines):
-      ```
-      # NNN · Title — DONE
-      ## What it added
-      [2–3 sentences]
-      ## Key files
-      [primary files created or significantly changed]
-      ## Architectural decisions embedded
-      [any non-obvious patterns this feature established — omit section if none]
-      ```
-    - Filled-in example (match this level of detail — no thinner):
-      ```
-      # 042 · Fuel System — DONE
-      ## What it added
-      Added a fuel resource to `PlayerState` (0–100 units) that depletes on every
-      jump based on distance. `ShipScene` gains a FUEL status row with a bar
-      render. Jumping when fuel < jump cost is blocked with an inline warning;
-      docking at any station restores fuel to full.
-      ## Key files
-      - `src/game/state/PlayerState.ts` — added `fuel`, `maxFuel`, `fuelCostPerLy`
-      - `src/game/scenes/ShipScene.ts` — FUEL bar render, jump-blocked path
-      - `src/game/orchestration/GameOrchestrator.ts` — fuel deduction on jump,
-        refuel on dock
-      - `src/game/scenes/ShipScene.test.ts` — covers bar render and blocked-jump message
-      ## Architectural decisions embedded
-      - Fuel cost is computed from the pre-existing `distanceLy` field on
-        `Destination`; no new data was added to the world model.
-      - Refuel is unconditional on dock (no cost, no UI) — economy integration
-        deferred to a later feature.
-      ```
-    - Delete the original from `docs/features/` after writing the summary.
+    - If a `docs/features/NNN-*.md` spec exists for this item, write a summary at
+      `docs/features/history/NNN-*.md` (same filename, new directory) using the
+      **History Summary Format** below, then delete the original.
 13. Confirm the following before pushing — if any are not done, do them now:
     - [ ] Item removed from BACKLOG.md
     - [ ] Item added to BACKLOG_HISTORY.md with evidence and play-test instructions
@@ -104,6 +74,42 @@ When handing off early:
   implementation is fully done but context is nearly exhausted, complete the review
   before pushing — the review is cheaper than the push. Only skip the review if the
   feature itself is incomplete (i.e. the handoff is mid-implementation).
+
+## History Summary Format
+
+File: `docs/features/history/NNN-title.md` (~15–25 lines). The filled-in example
+sets the minimum expected detail — do not write thinner than this.
+
+**Template**
+```
+# NNN · Title — DONE
+## What it added
+[2–3 sentences]
+## Key files
+[primary files created or significantly changed]
+## Architectural decisions embedded
+[any non-obvious patterns this feature established — omit section if none]
+```
+
+**Example**
+```
+# 042 · Fuel System — DONE
+## What it added
+Added a fuel resource to `PlayerState` (0–100 units) that depletes on every
+jump based on distance. `ShipScene` gains a FUEL status row with a bar render.
+Jumping when fuel < jump cost is blocked with an inline warning; docking at any
+station restores fuel to full.
+## Key files
+- `src/game/state/PlayerState.ts` — added `fuel`, `maxFuel`, `fuelCostPerLy`
+- `src/game/scenes/ShipScene.ts` — FUEL bar render, jump-blocked path
+- `src/game/orchestration/GameOrchestrator.ts` — fuel deduction on jump, refuel on dock
+- `src/game/scenes/ShipScene.test.ts` — covers bar render and blocked-jump message
+## Architectural decisions embedded
+- Fuel cost is computed from the pre-existing `distanceLy` field on `Destination`;
+  no new data was added to the world model.
+- Refuel is unconditional on dock (no cost, no UI) — economy integration deferred
+  to a later feature.
+```
 
 ## HANDOFF.md Template
 
