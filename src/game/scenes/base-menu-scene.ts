@@ -284,7 +284,7 @@ export abstract class BaseMenuScene extends BaseScene {
             col += seg.text.length;
           }
           if (line.right !== undefined) {
-            const rightCol = w - 2 - line.right.text.length;
+            const rightCol = maxWidth - 4 - line.right.text.length;
             writeText(buffer, detailRow, rightCol, line.right.text, line.right.fg, 'black');
           }
         }
