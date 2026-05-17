@@ -58,6 +58,26 @@ Never begin implementation without confirming which feature is being worked on.
       ## Architectural decisions embedded
       [any non-obvious patterns this feature established — omit section if none]
       ```
+    - Filled-in example (match this level of detail — no thinner):
+      ```
+      # 042 · Fuel System — DONE
+      ## What it added
+      Added a fuel resource to `PlayerState` (0–100 units) that depletes on every
+      jump based on distance. `ShipScene` gains a FUEL status row with a bar
+      render. Jumping when fuel < jump cost is blocked with an inline warning;
+      docking at any station restores fuel to full.
+      ## Key files
+      - `src/game/state/PlayerState.ts` — added `fuel`, `maxFuel`, `fuelCostPerLy`
+      - `src/game/scenes/ShipScene.ts` — FUEL bar render, jump-blocked path
+      - `src/game/orchestration/GameOrchestrator.ts` — fuel deduction on jump,
+        refuel on dock
+      - `src/game/scenes/ShipScene.test.ts` — covers bar render and blocked-jump message
+      ## Architectural decisions embedded
+      - Fuel cost is computed from the pre-existing `distanceLy` field on
+        `Destination`; no new data was added to the world model.
+      - Refuel is unconditional on dock (no cost, no UI) — economy integration
+        deferred to a later feature.
+      ```
     - Delete the original from `docs/features/` after writing the summary.
 13. Confirm the following before pushing — if any are not done, do them now:
     - [ ] Item removed from BACKLOG.md
