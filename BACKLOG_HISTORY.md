@@ -14,6 +14,30 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 051 · Reputation — Mission Integration — DONE
+
+**Built:**
+- `src/game/reputation-utils.ts` — added `getMissionTierLabel(delta, isSigned)` returning signed tier labels; added `computeReputationDeltas(givingFaction, delta, allFactions)` returning `Map<string, number>` with rep impacts for giving faction (+delta), allies (+floor(delta/2)), and rivals (-floor(delta/2))
+- `src/game/mission-generator.ts` — `generateDeliveryMission` and `generateSupplyMission` now populate `giverFactionId` when destination has reputation-eligible owning faction; imports `isReputationEligible`
+- `src/game/scenes/mission-board-scene.ts` — mission list labels now append `[Faction Name]` when `giverFactionId` is present
+- `src/game/scenes/mission-detail-scene.ts` — `renderDetail` now shows REPUTATION IMPACT section listing affected factions with signed tier labels; computes delta from mission reward tier; sorts by delta then alphabetically; imports `computeReputationDeltas` and `getMissionTierLabel`
+- `src/game/scenes/station-menu-scene.ts` — mission deliver action now computes reputation delta from reward tier and applies via `computeReputationDeltas`, then calls `modifyFactionReputation` for each faction; no changes for missions without `giverFactionId`
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 729 passed, 1 skipped (37 test files)
+- `init.sh` (before and after): passes clean
+- Reviewer approval: all acceptance criteria met, code quality solid, backward compatible
+
+**Play-test instructions:**
+1. Visit a mission board at a faction-owned station — confirm faction name appears on mission entries.
+2. Open a mission detail — confirm REPUTATION IMPACT section lists giving faction, allies, and rivals with appropriate signed labels.
+3. Complete the mission — open Reputation screen and confirm standing shifted correctly for giving faction, its allies, and its rivals.
+4. Visit a mission board at a destination with no owning faction — confirm no reputation section appears and no faction name on entries.
+5. Repeat steps 1–4 using `npm run terminal` with keyboard navigation.
+
+---
+
 ### 050 · Reputation — Foundation (Data & UI) — DONE
 
 **Built:**
