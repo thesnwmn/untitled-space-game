@@ -12,6 +12,27 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
+### 063 · Mission Destination Ownership & Generation
+
+Missions belong to destinations, generated at dock time (not board-open), stored on `PlayerState` with TTL for save/restore. Each destination gains `minMissions` and `missionChance` fields replacing the static `amenities.missionBoard` flag. The station hub shows the mission board entry only when missions exist. Primary destinations can guarantee a baseline count; minor ones generate rarely.
+See `docs/features/063-mission-destination-ownership.md` for the full spec.
+
+---
+
+### 064 · Mission Balance & Deposit
+
+Supply rewards corrected to a randomly varied multiplier above cost (`supplyRewardMultiplierMin`/`Max`), biased toward the upper end for heavier requests. Supply quantities raised. Delivery item selection weighted by `weightKg`. Delivery missions require a credit deposit (forfeited on cancel), shown prominently before accepting.
+See `docs/features/064-mission-balance-deposit.md` for the full spec.
+
+---
+
+### 065 · Mission Board & Log Display Overhaul
+
+Board sorted by delivery destination then type; log sorted by destination, status priority, then type. Supply missions in both views show per-item cargo availability lines coloured by sufficiency. Delivery missions in the board show their delivery destination coloured by proximity.
+See `docs/features/065-mission-display-overhaul.md` for the full spec.
+
+---
+
 ### 062 · Reputation-Scaled Trader Inventory
 
 Trader stock count and quantity scale with player reputation: more item types and larger quantities for favoured pilots, fewer and smaller for despised ones. Quantities also scale per-commodity by base price and weight (cheap/light goods appear in higher quantities). Six new balance params with clamps; `stockQtyMin`/`stockQtyMax` updated to 5/10.
