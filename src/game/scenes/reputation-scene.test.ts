@@ -79,12 +79,13 @@ describe('ReputationScene', () => {
   });
 
   describe('raw reputation number', () => {
-    it('detailsColored right field contains the raw reputation number', () => {
+    it('detailsColored right field contains the raw reputation number in bright-white', () => {
       const player = makePlayer();
       const repValue = 250;
       player.modifyFactionReputation(testFaction.id, repValue, balance);
       const item = makeScene(player).testItems.find(i => i.label === testFaction.name)!;
       expect(item.detailsColored![0].right?.text).toBe(String(repValue));
+      expect(item.detailsColored![0].right?.fg).toBe('bright-white');
     });
 
     it('detailsColored right field contains the raw number for negative reputation', () => {
@@ -95,8 +96,8 @@ describe('ReputationScene', () => {
       expect(item.detailsColored![0].right?.text).toBe(String(repValue));
     });
 
-    it('rep number renders at the right edge of the buffer', () => {
-      const W = 80;
+    it('rep number renders right-aligned with a 3-char right margin', () => {
+      const W = 40;
       const H = 30;
       const player = makePlayer();
       const repValue = 123;
@@ -105,7 +106,7 @@ describe('ReputationScene', () => {
       const buffer = makeBuffer(W, H);
       scene.render(buffer);
       const repStr = String(repValue);
-      const expectedCol = W - 2 - repStr.length;
+      const expectedCol = W - 3 - repStr.length;
       let found = false;
       for (let row = 0; row < H; row++) {
         const slice = buffer[row].slice(expectedCol, expectedCol + repStr.length).map(c => c.char).join('');

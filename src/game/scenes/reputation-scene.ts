@@ -82,7 +82,7 @@ export class ReputationScene extends BaseMenuScene {
               { text: FILLED.repeat(fill), fg: levelColor },
               { text: EMPTY.repeat(empty), fg: 'bright-black' as Color },
             ],
-            right: { text: String(rep), fg: levelColor },
+            right: { text: String(rep), fg: 'bright-white' as Color },
           },
           { left: [] },
         ],
