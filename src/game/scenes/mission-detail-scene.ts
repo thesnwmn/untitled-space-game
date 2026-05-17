@@ -223,7 +223,7 @@ export class MissionDetailScene extends BaseMenuScene {
             const labelColor: Color = impact.delta > 0 ? 'bright-green' : 'red';
             const maxNameWidth = maxWidth - label.length - 2;
             const name = impact.name.slice(0, maxNameWidth);
-            const padding = ' '.repeat(Math.max(0, maxWidth - name.length - label.length - 2));
+            const padding = ' '.repeat(Math.max(0, maxWidth - name.length - label.length - 3));
             write(row, `  ${name}${padding}${label}`, labelColor);
             row++;
           }
