@@ -50,7 +50,8 @@ Never begin implementation without confirming which feature is being worked on.
      ```
    The sub-agent will run git commands, read the implementation, and report its findings.
 10. If the Reviewer sub-agent finds issues, fix them (returning to step 7) before continuing.
-11. Once the Reviewer approves, update the backlogs on the local feature branch:
+11. **The Reviewer has approved. Do NOT push yet. Complete steps 11 and 12 first.**
+    Update the backlogs on the local feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
     - Remove the item from **BACKLOG.md** entirely.
@@ -68,7 +69,11 @@ Never begin implementation without confirming which feature is being worked on.
       [any non-obvious patterns this feature established — omit section if none]
       ```
     - Delete the original from `docs/features/` after writing the summary.
-13. Push the branch and open a PR against main. Do not merge it.
+13. Confirm the following before pushing — if any are not done, do them now:
+    - [ ] Item removed from BACKLOG.md
+    - [ ] Item added to BACKLOG_HISTORY.md with evidence and play-test instructions
+    - [ ] Spec archived to docs/features/history/ and original deleted
+    Then push the branch and open a PR against main. Do not merge it.
     - If the harness pre-assigned a branch for this session, use it.
     - Otherwise create one named `feature/NNN-short-description`.
 
@@ -130,6 +135,7 @@ to continue without re-reading everything. Include the exact next step to take.]
 - init.sh must pass both before you start and after you finish.
 - Never push directly to main. Always use a feature branch and open a PR.
 - **Never push or open a PR without the Reviewer sub-agent approving first.**
+- **Never push without first completing steps 11 and 12.** Backlog cleanup and spec archival happen on the local branch before the push — not after, not as a follow-up. The push is the last act.
 - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
   runtime environment guards (`typeof X === 'undefined'`, `process.platform` checks,
   etc.) to paper over a mismatch between the class's platform and the test environment.
