@@ -9,3 +9,7 @@ feature doc as normal. The idea number does not carry over to the feature number
 ---
 
 <!-- Add new ideas below. Always use the next available number. -->
+
+### Idea 001 · Reputation — Special Access Unlocks
+
+High standing with a faction could unlock information or routes unavailable to neutral players: extra destination names, hidden jump routes, or NPC contacts who only speak to trusted pilots. This would layer onto the Knowledge Base (features 043/044) — reputation acts as a discovery gate rather than requiring travel. Requires the reputation foundation (feature 048) and Knowledge Base screens (feature 044) to be in place first.
