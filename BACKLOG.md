@@ -58,6 +58,30 @@ See `docs/features/047-game-balance-settings.md` for the full spec.
 
 ---
 
+### 048 · Mini-Game Base Scene
+
+`BaseMiniGameScene` abstract class extending `BaseScene`, providing standard screen chrome,
+optional viewport centering (for mini games smaller than the full content area), result
+reporting via a typed `MiniGameResult` callback, and read-only `PlayerState` access. Includes
+`miniGameDescriptors` (pure-data registry) and `miniGameRegistry` (with factory functions)
+in `src/game/mini-games/registry.ts`. Both registries start empty. Depends on feature 046.
+See `docs/features/048-mini-game-base-scene.md` for the full spec.
+
+---
+
+### 049 · Mini-Game Dev Harness
+
+Standalone browser and terminal entry points for running any registered mini game outside
+the main game. Browser: `mini-games.html` + `src/mini-game-runner.ts` built via a second
+Vite config (`base: /untitled-space-game/mini-games/`); index mode lists all mini games,
+runner mode launches by `?game=<id>`. Terminal: `terminal-mini-games.ts` lists games when
+run with no args; runs a specific game by id with optional `--variant=<id>` flag. Both use
+a mock `PlayerState`. Adds `dev:mini-games` and `build:mini-games` scripts; `build:all`
+updated. Depends on feature 048.
+See `docs/features/049-mini-game-dev-harness.md` for the full spec.
+
+---
+
 
 ## NEEDS SPEC
 
