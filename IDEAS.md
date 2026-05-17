@@ -10,6 +10,33 @@ feature doc as normal. The idea number does not carry over to the feature number
 
 <!-- Add new ideas below. Always use the next available number. -->
 
+### Idea 005 · Miner Origin Narrative
+
+**Area:** Story
+**Inspiration:** Reframing the player as someone who bought a cheap mining vessel, not a seasoned freight hauler
+
+Revise the opening to cast the player as someone who sold everything to buy a beat-up mining rig with dreams of eventually going somewhere bigger — no military past, just ambition and debt. This pairs naturally with Ideas 003 and 004 and gives the game a clear character arc (scrapper → contractor → explorer) rather than starting mid-career. The shift also makes the no-jump-drive constraint feel intentional rather than punishing.
+
+---
+
+### Idea 004 · Asteroid Mining Loop
+
+**Area:** Gameplay
+**Inspiration:** Needing a viable in-system income source before the player can afford to leave (see Idea 003); asteroid landing mini-game already planned in feature 057
+
+An asteroid-mining activity at asteroid destinations: the player lands, extracts ore, and sells raw material at nearby stations. Landing quality (from the mini-game score) could determine yield — a clean touchdown means richer ore. This gives the starting Sol system a genuine economic loop and a reason to interact with asteroid destinations that currently exist only as travel hops. Requires a commodity (raw ore) and a buyer destination to be meaningful.
+
+---
+
+### Idea 003 · Jump Drive as Earned First Milestone
+
+**Area:** Gameplay
+**Inspiration:** The opening stretch lacks stakes; inter-system travel is available immediately with no cost or effort
+
+Start the player without a jump drive installed, locking them to their starting system until they can afford a Civilian Mk1 (currently priced at 10,000 credits in world data). The first inter-system jump becomes a genuine milestone rather than an assumed capability, and the early game becomes about building toward something concrete. Requires an in-system income loop to be viable (see Idea 004) and an equipment purchase screen not yet designed; the biggest risk is making the starting system feel too small.
+
+---
+
 ### Idea 002 · Rich-text Summary Lines in BaseScene
 
 `BaseScene`'s `summary` option currently accepts only `string[]`, rendered as
