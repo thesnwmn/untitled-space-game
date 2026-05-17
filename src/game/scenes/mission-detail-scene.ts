@@ -211,8 +211,10 @@ export class MissionDetailScene extends BaseMenuScene {
           return a.name.localeCompare(b.name);
         });
 
-        write(row, 'REPUTATION IMPACT', 'bright-cyan');
-        row++;
+        if (row <= contentLimit) {
+          write(row, 'REPUTATION IMPACT', 'bright-cyan');
+          row++;
+        }
         for (const impact of impactFactions) {
           if (row > contentLimit) break;
           const label = getMissionTierLabel(impact.delta, true);
@@ -224,7 +226,9 @@ export class MissionDetailScene extends BaseMenuScene {
           row++;
         }
 
-        row++; // blank line before accept/back items
+        if (row <= contentLimit) {
+          row++; // blank line before accept/back items
+        }
       }
     }
   }
