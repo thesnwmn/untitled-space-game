@@ -8,8 +8,8 @@ export function getReputationLevel(points: number, balance: GameBalance): number
   if (points >= balance.reputation.levelReveredMin) return 3;
   if (points >= balance.reputation.levelLikedMin) return 2;
   if (points >= balance.reputation.levelFriendlyMin) return 1;
-  if (points < balance.reputation.levelNeutralMin) return -2;
-  if (points < balance.reputation.levelUnfriendlyMin) return -1;
+  if (points < balance.reputation.levelUnfriendlyMin) return -2;
+  if (points < balance.reputation.levelNeutralMin) return -1;
   return 0;
 }
 
