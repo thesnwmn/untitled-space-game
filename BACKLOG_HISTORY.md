@@ -14,6 +14,34 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 050 · Reputation — Foundation (Data & UI) — DONE
+
+**Built:**
+- `docs/world/factions/*.md` — all 8 faction docs updated with `rivals` and `allies` YAML fields per the agreed relationship table
+- `docs/world/destinations/*.md` — 18 destination docs updated with `owning_faction` where a single operating faction is clear (stations, outposts); unaffiliated destinations omit the field
+- `src/game/world/types.ts` — `Destination` interface gains `owningFactionId?: string`; `Faction` interface gains `rivals: string[]` and `allies: string[]`
+- `src/game/world/world-parser.ts` — reads `owning_faction`, `rivals`, and `allies` from front-matter
+- `src/game/reputation-utils.ts` — NEW: `isReputationEligible(faction)`, `getReputationLevel(points, balance)`, `getReputationLabel(level)` using thresholds from `GameBalance`
+- `src/game/player-state.ts` — private `_factionReputation` map (eligible factions seeded to 0); `getFactionReputation()` and `modifyFactionReputation()` (clamped to balance min/max); serialised/deserialised with save state; missing factions back-filled on load
+- `src/game/scenes/reputation-scene.ts` — NEW: `ReputationScene` extending `BaseScene`; lists all eligible factions ordered large-then-medium, alphabetical within tier; standing label coloured by level; `[1] BACK` returns to global menu
+- `src/game/scenes/station-menu-scene.ts` — displays `OPERATED BY: <FACTION NAME>` summary line when `owningFactionId` is set on the current destination
+- `src/game/game.ts` — adds `REPUTATION` entry to global menu wired to `goToReputation()`
+- `src/game/scenes/station-menu-scene.test.ts` — updated for owning-faction display
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 729 passed, 1 skipped (37 test files)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Start a new game and open the global menu — confirm `REPUTATION` appears as an entry.
+2. Open the Reputation screen — confirm all eligible factions are listed with `NEUTRAL` standing.
+3. Dock at a station with a known owning faction (e.g. Elysium Station) — confirm the faction name appears as `OPERATED BY: …` in the station menu summary.
+4. Dock at a destination with no owning faction — confirm no faction line appears in the station menu.
+5. Repeat steps 1–4 using `npm run terminal` with keyboard navigation.
+
+---
+
 ### 047 · Game Balance Settings — DONE
 
 **Built:**
