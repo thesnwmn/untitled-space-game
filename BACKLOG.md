@@ -73,14 +73,23 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 ---
 
 
-### 054 · Hull Integrity & Mini-Game Landing Hook
+### 054 · Hull Integrity
 
-Hull integrity tracking on `PlayerState`; `GameBalance.miniGames` balance block;
-`difficultyMultiplier` on `Destination`; `goToLandOrDock` routes through `miniGameRegistry`
-by `locationType` (falls back to animation scene when no game registered); damage formula
-applied on `complete`; `LandingResultScene` shown before station; `HULL` display in
-`ShipScene`. No playable mini-game added yet.
+Hull integrity tracking on `PlayerState` (0.0–1.0, serialised, backfilled on load);
+`applyHullDamage(fraction)` as the sole write path; `HULL: XX%` display in `ShipScene`
+(colour by threshold). No callers yet — this is pure state and display.
 See `docs/features/054-hull-integrity-minigame-hook.md` for the full spec.
+
+---
+
+### 058 · Mini-Game Landing Hook
+
+`GameBalance.miniGames` top-level balance keys (`maxHullDamageFraction`,
+`abandonDamageFraction`, `noDamageThreshold`); `difficultyMultiplier` on `Destination`;
+`goToLandOrDock` routes through `miniGameRegistry` by `locationType` (falls back to
+animation scene when no game registered); damage formula applied on `complete`;
+`LandingResultScene` shown before station. Depends on features 048 and 054.
+See `docs/features/058-mini-game-landing-hook.md` for the full spec.
 
 ---
 

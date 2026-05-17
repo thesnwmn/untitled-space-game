@@ -116,5 +116,5 @@ Repeat full game steps using keyboard navigation.
 
 ## Dependencies
 
-Feature 054 (Hull Integrity & Mini-Game Landing Hook), Feature 049 (Mini-Game Dev
-Harness), Feature 056 (Planet Landing Mini-Game — shared helpers)
+Feature 058 (Mini-Game Landing Hook), Feature 049 (Mini-Game Dev Harness),
+Feature 056 (Planet Landing Mini-Game — shared helpers)
