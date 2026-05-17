@@ -10,7 +10,7 @@ registry of descriptors used by the dev harness.
 
 ## Acceptance criteria
 
-- `MiniGameOutcome`, `MiniGameResult`, `MiniGameViewport`, `MiniGameVariant`,
+- `MiniGameResult`, `MiniGameViewport`, `MiniGameVariant`,
   `MiniGameDescriptorMeta`, and `MiniGameOptions` types exist in `src/shared/types.ts`
 - `BaseMiniGameScene` abstract class exists in `src/game/scenes/base-mini-game-scene.ts`,
   extending `BaseScene`
@@ -49,12 +49,9 @@ registry of descriptors used by the dev harness.
 ### New types in `src/shared/types.ts`
 
 ```typescript
-type MiniGameOutcome = 'success' | 'fail' | 'skipped';
-
-interface MiniGameResult {
-  outcome: MiniGameOutcome;
-  data?: Record<string, unknown>;
-}
+type MiniGameResult =
+  | { outcome: 'completed'; result: Record<string, unknown> }
+  | { outcome: 'skipped' };
 
 interface MiniGameViewport {
   top: number;

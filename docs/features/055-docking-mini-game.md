@@ -29,15 +29,16 @@ before a countdown expires.
   session
 - A countdown timer displays `countdownSeconds` ticking down to 0 (1-second precision)
 - When the countdown reaches 0: compute `distance` as the Euclidean char distance between
-  ship and airlock; compute `score = clamp(0, 1, 1 / (1 + distance / perfectRadiusChars))`;
-  call `complete({ outcome: score >= successThreshold ? 'success' : 'fail', data: { score } })`
-- If MENU is pressed during play: call `complete({ outcome: 'skipped', data: { score: 0 } })`
-  immediately, without showing a game-over state inside the mini-game
+  ship and airlock; compute `score = Math.round(clamp(0, 1, 1 / (1 + distance /
+  perfectRadiusChars)) * 100)` (integer 0–100); call
+  `complete({ outcome: 'completed', result: { score } })`
+- If MENU is pressed during play: call `complete({ outcome: 'skipped' })` immediately,
+  without showing a game-over state inside the mini-game
 - Registered with two variants: `orbital` and `deep-space` (for dev harness)
 - Playable via dev harness (`?game=docking`); result displays correctly in harness overlay
 - `npm test` passes; `npx tsc --noEmit` produces zero errors
-- Tests: score approaches 1.0 when distance = 0; score < successThreshold when distance is
-  large; `complete()` not called twice; MENU → skipped outcome with score 0
+- Tests: score = 100 when distance = 0; score decreases as distance increases; score = 0
+  at very large distance; `complete()` not called twice; MENU → `{ outcome: 'skipped' }`
 
 ---
 
@@ -83,11 +84,12 @@ with steady thrust.
 ### Score formula
 
 ```
-score = clamp(0, 1, 1 / (1 + distance / perfectRadiusChars))
+rawScore = clamp(0, 1, 1 / (1 + distance / perfectRadiusChars))
+score    = Math.round(rawScore * 100)   // integer 0–100
 ```
 
-`perfectRadiusChars` is the distance at which score ≈ 0.5. Distance 0 → score 1.0.
-Distance `perfectRadiusChars` → score 0.5. Distance large → score → 0.
+`perfectRadiusChars` is the distance at which rawScore ≈ 0.5. Distance 0 → score 100.
+Distance `perfectRadiusChars` → score ≈ 50. Distance large → score → 0.
 
 ### Rendering
 

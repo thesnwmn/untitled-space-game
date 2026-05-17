@@ -35,19 +35,17 @@ the player must counter gravity and air resistance to land gently on a marked pa
     where `speed` = magnitude of velocity vector at impact
   - `padScore = 1.0` if the centre of the ship is over a pad column, else
     `offPadScoreMultiplier`
-  - `score = speedScore * padScore`
-- Call `complete({ outcome: score >= successThreshold ? 'success' : 'fail', data: { score,
-  speed, onPad: boolean } })`
-- If MENU is pressed: call `complete({ outcome: 'skipped', data: { score: 0 } })`
-  immediately
+  - `score = Math.round(speedScore * padScore * 100)` (integer 0–100)
+- Call `complete({ outcome: 'completed', result: { score, speed, onPad: boolean } })`
+- If MENU is pressed: call `complete({ outcome: 'skipped' })` immediately
 - Terrain is identical every time for the same destination ID (same pad position and
   contour shape)
 - The terrain visual style uses smooth/undulating chars appropriate for a planet surface
   (see Technical notes for suggestion)
 - `npm test` passes; `npx tsc --noEmit` produces zero errors
-- Tests: `score = 1.0` at `maxSafeSpeed` on pad; `score = offPadScoreMultiplier` at
-  `maxSafeSpeed` off pad; `speedScore` → 0 as speed approaches `crashSpeed`; terrain
-  generation reproducible for same seed; MENU → skipped
+- Tests: `score = 100` at `maxSafeSpeed` on pad; `score = Math.round(offPadScoreMultiplier
+  * 100)` at `maxSafeSpeed` off pad; `score = 0` at or above `crashSpeed`; terrain
+  generation reproducible for same seed; MENU → `{ outcome: 'skipped' }`
 
 ---
 

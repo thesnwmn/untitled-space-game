@@ -24,10 +24,9 @@ the landing pad at safe speed.
 - UP/DOWN/LEFT/RIGHT each apply `balance.miniGames.asteroid.thrustForce` acceleration in
   that axis per frame
 - Score formula, collision detection, and game-end logic identical to feature 056 but
-  using `asteroid.maxSafeSpeed`, `asteroid.crashSpeed`, `asteroid.successThreshold`, and
-  `asteroid.offPadScoreMultiplier`
-- `complete({ outcome: ..., data: { score, speed, onPad } })` and MENU → skipped, as in
-  feature 056
+  using `asteroid.maxSafeSpeed`, `asteroid.crashSpeed`, and `asteroid.offPadScoreMultiplier`
+- `complete({ outcome: 'completed', result: { score, speed, onPad } })` on landing;
+  MENU → `complete({ outcome: 'skipped' })`, as in feature 056
 - Terrain is identical every time for the same destination ID
 - Asteroid terrain visual style is jagged/cratered and clearly distinct from the planet
   terrain in feature 056 (different char set; see Technical notes)
@@ -35,8 +34,8 @@ the landing pad at safe speed.
   detector introduced in feature 056 — no duplication
 - `npm test` passes; `npx tsc --noEmit` produces zero errors
 - Tests: no gravity applied (vy unchanged without thrust); no air resistance (vx unchanged
-  without thrust); score formula identical to feature 056 with asteroid balance values;
-  terrain reproducible for same seed
+  without thrust); score is integer 0–100 matching formula from feature 056 with asteroid
+  balance values; terrain reproducible for same seed; MENU → `{ outcome: 'skipped' }`
 
 ---
 
@@ -100,7 +99,7 @@ Append to both registry arrays. `id: 'asteroid-landing'`. Variants:
 2. Apply no input — confirm the ship drifts at constant velocity (no acceleration).
 3. Apply LEFT thrust, then release — confirm horizontal velocity persists with no decay.
 4. Apply UP thrust to reverse downward drift; land gently on pad — confirm high score.
-5. Let ship crash without braking — confirm low score / fail outcome.
+5. Let ship crash without braking — confirm low score (score near 0).
 6. Visit the same destination twice — confirm terrain layout is identical.
 7. Compare terrain appearance to feature 056 — confirm visually distinct style.
 
