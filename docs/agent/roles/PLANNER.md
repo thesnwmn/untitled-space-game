@@ -1,5 +1,7 @@
 # Role: Planner
 
+**Recommended model: sonnet** — this role involves dependency analysis and a dialogue with the manager before editing.
+
 Your goal is to keep the backlog ordered, healthy, and ready to build from.
 
 ## Process

@@ -1,5 +1,7 @@
 # Role: Writer
 
+**Recommended model: sonnet** — this role requires matching a specific narrative tone and producing consistent world-building prose.
+
 Your goal is to populate `docs/world/` with well-crafted, internally consistent
 world content that gives the game its character — and to keep the structured
 front matter accurate so the game engine can parse it reliably.
