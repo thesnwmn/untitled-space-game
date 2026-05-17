@@ -13,6 +13,7 @@ export interface MenuItemDef {
   infoFg?: Color;
   details?: string[];
   detailsFg?: Color;
+  detailsColored?: Array<Array<{ text: string; fg: Color }>>;
   disabled?: boolean;
   icon?: string;
   iconFg?: Color;
@@ -158,7 +159,7 @@ export abstract class BaseMenuScene extends BaseScene {
     let r = this.lastContentTop;
     const items = this.items;
     for (let i = 0; i < items.length; i++) {
-      const itemHeight = 1 + (items[i].details?.length ?? 0);
+      const itemHeight = 1 + (items[i].details?.length ?? 0) + (items[i].detailsColored?.length ?? 0);
       if (row >= r && row < r + itemHeight) return i;
       r += itemHeight;
     }
@@ -196,7 +197,7 @@ export abstract class BaseMenuScene extends BaseScene {
     const lastContentRow = bottom - 1;
     const availableRows = lastContentRow - top;
     const items = this.items;
-    const allHeights = items.map(item => 1 + (item.details?.length ?? 0));
+    const allHeights = items.map(item => 1 + (item.details?.length ?? 0) + (item.detailsColored?.length ?? 0));
     const totalHeight = allHeights.reduce((a, b) => a + b, 0);
     const needsPager = totalHeight > availableRows;
     const pageRows = needsPager ? availableRows - 1 : availableRows;
@@ -269,7 +270,18 @@ export abstract class BaseMenuScene extends BaseScene {
         const prefix = isCursor ? '> ' : '  ';
         writeText(buffer, row, 2, (prefix + item.label).slice(0, maxWidth), cursorFg, 'black');
       }
-      row += 1 + (item.details?.length ?? 0);
+      const detailsOffset = item.details?.length ?? 0;
+      for (let d = 0; d < (item.detailsColored?.length ?? 0); d++) {
+        const detailRow = row + 1 + detailsOffset + d;
+        if (detailRow <= lastContentRow) {
+          let col = 4;
+          for (const seg of item.detailsColored![d]) {
+            writeText(buffer, detailRow, col, seg.text, seg.fg, 'black');
+            col += seg.text.length;
+          }
+        }
+      }
+      row += 1 + detailsOffset + (item.detailsColored?.length ?? 0);
     }
 
     if (needsPager) {
