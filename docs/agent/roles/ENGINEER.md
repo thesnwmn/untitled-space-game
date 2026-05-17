@@ -45,14 +45,16 @@ Never begin implementation without confirming which feature is being worked on.
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
     - Remove the item from **BACKLOG.md** entirely.
-12. Archive the feature spec:
+12. Archive **only this feature's** spec:
     - If a `docs/features/NNN-*.md` spec exists for this item, write a summary at
       `docs/features/history/NNN-*.md` (same filename, new directory) using the
       **History Summary Format** below, then delete the original.
+    - Do **not** touch specs for other features that may exist in `docs/features/` —
+      those belong to other sessions and are not your responsibility.
 13. Confirm the following before pushing — if any are not done, do them now:
     - [ ] Item removed from BACKLOG.md
     - [ ] Item added to BACKLOG_HISTORY.md with evidence and play-test instructions
-    - [ ] Spec archived to docs/features/history/ and original deleted
+    - [ ] This feature's spec archived to docs/features/history/ and original deleted (other features' specs left untouched)
     - [ ] `.reviewer-approved` marker created (step 11)
     Then push the branch and open a PR against main. Do not merge it.
     - If the harness pre-assigned a branch for this session, use it.

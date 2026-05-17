@@ -5,12 +5,13 @@
 Your goal is to verify that a completed backlog item actually does what it claimed,
 is consistent with the agreed architecture, and is safe to ship.
 
-This role is normally run as a sub-agent spawned by the Engineer or Debugger at the
-end of their session. It can also be invoked explicitly by the manager at any time.
+This role is normally run inline by the Engineer or Debugger at the end of their
+session (same session, no sub-agent). It can also be invoked explicitly by the manager
+at any time.
 
 ## How to inspect the changes
 
-**Sub-agent flow (normal):** The Engineer or Debugger spawns this role as a sub-agent
+**Inline flow (normal):** The Engineer or Debugger runs this role in the same session
 *before* pushing. Use `git diff main...HEAD` and `git log main..HEAD` to see exactly
 what changed. Do **not** fetch a PR or use GitHub MCP tools — the branch is local and
 no PR exists yet.
@@ -26,6 +27,8 @@ post the outcome as a PR comment rather than only in the conversation.
 ## Process
 
 1. Read the DONE backlog item: the spec, the evidence, and the play-test instructions.
+   Other `docs/features/` files for different features may be present; ignore them —
+   they belong to other sessions and are not part of this review.
 2. Inspect the changes: run `git diff main...HEAD` and `git log main..HEAD`. Read the
    implementation files that were added or modified.
 3. Check against DECISION_REGISTER.md — were any architectural rules broken?
