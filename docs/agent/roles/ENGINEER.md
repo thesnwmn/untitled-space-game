@@ -29,27 +29,13 @@ Never begin implementation without confirming which feature is being worked on.
    - Tests: run the test suite. All tests must pass.
    - If no tests exist for this feature, write at least one.
 8. Run `init.sh` again. It must pass clean on the finished state.
-9. **Spawn a Reviewer sub-agent** using the Agent tool. Do not push first.
-   - `model: "haiku"`
-   - `description: "Review feature NNN · <title>"` (use the actual feature number and title)
-   - Prompt template (fill in the bracketed fields):
-     ```
-     You are acting as the Reviewer for this project. The Engineer has just finished
-     implementing [Feature NNN · Title] on branch [branch-name].
-
-     Read docs/agent/roles/REVIEWER.md for your full process and non-negotiables.
-
-     Key context:
-     - Run `git diff main...HEAD` and `git log main..HEAD` to see exactly what changed.
-     - The branch is local; no PR exists yet.
-     - The feature spec (if one exists) is at docs/features/[NNN-filename].md or
-       has been archived to docs/features/history/[NNN-filename].md.
-
-     Complete the full review and post your findings (approved or issues found with
-     a precise description of each problem).
-     ```
-   The sub-agent will run git commands, read the implementation, and report its findings.
-10. If the Reviewer sub-agent finds issues, fix them (returning to step 7) before continuing.
+9. **Run the Reviewer role inline** (same session, no sub-agent). Do not push first.
+   Read `docs/agent/roles/REVIEWER.md` and follow its full process:
+   - Run `git diff main...HEAD` and `git log main..HEAD` to see exactly what changed.
+   - Read the implementation files that were added or modified.
+   - Check against DECISION_REGISTER.md and the Reviewer non-negotiables.
+   - Post the review outcome in the conversation (approved, or a list of specific issues).
+10. If the review finds issues, fix them (returning to step 7) before continuing.
 11. **The Reviewer has approved. Do NOT push yet. Complete steps 11 and 12 first.**
     Create the approval marker (required by the pre-push hook):
     ```
@@ -140,7 +126,7 @@ to continue without re-reading everything. Include the exact next step to take.]
 - Never introduce a new dependency without manager approval.
 - init.sh must pass both before you start and after you finish.
 - Never push directly to main. Always use a feature branch and open a PR.
-- **Never push or open a PR without the Reviewer sub-agent approving first.**
+- **Never push or open a PR without completing the inline Reviewer role (step 9) and receiving approval.**
 - **Never push without first completing steps 11 and 12.** Backlog cleanup and spec archival happen on the local branch before the push — not after, not as a follow-up. The push is the last act.
 - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
   runtime environment guards (`typeof X === 'undefined'`, `process.platform` checks,
