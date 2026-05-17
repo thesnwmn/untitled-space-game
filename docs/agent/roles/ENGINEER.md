@@ -29,53 +29,35 @@ Never begin implementation without confirming which feature is being worked on.
    - Tests: run the test suite. All tests must pass.
    - If no tests exist for this feature, write at least one.
 8. Run `init.sh` again. It must pass clean on the finished state.
-9. **Spawn a Reviewer sub-agent** using the Agent tool. Do not push first.
-   - `model: "haiku"`
-   - `description: "Review feature NNN · <title>"` (use the actual feature number and title)
-   - Prompt template (fill in the bracketed fields):
-     ```
-     You are acting as the Reviewer for this project. The Engineer has just finished
-     implementing [Feature NNN · Title] on branch [branch-name].
-
-     Read docs/agent/roles/REVIEWER.md for your full process and non-negotiables.
-
-     Key context:
-     - Run `git diff main...HEAD` and `git log main..HEAD` to see exactly what changed.
-     - The branch is local; no PR exists yet.
-     - The feature spec (if one exists) is at docs/features/[NNN-filename].md or
-       has been archived to docs/features/history/[NNN-filename].md.
-
-     Complete the full review and post your findings (approved or issues found with
-     a precise description of each problem).
-     ```
-   The sub-agent will run git commands, read the implementation, and report its findings.
-10. If the Reviewer sub-agent finds issues, fix them (returning to step 7) before continuing.
+9. **Run the Reviewer role inline** (same session, no sub-agent). Do not push first.
+   Read `docs/agent/roles/REVIEWER.md` and follow its full process:
+   - Run `git diff main...HEAD` and `git log main..HEAD` to see exactly what changed.
+   - Read the implementation files that were added or modified.
+   - Check against DECISION_REGISTER.md and the Reviewer non-negotiables.
+   - Post the review outcome in the conversation (approved, or a list of specific issues).
+10. If the review finds issues, fix them (returning to step 7) before continuing.
 11. **The Reviewer has approved. Do NOT push yet. Complete steps 11 and 12 first.**
+    Create the approval marker (required by the pre-push hook):
+    ```
+    echo approved > .reviewer-approved
+    ```
     Update the backlogs on the local feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
     - Remove the item from **BACKLOG.md** entirely.
 12. Archive the feature spec:
-    - If a `docs/features/NNN-*.md` spec exists for this item, replace it with a
-      short summary in `docs/features/history/NNN-*.md` (same filename, new directory).
-    - Summary format (~15–25 lines):
-      ```
-      # NNN · Title — DONE
-      ## What it added
-      [2–3 sentences]
-      ## Key files
-      [primary files created or significantly changed]
-      ## Architectural decisions embedded
-      [any non-obvious patterns this feature established — omit section if none]
-      ```
-    - Delete the original from `docs/features/` after writing the summary.
+    - If a `docs/features/NNN-*.md` spec exists for this item, write a summary at
+      `docs/features/history/NNN-*.md` (same filename, new directory) using the
+      **History Summary Format** below, then delete the original.
 13. Confirm the following before pushing — if any are not done, do them now:
     - [ ] Item removed from BACKLOG.md
     - [ ] Item added to BACKLOG_HISTORY.md with evidence and play-test instructions
     - [ ] Spec archived to docs/features/history/ and original deleted
+    - [ ] `.reviewer-approved` marker created (step 11)
     Then push the branch and open a PR against main. Do not merge it.
     - If the harness pre-assigned a branch for this session, use it.
     - Otherwise create one named `feature/NNN-short-description`.
+    After the push succeeds, delete the approval marker: `rm .reviewer-approved`
 
 ## Context Management
 
@@ -92,6 +74,42 @@ When handing off early:
   implementation is fully done but context is nearly exhausted, complete the review
   before pushing — the review is cheaper than the push. Only skip the review if the
   feature itself is incomplete (i.e. the handoff is mid-implementation).
+
+## History Summary Format
+
+File: `docs/features/history/NNN-title.md` (~15–25 lines). The filled-in example
+sets the minimum expected detail — do not write thinner than this.
+
+**Template**
+```
+# NNN · Title — DONE
+## What it added
+[2–3 sentences]
+## Key files
+[primary files created or significantly changed]
+## Architectural decisions embedded
+[any non-obvious patterns this feature established — omit section if none]
+```
+
+**Example**
+```
+# 042 · Fuel System — DONE
+## What it added
+Added a fuel resource to `PlayerState` (0–100 units) that depletes on every
+jump based on distance. `ShipScene` gains a FUEL status row with a bar render.
+Jumping when fuel < jump cost is blocked with an inline warning; docking at any
+station restores fuel to full.
+## Key files
+- `src/game/state/PlayerState.ts` — added `fuel`, `maxFuel`, `fuelCostPerLy`
+- `src/game/scenes/ShipScene.ts` — FUEL bar render, jump-blocked path
+- `src/game/orchestration/GameOrchestrator.ts` — fuel deduction on jump, refuel on dock
+- `src/game/scenes/ShipScene.test.ts` — covers bar render and blocked-jump message
+## Architectural decisions embedded
+- Fuel cost is computed from the pre-existing `distanceLy` field on `Destination`;
+  no new data was added to the world model.
+- Refuel is unconditional on dock (no cost, no UI) — economy integration deferred
+  to a later feature.
+```
 
 ## HANDOFF.md Template
 
@@ -134,7 +152,7 @@ to continue without re-reading everything. Include the exact next step to take.]
 - Never introduce a new dependency without manager approval.
 - init.sh must pass both before you start and after you finish.
 - Never push directly to main. Always use a feature branch and open a PR.
-- **Never push or open a PR without the Reviewer sub-agent approving first.**
+- **Never push or open a PR without completing the inline Reviewer role (step 9) and receiving approval.**
 - **Never push without first completing steps 11 and 12.** Backlog cleanup and spec archival happen on the local branch before the push — not after, not as a follow-up. The push is the last act.
 - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
   runtime environment guards (`typeof X === 'undefined'`, `process.platform` checks,

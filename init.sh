@@ -3,6 +3,12 @@ set -e
 
 echo "=== Space Game Dev Environment Init ==="
 
+# --- Git hooks ---
+echo "Installing git hooks..."
+cp scripts/pre-push-hook.sh .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
+echo "✓ Git hooks installed"
+
 # --- Node / npm ---
 echo "Checking Node..."
 node --version || { echo "ERROR: Node not found. Install via nvm or nodejs.org"; exit 1; }
