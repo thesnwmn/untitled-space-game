@@ -5,6 +5,18 @@ import { getGameBalance, getWorld } from '../world/world-data';
 import { isReputationEligible, getReputationLevel, getReputationLabel } from '../reputation-utils';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 
+const BAR_WIDTH = 20;
+const HALF_BAR = BAR_WIDTH / 2;
+const FILLED = '█';
+const EMPTY = '░';
+
+function buildRepBar(rep: number, pointsMin: number, pointsMax: number): number {
+  if (rep <= pointsMin) return 0;
+  if (rep >= pointsMax) return BAR_WIDTH;
+  if (rep <= 0) return Math.round((rep - pointsMin) / -pointsMin * HALF_BAR);
+  return HALF_BAR + Math.round(rep / pointsMax * HALF_BAR);
+}
+
 const LEVEL_COLORS: Record<number, Color> = {
   [-2]: 'red',
   [-1]: 'bright-red',
@@ -59,11 +71,23 @@ export class ReputationScene extends BaseMenuScene {
       const level = getReputationLevel(rep, balance);
       const label = getReputationLabel(level);
       const levelColor = (LEVEL_COLORS[level] ?? 'white') as Color;
+      const fill = buildRepBar(rep, balance.reputation.pointsMin, balance.reputation.pointsMax);
+      const empty = BAR_WIDTH - fill;
 
       return {
         label: faction.name,
         info: label,
         infoFg: levelColor,
+        detailsColored: [
+          {
+            left: [
+              { text: FILLED.repeat(fill), fg: levelColor },
+              { text: EMPTY.repeat(empty), fg: 'bright-black' as Color },
+            ],
+            right: { text: String(rep), fg: levelColor },
+          },
+          { left: [] },
+        ],
         action: () => {},
       };
     });
