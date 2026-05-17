@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { Game } from './game';
 import type { Renderer, InputHandler, GameContext, CharBuffer } from '../shared/types';
-import type { TraderStockEntry } from './world/types';
+import type { MissionSpec, TraderStockEntry } from './world/types';
 import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation-scene';
 import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
 import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
@@ -217,6 +217,54 @@ describe('Game — goToTakeOffOrUndock routing', () => {
     const player = (game as any).player;
     player.dock('elysium-station');
     (game as any).goToTakeOffOrUndock();
+    expect((game as any).currentScene).toBeInstanceOf(OrbitalUndockingAnimationScene);
+  });
+});
+
+describe('Game — undock from station sub-scenes plays animation', () => {
+  const ORBITAL = 'elysium-station';
+
+  function makeDockedGame() {
+    const game = new Game(makeMockRenderer(), makeMockInput(), context);
+    (game as any).player.dock(ORBITAL);
+    return game;
+  }
+
+  const stubSpec: MissionSpec = {
+    id: 'test-mission',
+    type: 'delivery',
+    title: 'Test Mission',
+    description: 'A test mission.',
+    reward: 500,
+    issuingDestinationId: ORBITAL,
+    giverName: 'Test Giver',
+    itemName: 'Test Item',
+    itemWeightKg: 1,
+    pickupDestinationId: ORBITAL,
+    deliveryDestinationId: 'elysium-station',
+  };
+
+  it('undock from TraderScene plays OrbitalUndockingAnimationScene', () => {
+    const game = makeDockedGame();
+    (game as any).goToTrader();
+    const scene = (game as any).currentScene;
+    (scene as any).onUndock();
+    expect((game as any).currentScene).toBeInstanceOf(OrbitalUndockingAnimationScene);
+  });
+
+  it('undock from MissionBoardScene plays OrbitalUndockingAnimationScene', () => {
+    const game = makeDockedGame();
+    (game as any).goToMissionBoard();
+    const scene = (game as any).currentScene;
+    (scene as any).onUndock();
+    expect((game as any).currentScene).toBeInstanceOf(OrbitalUndockingAnimationScene);
+  });
+
+  it('undock from MissionDetailScene plays OrbitalUndockingAnimationScene', () => {
+    const game = makeDockedGame();
+    (game as any).goToMissionDetail(stubSpec, ORBITAL);
+    const scene = (game as any).currentScene;
+    (scene as any).onUndock();
     expect((game as any).currentScene).toBeInstanceOf(OrbitalUndockingAnimationScene);
   });
 });

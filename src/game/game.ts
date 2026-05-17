@@ -214,7 +214,7 @@ export class Game {
       this.input, this.context, this.player, destinationId, stock,
       (commodityId, qty) => this.onBuy(commodityId, qty, stock),
       (commodityId, qty) => this.onSell(commodityId, qty, stock),
-      () => this.goToStation(), () => this.goToShip(),
+      () => this.goToStation(), () => this.goToTakeOffOrUndock(),
       () => this.goToGlobalMenu(),
     );
   }
@@ -226,7 +226,7 @@ export class Game {
       () => this.getOrCreateMissionBoard(destinationId),
       (spec) => this.goToMissionDetail(spec, destinationId),
       () => this.goToStation(),
-      () => this.goToShip(),
+      () => this.goToTakeOffOrUndock(),
       () => this.goToGlobalMenu(),
     );
   }
@@ -237,7 +237,7 @@ export class Game {
       (giveItemNow) => this.onMissionAccepted(spec, giveItemNow, boardDestinationId),
       () => this.goToMissionBoard(),
       () => this.goToStation(),
-      () => this.goToShip(),
+      () => this.goToTakeOffOrUndock(),
     );
   }
 
