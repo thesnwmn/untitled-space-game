@@ -1,4 +1,5 @@
 import type { Destination, WorldData, MissionSpec } from './world/types';
+import { getGameBalance } from './world/world-data';
 
 function lcgRand(seed: number): () => number {
   let s = seed >>> 0;
@@ -18,7 +19,7 @@ function pickItem<T>(rand: () => number, arr: T[]): T {
 
 function buildGiverName(rand: () => number, worldData: WorldData): { giverName: string; giverFactionId?: string } {
   const { special, firstNames, lastNames } = worldData.npcNames;
-  if (rand() < 0.3 && special.length > 0) {
+  if (rand() < getGameBalance().npc.specialNameChance && special.length > 0) {
     const name = pickItem(rand, special);
     return { giverName: name };
   }
@@ -51,9 +52,9 @@ function generateDeliveryMission(
   const deliveryDest = pickItem(rand, candidates);
   const giver = buildGiverName(rand, worldData);
 
-  const baseReward = 200;
+  const { deliveryBaseReward, deliveryRandomReward } = getGameBalance().missions;
   const weightBonus = Math.floor(item.weightKg * 1.5);
-  const reward = baseReward + weightBonus + Math.floor(rand() * 200);
+  const reward = deliveryBaseReward + weightBonus + Math.floor(rand() * deliveryRandomReward);
 
   return {
     ...giver,
@@ -89,7 +90,8 @@ function generateSupplyMission(
     if (boosted) weighted.push(c); // double weight for biased commodities
   }
 
-  const reqCount = 1 + Math.floor(rand() * 2); // 1 or 2 requirements
+  const { supplyRequirementsMin, supplyRequirementsMax, supplyQtyMin, supplyQtyMax } = getGameBalance().missions;
+  const reqCount = supplyRequirementsMin + Math.floor(rand() * (supplyRequirementsMax - supplyRequirementsMin + 1));
   const requirements: { commodityId: string; qty: number }[] = [];
   const used = new Set<string>();
 
@@ -99,7 +101,7 @@ function generateSupplyMission(
       const c = pickItem(rand, weighted);
       if (!used.has(c.id)) {
         used.add(c.id);
-        const qty = 1 + Math.floor(rand() * 4); // 1–4 units
+        const qty = supplyQtyMin + Math.floor(rand() * (supplyQtyMax - supplyQtyMin + 1));
         requirements.push({ commodityId: c.id, qty });
         break;
       }
@@ -113,7 +115,8 @@ function generateSupplyMission(
     const comm = worldData.commodities.find(c => c.id === r.commodityId);
     return sum + (comm?.basePrice ?? 100) * r.qty;
   }, 0);
-  const reward = Math.floor(totalValue * 0.4) + Math.floor(rand() * 150);
+  const { supplyRewardMargin, supplyRandomReward } = getGameBalance().missions;
+  const reward = Math.floor(totalValue * supplyRewardMargin) + Math.floor(rand() * supplyRandomReward);
 
   const giver = buildGiverName(rand, worldData);
   const reqSummary = requirements
@@ -142,12 +145,13 @@ export function generateMissions(
   seed: number,
 ): MissionSpec[] {
   const rand = lcgRand(seed);
-  const count = 3 + Math.floor(rand() * 4); // 3–6
+  const { boardCountMin, boardCountMax, deliveryChance } = getGameBalance().missions;
+  const count = boardCountMin + Math.floor(rand() * (boardCountMax - boardCountMin + 1));
 
   const missions: MissionSpec[] = [];
   for (let i = 0; i < count; i++) {
     const missionId = `m-${(seed >>> 0).toString(16)}-${i}`;
-    const isDelivery = rand() < 0.6;
+    const isDelivery = rand() < deliveryChance;
     const mission = isDelivery
       ? generateDeliveryMission(rand, destination, worldData, missionId)
       : generateSupplyMission(rand, destination, worldData, missionId);

@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 047 · Game Balance Settings
-
-All hardcoded gameplay constants (NPC name probability, mission counts and reward ranges, trader stock quantities, cache TTLs, fuel economics) move into `docs/world/settings/balance.md`. `docs/world/game-settings.md` is renamed to `docs/world/settings/new-game.md`. A new `GameBalance` type is added to `types.ts`, parsed by `world-parser.ts`, and exposed via `getGameBalance()` in `world-data.ts`. `constants.ts` is deleted; `mission-generator.ts` and `game.ts` read all balance values from `getGameBalance()`.
-See `docs/features/047-game-balance-settings.md` for the full spec.
-
----
-
 ### 050 · Reputation — Foundation (Data & UI)
 
 Faction relationships (rivals, allies) are added to world data. Destinations gain an optional `owning_faction` field. `PlayerState` stores a per-faction reputation score. A `reputation-utils.ts` module provides level computation and labels. A `ReputationScene` is added to the global menu. `StationMenuScene` displays the owning faction when present. Depends on features 046 and 047.

@@ -124,6 +124,59 @@ export interface GameSettings {
   startingShip: string;
 }
 
+export interface GameBalance {
+  npc: {
+    specialNameChance: number;
+  };
+  missions: {
+    boardCountMin: number;
+    boardCountMax: number;
+    missionTtlMs: number;
+    deliveryChance: number;
+    deliveryBaseReward: number;
+    deliveryRandomReward: number;
+    supplyRewardMargin: number;
+    supplyRandomReward: number;
+    supplyRequirementsMin: number;
+    supplyRequirementsMax: number;
+    supplyQtyMin: number;
+    supplyQtyMax: number;
+  };
+  trading: {
+    stockCountMin: number;
+    stockCountMax: number;
+    stockQtyMin: number;
+    stockQtyMax: number;
+    stockTtlMs: number;
+  };
+  fuel: {
+    pricePerLitre: number;
+    consumptionPerLy: number;
+  };
+  reputation: {
+    levelUnfriendlyMin: number;
+    levelNeutralMin: number;
+    levelFriendlyMin: number;
+    levelLikedMin: number;
+    levelReveredMin: number;
+    pointsMin: number;
+    pointsMax: number;
+    missionDeltaSmall: number;
+    missionDeltaMedium: number;
+    missionDeltaLarge: number;
+    missionTierMediumReward: number;
+    missionTierLargeReward: number;
+    tradeModifierHated: number;
+    tradeModifierUnfriendly: number;
+    tradeModifierNeutral: number;
+    tradeModifierFriendly: number;
+    tradeModifierLiked: number;
+    tradeModifierRevered: number;
+    repPerCredit: number;
+    maxRepPerVisit: number;
+  };
+}
+
 export interface CargoEntry {
   commodityId: string;
   qty: number;
@@ -188,6 +241,7 @@ export interface NpcNames {
 
 export interface WorldData {
   settings: GameSettings;
+  balance: GameBalance;
   systems: StarSystem[];
   destinations: Destination[];
   routes: JumpRoute[];

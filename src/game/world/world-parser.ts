@@ -11,6 +11,7 @@ import type {
   Commodity,
   StoryBeat,
   GameSettings,
+  GameBalance,
   DeliveryItem,
   NpcNames,
 } from './types';
@@ -30,6 +31,57 @@ function parseFrontMatter(source: string): { data: Record<string, unknown>; cont
   return { data, content: body };
 }
 
+const DEFAULT_BALANCE: GameBalance = {
+  npc: { specialNameChance: 0.3 },
+  missions: {
+    boardCountMin: 3,
+    boardCountMax: 6,
+    missionTtlMs: 900000,
+    deliveryChance: 0.6,
+    deliveryBaseReward: 200,
+    deliveryRandomReward: 200,
+    supplyRewardMargin: 0.4,
+    supplyRandomReward: 150,
+    supplyRequirementsMin: 1,
+    supplyRequirementsMax: 2,
+    supplyQtyMin: 1,
+    supplyQtyMax: 4,
+  },
+  trading: {
+    stockCountMin: 4,
+    stockCountMax: 6,
+    stockQtyMin: 1,
+    stockQtyMax: 8,
+    stockTtlMs: 120000,
+  },
+  fuel: {
+    pricePerLitre: 10,
+    consumptionPerLy: 5,
+  },
+  reputation: {
+    levelUnfriendlyMin: -300,
+    levelNeutralMin: -100,
+    levelFriendlyMin: 100,
+    levelLikedMin: 300,
+    levelReveredMin: 600,
+    pointsMin: -600,
+    pointsMax: 1000,
+    missionDeltaSmall: 25,
+    missionDeltaMedium: 75,
+    missionDeltaLarge: 200,
+    missionTierMediumReward: 300,
+    missionTierLargeReward: 600,
+    tradeModifierHated: 1.20,
+    tradeModifierUnfriendly: 1.10,
+    tradeModifierNeutral: 1.00,
+    tradeModifierFriendly: 0.92,
+    tradeModifierLiked: 0.85,
+    tradeModifierRevered: 0.80,
+    repPerCredit: 0.01,
+    maxRepPerVisit: 10,
+  },
+};
+
 export function parseWorldFiles(files: Record<string, string>): WorldData {
   const world: WorldData = {
     settings: {
@@ -37,6 +89,7 @@ export function parseWorldFiles(files: Record<string, string>): WorldData {
       startingLocation: { system: '', destination: '' },
       startingShip: '',
     },
+    balance: { ...DEFAULT_BALANCE },
     systems: [],
     destinations: [],
     routes: [],
@@ -71,8 +124,10 @@ export function parseWorldFiles(files: Record<string, string>): WorldData {
       world.commodities = parseCommodities(data);
     } else if (/^story\/[^/]+\.md$/.test(path)) {
       world.storyBeats.push(parseStoryBeat(data, body));
-    } else if (path === 'game-settings.md') {
+    } else if (path === 'settings/new-game.md') {
       world.settings = parseSettings(data);
+    } else if (path === 'settings/balance.md') {
+      world.balance = parseBalance(data);
     } else if (path === 'delivery-items.md') {
       world.deliveryItems = parseDeliveryItems(data);
     } else if (path === 'npc-names.md') {
@@ -251,5 +306,66 @@ function parseNpcNames(data: { [key: string]: any }): NpcNames {
     special: names.special ?? [],
     firstNames: names.first_names ?? [],
     lastNames: names.last_names ?? [],
+  };
+}
+
+function parseBalance(data: { [key: string]: any }): GameBalance {
+  const d = DEFAULT_BALANCE;
+  const npc = data.npc ?? {};
+  const missions = data.missions ?? {};
+  const trading = data.trading ?? {};
+  const fuel = data.fuel ?? {};
+  const rep = data.reputation ?? {};
+  return {
+    npc: {
+      specialNameChance: npc.special_name_chance ?? d.npc.specialNameChance,
+    },
+    missions: {
+      boardCountMin: missions.board_count_min ?? d.missions.boardCountMin,
+      boardCountMax: missions.board_count_max ?? d.missions.boardCountMax,
+      missionTtlMs: missions.mission_ttl_ms ?? d.missions.missionTtlMs,
+      deliveryChance: missions.delivery_chance ?? d.missions.deliveryChance,
+      deliveryBaseReward: missions.delivery_base_reward ?? d.missions.deliveryBaseReward,
+      deliveryRandomReward: missions.delivery_random_reward ?? d.missions.deliveryRandomReward,
+      supplyRewardMargin: missions.supply_reward_margin ?? d.missions.supplyRewardMargin,
+      supplyRandomReward: missions.supply_random_reward ?? d.missions.supplyRandomReward,
+      supplyRequirementsMin: missions.supply_requirements_min ?? d.missions.supplyRequirementsMin,
+      supplyRequirementsMax: missions.supply_requirements_max ?? d.missions.supplyRequirementsMax,
+      supplyQtyMin: missions.supply_qty_min ?? d.missions.supplyQtyMin,
+      supplyQtyMax: missions.supply_qty_max ?? d.missions.supplyQtyMax,
+    },
+    trading: {
+      stockCountMin: trading.stock_count_min ?? d.trading.stockCountMin,
+      stockCountMax: trading.stock_count_max ?? d.trading.stockCountMax,
+      stockQtyMin: trading.stock_qty_min ?? d.trading.stockQtyMin,
+      stockQtyMax: trading.stock_qty_max ?? d.trading.stockQtyMax,
+      stockTtlMs: trading.stock_ttl_ms ?? d.trading.stockTtlMs,
+    },
+    fuel: {
+      pricePerLitre: fuel.price_per_litre ?? d.fuel.pricePerLitre,
+      consumptionPerLy: fuel.consumption_per_ly ?? d.fuel.consumptionPerLy,
+    },
+    reputation: {
+      levelUnfriendlyMin: rep.level_unfriendly_min ?? d.reputation.levelUnfriendlyMin,
+      levelNeutralMin: rep.level_neutral_min ?? d.reputation.levelNeutralMin,
+      levelFriendlyMin: rep.level_friendly_min ?? d.reputation.levelFriendlyMin,
+      levelLikedMin: rep.level_liked_min ?? d.reputation.levelLikedMin,
+      levelReveredMin: rep.level_revered_min ?? d.reputation.levelReveredMin,
+      pointsMin: rep.points_min ?? d.reputation.pointsMin,
+      pointsMax: rep.points_max ?? d.reputation.pointsMax,
+      missionDeltaSmall: rep.mission_delta_small ?? d.reputation.missionDeltaSmall,
+      missionDeltaMedium: rep.mission_delta_medium ?? d.reputation.missionDeltaMedium,
+      missionDeltaLarge: rep.mission_delta_large ?? d.reputation.missionDeltaLarge,
+      missionTierMediumReward: rep.mission_tier_medium_reward ?? d.reputation.missionTierMediumReward,
+      missionTierLargeReward: rep.mission_tier_large_reward ?? d.reputation.missionTierLargeReward,
+      tradeModifierHated: rep.trade_modifier_hated ?? d.reputation.tradeModifierHated,
+      tradeModifierUnfriendly: rep.trade_modifier_unfriendly ?? d.reputation.tradeModifierUnfriendly,
+      tradeModifierNeutral: rep.trade_modifier_neutral ?? d.reputation.tradeModifierNeutral,
+      tradeModifierFriendly: rep.trade_modifier_friendly ?? d.reputation.tradeModifierFriendly,
+      tradeModifierLiked: rep.trade_modifier_liked ?? d.reputation.tradeModifierLiked,
+      tradeModifierRevered: rep.trade_modifier_revered ?? d.reputation.tradeModifierRevered,
+      repPerCredit: rep.rep_per_credit ?? d.reputation.repPerCredit,
+      maxRepPerVisit: rep.max_rep_per_visit ?? d.reputation.maxRepPerVisit,
+    },
   };
 }

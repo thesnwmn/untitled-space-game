@@ -20,14 +20,11 @@ import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
 import type { TraderStockEntry, MissionSpec } from './world/types';
-import { getGameSettings, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld } from './world/world-data';
+import { getGameSettings, getGameBalance, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld } from './world/world-data';
 import { PlayerState } from './player-state';
-import { FUEL_PER_LY } from './constants';
 import { generateMissions } from './mission-generator';
 
 const MAX_DT = 100;
-const STOCK_TTL_MS = 2 * 60 * 1000; // 2 minutes
-const MISSION_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 interface StockCache {
   entries: TraderStockEntry[];
@@ -86,11 +83,13 @@ export class Game {
   private getOrCreateTraderStock(destinationId: string): TraderStockEntry[] {
     const now = Date.now();
     const cached = this.traderStockCache.get(destinationId);
-    if (cached && now - cached.generatedAt < STOCK_TTL_MS) {
+    const balance = getGameBalance();
+    if (cached && now - cached.generatedAt < balance.trading.stockTtlMs) {
       return cached.entries;
     }
     const commodities = getCommodities();
-    const count = 4 + Math.floor(Math.random() * 3); // 4–6
+    const { stockCountMin, stockCountMax, stockQtyMin, stockQtyMax } = balance.trading;
+    const count = stockCountMin + Math.floor(Math.random() * (stockCountMax - stockCountMin + 1));
     const shuffled = [...commodities];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -98,7 +97,7 @@ export class Game {
     }
     const entries: TraderStockEntry[] = shuffled.slice(0, count).map(c => ({
       commodityId: c.id,
-      qty: 1 + Math.floor(Math.random() * 8), // 1–8
+      qty: stockQtyMin + Math.floor(Math.random() * (stockQtyMax - stockQtyMin + 1)),
     }));
     this.traderStockCache.set(destinationId, { entries, generatedAt: now });
     return entries;
@@ -107,7 +106,7 @@ export class Game {
   private getOrCreateMissionBoard(destinationId: string): MissionSpec[] {
     const now = Date.now();
     const cached = this.missionBoardCache.get(destinationId);
-    if (cached && now - cached.generatedAt < MISSION_TTL_MS) {
+    if (cached && now - cached.generatedAt < getGameBalance().missions.missionTtlMs) {
       return cached.specs;
     }
     const destination = getDestination(destinationId)!;
@@ -354,7 +353,7 @@ export class Game {
   private onJumpSelected(targetSystemId: string): void {
     const route = getRoute(this.player.systemId, targetSystemId)!;
     const drive = getDrive(this.player.driveId)!;
-    const used = Math.ceil(FUEL_PER_LY * route.distance * drive.fuelEfficiency);
+    const used = Math.ceil(getGameBalance().fuel.consumptionPerLy * route.distance * drive.fuelEfficiency);
     this.player.consumeFuel(used);
     this.player.jumpTo(targetSystemId);
     this.currentScene = new JumpAnimationScene(this.player, this.context, () => this.goToArrival());

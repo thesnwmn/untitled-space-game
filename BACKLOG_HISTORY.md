@@ -14,6 +14,35 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 047 · Game Balance Settings — DONE
+
+**Built:**
+- `docs/world/settings/new-game.md` — moved from `docs/world/game-settings.md`; content unchanged
+- `docs/world/settings/balance.md` — new file; YAML frontmatter with all balance constants (npc, missions, trading, fuel, reputation sections)
+- `src/game/world/types.ts` — `GameBalance` interface added; `WorldData.balance: GameBalance` field added
+- `src/game/world/world-parser.ts` — `DEFAULT_BALANCE` constant; `parseBalance()` function; path match updated from `game-settings.md` → `settings/new-game.md`; new branch for `settings/balance.md`; `balance` initialised to `DEFAULT_BALANCE` in world object
+- `src/game/world/world-data.ts` — `getGameBalance()` function exported
+- `src/game/constants.ts` — deleted
+- `src/game/game.ts` — removed `STOCK_TTL_MS`/`MISSION_TTL_MS` constants and `constants.ts` import; all values read from `getGameBalance()`
+- `src/game/scenes/station-menu-scene.ts` — replaced `FUEL_PRICE_PER_L` with `getGameBalance().fuel.pricePerLitre`
+- `src/game/scenes/travel-menu-scene.ts` — replaced `FUEL_PER_LY` with `getGameBalance().fuel.consumptionPerLy`
+- `src/game/mission-generator.ts` — all hardcoded literals replaced with reads from `getGameBalance()`
+- `src/game/world/world-parser.test.ts` — updated settings path; 2 new balance tests (defaults absent, full parse)
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 729 passed, 1 skipped (37 test files)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Start a new game — confirm starting credits, location, and ship are unchanged.
+2. Visit a mission board — confirm missions generate normally (counts and types appear reasonable).
+3. Visit a trader — confirm stock is present with quantities in a believable range.
+4. Travel between systems — confirm fuel consumption and fuel purchase prices are unchanged.
+5. Modify a value in `docs/world/settings/balance.md` (e.g. raise `delivery_base_reward` to 9999), reload, and confirm the change is reflected in mission rewards.
+
+---
+
 ### 046 · Base Scene Architecture — DONE
 
 **Built:**
