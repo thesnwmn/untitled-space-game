@@ -2,9 +2,9 @@
 
 ## Goal
 
-Add a purchasable docking computer at ship dealers; when installed and enabled it bypasses
-the docking sequence entirely for orbital and deep-space destinations, going directly to
-the station without animation.
+Add a purchasable docking computer at ship dealers; when installed and enabled it replaces
+the docking sequence for orbital and deep-space destinations with a brief 1-second
+`AUTOPILOT ENGAGED` screen before entering the station.
 
 ---
 
@@ -24,8 +24,9 @@ the station without animation.
 - `[1] BACK` / BACK action returns to the station hub
 - After purchasing the docking computer, the global menu SHIP screen shows
   `DOCKING COMPUTER   [ON ]`
-- When the docking computer is installed and enabled, attempting to dock at an `orbital` or
-  `deep-space` destination skips directly to the station — no docking animation plays
+- When the docking computer is installed and enabled, docking at an `orbital` or `deep-space`
+  destination shows `AutopilotDockingScene` for 1 000 ms (or until any keypress), then
+  transitions to the station — the normal docking animation does not play
 - When the docking computer is installed but toggled to `OFF`, the docking animation plays as normal
 - `npm test` passes; `npx tsc --noEmit` produces zero errors
 
@@ -91,6 +92,15 @@ On activation of a purchasable item:
 `destination.npcs.shipDealer` (if present) should appear in the summary/info area so the player
 knows who they are dealing with.
 
+### AutopilotDockingScene
+
+New file `src/game/scenes/autopilot-docking-scene.ts`, extending `BaseTransitionScene`.
+Duration: 1 000 ms; advances immediately on any keypress (standard `BaseTransitionScene`
+behaviour). Receives a single `onComplete: () => void` callback that calls `goToStation()`.
+
+> suggestion: Centred content — `AUTOPILOT ENGAGED` in bright-green, with the destination name
+> on the line below in white.
+
 ### Docking bypass in game.ts
 
 At the top of `goToLandOrDock()`, before the existing locationType routing, add:
@@ -98,7 +108,8 @@ At the top of `goToLandOrDock()`, before the existing locationType routing, add:
 ```
 if destination.locationType is 'orbital' or 'deep-space'
 AND player.isUpgradeEnabled('docking-computer'):
-    return goToStation()
+    show AutopilotDockingScene → goToStation()
+    return
 ```
 
 This bypass has no dependency on mini-game features. When Features 055 and 058 are later
@@ -117,10 +128,10 @@ wired into `goToLandOrDock()`, this guard fires first and the mini-game is never
 3. Use a cheat or earn credits, then return; purchase the docking computer — confirm credits
    deducted and return to hub.
 4. Open global menu → SHIP — confirm `DOCKING COMPUTER   [ON ]`.
-5. Undock; select another orbital destination; choose DOCK — confirm the station opens
-   immediately with no docking animation.
+5. Undock; select another orbital destination; choose DOCK — confirm `AUTOPILOT ENGAGED`
+   appears briefly (~1 s) then the station opens; the normal docking animation does not play.
 6. Open global menu → SHIP; toggle docking computer to `[OFF]`; re-dock — confirm the
-   docking animation plays.
+   docking animation plays (no autopilot screen).
 
 ### Terminal (`npm run terminal`)
 
