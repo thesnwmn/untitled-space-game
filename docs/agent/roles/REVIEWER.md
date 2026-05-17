@@ -27,6 +27,8 @@ post the outcome as a PR comment rather than only in the conversation.
 ## Process
 
 1. Read the DONE backlog item: the spec, the evidence, and the play-test instructions.
+   Other `docs/features/` files for different features may be present; ignore them —
+   they belong to other sessions and are not part of this review.
 2. Inspect the changes: run `git diff main...HEAD` and `git log main..HEAD`. Read the
    implementation files that were added or modified.
 3. Check against DECISION_REGISTER.md — were any architectural rules broken?
