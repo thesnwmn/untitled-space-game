@@ -3,9 +3,10 @@ import type { PlayerState } from '../player-state';
 import type { ActiveMission } from '../world/types';
 import type { MissionSpec } from '../world/types';
 import { getMissionStatus } from '../player-state';
-import { getDestination } from '../world/world-data';
+import { getDestination, getGameBalance, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
+import { computeReputationDeltas, getMissionTierLabel } from '../reputation-utils';
 
 const TYPE_ICONS: Record<MissionSpec['type'], string> = {
   delivery: '[D] ',
@@ -86,9 +87,45 @@ export class MissionLogScene extends BaseMenuScene {
   }
 
   private openMissionModal(mission: ActiveMission): void {
+    let body = mission.description;
+
+    if (mission.giverFactionId) {
+      const world = getWorld();
+      const givingFaction = world.factions.find(f => f.id === mission.giverFactionId);
+      if (givingFaction) {
+        const balance = getGameBalance();
+        const missionReward = mission.reward;
+        let repDelta: number;
+        if (missionReward >= balance.reputation.missionTierLargeReward) {
+          repDelta = balance.reputation.missionDeltaLarge;
+        } else if (missionReward >= balance.reputation.missionTierMediumReward) {
+          repDelta = balance.reputation.missionDeltaMedium;
+        } else {
+          repDelta = balance.reputation.missionDeltaSmall;
+        }
+
+        const deltas = computeReputationDeltas(givingFaction, repDelta, world.factions);
+        const impactFactions: Array<{ id: string; name: string; delta: number }> = [];
+        for (const [factionId, delta] of deltas) {
+          const f = world.factions.find(fac => fac.id === factionId);
+          if (f) impactFactions.push({ id: factionId, name: f.name, delta });
+        }
+        impactFactions.sort((a, b) => {
+          if (a.delta !== b.delta) return b.delta - a.delta;
+          return a.name.localeCompare(b.name);
+        });
+
+        body += '\n\nREPUTATION IMPACT:\n';
+        for (const impact of impactFactions) {
+          const label = getMissionTierLabel(impact.delta, true);
+          body += `  ${impact.name.padEnd(20)} ${label}\n`;
+        }
+      }
+    }
+
     this.openModal(new ModalConfirmDialog({
       title: mission.title,
-      body: mission.description,
+      body,
       confirmLabel: 'OKAY',
       cancelLabel: 'CANCEL MISSION',
       onConfirm: () => this.closeModal(),

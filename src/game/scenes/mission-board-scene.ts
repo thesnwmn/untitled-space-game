@@ -1,7 +1,7 @@
 import type { InputHandler, GameContext } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import type { MissionSpec } from '../world/types';
-import { getDestination } from '../world/world-data';
+import { getDestination, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 
 const TYPE_ICONS: Record<MissionSpec['type'], string> = {
@@ -32,14 +32,24 @@ export class MissionBoardScene extends BaseMenuScene {
     if (missions.length === 0) {
       items = [{ label: 'NO MISSIONS AVAILABLE', disabled: true, action: () => {} }];
     } else {
-      items = missions.map(m => ({
-        label: m.title,
-        icon: TYPE_ICONS[m.type],
-        iconFg: 'bright-yellow' as const,
-        info: `${m.reward} CR`,
-        infoFg: 'bright-green' as const,
-        action: () => onMissionSelected(m),
-      }));
+      items = missions.map(m => {
+        const details = m.giverFactionId
+          ? (() => {
+              const faction = getWorld().factions.find(f => f.id === m.giverFactionId);
+              return faction ? [`For: ${faction.name}`] : [];
+            })()
+          : [];
+        return {
+          label: m.title,
+          icon: TYPE_ICONS[m.type],
+          iconFg: 'bright-yellow' as const,
+          info: `${m.reward} CR`,
+          infoFg: 'bright-green' as const,
+          details,
+          detailsFg: 'bright-black' as const,
+          action: () => onMissionSelected(m),
+        };
+      });
     }
 
     super(

@@ -1,5 +1,6 @@
 import type { Destination, WorldData, MissionSpec } from './world/types';
-import { getGameBalance } from './world/world-data';
+import { getGameBalance, getWorld } from './world/world-data';
+import { isReputationEligible } from './reputation-utils';
 
 function lcgRand(seed: number): () => number {
   let s = seed >>> 0;
@@ -56,8 +57,13 @@ function generateDeliveryMission(
   const weightBonus = Math.floor(item.weightKg * 1.5);
   const reward = deliveryBaseReward + weightBonus + Math.floor(rand() * deliveryRandomReward);
 
+  const giverFactionId = destination.owningFactionId
+    ? getWorld().factions.find(f => f.id === destination.owningFactionId && isReputationEligible(f))?.id
+    : undefined;
+
   return {
     ...giver,
+    giverFactionId,
     id: missionId,
     type: 'delivery',
     title: item.name,
@@ -126,8 +132,13 @@ function generateSupplyMission(
     })
     .join(', ');
 
+  const giverFactionId = destination.owningFactionId
+    ? getWorld().factions.find(f => f.id === destination.owningFactionId && isReputationEligible(f))?.id
+    : undefined;
+
   return {
     ...giver,
+    giverFactionId,
     id: missionId,
     type: 'supply',
     title: destination.name,

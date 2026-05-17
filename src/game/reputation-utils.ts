@@ -24,3 +24,29 @@ export function getReputationLabel(level: number): string {
     default: return 'NEUTRAL';
   }
 }
+
+export function getMissionTierLabel(delta: number, isSigned: boolean): string {
+  const abs = Math.abs(delta);
+  const sign = isSigned && delta < 0 ? '-' : '+';
+  if (abs <= 50) return `${sign}SMALL`;
+  if (abs <= 150) return `${sign}MEDIUM`;
+  return `${sign}LARGE`;
+}
+
+export function computeReputationDeltas(
+  givingFaction: Faction,
+  delta: number,
+  allFactions: Faction[],
+): Map<string, number> {
+  const deltas = new Map<string, number>();
+  deltas.set(givingFaction.id, delta);
+  const allyDelta = Math.floor(delta / 2);
+  for (const allyId of givingFaction.allies) {
+    deltas.set(allyId, allyDelta);
+  }
+  const rivalDelta = -Math.floor(delta / 2);
+  for (const rivalId of givingFaction.rivals) {
+    deltas.set(rivalId, rivalDelta);
+  }
+  return deltas;
+}

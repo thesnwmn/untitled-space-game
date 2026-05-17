@@ -2,9 +2,10 @@ import type { InputHandler, GameContext, CharBuffer, Color } from '../../shared/
 import type { PlayerState } from '../player-state';
 import { canAcceptMission } from '../player-state';
 import type { MissionSpec } from '../world/types';
-import { getDestination, getWorld, getCommodity } from '../world/world-data';
+import { getDestination, getWorld, getCommodity, getGameBalance } from '../world/world-data';
 import { writeText, wrapText } from '../../shared/buffer-utils';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
+import { computeReputationDeltas, getMissionTierLabel } from '../reputation-utils';
 
 const TYPE_ICONS: Record<MissionSpec['type'], string> = {
   delivery: '[D]',
@@ -179,5 +180,58 @@ export class MissionDetailScene extends BaseMenuScene {
     if (row > contentLimit) return;
 
     write(row, `REWARD: ${this.spec.reward} CR`, 'bright-green');
+    row++;
+
+    if (this.spec.giverFactionId) {
+      row++; // blank
+      if (row > contentLimit) return;
+
+      const world = getWorld();
+      const givingFaction = world.factions.find(f => f.id === this.spec.giverFactionId);
+      if (givingFaction) {
+        const balance = getGameBalance();
+        const missionReward = this.spec.reward;
+        let repDelta: number;
+        if (missionReward >= balance.reputation.missionTierLargeReward) {
+          repDelta = balance.reputation.missionDeltaLarge;
+        } else if (missionReward >= balance.reputation.missionTierMediumReward) {
+          repDelta = balance.reputation.missionDeltaMedium;
+        } else {
+          repDelta = balance.reputation.missionDeltaSmall;
+        }
+
+        const deltas = computeReputationDeltas(givingFaction, repDelta, world.factions);
+        const impactFactions: Array<{ id: string; name: string; delta: number }> = [];
+        for (const [factionId, delta] of deltas) {
+          const f = world.factions.find(fac => fac.id === factionId);
+          if (f) impactFactions.push({ id: factionId, name: f.name, delta });
+        }
+        impactFactions.sort((a, b) => {
+          if (a.delta !== b.delta) return b.delta - a.delta;
+          return a.name.localeCompare(b.name);
+        });
+
+        if (impactFactions.length > 0) {
+          if (row <= contentLimit) {
+            write(row, 'REPUTATION IMPACT', 'bright-cyan');
+            row++;
+          }
+          for (const impact of impactFactions) {
+            if (row > contentLimit) break;
+            const label = getMissionTierLabel(impact.delta, true);
+            const labelColor: Color = impact.delta > 0 ? 'bright-green' : 'red';
+            const maxNameWidth = maxWidth - label.length - 2;
+            const name = impact.name.slice(0, maxNameWidth);
+            const padding = ' '.repeat(Math.max(0, maxWidth - name.length - label.length));
+            write(row, `  ${name}${padding}${label}`, labelColor);
+            row++;
+          }
+        }
+
+        if (impactFactions.length > 0) {
+          row++; // blank line before accept/back items
+        }
+      }
+    }
   }
 }
