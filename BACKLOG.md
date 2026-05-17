@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 050 · Reputation — Foundation (Data & UI)
-
-Faction relationships (rivals, allies) are added to world data. Destinations gain an optional `owning_faction` field. `PlayerState` stores a per-faction reputation score. A `reputation-utils.ts` module provides level computation and labels. A `ReputationScene` is added to the global menu. `StationMenuScene` displays the owning faction when present. Depends on features 046 and 047.
-See `docs/features/050-reputation-foundation.md` for the full spec.
-
----
-
 ### 051 · Reputation — Mission Integration
 
 Missions at faction-owned destinations carry a `giverFactionId`. Completing a mission applies a rep delta to the giving faction, half that delta to its allies, and negative half to its rivals. `MissionDetailScene` shows a REPUTATION IMPACT section with SMALL / MEDIUM / LARGE labels. Depends on feature 050.
