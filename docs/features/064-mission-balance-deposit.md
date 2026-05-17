@@ -8,7 +8,7 @@ Supply missions pay more than the materials cost, delivery missions skew toward 
 
 ## Acceptance criteria
 
-- `GameBalance.missions.supplyRewardMargin` is renamed `supplyRewardMultiplier` throughout (types, parser, world data, generator). Its default value in `balance.md` is set to a value greater than 1.0 (e.g. 1.30). The reward formula remains `floor(totalMaterialCost × supplyRewardMultiplier) + floor(rand × supplyRandomReward)`.
+- `GameBalance.missions.supplyRewardMargin` and `supplyRandomReward` are both removed and replaced with two new params: `supplyRewardMultiplierMin` and `supplyRewardMultiplierMax` (both > 1.0, e.g. 1.15 and 1.50). The reward formula becomes `floor(totalMaterialCost × M)` where `M` is a randomly selected value in `[min, max]`, biased slightly toward the upper end for heavier supply requests (by total commodity weight of the requirements). Both params must be > 1.0 in world data to guarantee profit. All four locations (type, parser, world data, generator) are updated; a grep for the old names will find every site.
 - `supplyQtyMin` and `supplyQtyMax` are raised to values that require meaningful cargo investment (e.g. 3 and 10).
 - Delivery item selection in `generateDeliveryMission` uses weighted random by `weightKg` — each item's selection probability is proportional to its weight. Heavier items are picked more often; light items remain in the pool but appear rarely.
 - `GameBalance.missions` gains `deliveryDepositFraction: number` (e.g. 0.20).
@@ -18,7 +18,7 @@ Supply missions pay more than the materials cost, delivery missions skew toward 
 - `PlayerState.cancelMission` does not refund the deposit — credits are already deducted.
 - `PlayerState.completeMission` pays the gross `reward` (the deposit is not refunded separately; the player's net gain is `reward − deposit`).
 - `MissionDetailScene` shows a `DEPOSIT: NNN CR` line prominently — placed immediately after `REWARD:` and before the ACCEPT MISSION choice — whenever `spec.deposit > 0`. The line uses a visually distinct colour (e.g. yellow) to signal cost.
-- `npx tsc --noEmit` passes with zero errors; `npm test` passes with updated and new tests covering: weighted delivery item selection (heavier items statistically more frequent), deposit deduction on accept, deposit forfeiture on cancel, credit check in `canAcceptMission`, reward payout on complete.
+- `npx tsc --noEmit` passes with zero errors; `npm test` passes with updated and new tests covering: weighted delivery item selection (heavier items statistically more frequent), supply reward multiplier range (reward always above total material cost; heavier requests statistically yield higher multipliers), deposit deduction on accept, deposit forfeiture on cancel, credit check in `canAcceptMission`, reward payout on complete.
 
 ---
 
@@ -47,7 +47,11 @@ Build a weight array parallel to the delivery items array where each entry equal
 
 ### Balance key rename
 
-`supplyRewardMargin` → `supplyRewardMultiplier` must be updated in: `GameBalance` type, `balance.md` (front-matter key and value), the world parser, and the mission generator. A grep for the old name should turn up all sites.
+`supplyRewardMargin` and `supplyRandomReward` are both removed. Replace with `supplyRewardMultiplierMin` and `supplyRewardMultiplierMax` in: `GameBalance` type, `balance.md` (front-matter keys and values), the world parser, and the mission generator. A grep for each old name will find every site.
+
+### Weight-biased multiplier selection
+
+Compute `totalSupplyWeight` as the sum of `(requirement.qty × commodity.weightKg)` across all requirements. Derive a bias factor `t` by comparing this total against a reference weight (e.g. a balance param or a reasonable fixed ceiling such as 500 kg), clamped to `[0, 1]`. Pick a raw random value `r` from the LCG, then nudge it slightly toward 1.0 proportional to `t` — so heavier missions lean toward the upper multiplier without fully removing randomness at either extreme. Apply the nudged value to interpolate between `min` and `max`. The effect should be subtle: a very heavy request might shift the expected multiplier by 10–15 percentage points compared to a minimal request, not push it deterministically to the maximum.
 
 ### `MissionDetailScene` layout
 
