@@ -78,11 +78,16 @@ export class ReputationScene extends BaseMenuScene {
         label: faction.name,
         info: label,
         infoFg: levelColor,
-        detailsColored: [[
-          { text: FILLED.repeat(fill), fg: levelColor },
-          { text: EMPTY.repeat(empty), fg: 'bright-black' as Color },
-          { text: `  ${rep}`, fg: levelColor },
-        ]],
+        detailsColored: [
+          {
+            left: [
+              { text: FILLED.repeat(fill), fg: levelColor },
+              { text: EMPTY.repeat(empty), fg: 'bright-black' as Color },
+            ],
+            right: { text: String(rep), fg: levelColor },
+          },
+          { left: [] },
+        ],
         action: () => {},
       };
     });

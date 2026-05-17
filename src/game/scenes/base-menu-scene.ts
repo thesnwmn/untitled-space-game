@@ -13,7 +13,10 @@ export interface MenuItemDef {
   infoFg?: Color;
   details?: string[];
   detailsFg?: Color;
-  detailsColored?: Array<Array<{ text: string; fg: Color }>>;
+  detailsColored?: Array<{
+    left: Array<{ text: string; fg: Color }>;
+    right?: { text: string; fg: Color };
+  }>;
   disabled?: boolean;
   icon?: string;
   iconFg?: Color;
@@ -274,10 +277,15 @@ export abstract class BaseMenuScene extends BaseScene {
       for (let d = 0; d < (item.detailsColored?.length ?? 0); d++) {
         const detailRow = row + 1 + detailsOffset + d;
         if (detailRow <= lastContentRow) {
+          const line = item.detailsColored![d];
           let col = 4;
-          for (const seg of item.detailsColored![d]) {
+          for (const seg of line.left) {
             writeText(buffer, detailRow, col, seg.text, seg.fg, 'black');
             col += seg.text.length;
+          }
+          if (line.right !== undefined) {
+            const rightCol = w - 2 - line.right.text.length;
+            writeText(buffer, detailRow, rightCol, line.right.text, line.right.fg, 'black');
           }
         }
       }
