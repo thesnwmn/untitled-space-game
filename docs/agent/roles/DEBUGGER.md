@@ -16,11 +16,21 @@ improve, refactor, or extend — only to fix.
    - Existing tests must pass.
    - If the bug had no test, write one that would have caught it.
 7. Run `init.sh` again. It must pass clean.
-8. Update BACKLOG.md if the bug corresponded to a known item, or add a brief note
-   to the relevant DONE item recording what was fixed.
-9. Push to a branch and open a PR against main. Do not merge it.
-   - If the harness pre-assigned a branch for this session, use it.
-   - Otherwise create one named `fix/short-description`.
+8. **Switch to the Reviewer role — in this same session, right now.** Read REVIEWER.md
+   and complete the full review before taking any further action.
+9. If the Reviewer finds issues, fix them (returning to step 6) before continuing.
+10. Update BACKLOG.md if the bug corresponded to a known item, or add a brief note
+    to the relevant entry in BACKLOG_HISTORY.md recording what was fixed.
+11. Push to a branch and open a PR against main. Do not merge it.
+    - If the harness pre-assigned a branch for this session, use it.
+    - Otherwise create one named `fix/short-description`.
+
+## Context Management
+
+If you exhaust context before the fix is complete, follow the same handoff protocol
+as the Engineer role: do not leave code in a broken state, write a HANDOFF.md in the
+repo root using the template in ENGINEER.md, update the backlog item status, and push
+whatever is complete.
 
 ## Non-negotiables
 
@@ -28,3 +38,4 @@ improve, refactor, or extend — only to fix.
 - Never mark a bug fixed without a passing test that covers it.
 - init.sh must pass before and after.
 - Never push directly to main. Always use a fix branch and open a PR.
+- **Never push without completing the Reviewer role first, in this same session.**

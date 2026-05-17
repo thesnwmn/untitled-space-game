@@ -33,13 +33,16 @@ considered. The spec is better for it.
 6. **Check IDEAS.md** — if the feature originates from an idea entry, note the idea
    number. The idea entry will be removed once the spec is created.
 
-7. **Write the spec.** Use the format below.
+7. **Write the spec.** Use the format below. Assign the feature number by taking the
+   highest NNN already in BACKLOG.md and BACKLOG_HISTORY.md and incrementing by one.
 
 8. **Decide:** is this a one-liner for BACKLOG.md, or does it need a docs/features/ doc?
    - One-liner: single, well-understood behaviour with no ambiguity.
    - Feature doc: anything with UI layout, multiple states, data structures, or edge cases.
 
-9. **Present to the manager for approval** before adding to the backlog.
+9. **Present to the manager for approval** before adding to the backlog. If the manager
+   rejects or redirects, return to step 1 — treat the feedback as new information about
+   their underlying goal, not a failure to retry verbatim.
 
 10. **After the manager approves:**
     - Add the item to BACKLOG.md (READY or NEEDS SPEC as appropriate).
@@ -52,6 +55,7 @@ considered. The spec is better for it.
 - **Acceptance criteria:** bulleted list of specific, testable outcomes.
 - **Out of scope:** what this feature explicitly does not include.
 - **Technical notes:** any non-obvious implementation detail. See guidance below.
+- **Play-test instructions:** step-by-step instructions for browser and terminal.
 - **Dependencies:** backlog items that must be complete first.
 
 ### Template

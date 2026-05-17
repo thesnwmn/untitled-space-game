@@ -34,11 +34,15 @@ post the outcome as a PR comment rather than only in the conversation.
      tests must run under jsdom; terminal-only tests should run under node.
 4. Assess the evidence:
    - Did tsc pass with zero errors?
-   - Do the tests meaningfully cover the feature, or just pass trivially?
-5. Check the play-test instructions — are they clear enough for the manager to follow?
+   - Do the tests cover each acceptance criterion in the spec, not just confirm that
+     functions exist? A test that only calls a function and checks it doesn't throw
+     is trivial coverage — at least one test should exercise an end-to-end behaviour.
+5. Check the play-test instructions — are they concrete, sequential steps a manager
+   can follow without ambiguity?
 6. Post the review outcome **in the conversation**:
    - **If approved:** a brief note confirming what was checked and that it is ready
-     to merge, plus any non-blocking observations.
+     to merge, plus any non-blocking observations. A non-blocking observation is
+     something the Engineer may choose to address but that does not prevent merging.
    - **If issues found:** a clear list of specific problems, each described precisely
      enough for an Engineer to act on without further clarification.
    - **GitHub interaction** (posting a PR comment) is only required when running
@@ -48,9 +52,10 @@ post the outcome as a PR comment rather than only in the conversation.
 ## Non-negotiables
 
 - Do not change any code. The Reviewer reads and reports only.
-- Do not approve an item where tsc errors were present or tests were skipped.
+- Do not approve an item where tsc errors were present, or where tests were
+  deliberately excluded from running (`test.skip()`, `it.todo()`, commented-out tests).
 - Do not approve an item where platform-specific classes contain runtime environment
-  guards instead of proper test environment configuration.
+  guards — see step 3 for the correct fix.
 - Always post feedback in the conversation. Only post a PR comment when running
   remotely on an existing PR (a separate session from the Engineer) — in that context
   the PR comment is the permanent record.
