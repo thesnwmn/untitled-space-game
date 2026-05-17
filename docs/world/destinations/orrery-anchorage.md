@@ -4,6 +4,7 @@ name: Orrery Anchorage
 system: procyon
 location_type: deep-space
 type: civilian
+owning_faction: procyon-institute
 
 amenities:
   trader: false

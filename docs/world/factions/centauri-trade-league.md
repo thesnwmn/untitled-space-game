@@ -14,6 +14,10 @@ tags:
   - finance
   - arbitration
   - neutral
+rivals:
+  - independent-miners-guild
+allies:
+  - procyon-institute
 ---
 
 # Centauri Trade League

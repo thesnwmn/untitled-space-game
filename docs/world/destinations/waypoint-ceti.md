@@ -4,6 +4,7 @@ name: Waypoint Ceti
 system: tau-ceti
 location_type: orbital
 type: civilian
+owning_faction: eridani-colonial-council
 
 amenities:
   trader: true

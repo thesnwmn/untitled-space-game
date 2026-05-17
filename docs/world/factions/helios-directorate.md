@@ -14,6 +14,9 @@ tags:
   - fuel-monopoly
   - political
   - corporate
+rivals:
+  - eridani-colonial-council
+allies: []
 ---
 
 # Helios Directorate

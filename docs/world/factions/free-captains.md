@@ -12,6 +12,10 @@ tags:
   - salvage
   - democratic
   - frontier
+rivals:
+  - terran-union
+allies:
+  - grey-market-cartel
 ---
 
 # Free Captains

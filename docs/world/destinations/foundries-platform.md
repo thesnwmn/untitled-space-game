@@ -4,6 +4,7 @@ name: Foundries Platform
 system: sirius
 location_type: asteroid
 type: civilian
+owning_faction: helios-directorate
 
 amenities:
   trader: true

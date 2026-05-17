@@ -4,6 +4,7 @@ name: Tycho Orbital
 system: sol
 location_type: orbital
 type: military
+owning_faction: terran-union
 
 amenities:
   trader: false

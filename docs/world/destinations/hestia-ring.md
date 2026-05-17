@@ -4,6 +4,7 @@ name: Hestia Ring
 system: alpha-centauri
 location_type: orbital
 type: civilian
+owning_faction: centauri-trade-league
 
 amenities:
   trader: true

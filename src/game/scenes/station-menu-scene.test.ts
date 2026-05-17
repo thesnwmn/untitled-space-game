@@ -61,9 +61,9 @@ const touchContext: GameContext = {
   environment: 'browser', primaryInput: 'touch', debug: false,
 };
 
-// elysium-station description wraps to 3 lines + dangerLine = 4 info lines
-// itemStartRow = CONTENT_TOP + 2 + 4 + 1 = 10
-const MENU_ROW_START = 10;
+// elysium-station description wraps to 3 lines + dangerLine + factionLine = 5 info lines
+// itemStartRow = CONTENT_TOP + 2 + 5 + 1 = 11
+const MENU_ROW_START = 11;
 
 // Footer at row 29 (h-1 for 40×30)
 const FOOTER_ROW = 29;

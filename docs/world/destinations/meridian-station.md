@@ -4,6 +4,7 @@ name: Meridian Station
 system: sirius
 location_type: orbital
 type: civilian
+owning_faction: centauri-trade-league
 
 amenities:
   trader: true

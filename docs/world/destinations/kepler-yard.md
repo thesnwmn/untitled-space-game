@@ -4,6 +4,7 @@ name: Kepler Yard
 system: barnards-star
 location_type: orbital
 type: civilian
+owning_faction: independent-miners-guild
 
 amenities:
   trader: false

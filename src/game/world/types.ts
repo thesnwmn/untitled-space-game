@@ -49,6 +49,7 @@ export interface Destination {
   dangerLevel: DangerLevel;
   tags: string[];
   description: string;
+  owningFactionId?: string;
 }
 
 export interface StoryBeat {
@@ -100,6 +101,8 @@ export interface Faction {
   influence: string[];
   tags: string[];
   description: string;
+  rivals: string[];
+  allies: string[];
 }
 
 export interface Commodity {

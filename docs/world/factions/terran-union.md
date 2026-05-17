@@ -17,6 +17,11 @@ tags:
   - military
   - regulated
   - law-enforcement
+rivals:
+  - grey-market-cartel
+  - free-captains
+allies:
+  - eridani-colonial-council
 ---
 
 # Terran Union
