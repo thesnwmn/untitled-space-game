@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getReputationLevel, getReputationLabel } from './reputation-utils';
+import { getReputationLevel, getReputationLabel, getMissionRewardString } from './reputation-utils';
 import { getGameBalance } from './world/world-data';
 
 describe('getReputationLevel', () => {
@@ -50,5 +50,23 @@ describe('getReputationLabel', () => {
     expect(getReputationLabel(1)).toBe('FRIENDLY');
     expect(getReputationLabel(2)).toBe('LIKED');
     expect(getReputationLabel(3)).toBe('REVERED');
+  });
+});
+
+describe('getMissionRewardString', () => {
+  it('formats positive deltas with + prefix', () => {
+    expect(getMissionRewardString(100)).toBe('+100');
+    expect(getMissionRewardString(50)).toBe('+50');
+    expect(getMissionRewardString(1)).toBe('+1');
+  });
+
+  it('formats negative deltas without extra sign', () => {
+    expect(getMissionRewardString(-100)).toBe('-100');
+    expect(getMissionRewardString(-50)).toBe('-50');
+    expect(getMissionRewardString(-1)).toBe('-1');
+  });
+
+  it('formats zero as +0', () => {
+    expect(getMissionRewardString(0)).toBe('+0');
   });
 });

@@ -6,7 +6,7 @@ import { getDestination, getGameBalance, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
-import { computeReputationDeltas, getMissionTierLabel, isReputationEligible, getReputationLevel, getTradeModifier } from '../reputation-utils';
+import { computeReputationDeltas, getMissionRewardString, isReputationEligible, getReputationLevel, getTradeModifier } from '../reputation-utils';
 
 export class StationMenuScene extends BaseMenuScene {
   private readonly onShip: () => void;
@@ -184,7 +184,7 @@ export class StationMenuScene extends BaseMenuScene {
 
             repImpactText = '\n\nREPUTATION:\n';
             for (const impact of impactFactions) {
-              const label = getMissionTierLabel(impact.delta, true);
+              const label = getMissionRewardString(impact.delta);
               repImpactText += `  ${impact.name.padEnd(20)} ${label}\n`;
             }
           }

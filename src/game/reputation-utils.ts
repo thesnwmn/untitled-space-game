@@ -36,12 +36,9 @@ export function getTradeModifier(level: number, balance: GameBalance): number {
   }
 }
 
-export function getMissionTierLabel(delta: number, isSigned: boolean): string {
-  const abs = Math.abs(delta);
-  const sign = isSigned && delta < 0 ? '-' : '+';
-  if (abs <= 50) return `${sign}SMALL`;
-  if (abs <= 150) return `${sign}MEDIUM`;
-  return `${sign}LARGE`;
+export function getMissionRewardString(delta: number): string {
+  const sign = delta < 0 ? '' : '+';
+  return `${sign}${delta}`;
 }
 
 export function computeReputationDeltas(

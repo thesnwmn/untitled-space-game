@@ -6,7 +6,7 @@ import { getMissionStatus } from '../player-state';
 import { getDestination, getGameBalance, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
-import { computeReputationDeltas, getMissionTierLabel } from '../reputation-utils';
+import { computeReputationDeltas, getMissionRewardString } from '../reputation-utils';
 
 const TYPE_ICONS: Record<MissionSpec['type'], string> = {
   delivery: '[D] ',
@@ -117,7 +117,7 @@ export class MissionLogScene extends BaseMenuScene {
 
         body += '\n\nREPUTATION IMPACT:\n';
         for (const impact of impactFactions) {
-          const label = getMissionTierLabel(impact.delta, true);
+          const label = getMissionRewardString(impact.delta);
           body += `  ${impact.name.padEnd(20)} ${label}\n`;
         }
       }

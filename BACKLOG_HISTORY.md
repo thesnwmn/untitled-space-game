@@ -61,6 +61,8 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 4. Visit a mission board at a destination with no owning faction — confirm no reputation section appears and no faction name on entries.
 5. Repeat steps 1–4 using `npm run terminal` with keyboard navigation.
 
+**Bug fix (2026-05-17):** Renamed `getMissionTierLabel()` to `getMissionRewardString()` and changed it to return actual numeric reputation delta values (e.g., "+100", "-50") instead of qualitative tier labels (e.g., "+SMALL", "-MEDIUM", "+LARGE"). Updated all three display locations: mission detail scene, mission log scene, and mission completion popup. Added 3 comprehensive tests covering positive, negative, and zero values.
+
 ---
 
 ### 050 · Reputation — Foundation (Data & UI) — DONE
