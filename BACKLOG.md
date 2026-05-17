@@ -12,14 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 053 · BaseChoiceScene
-
-New abstract base class for content+choices screens; migrates `MissionDetailScene`
-off the spacer-line hack. No dependencies.
-See `docs/features/053-base-choice-scene.md` for the full spec.
-
----
-
 ### 025 · Overhaul Star Field & Destination Display
 
 Each destination has a unique, stable starfield pattern derived deterministically from its ID (no orchestrator seed state needed). A type-appropriate foreground object — space station, asteroid, or planet — is rendered in the viewport with variant also selected by destination ID. Depends on feature 036.

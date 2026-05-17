@@ -14,6 +14,38 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 053 · BaseChoiceScene — DONE
+
+**Built:**
+- `src/game/scenes/base-choice-scene.ts` — new abstract base class extending `BaseScene` for screens with rich content + choices
+  - `ChoiceItem` interface: `{ label, disabled?, details?, action }`
+  - Cursor navigation: UP/DOWN skips disabled items with wrap-around; SELECT activates; BACK always calls `onBack`
+  - Tap-to-activate on choice rows (disabled items blocked)
+  - Separator line rendered above choices; content area bottom computed to exclude separator + all choice rows
+  - Child classes implement `renderContent(buffer, top, contentBottom)` with clean content boundary
+- `src/game/scenes/mission-detail-scene.ts` — migrated from `BaseMenuScene` to `BaseChoiceScene`
+  - Removed `DETAIL_SPACER_LINES` constant and blank spacer array workaround
+  - `renderContent` now uses clean `contentBottom` parameter; existing `renderDetail` logic preserved
+  - Constructor signature and callers unchanged
+  - All existing tests pass after migration
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 775 passed, 1 skipped (40 test files)
+- `npm run build`: 164 modules transformed successfully
+- `init.sh` (before and after): passes clean
+- Reviewer approval: all 10 acceptance criteria met; tests cover cursor nav, SELECT, BACK, disabled-item skipping, tap-to-activate, details, separator, colors
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Dock at any station → Mission Board → select any mission.
+2. Confirm detail screen shows mission content above separator, with ACCEPT MISSION and BACK below.
+3. Press UP/DOWN — cursor moves between choices, wrapping at ends.
+4. Open a mission with insufficient cargo (detail screen shows "ACCEPT MISSION" disabled + reason line; cursor skips to BACK).
+5. Press BACK (Esc or back button) — returns to Mission Board regardless of cursor position.
+6. Repeat in terminal (`npm run terminal`) using keyboard navigation.
+
+---
+
 ### 052 · Reputation — Trade Effects — DONE
 
 **Built:**
