@@ -211,19 +211,21 @@ export class MissionDetailScene extends BaseMenuScene {
           return a.name.localeCompare(b.name);
         });
 
-        if (row <= contentLimit) {
-          write(row, 'REPUTATION IMPACT', 'bright-cyan');
-          row++;
-        }
-        for (const impact of impactFactions) {
-          if (row > contentLimit) break;
-          const label = getMissionTierLabel(impact.delta, true);
-          const labelColor: Color = impact.delta > 0 ? 'bright-green' : 'red';
-          const maxNameWidth = maxWidth - label.length - 2;
-          const name = impact.name.slice(0, maxNameWidth);
-          const padding = ' '.repeat(Math.max(0, maxWidth - name.length - label.length));
-          write(row, `  ${name}${padding}${label}`, labelColor);
-          row++;
+        if (impactFactions.length > 0) {
+          if (row <= contentLimit) {
+            write(row, 'REPUTATION IMPACT', 'bright-cyan');
+            row++;
+          }
+          for (const impact of impactFactions) {
+            if (row > contentLimit) break;
+            const label = getMissionTierLabel(impact.delta, true);
+            const labelColor: Color = impact.delta > 0 ? 'bright-green' : 'red';
+            const maxNameWidth = maxWidth - label.length - 2;
+            const name = impact.name.slice(0, maxNameWidth);
+            const padding = ' '.repeat(Math.max(0, maxWidth - name.length - label.length));
+            write(row, `  ${name}${padding}${label}`, labelColor);
+            row++;
+          }
         }
 
         if (impactFactions.length > 0) {
