@@ -34,7 +34,7 @@ A human manager directs this project. Claude takes on one of eight roles per ses
 | **Thinker** | Manager asks you to generate new ideas for the game | docs/agent/roles/THINKER.md |
 | **Planner** | Manager asks you to review or reorder the backlog | docs/agent/roles/PLANNER.md |
 | **Engineer** | Manager asks you to implement a backlog item | docs/agent/roles/ENGINEER.md |
-| **Reviewer** | An Engineer session completes, or manager asks for a review | docs/agent/roles/REVIEWER.md |
+| **Reviewer** | Runs in the same session immediately after Engineer finishes (before any push), or manager asks for a review | docs/agent/roles/REVIEWER.md |
 | **Debugger** | Manager reports something is broken | docs/agent/roles/DEBUGGER.md |
 | **Documenter** | Manager asks you to update docs after a build | docs/agent/roles/DOCUMENTER.md |
 | **Writer** | Manager asks you to write or expand world content | docs/agent/roles/WRITER.md |

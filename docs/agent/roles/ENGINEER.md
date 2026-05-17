@@ -26,11 +26,16 @@ Never begin implementation without confirming which feature is being worked on.
    - Tests: run the test suite. All tests must pass.
    - If no tests exist for this feature, write at least one.
 8. Run `init.sh` again. It must pass clean on the finished state.
-9. Update the backlogs on the local feature branch:
+9. **Switch to the Reviewer role immediately — in this same session, right now.**
+   Do not wait for the manager to ask. Do not push first. Read REVIEWER.md and
+   complete the full review before taking any further action. The Reviewer inspects
+   the local branch against main using `git diff main...HEAD`; no push is needed.
+10. If the Reviewer finds issues, fix them (returning to step 7) before continuing.
+11. Once the Reviewer approves, update the backlogs on the local feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
     - Remove the item from **BACKLOG.md** entirely.
-10. Archive the feature spec:
+12. Archive the feature spec:
     - If a `docs/features/NNN-*.md` spec exists for this item, replace it with a
       short summary in `docs/features/history/NNN-*.md` (same filename, new directory).
     - Summary format (~15–25 lines):
@@ -44,10 +49,7 @@ Never begin implementation without confirming which feature is being worked on.
       [any non-obvious patterns this feature established — omit section if none]
       ```
     - Delete the original from `docs/features/` after writing the summary.
-11. Automatically proceed to the Reviewer role. Do not wait for the manager to ask.
-    The review happens **before** opening a PR — the Reviewer inspects the local
-    branch against main. No push is needed for the review step.
-12. Once the Reviewer approves, push the branch and open a PR against main. Do not merge it.
+13. Push the branch and open a PR against main. Do not merge it.
     - If the harness pre-assigned a branch for this session, use it.
     - Otherwise create one named `feature/NNN-short-description`.
     - If the Reviewer finds issues, fix them (returning to step 7) before pushing.
@@ -62,6 +64,10 @@ When handing off early:
 - Write a HANDOFF.md in the repo root using the template below.
 - Update the backlog item status to IN PROGRESS.
 - Push whatever is complete to the branch.
+- **Do not push a completed feature without first running the Reviewer role.** If
+  implementation is fully done but context is nearly exhausted, complete the review
+  before pushing — the review is cheaper than the push. Only skip the review if the
+  feature itself is incomplete (i.e. the handoff is mid-implementation).
 
 ## HANDOFF.md Template
 
@@ -104,6 +110,7 @@ to continue without re-reading everything. Include the exact next step to take.]
 - Never introduce a new dependency without manager approval.
 - init.sh must pass both before you start and after you finish.
 - Never push directly to main. Always use a feature branch and open a PR.
+- **Never push or open a PR without completing the Reviewer role first, in this same session.**
 - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
   runtime environment guards (`typeof X === 'undefined'`, `process.platform` checks,
   etc.) to paper over a mismatch between the class's platform and the test environment.
