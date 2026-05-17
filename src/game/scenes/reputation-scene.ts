@@ -6,15 +6,13 @@ import { isReputationEligible, getReputationLevel, getReputationLabel } from '..
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 
 const BAR_WIDTH = 20;
-const HALF_BAR = BAR_WIDTH / 2;
 const FILLED = '█';
 const EMPTY = '░';
 
-function buildRepBar(rep: number, pointsMin: number, pointsMax: number): number {
+function buildRepBar(rep: number, pointsMin: number, reveredMin: number): number {
   if (rep <= pointsMin) return 0;
-  if (rep >= pointsMax) return BAR_WIDTH;
-  if (rep <= 0) return Math.round((rep - pointsMin) / -pointsMin * HALF_BAR);
-  return HALF_BAR + Math.round(rep / pointsMax * HALF_BAR);
+  if (rep >= reveredMin) return BAR_WIDTH;
+  return Math.round((rep - pointsMin) / (reveredMin - pointsMin) * BAR_WIDTH);
 }
 
 const LEVEL_COLORS: Record<number, Color> = {
@@ -71,7 +69,7 @@ export class ReputationScene extends BaseMenuScene {
       const level = getReputationLevel(rep, balance);
       const label = getReputationLabel(level);
       const levelColor = (LEVEL_COLORS[level] ?? 'white') as Color;
-      const fill = buildRepBar(rep, balance.reputation.pointsMin, balance.reputation.pointsMax);
+      const fill = buildRepBar(rep, balance.reputation.pointsMin, balance.reputation.levelReveredMin);
       const empty = BAR_WIDTH - fill;
 
       return {

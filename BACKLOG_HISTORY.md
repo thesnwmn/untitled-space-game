@@ -64,6 +64,8 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 4. Dock at a destination with no owning faction — confirm no faction line appears in the station menu.
 5. Repeat steps 1–4 using `npm run terminal` with keyboard navigation.
 
+**Bug fix (2026-05-17):** `buildRepBar` in `reputation-scene.ts` used `pointsMax` (1000) as the full-bar threshold, so a REVERED player (rep ≥ 600) saw the bar at only 80% full. Fixed to use a simple linear scale from `pointsMin` (−600, empty) to `levelReveredMin` (600, full). Added `reputation-scene.test.ts` with 7 tests covering bar endpoints, midpoint, and right-aligned number rendering.
+
 ---
 
 ### 047 · Game Balance Settings — DONE
