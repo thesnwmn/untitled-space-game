@@ -202,7 +202,7 @@ describe('CargoScene', () => {
       expect(bufferText(buf)).toContain('NO MISSION GOODS');
     });
 
-    it('renders mission item name with [MISSION] prefix in bright-yellow on mission goods tab', () => {
+    it('renders mission item name in white on mission goods tab', () => {
       const player = makePlayer({ destinationId: 'elysium-station' });
       player.acceptMission(makeMissionSpec({ itemName: 'Sealed Crate' }), true);
       const input = new MockInputHandler();
@@ -212,13 +212,13 @@ describe('CargoScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = bufferText(buf);
-      expect(text).toContain('[MISSION]');
+      expect(text).not.toContain('[MISSION]');
       expect(text).toContain('Sealed Crate');
-      // Find the item row and check fg
-      const itemRow = buf.findIndex(row => row.map(c => c.char).join('').includes('[MISSION]'));
+      // Find the item row and check fg is white (no special colour)
+      const itemRow = buf.findIndex(row => row.map(c => c.char).join('').includes('Sealed Crate'));
       expect(itemRow).toBeGreaterThan(-1);
       const firstNonSpace = buf[itemRow].find((c, i) => c.char !== ' ' && i >= 2);
-      expect(firstNonSpace?.fg).toBe('bright-yellow');
+      expect(firstNonSpace?.fg).toBe('white');
     });
 
     it('renders mission item weight on mission goods tab', () => {

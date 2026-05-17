@@ -67,8 +67,7 @@ export class CargoScene extends BaseScene {
     hold: PlayerState['cargoHold'],
   ): void {
     if (hold.length === 0) {
-      const mid = Math.floor((top + totalRow) / 2);
-      writeText(buffer, mid, 2, 'NO COMMODITIES', 'bright-black', 'black');
+      writeText(buffer, top, 2, 'NO COMMODITIES', 'bright-black', 'black');
       return;
     }
 
@@ -95,21 +94,19 @@ export class CargoScene extends BaseScene {
     missionItems: PlayerState['missionItems'],
   ): void {
     if (missionItems.length === 0) {
-      const mid = Math.floor((top + totalRow) / 2);
-      writeText(buffer, mid, 2, 'NO MISSION GOODS', 'bright-black', 'black');
+      writeText(buffer, top, 2, 'NO MISSION GOODS', 'bright-black', 'black');
       return;
     }
 
     let row = top;
     for (const item of missionItems) {
       if (row >= totalRow - 1) break;
-      const prefix = '[MISSION] ';
       const suffix = `  ${item.weightKg}KG`;
-      const maxNameWidth = Math.max(6, w - 4 - prefix.length - suffix.length);
+      const maxNameWidth = Math.max(6, w - 4 - suffix.length);
       const name = item.itemName.length > maxNameWidth
         ? item.itemName.slice(0, maxNameWidth)
         : item.itemName;
-      writeText(buffer, row, 2, `${prefix}${name}${suffix}`, 'bright-yellow', 'black');
+      writeText(buffer, row, 2, `${name}${suffix}`, 'white', 'black');
       row++;
     }
   }
