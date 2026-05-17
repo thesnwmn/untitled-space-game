@@ -23,6 +23,34 @@ See `docs/features/046-base-scene-architecture.md` for the full spec.
 
 ---
 
+### 047 · Game Balance Settings
+
+All hardcoded gameplay constants (NPC name probability, mission counts and reward ranges, trader stock quantities, cache TTLs, fuel economics) move into `docs/world/settings/balance.md`. `docs/world/game-settings.md` is renamed to `docs/world/settings/new-game.md`. A new `GameBalance` type is added to `types.ts`, parsed by `world-parser.ts`, and exposed via `getGameBalance()` in `world-data.ts`. `constants.ts` is deleted; `mission-generator.ts` and `game.ts` read all balance values from `getGameBalance()`.
+See `docs/features/047-game-balance-settings.md` for the full spec.
+
+---
+
+### 050 · Reputation — Foundation (Data & UI)
+
+Faction relationships (rivals, allies) are added to world data. Destinations gain an optional `owning_faction` field. `PlayerState` stores a per-faction reputation score. A `reputation-utils.ts` module provides level computation and labels. A `ReputationScene` is added to the global menu. `StationMenuScene` displays the owning faction when present. Depends on features 046 and 047.
+See `docs/features/050-reputation-foundation.md` for the full spec.
+
+---
+
+### 051 · Reputation — Mission Integration
+
+Missions at faction-owned destinations carry a `giverFactionId`. Completing a mission applies a rep delta to the giving faction, half that delta to its allies, and negative half to its rivals. `MissionDetailScene` shows a REPUTATION IMPACT section with SMALL / MEDIUM / LARGE labels. Depends on feature 050.
+See `docs/features/051-reputation-missions.md` for the full spec.
+
+---
+
+### 052 · Reputation — Trade Effects
+
+Trade prices at faction-owned stations are modified by the player's standing with that faction. Buying goods accrues a small rep gain per credit spent, capped per docking visit. `TraderScene` displays the current standing label when a faction is identified. Depends on feature 050.
+See `docs/features/052-reputation-trade.md` for the full spec.
+
+---
+
 ### 025 · Overhaul Star Field & Destination Display
 
 Each destination has a unique, stable starfield pattern derived deterministically from its ID (no orchestrator seed state needed). A type-appropriate foreground object — space station, asteroid, or planet — is rendered in the viewport with variant also selected by destination ID. Depends on feature 036.
@@ -30,31 +58,10 @@ See `docs/features/025-overhaul-star-field-display.md` for the full spec.
 
 ---
 
-### 043 · Knowledge Base — Discovery
-
-The game silently records visited systems and destinations as the player travels. On entering a system the names of its destinations and direct jump-route neighbours are noted. On docking, the destination is marked fully visited. NPC mention hooks are defined for future use. Data only — no UI screens.
-See `docs/features/043-knowledge-base-discovery.md` for the full spec.
-
----
-
-### 044 · Knowledge Base — Screens
-
-A three-level navigable reference accessible from the global menu: System List → System Detail → Destination Detail. Visited places show full records; known-only places show name with an UNCHARTED label and cannot be navigated into. Depends on features 039 and 043.
-See `docs/features/044-knowledge-base-screens.md` for the full spec.
-
----
-
 ### 045 · Global Menu · Galaxy Map
 
 Add a `GALAXY MAP` entry to the global menu (below `MISSIONS`) that opens `GalaxyMapScene`. The entry is always present. When opened from the menu, a `[2] GAME` footer button returns directly to the underlying game scene; `[1] BACK` returns to the global menu. The travel-menu access path is unchanged. Depends on feature 039.
 See `docs/features/045-global-menu-galaxy-map.md` for the full spec.
-
----
-
-### 047 · Game Balance Settings
-
-All hardcoded gameplay constants (NPC name probability, mission counts and reward ranges, trader stock quantities, cache TTLs, fuel economics) move into `docs/world/settings/balance.md`. `docs/world/game-settings.md` is renamed to `docs/world/settings/new-game.md`. A new `GameBalance` type is added to `types.ts`, parsed by `world-parser.ts`, and exposed via `getGameBalance()` in `world-data.ts`. `constants.ts` is deleted; `mission-generator.ts` and `game.ts` read all balance values from `getGameBalance()`.
-See `docs/features/047-game-balance-settings.md` for the full spec.
 
 ---
 
@@ -82,24 +89,17 @@ See `docs/features/049-mini-game-dev-harness.md` for the full spec.
 
 ---
 
-### 050 · Reputation — Foundation (Data & UI)
+### 043 · Knowledge Base — Discovery
 
-Faction relationships (rivals, allies) are added to world data. Destinations gain an optional `owning_faction` field. `PlayerState` stores a per-faction reputation score. A `reputation-utils.ts` module provides level computation and labels. A `ReputationScene` is added to the global menu. `StationMenuScene` displays the owning faction when present. Depends on features 046 and 047.
-See `docs/features/050-reputation-foundation.md` for the full spec.
-
----
-
-### 051 · Reputation — Mission Integration
-
-Missions at faction-owned destinations carry a `giverFactionId`. Completing a mission applies a rep delta to the giving faction, half that delta to its allies, and negative half to its rivals. `MissionDetailScene` shows a REPUTATION IMPACT section with SMALL / MEDIUM / LARGE labels. Depends on feature 050.
-See `docs/features/051-reputation-missions.md` for the full spec.
+The game silently records visited systems and destinations as the player travels. On entering a system the names of its destinations and direct jump-route neighbours are noted. On docking, the destination is marked fully visited. NPC mention hooks are defined for future use. Data only — no UI screens.
+See `docs/features/043-knowledge-base-discovery.md` for the full spec.
 
 ---
 
-### 052 · Reputation — Trade Effects
+### 044 · Knowledge Base — Screens
 
-Trade prices at faction-owned stations are modified by the player's standing with that faction. Buying goods accrues a small rep gain per credit spent, capped per docking visit. `TraderScene` displays the current standing label when a faction is identified. Depends on feature 050.
-See `docs/features/052-reputation-trade.md` for the full spec.
+A three-level navigable reference accessible from the global menu: System List → System Detail → Destination Detail. Visited places show full records; known-only places show name with an UNCHARTED label and cannot be navigated into. Depends on features 039 and 043.
+See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
