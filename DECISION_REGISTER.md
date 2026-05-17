@@ -7,7 +7,7 @@ Quick-reference index. Read this file first. Only pull a detail file when you ne
 | File | Contents |
 |---|---|
 | `docs/decisions/rendering-architecture.md` | DOM + `<pre>` rendering rationale; platform abstraction layer diagram; file structure; naming conventions; core TypeScript types (`Color`, `Cell`, `CharBuffer`, `Renderer`, `InputHandler`, `Scene`, `GameAction`, `GameContext`) |
-| `docs/decisions/scene-system.md` | Scene interface; `BaseMenuScene`; `BaseTransitionScene`; `ScreenChrome`; custom scenes (`TravelMenuScene`, transition scenes); `buffer-utils` helpers; `GameContext` fields |
+| `docs/decisions/scene-system.md` | `BaseScene` hierarchy and content-boundary formula; `BaseMenuScene` and `BaseTransitionScene` patterns; `ScreenChrome` API; `buffer-utils` helpers; `GameContext` fields |
 | `docs/decisions/colour-input-context.md` | 16-colour named palette; input action table (keyboard / touch / terminal); `NAV_1`–`NAV_9`; `GameContext` construction and mutation |
 | `docs/decisions/build-layout-deployment.md` | Vite + Bun + TypeScript build rationale; npm scripts; adaptive grid height (30–50 rows, 40 cols fixed); deployment via GitHub Pages |
 | `docs/decisions/travel-system.md` | `TravelMenuScene` constructor and tab layout; in-space `ShipScene` state; `currentDestinationId` as single source of truth; all eight animation scene durations, chrome overrides, and routing |
