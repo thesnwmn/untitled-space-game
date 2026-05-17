@@ -1,4 +1,4 @@
-import type { InputHandler, GameContext, CharBuffer } from '../../shared/types';
+import type { InputHandler, GameContext, CharBuffer, Color } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import type { TraderStockEntry } from '../world/types';
 import { getCommodity, getDestination, getFaction, getGameBalance } from '../world/world-data';
@@ -217,8 +217,13 @@ export class TraderScene extends BaseMenuScene {
       const points = this.player.getFactionReputation(this.eligibleFactionId);
       const level = getReputationLevel(points, balance);
       const label = getReputationLabel(level);
+      const modifier = getTradeModifier(level, balance);
+      const modText = `x${modifier.toFixed(2)}`;
+      const modFg: Color = modifier < 1.0 ? 'bright-green' : modifier > 1.0 ? 'yellow' : 'bright-black';
       // Row CONTENT_TOP+2 is blank (between underline and tab bar) — safe to use
-      writeText(buffer, CONTENT_TOP + 2, 2, `STANDING: ${label}`, 'bright-black', 'black');
+      const standingText = `STANDING: ${label}  `;
+      writeText(buffer, CONTENT_TOP + 2, 2, standingText, 'bright-black', 'black');
+      writeText(buffer, CONTENT_TOP + 2, 2 + standingText.length, modText, modFg, 'black');
     }
 
     const h = buffer.length;
