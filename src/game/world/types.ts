@@ -131,6 +131,7 @@ export interface GameBalance {
   missions: {
     boardCountMin: number;
     boardCountMax: number;
+    missionTtlMs: number;
     deliveryChance: number;
     deliveryBaseReward: number;
     deliveryRandomReward: number;
@@ -147,7 +148,6 @@ export interface GameBalance {
     stockQtyMin: number;
     stockQtyMax: number;
     stockTtlMs: number;
-    missionTtlMs: number;
   };
   fuel: {
     pricePerLitre: number;

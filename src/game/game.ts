@@ -106,7 +106,7 @@ export class Game {
   private getOrCreateMissionBoard(destinationId: string): MissionSpec[] {
     const now = Date.now();
     const cached = this.missionBoardCache.get(destinationId);
-    if (cached && now - cached.generatedAt < getGameBalance().trading.missionTtlMs) {
+    if (cached && now - cached.generatedAt < getGameBalance().missions.missionTtlMs) {
       return cached.specs;
     }
     const destination = getDestination(destinationId)!;

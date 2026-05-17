@@ -7,6 +7,7 @@ npc:
 missions:
   board_count_min: 3
   board_count_max: 6
+  mission_ttl_ms: 900000
   delivery_chance: 0.6
   delivery_base_reward: 200
   delivery_random_reward: 200
@@ -23,7 +24,6 @@ trading:
   stock_qty_min: 1
   stock_qty_max: 8
   stock_ttl_ms: 120000
-  mission_ttl_ms: 900000
 
 fuel:
   price_per_litre: 10

@@ -233,6 +233,7 @@ npc:
 missions:
   board_count_min: 2
   board_count_max: 4
+  mission_ttl_ms: 300000
   delivery_chance: 0.7
   delivery_base_reward: 300
   delivery_random_reward: 100
@@ -248,7 +249,6 @@ trading:
   stock_qty_min: 2
   stock_qty_max: 10
   stock_ttl_ms: 60000
-  mission_ttl_ms: 300000
 fuel:
   price_per_litre: 15
   consumption_per_ly: 8
@@ -282,7 +282,7 @@ reputation:
       expect(world.balance.missions.boardCountMin).toBe(2);
       expect(world.balance.missions.deliveryChance).toBe(0.7);
       expect(world.balance.trading.stockTtlMs).toBe(60000);
-      expect(world.balance.trading.missionTtlMs).toBe(300000);
+      expect(world.balance.missions.missionTtlMs).toBe(300000);
       expect(world.balance.reputation.levelFriendlyMin).toBe(50);
       expect(world.balance.reputation.tradeModifierRevered).toBe(0.70);
       expect(world.balance.reputation.repPerCredit).toBe(0.02);

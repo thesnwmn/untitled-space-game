@@ -36,6 +36,7 @@ const DEFAULT_BALANCE: GameBalance = {
   missions: {
     boardCountMin: 3,
     boardCountMax: 6,
+    missionTtlMs: 900000,
     deliveryChance: 0.6,
     deliveryBaseReward: 200,
     deliveryRandomReward: 200,
@@ -52,7 +53,6 @@ const DEFAULT_BALANCE: GameBalance = {
     stockQtyMin: 1,
     stockQtyMax: 8,
     stockTtlMs: 120000,
-    missionTtlMs: 900000,
   },
   fuel: {
     pricePerLitre: 10,
@@ -323,6 +323,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
     missions: {
       boardCountMin: missions.board_count_min ?? d.missions.boardCountMin,
       boardCountMax: missions.board_count_max ?? d.missions.boardCountMax,
+      missionTtlMs: missions.mission_ttl_ms ?? d.missions.missionTtlMs,
       deliveryChance: missions.delivery_chance ?? d.missions.deliveryChance,
       deliveryBaseReward: missions.delivery_base_reward ?? d.missions.deliveryBaseReward,
       deliveryRandomReward: missions.delivery_random_reward ?? d.missions.deliveryRandomReward,
@@ -339,7 +340,6 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       stockQtyMin: trading.stock_qty_min ?? d.trading.stockQtyMin,
       stockQtyMax: trading.stock_qty_max ?? d.trading.stockQtyMax,
       stockTtlMs: trading.stock_ttl_ms ?? d.trading.stockTtlMs,
-      missionTtlMs: trading.mission_ttl_ms ?? d.trading.missionTtlMs,
     },
     fuel: {
       pricePerLitre: fuel.price_per_litre ?? d.fuel.pricePerLitre,
