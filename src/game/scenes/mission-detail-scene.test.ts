@@ -41,10 +41,8 @@ const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
 };
 
-const DETAIL_START = 6; // CONTENT_TOP (3) + 3 = 6
+const DETAIL_START = 5; // CONTENT_TOP (3) + 2 (title + underline)
 const FOOTER_ROW = 29;
-// Items start at CONTENT_TOP + 3 + DETAIL_SPACER_LINES = 3 + 3 + 16 = 22
-const ITEMS_START = 22;
 // Nav footer: "[1] UNDOCK::[2] HUB::..."
 const UNDOCK_COL = 3;
 const HUB_COL = 17;
@@ -135,8 +133,13 @@ describe('MissionDetailScene', () => {
       const scene = makeScene(input, deliverySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, ITEMS_START)).toContain('ACCEPT MISSION');
-      expect(rowText(buf, ITEMS_START + 1)).toContain('BACK');
+      const allText = Array.from({ length: 30 }, (_, r) => rowText(buf, r)).join('\n');
+      expect(allText).toContain('ACCEPT MISSION');
+      expect(allText).toContain('BACK');
+      // Find the rows and verify ACCEPT comes before BACK
+      const acceptRow = Array.from({ length: 30 }, (_, r) => r).find(r => rowText(buf, r).includes('ACCEPT MISSION'))!;
+      const backRow = Array.from({ length: 30 }, (_, r) => r).find(r => rowText(buf, r).includes('BACK'))!;
+      expect(acceptRow).toBeLessThan(backRow);
     });
 
     it('ACCEPT MISSION item is disabled with reason when player cannot accept', () => {
@@ -144,11 +147,10 @@ describe('MissionDetailScene', () => {
       const scene = makeScene(input, heavyDeliverySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, ITEMS_START)).toContain('ACCEPT MISSION');
-      // Reason sub-line appears below ACCEPT MISSION
-      expect(rowText(buf, ITEMS_START + 1)).toContain('Insufficient cargo space');
-      // BACK item is below the reason
-      expect(rowText(buf, ITEMS_START + 2)).toContain('BACK');
+      const allText = Array.from({ length: 30 }, (_, r) => rowText(buf, r)).join('\n');
+      expect(allText).toContain('ACCEPT MISSION');
+      expect(allText).toContain('Insufficient cargo space');
+      expect(allText).toContain('BACK');
     });
 
     it('cursor starts on ACCEPT when player can accept', () => {
@@ -156,7 +158,8 @@ describe('MissionDetailScene', () => {
       const scene = makeScene(input, deliverySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(buf[ITEMS_START][2].char).toBe('>');
+      const acceptRow = Array.from({ length: 30 }, (_, r) => r).find(r => rowText(buf, r).includes('ACCEPT MISSION'))!;
+      expect(buf[acceptRow][2].char).toBe('>');
     });
 
     it('cursor starts on BACK when ACCEPT is disabled', () => {
@@ -164,8 +167,8 @@ describe('MissionDetailScene', () => {
       const scene = makeScene(input, heavyDeliverySpec);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // With disabled ACCEPT (2 rows: label + reason), BACK is at ITEMS_START + 2
-      expect(buf[ITEMS_START + 2][2].char).toBe('>');
+      const backRow = Array.from({ length: 30 }, (_, r) => r).find(r => rowText(buf, r).includes('BACK'))!;
+      expect(buf[backRow][2].char).toBe('>');
     });
   });
 
@@ -316,15 +319,17 @@ describe('MissionDetailScene', () => {
       expect(allText).not.toContain('REPUTATION IMPACT');
     });
 
-    it('always has a blank row between reputation section and accept/back items', () => {
+    it('always has a separator row between content and accept/back items', () => {
       // deliverySpecInSystem has terran-union (1 ally + 2 rivals = 4 entries total).
-      // Without the repLimit guard the 4th entry fills contentLimit (row 21),
-      // leaving no gap before ACCEPT MISSION at row 22.
+      // The repLimit guard in renderDetail ensures the reputation section doesn't overflow.
+      // The separator is always rendered between content and choices.
       const input = new MockInputHandler();
       const scene = makeScene(input, deliverySpecInSystem);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(rowText(buf, ITEMS_START - 1)).toBe('');
+      const acceptRow = Array.from({ length: 30 }, (_, r) => r).find(r => rowText(buf, r).includes('ACCEPT MISSION'))!;
+      const separatorRow = acceptRow - 1;
+      expect(rowText(buf, separatorRow)).toMatch(/^-+/);
     });
   });
 
@@ -416,7 +421,8 @@ describe('MissionDetailScene', () => {
       const scene = makeScene(input, deliverySpec, onAccept);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(5, ITEMS_START);
+      const acceptRow = Array.from({ length: 30 }, (_, r) => r).find(r => rowText(buf, r).includes('ACCEPT MISSION'))!;
+      input.triggerTap(5, acceptRow);
       expect(onAccept).toHaveBeenCalledWith(true);
     });
 
@@ -426,7 +432,8 @@ describe('MissionDetailScene', () => {
       const scene = makeScene(input, deliverySpec, vi.fn(), onBack);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      input.triggerTap(5, ITEMS_START + 1);
+      const backRow = Array.from({ length: 30 }, (_, r) => r).find(r => rowText(buf, r).includes('BACK'))!;
+      input.triggerTap(5, backRow);
       expect(onBack).toHaveBeenCalledTimes(1);
     });
   });

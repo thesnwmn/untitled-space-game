@@ -4,7 +4,7 @@ import { canAcceptMission } from '../player-state';
 import type { MissionSpec } from '../world/types';
 import { getDestination, getWorld, getCommodity, getGameBalance } from '../world/world-data';
 import { writeText, wrapText } from '../../shared/buffer-utils';
-import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
+import { BaseChoiceScene, type ChoiceItem } from './base-choice-scene';
 import { computeReputationDeltas, getMissionRewardString } from '../reputation-utils';
 
 const TYPE_ICONS: Record<MissionSpec['type'], string> = {
@@ -12,12 +12,8 @@ const TYPE_ICONS: Record<MissionSpec['type'], string> = {
   supply:   '[S]',
 };
 
-// Number of blank infoLines used to push ACCEPT/BACK items below the detail content.
-const DETAIL_SPACER_LINES = 16;
-
-export class MissionDetailScene extends BaseMenuScene {
+export class MissionDetailScene extends BaseChoiceScene {
   private readonly spec: MissionSpec;
-  private readonly onBack: () => void;
   private readonly onHub: () => void;
   private readonly onUndock: () => void;
 
@@ -34,26 +30,23 @@ export class MissionDetailScene extends BaseMenuScene {
     const canAccept = canAcceptMission(player, spec);
     const giveItemNow = spec.type === 'delivery' && spec.pickupDestinationId === spec.issuingDestinationId;
 
-    const acceptItem: MenuItemDef = canAccept.ok
+    const acceptItem: ChoiceItem = canAccept.ok
       ? { label: 'ACCEPT MISSION', action: () => onAccept(giveItemNow) }
       : { label: 'ACCEPT MISSION', disabled: true, details: canAccept.reason ? [canAccept.reason] : [], action: () => {} };
 
-    const backItem: MenuItemDef = { label: 'BACK', action: () => onBack() };
-
-    const spacer = Array.from({ length: DETAIL_SPACER_LINES }, () => '');
+    const backItem: ChoiceItem = { label: 'BACK', action: () => onBack() };
 
     super(
       'MISSION BOARD',
       [acceptItem, backItem],
+      onBack,
       [{ id: 'undock', label: 'UNDOCK' }, { id: 'hub', label: 'HUB' }],
       inputHandler,
       context,
       player,
-      spacer,
     );
 
     this.spec = spec;
-    this.onBack = onBack;
     this.onHub = onHub;
     this.onUndock = onUndock;
   }
@@ -70,17 +63,15 @@ export class MissionDetailScene extends BaseMenuScene {
     writeText(buffer, row, 2 + label.length, name.slice(0, maxWidth - label.length), this.destColor(destId), 'black');
   }
 
-  protected override handleNavAction(action: string): void {
-    if (this.activated) return;
+  protected override handleAction(action: string): void {
     if (action === 'NAV_1') {
       this.activated = true;
       this.onUndock();
     } else if (action === 'NAV_2') {
       this.activated = true;
       this.onHub();
-    } else if (action === 'BACK') {
-      this.activated = true;
-      this.onBack();
+    } else {
+      super.handleAction(action as any);
     }
   }
 
@@ -95,17 +86,14 @@ export class MissionDetailScene extends BaseMenuScene {
     }
   }
 
-  protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
-    super.renderContent(buffer, top, bottom);
-    this.renderDetail(buffer, top - DETAIL_SPACER_LINES);
+  protected override renderContent(buffer: CharBuffer, top: number, contentBottom: number): void {
+    this.renderDetail(buffer, top, contentBottom);
   }
 
-  private renderDetail(buffer: CharBuffer, startRow: number): void {
+  private renderDetail(buffer: CharBuffer, startRow: number, contentLimit: number): void {
     const h = buffer.length;
     const w = h > 0 ? buffer[0].length : 40;
     const maxWidth = w - 4;
-    // Stop writing before the items area begins
-    const contentLimit = this.lastContentTop - 1;
     let row = startRow;
 
     const write = (r: number, text: string, fg: Color) => {
