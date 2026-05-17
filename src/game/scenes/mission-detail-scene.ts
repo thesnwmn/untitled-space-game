@@ -5,7 +5,7 @@ import type { MissionSpec } from '../world/types';
 import { getDestination, getWorld, getCommodity, getGameBalance } from '../world/world-data';
 import { writeText, wrapText } from '../../shared/buffer-utils';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
-import { computeReputationDeltas, getMissionTierLabel } from '../reputation-utils';
+import { computeReputationDeltas, getMissionRewardString } from '../reputation-utils';
 
 const TYPE_ICONS: Record<MissionSpec['type'], string> = {
   delivery: '[D]',
@@ -219,7 +219,7 @@ export class MissionDetailScene extends BaseMenuScene {
           }
           for (const impact of impactFactions) {
             if (row > repLimit) break;
-            const label = getMissionTierLabel(impact.delta, true);
+            const label = getMissionRewardString(impact.delta);
             const labelColor: Color = impact.delta > 0 ? 'bright-green' : 'red';
             const maxNameWidth = maxWidth - label.length - 2;
             const name = impact.name.slice(0, maxNameWidth);
