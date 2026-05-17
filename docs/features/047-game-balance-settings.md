@@ -8,7 +8,7 @@ All gameplay balance constants — probabilities, reward ranges, stock quantitie
 
 ## Acceptance criteria
 
-- A `docs/world/settings/balance.md` file exists and contains all balance settings in YAML frontmatter, grouped into `npc`, `missions`, `trading`, and `fuel` sections
+- A `docs/world/settings/balance.md` file exists and contains all balance settings in YAML frontmatter, grouped into `npc`, `missions`, `trading`, `fuel`, and `reputation` sections
 - `docs/world/game-settings.md` is moved to `docs/world/settings/new-game.md`; its content and parsed values are unchanged
 - A `GameBalance` interface is defined in `src/game/world/types.ts`; `WorldData` carries a `balance` field of that type
 - `world-parser.ts` parses `settings/balance.md` into `GameBalance` and `settings/new-game.md` into `GameSettings`; both path-match strings are updated accordingly
@@ -80,10 +80,38 @@ trading:
 fuel:
   price_per_litre: 10
   consumption_per_ly: 5
+
+reputation:
+  # Points that mark the lower bound of each level band
+  level_unfriendly_min: -300   # below this → HATED
+  level_neutral_min: -100
+  level_friendly_min: 100
+  level_liked_min: 300
+  level_revered_min: 600
+  # Hard clamp limits
+  points_min: -600
+  points_max: 1000
+  # Rep gain per completed mission, by tier
+  mission_delta_small: 25
+  mission_delta_medium: 75
+  mission_delta_large: 200
+  # Credit reward thresholds that determine mission tier
+  mission_tier_medium_reward: 300
+  mission_tier_large_reward: 600
+  # Trade price multiplier per rep level (1.0 = base price; < 1.0 = discount)
+  trade_modifier_hated: 1.20
+  trade_modifier_unfriendly: 1.10
+  trade_modifier_neutral: 1.00
+  trade_modifier_friendly: 0.92
+  trade_modifier_liked: 0.85
+  trade_modifier_revered: 0.80
+  # Rep gain from trading
+  rep_per_credit: 0.01
+  max_rep_per_visit: 10
 ---
 ```
 
-These default values must match the current hardcoded values exactly so behaviour is unchanged after the migration.
+These default values must match the current hardcoded values exactly so behaviour is unchanged after the migration. The `reputation` section defaults are design targets, not migrations from existing code.
 
 ### `GameBalance` interface (`src/game/world/types.ts`)
 
@@ -118,6 +146,28 @@ export interface GameBalance {
   fuel: {
     pricePerLitre: number;
     consumptionPerLy: number;
+  };
+  reputation: {
+    levelUnfriendlyMin: number;
+    levelNeutralMin: number;
+    levelFriendlyMin: number;
+    levelLikedMin: number;
+    levelReveredMin: number;
+    pointsMin: number;
+    pointsMax: number;
+    missionDeltaSmall: number;
+    missionDeltaMedium: number;
+    missionDeltaLarge: number;
+    missionTierMediumReward: number;
+    missionTierLargeReward: number;
+    tradeModifierHated: number;
+    tradeModifierUnfriendly: number;
+    tradeModifierNeutral: number;
+    tradeModifierFriendly: number;
+    tradeModifierLiked: number;
+    tradeModifierRevered: number;
+    repPerCredit: number;
+    maxRepPerVisit: number;
   };
 }
 ```

@@ -1,4 +1,4 @@
-# Feature 048 · Reputation — Foundation (Data & UI)
+# Feature 050 · Reputation — Foundation (Data & UI)
 
 ## Goal
 
@@ -16,11 +16,10 @@ Establish the reputation data model, faction relationship config, and a Reputati
 - `world-parser.ts` reads `rivals` and `allies` from faction front-matter
 - A `src/game/reputation-utils.ts` module exposes:
   - `isReputationEligible(faction: Faction): boolean` — true when `size` is `'medium'` or `'large'`
-  - `getReputationLevel(points: number): number` — returns an integer in the range -2..3
+  - `getReputationLevel(points: number, balance: GameBalance): number` — returns an integer in the range -2..3 using thresholds from `balance.reputation`
   - `getReputationLabel(level: number): string` — returns one of `HATED` / `UNFRIENDLY` / `NEUTRAL` / `FRIENDLY` / `LIKED` / `REVERED`
-  - `REPUTATION_THRESHOLDS` — named constants for the six band boundaries
 - `PlayerState` stores a reputation score (integer) per eligible faction ID, all initialised to `0` at new-game time, serialised and deserialised with save state; missing eligible factions in loaded save data are back-filled with `0`
-- `PlayerState` exposes `getFactionReputation(factionId: string): number` and `modifyFactionReputation(factionId: string, delta: number): void`; `modifyFactionReputation` clamps the result within the bounds implied by level -2 and level +3
+- `PlayerState` exposes `getFactionReputation(factionId: string): number` and `modifyFactionReputation(factionId: string, delta: number, balance: GameBalance): void`; `modifyFactionReputation` clamps the result within `balance.reputation.pointsMin` and `balance.reputation.pointsMax`
 - A `ReputationScene` is added and accessible from the global menu as `REPUTATION`
 - The scene lists all eligible factions with name and standing label; factions not yet interacted with show `NEUTRAL`
 - The standing label is coloured to reflect the level (hostile levels in a warning colour, positive levels in a highlight colour, neutral in default)
@@ -64,7 +63,11 @@ Rivals should be symmetric: if A lists B as a rival, B's file must list A. Allie
 
 Private `_factionReputation: Map<string, number>` initialised at construction by iterating `getWorld().factions`, filtering to eligible factions, and seeding each to `0`. `toJSON()` converts it to a plain object; the load path reconstructs the map and back-fills any eligible factions missing from saved data with `0`.
 
-`modifyFactionReputation` clamps silently — no error if the result would exceed the band bounds.
+`modifyFactionReputation` clamps to `balance.reputation.pointsMin` / `balance.reputation.pointsMax` silently.
+
+### `reputation-utils.ts`
+
+All threshold and limit values come from the `GameBalance` object passed as a parameter — no module-level constants. This keeps the module testable with arbitrary balance values and ensures a single source of truth in `balance.md`.
 
 ### `ReputationScene`
 
@@ -97,4 +100,4 @@ Repeat all steps using keyboard navigation.
 
 ## Dependencies
 
-Feature 046 (Base Scene Architecture)
+Feature 046 (Base Scene Architecture), Feature 047 (Game Balance Settings)

@@ -1,4 +1,4 @@
-# Feature 050 · Reputation — Trade Effects
+# Feature 052 · Reputation — Trade Effects
 
 ## Goal
 
@@ -8,13 +8,13 @@ A faction's standing with the player modifies buy and sell prices at their stati
 
 ## Acceptance criteria
 
-- `reputation-utils.ts` gains `getTradeModifier(level: number): number` returning a multiplier centred on `1.0`; higher standing gives a discount on buys and a premium on sells; lower standing gives a surcharge on buys and a markdown on sells; the six modifier values (one per level) are named constants
+- `reputation-utils.ts` gains `getTradeModifier(level: number, balance: GameBalance): number` returning a multiplier centred on `1.0`; higher standing gives a discount on buys and a premium on sells; lower standing gives a surcharge on buys and a markdown on sells; all six modifier values come from `getGameBalance().reputation`
 - `TraderScene` reads `owningFactionId` from the current destination; if the faction is reputation-eligible, trade modifiers are applied; if absent or ineligible, prices are unchanged
 - Buy prices are multiplied by the modifier (level +3 → cheapest, level -2 → most expensive)
-- Sell prices are divided by the modifier or use an inverse scale (level +3 → highest return, level -2 → lowest); the Engineer chooses the exact inversion, but the directional effect must be clear
+- Sell prices are divided by the modifier or use an inverse scale (level +3 → highest return, level -2 → lowest); the Engineer chooses the exact inversion, but the directional effect must be clear and use the same balance values
 - `TraderScene` displays the player's current standing label (not a number) with the operating faction near the top of the scene when a reputation-eligible faction is identified; no line is shown when absent
-- Every purchase accrues `creditsSpent × REP_PER_CREDIT` reputation with the operating faction (`REP_PER_CREDIT` is a named constant)
-- Total rep gain from buying within a single docking visit is capped at `MAX_REP_PER_VISIT` (a named constant); the cap resets on undock; this value is transient and is not serialised
+- Every purchase accrues `creditsSpent × balance.reputation.repPerCredit` reputation with the operating faction
+- Total rep gain from buying within a single docking visit is capped at `balance.reputation.maxRepPerVisit`; the cap resets on undock; this value is transient and is not serialised
 - `npm test` passes; `npx tsc --noEmit` passes
 
 ---
@@ -32,15 +32,15 @@ A faction's standing with the player modifies buy and sell prices at their stati
 
 ### Modifier scale
 
-Six values, one per level -2 through +3, as named constants. The scale should be meaningful but not game-breaking.
+Six values, one per level -2 through +3, all from `getGameBalance().reputation`. The scale should be meaningful but not game-breaking.
 
-> suggestion: -2 → 1.20 (20% surcharge), -1 → 1.10, 0 → 1.00, +1 → 0.92, +2 → 0.85, +3 → 0.80
+> suggestion: level -2 → 1.20 (20% surcharge), -1 → 1.10, 0 → 1.00, +1 → 0.92, +2 → 0.85, +3 → 0.80
 
 Buy price = `basePrice × modifier`. Sell price = `basePrice / modifier` (or `basePrice × (2 - modifier)` — Engineer's choice, both produce a meaningful spread).
 
 ### Visit cap
 
-The cap is a simple integer accumulator local to the docking session. The cleanest implementation is a transient field on `PlayerState` (not serialised) reset to `0` on each dock, or a local variable in `TraderScene` reset on scene construction. Either approach is acceptable.
+The cap is a simple integer accumulator local to the docking session. Cleanest as a transient field on `PlayerState` (not serialised) reset to `0` on each dock, or a local variable in `TraderScene` reset on scene construction. Either is acceptable.
 
 ### Destination → faction lookup
 
@@ -53,7 +53,7 @@ Read `currentDestination.owningFactionId`. No fallback to system `majorFactions`
 ### Browser (`npm run dev`)
 
 1. Dock at a faction-owned station — confirm the faction standing label appears in the trader header.
-2. Note a commodity's buy price. Check the Reputation screen (NEUTRAL standing). Prices should be unmodified.
+2. Note a commodity's buy price at NEUTRAL standing — prices should be unmodified.
 3. Use the browser console or a test save to set standing to FRIENDLY — confirm buy prices decrease and sell prices increase relative to base.
 4. Buy goods repeatedly in one visit — confirm rep increases but stops accruing once the visit cap is reached.
 5. Undock and redock — confirm the cap has reset and rep gain resumes from zero.
@@ -67,4 +67,4 @@ Repeat all steps using keyboard navigation.
 
 ## Dependencies
 
-Feature 048 (Reputation — Foundation)
+Feature 050 (Reputation — Foundation)

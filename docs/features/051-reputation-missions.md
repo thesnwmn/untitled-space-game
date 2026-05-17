@@ -1,4 +1,4 @@
-# Feature 049 · Reputation — Mission Integration
+# Feature 051 · Reputation — Mission Integration
 
 ## Goal
 
@@ -9,7 +9,7 @@ Missions from eligible factions display their faction affiliation and reputation
 ## Acceptance criteria
 
 - `MissionGenerator` populates `giverFactionId` for missions generated at destinations whose `owningFactionId` resolves to a reputation-eligible faction; destinations with no `owningFactionId` produce missions without faction affiliation
-- On mission completion, a rep delta is computed from the mission's credit reward bucketed into three tiers (SMALL / MEDIUM / LARGE), with tier boundaries and delta amounts as named constants
+- On mission completion, a rep delta is computed from the mission's credit reward bucketed into three tiers (SMALL / MEDIUM / LARGE), with tier boundaries and delta amounts read from `getGameBalance().reputation`
 - The giving faction receives `+delta`
 - Each ally of the giving faction receives `+floor(delta / 2)`
 - Each direct rival of the giving faction receives `-floor(delta / 2)`; the rival's own allies are unaffected
@@ -39,6 +39,10 @@ Missions from eligible factions display their faction affiliation and reputation
 | Giving faction | `+delta` |
 | Each ally of giving faction | `+floor(delta / 2)` |
 | Each direct rival of giving faction | `-floor(delta / 2)` |
+
+### Balance values
+
+Tier boundaries (`missionTierMediumReward`, `missionTierLargeReward`) and delta amounts (`missionDeltaSmall`, `missionDeltaMedium`, `missionDeltaLarge`) all come from `getGameBalance().reputation`. No local constants.
 
 ### Display labels in `MissionDetailScene`
 
@@ -76,4 +80,4 @@ Repeat all steps using keyboard navigation.
 
 ## Dependencies
 
-Feature 048 (Reputation — Foundation)
+Feature 050 (Reputation — Foundation)
