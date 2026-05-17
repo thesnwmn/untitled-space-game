@@ -49,7 +49,7 @@ registry of descriptors used by the dev harness.
 ### New types in `src/shared/types.ts`
 
 ```typescript
-type MiniGameOutcome = 'success' | 'failure' | 'cancelled';
+type MiniGameOutcome = 'success' | 'fail' | 'skipped';
 
 interface MiniGameResult {
   outcome: MiniGameOutcome;
