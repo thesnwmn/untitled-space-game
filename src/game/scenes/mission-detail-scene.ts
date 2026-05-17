@@ -226,7 +226,7 @@ export class MissionDetailScene extends BaseMenuScene {
           row++;
         }
 
-        if (row <= contentLimit) {
+        if (impactFactions.length > 0) {
           row++; // blank line before accept/back items
         }
       }
