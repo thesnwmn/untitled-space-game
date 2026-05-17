@@ -82,6 +82,27 @@ See `docs/features/049-mini-game-dev-harness.md` for the full spec.
 
 ---
 
+### 050 · Reputation — Foundation (Data & UI)
+
+Faction relationships (rivals, allies) are added to world data. Destinations gain an optional `owning_faction` field. `PlayerState` stores a per-faction reputation score. A `reputation-utils.ts` module provides level computation and labels. A `ReputationScene` is added to the global menu. `StationMenuScene` displays the owning faction when present. Depends on features 046 and 047.
+See `docs/features/050-reputation-foundation.md` for the full spec.
+
+---
+
+### 051 · Reputation — Mission Integration
+
+Missions at faction-owned destinations carry a `giverFactionId`. Completing a mission applies a rep delta to the giving faction, half that delta to its allies, and negative half to its rivals. `MissionDetailScene` shows a REPUTATION IMPACT section with SMALL / MEDIUM / LARGE labels. Depends on feature 050.
+See `docs/features/051-reputation-missions.md` for the full spec.
+
+---
+
+### 052 · Reputation — Trade Effects
+
+Trade prices at faction-owned stations are modified by the player's standing with that faction. Buying goods accrues a small rep gain per credit spent, capped per docking visit. `TraderScene` displays the current standing label when a faction is identified. Depends on feature 050.
+See `docs/features/052-reputation-trade.md` for the full spec.
+
+---
+
 
 ## NEEDS SPEC
 
