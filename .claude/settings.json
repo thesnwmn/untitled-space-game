@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/check-reviewer-approved.sh"
+            "command": "bash scripts/bash-pretool-hook.sh"
           }
         ]
       }
