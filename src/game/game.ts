@@ -118,7 +118,7 @@ export class Game {
     return specs;
   }
 
-  private onBuy(commodityId: string, qty: number, traderStock: TraderStockEntry[]): void {
+  private onBuy(commodityId: string, qty: number, unitPrice: number, traderStock: TraderStockEntry[]): void {
     if (qty <= 0) return;
     const stockIdx = traderStock.findIndex(e => e.commodityId === commodityId);
     if (stockIdx < 0) return;
@@ -129,7 +129,7 @@ export class Game {
     const commodity = getCommodity(commodityId);
     if (!commodity) return;
 
-    const totalCost = qty * commodity.basePrice;
+    const totalCost = qty * unitPrice;
     if (this.player.credits < totalCost) return;
 
     const newWeight = this.player.cargoWeightKg + qty * commodity.weightKg;
@@ -141,7 +141,7 @@ export class Game {
     if (entry.qty <= 0) traderStock.splice(stockIdx, 1);
   }
 
-  private onSell(commodityId: string, qty: number, traderStock: TraderStockEntry[]): void {
+  private onSell(commodityId: string, qty: number, unitPrice: number, traderStock: TraderStockEntry[]): void {
     if (qty <= 0) return;
     const heldEntry = this.player.cargoHold.find(e => e.commodityId === commodityId);
     if (!heldEntry || heldEntry.qty < qty) return;
@@ -149,7 +149,7 @@ export class Game {
     const commodity = getCommodity(commodityId);
     if (!commodity) return;
 
-    const totalValue = qty * commodity.basePrice;
+    const totalValue = qty * unitPrice;
     this.player.addCredits(totalValue);
     this.player.removeCargo(commodityId, qty);
 
@@ -212,8 +212,8 @@ export class Game {
     const stock = this.getOrCreateTraderStock(destinationId);
     this.currentScene = new TraderScene(
       this.input, this.context, this.player, destinationId, stock,
-      (commodityId, qty) => this.onBuy(commodityId, qty, stock),
-      (commodityId, qty) => this.onSell(commodityId, qty, stock),
+      (commodityId, qty, unitPrice) => this.onBuy(commodityId, qty, unitPrice, stock),
+      (commodityId, qty, unitPrice) => this.onSell(commodityId, qty, unitPrice, stock),
       () => this.goToStation(), () => this.goToTakeOffOrUndock(),
       () => this.goToGlobalMenu(),
     );

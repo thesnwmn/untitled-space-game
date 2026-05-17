@@ -14,6 +14,31 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 052 · Reputation — Trade Effects — DONE
+
+**Built:**
+- `src/game/reputation-utils.ts` — added `getTradeModifier(level, balance)` returning the per-level buy/sell price multiplier from balance config
+- `src/game/world/world-data.ts` — added `getFaction(id)` export
+- `src/game/scenes/trader-scene.ts` — resolves `eligibleFactionId` from destination's `owningFactionId` at construction; applies `buyPrice = round(basePrice * modifier)` and `sellPrice = round(basePrice / modifier)`; renders `STANDING: <label>` at row `CONTENT_TOP+2` (between title underline and tab bar) when eligible faction found; accrues `creditsSpent × repPerCredit` reputation per purchase, capped at `maxRepPerVisit` per scene instance (resets on undock); `onBuy`/`onSell` callbacks now pass `unitPrice` as third arg
+- `src/game/game.ts` — `onBuy` and `onSell` accept `unitPrice` parameter and use it for credit deductions; `goToTrader` lambda threads `unitPrice` from TraderScene callbacks
+- Tests: updated 3 existing callback assertions to include `unitPrice`; 8 game.ts direct-call tests updated; 6 new tests covering standing label, buy price modification, sell price modification, rep accrual, visit cap, and standing label update
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 738 passed, 1 skipped (37 test files)
+- `init.sh` (before and after): passes clean
+- Reviewer approval: all acceptance criteria met
+
+**Play-test instructions:**
+1. Dock at a faction-owned station (e.g. Elysium Station) — confirm "STANDING: NEUTRAL" appears between the trader name and the tab bar.
+2. Note a commodity's buy and sell price at NEUTRAL — prices should match base price.
+3. Open browser console and run: `game.player.modifyFactionReputation('helios-directorate', 200, game.player.getGameBalance?.() ?? window.getGameBalance?.())` — or use a save with FRIENDLY standing — confirm buy prices decrease and sell prices increase.
+4. Buy goods repeatedly in one visit — confirm rep increases in the Reputation screen but stops accruing after 10 points gained in this visit.
+5. Undock and redock — confirm the rep cap has reset (buying gains rep again from zero).
+6. Dock at a destination with no owning faction (none exist in current world data — all are owned) — if testing this path, confirm no standing label appears and prices use base values.
+
+---
+
 ### 051 · Reputation — Mission Integration — DONE
 
 **Built:**

@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 052 · Reputation — Trade Effects
-
-Trade prices at faction-owned stations are modified by the player's standing with that faction. Buying goods accrues a small rep gain per credit spent, capped per docking visit. `TraderScene` displays the current standing label when a faction is identified. Depends on feature 050.
-See `docs/features/052-reputation-trade.md` for the full spec.
-
----
-
 ### 025 · Overhaul Star Field & Destination Display
 
 Each destination has a unique, stable starfield pattern derived deterministically from its ID (no orchestrator seed state needed). A type-appropriate foreground object — space station, asteroid, or planet — is rendered in the viewport with variant also selected by destination ID. Depends on feature 036.

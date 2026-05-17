@@ -25,6 +25,17 @@ export function getReputationLabel(level: number): string {
   }
 }
 
+export function getTradeModifier(level: number, balance: GameBalance): number {
+  switch (level) {
+    case -2: return balance.reputation.tradeModifierHated;
+    case -1: return balance.reputation.tradeModifierUnfriendly;
+    case 1:  return balance.reputation.tradeModifierFriendly;
+    case 2:  return balance.reputation.tradeModifierLiked;
+    case 3:  return balance.reputation.tradeModifierRevered;
+    default: return balance.reputation.tradeModifierNeutral;
+  }
+}
+
 export function getMissionTierLabel(delta: number, isSigned: boolean): string {
   const abs = Math.abs(delta);
   const sign = isSigned && delta < 0 ? '-' : '+';
