@@ -223,6 +223,8 @@ export class MissionDetailScene extends BaseMenuScene {
           write(row, `  ${name}${padding}${label}`, labelColor);
           row++;
         }
+
+        row++; // blank line before accept/back items
       }
     }
   }

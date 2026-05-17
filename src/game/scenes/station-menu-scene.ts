@@ -6,7 +6,7 @@ import { getDestination, getGameBalance, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
-import { computeReputationDeltas } from '../reputation-utils';
+import { computeReputationDeltas, getMissionTierLabel } from '../reputation-utils';
 
 export class StationMenuScene extends BaseMenuScene {
   private readonly onShip: () => void;
@@ -139,6 +139,7 @@ export class StationMenuScene extends BaseMenuScene {
         const balance = getGameBalance();
         const world = getWorld();
 
+        let repImpactText = '';
         if (m.giverFactionId) {
           const givingFaction = world.factions.find(f => f.id === m.giverFactionId);
           if (givingFaction) {
@@ -156,6 +157,22 @@ export class StationMenuScene extends BaseMenuScene {
             for (const [factionId, delta] of deltas) {
               this.player.modifyFactionReputation(factionId, delta, balance);
             }
+
+            const impactFactions: Array<{ id: string; name: string; delta: number }> = [];
+            for (const [factionId, delta] of deltas) {
+              const f = world.factions.find(fac => fac.id === factionId);
+              if (f) impactFactions.push({ id: factionId, name: f.name, delta });
+            }
+            impactFactions.sort((a, b) => {
+              if (a.delta !== b.delta) return b.delta - a.delta;
+              return a.name.localeCompare(b.name);
+            });
+
+            repImpactText = '\n\nREPUTATION:\n';
+            for (const impact of impactFactions) {
+              const label = getMissionTierLabel(impact.delta, true);
+              repImpactText += `  ${impact.name.padEnd(20)} ${label}\n`;
+            }
           }
         }
 
@@ -163,7 +180,7 @@ export class StationMenuScene extends BaseMenuScene {
         this.player.addCredits(m.reward);
         this.openModal(new ModalConfirmDialog({
           title: 'MISSION COMPLETE',
-          body: `Mission complete!\n\nYou received ${m.reward} CR.`,
+          body: `Mission complete!\n\nYou received ${m.reward} CR.${repImpactText}`,
           confirmLabel: 'OKAY',
           onConfirm: () => {
             this.closeModal();

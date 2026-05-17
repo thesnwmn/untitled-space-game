@@ -33,19 +33,20 @@ export class MissionBoardScene extends BaseMenuScene {
       items = [{ label: 'NO MISSIONS AVAILABLE', disabled: true, action: () => {} }];
     } else {
       items = missions.map(m => {
-        let label = m.title;
-        if (m.giverFactionId) {
-          const faction = getWorld().factions.find(f => f.id === m.giverFactionId);
-          if (faction) {
-            label = `${m.title} [${faction.name}]`;
-          }
-        }
+        const details = m.giverFactionId
+          ? (() => {
+              const faction = getWorld().factions.find(f => f.id === m.giverFactionId);
+              return faction ? [`For: ${faction.name}`] : [];
+            })()
+          : [];
         return {
-          label,
+          label: m.title,
           icon: TYPE_ICONS[m.type],
           iconFg: 'bright-yellow' as const,
           info: `${m.reward} CR`,
           infoFg: 'bright-green' as const,
+          details,
+          detailsFg: 'bright-black' as const,
           action: () => onMissionSelected(m),
         };
       });
