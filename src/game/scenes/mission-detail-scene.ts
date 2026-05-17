@@ -5,7 +5,6 @@ import type { MissionSpec } from '../world/types';
 import { getDestination, getWorld, getCommodity } from '../world/world-data';
 import { writeText, wrapText } from '../../shared/buffer-utils';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
-import { CONTENT_TOP } from '../ui/screen-chrome';
 
 const TYPE_ICONS: Record<MissionSpec['type'], string> = {
   delivery: '[D]',
@@ -95,18 +94,18 @@ export class MissionDetailScene extends BaseMenuScene {
     }
   }
 
-  override render(buffer: CharBuffer): void {
-    super.render(buffer);
-    this.renderDetail(buffer);
+  protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
+    super.renderContent(buffer, top, bottom);
+    this.renderDetail(buffer, top - DETAIL_SPACER_LINES);
   }
 
-  private renderDetail(buffer: CharBuffer): void {
+  private renderDetail(buffer: CharBuffer, startRow: number): void {
     const h = buffer.length;
     const w = h > 0 ? buffer[0].length : 40;
     const maxWidth = w - 4;
     // Stop writing before the items area begins
     const contentLimit = this.lastContentTop - 1;
-    let row = CONTENT_TOP + 3;
+    let row = startRow;
 
     const write = (r: number, text: string, fg: Color) => {
       if (r <= contentLimit) writeText(buffer, r, 2, text.slice(0, maxWidth), fg, 'black');

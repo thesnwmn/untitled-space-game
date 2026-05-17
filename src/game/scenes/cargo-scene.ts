@@ -1,7 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import { getCommodity } from '../world/world-data';
-import { writeText, drawSeparator } from '../../shared/buffer-utils';
+import { writeText } from '../../shared/buffer-utils';
 import { BaseScene } from './base-scene';
 
 export class CargoScene extends BaseScene {
