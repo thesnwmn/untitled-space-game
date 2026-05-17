@@ -1,4 +1,4 @@
-import type { WorldData, GameSettings, GameBalance, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry, DeliveryItem, NpcNames } from './types';
+import type { WorldData, GameSettings, GameBalance, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry, DeliveryItem, NpcNames, Faction } from './types';
 
 let _world: WorldData | null = null;
 
@@ -52,6 +52,10 @@ export function getRoute(fromId: string, toId: string): JumpRoute | undefined {
     r => (r.from === fromId && r.to === toId) ||
          (r.from === toId   && r.to === fromId)
   );
+}
+
+export function getFaction(id: string): Faction | undefined {
+  return getWorld().factions.find(f => f.id === id);
 }
 
 export function getCommodity(id: string): Commodity | undefined {

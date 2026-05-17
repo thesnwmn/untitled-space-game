@@ -6,13 +6,14 @@ import { getDestination, getGameBalance, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
-import { computeReputationDeltas, getMissionTierLabel } from '../reputation-utils';
+import { computeReputationDeltas, getMissionTierLabel, isReputationEligible, getReputationLevel, getTradeModifier } from '../reputation-utils';
 
 export class StationMenuScene extends BaseMenuScene {
   private readonly onShip: () => void;
   private readonly onRefuel: (cost: number, litres: number) => void;
   private readonly onHub: () => void;
   private readonly fuelItemIdx: number | null;
+  private readonly eligibleFactionId: string | null;
 
   constructor(
     inputHandler: InputHandler,
@@ -51,7 +52,19 @@ export class StationMenuScene extends BaseMenuScene {
     if (dest.amenities.trader) amenityItems.push({ label: 'TRADER', action: onTrader });
     if (dest.amenities.missionBoard) amenityItems.push({ label: 'MISSION BOARD', action: onMissionBoard });
 
-    const fuelPricePerL = getGameBalance().fuel.pricePerLitre;
+    const balance = getGameBalance();
+    let localEligibleFactionId: string | null = null;
+    if (dest.owningFactionId) {
+      const faction = getWorld().factions.find(f => f.id === dest.owningFactionId);
+      if (faction && isReputationEligible(faction)) {
+        localEligibleFactionId = dest.owningFactionId;
+      }
+    }
+    const baseFuelPrice = balance.fuel.pricePerLitre;
+    const fuelModifier = localEligibleFactionId
+      ? getTradeModifier(getReputationLevel(player.getFactionReputation(localEligibleFactionId), balance), balance)
+      : 1.0;
+    const fuelPricePerL = Math.round(baseFuelPrice * fuelModifier);
     const fuelNeeded  = player.fuelCapacityL - player.fuelL;
     const affordableL = Math.floor(player.credits / fuelPricePerL);
     const purchaseL   = Math.min(fuelNeeded, affordableL);
@@ -101,6 +114,7 @@ export class StationMenuScene extends BaseMenuScene {
     this.onRefuel = onRefuel;
     this.onHub = onHub;
     this.fuelItemIdx = fuelIdx;
+    this.eligibleFactionId = localEligibleFactionId;
 
     // Attach real actions to collect items (after super so `this` is valid)
     for (let i = 0; i < pickupMissions.length; i++) {
@@ -191,6 +205,14 @@ export class StationMenuScene extends BaseMenuScene {
     }
   }
 
+  private effectiveFuelPrice(): number {
+    const balance = getGameBalance();
+    const base = balance.fuel.pricePerLitre;
+    if (!this.eligibleFactionId) return base;
+    const level = getReputationLevel(this.player.getFactionReputation(this.eligibleFactionId), balance);
+    return Math.round(base * getTradeModifier(level, balance));
+  }
+
   protected override activateCurrent(): void {
     const items = this.items;
     if (items.length === 0 || this.cursorIdx === -1) return;
@@ -199,7 +221,7 @@ export class StationMenuScene extends BaseMenuScene {
 
     if (this.fuelItemIdx !== null && this.cursorIdx === this.fuelItemIdx) {
       this.activated = true;
-      const fuelPricePerL = getGameBalance().fuel.pricePerLitre;
+      const fuelPricePerL = this.effectiveFuelPrice();
       const fuelNeeded = this.player.fuelCapacityL - this.player.fuelL;
       const affordableL = Math.floor(this.player.credits / fuelPricePerL);
       const max = Math.min(fuelNeeded, affordableL);

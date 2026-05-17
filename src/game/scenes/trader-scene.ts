@@ -1,18 +1,21 @@
-import type { InputHandler, GameContext, CharBuffer } from '../../shared/types';
+import type { InputHandler, GameContext, CharBuffer, Color } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import type { TraderStockEntry } from '../world/types';
-import { getCommodity, getDestination } from '../world/world-data';
+import { getCommodity, getDestination, getFaction, getGameBalance } from '../world/world-data';
+import { isReputationEligible, getReputationLevel, getReputationLabel, getTradeModifier } from '../reputation-utils';
 import { writeText } from '../../shared/buffer-utils';
-import { contentBottom } from '../ui/screen-chrome';
+import { CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
 import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 
 export class TraderScene extends BaseMenuScene {
   private readonly traderStock: TraderStockEntry[];
-  private readonly onBuy: (commodityId: string, qty: number) => void;
-  private readonly onSell: (commodityId: string, qty: number) => void;
+  private readonly onBuy: (commodityId: string, qty: number, unitPrice: number) => void;
+  private readonly onSell: (commodityId: string, qty: number, unitPrice: number) => void;
   private readonly onHub: () => void;
   private readonly onUndock: () => void;
+  private readonly eligibleFactionId: string | null;
+  private repGainedThisVisit: number = 0;
 
   constructor(
     inputHandler: InputHandler,
@@ -20,8 +23,8 @@ export class TraderScene extends BaseMenuScene {
     player: PlayerState,
     destinationId: string,
     traderStock: TraderStockEntry[],
-    onBuy: (commodityId: string, qty: number) => void,
-    onSell: (commodityId: string, qty: number) => void,
+    onBuy: (commodityId: string, qty: number, unitPrice: number) => void,
+    onSell: (commodityId: string, qty: number, unitPrice: number) => void,
     onHub: () => void,
     onUndock: () => void,
     onMenu: () => void,
@@ -52,9 +55,33 @@ export class TraderScene extends BaseMenuScene {
     this.onHub = onHub;
     this.onUndock = onUndock;
 
+    const factionId = dest.owningFactionId;
+    if (factionId) {
+      const faction = getFaction(factionId);
+      this.eligibleFactionId = faction && isReputationEligible(faction) ? factionId : null;
+    } else {
+      this.eligibleFactionId = null;
+    }
+
     // Populate tabs and set cursor before any actions can fire
     this.syncItems();
     this.clampCursor();
+  }
+
+  private currentModifier(): number {
+    if (!this.eligibleFactionId) return 1.0;
+    const balance = getGameBalance();
+    const points = this.player.getFactionReputation(this.eligibleFactionId);
+    const level = getReputationLevel(points, balance);
+    return getTradeModifier(level, balance);
+  }
+
+  private buyPrice(basePrice: number): number {
+    return Math.round(basePrice * this.currentModifier());
+  }
+
+  private sellPrice(basePrice: number): number {
+    return Math.round(basePrice / this.currentModifier());
   }
 
   private buildBuyItems(): MenuItemDef[] {
@@ -64,21 +91,25 @@ export class TraderScene extends BaseMenuScene {
     return this.traderStock.flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
-      const canAfford = this.player.credits >= commodity.basePrice;
+      const unitPrice = this.buyPrice(commodity.basePrice);
+      const canAfford = this.player.credits >= unitPrice;
       return [{
         label: `${commodity.name} (x${entry.qty})`,
-        info: `${commodity.basePrice} CR`,
+        info: `${unitPrice} CR`,
         disabled: !canAfford,
         action: () => {
-          const maxAffordable = Math.floor(this.player.credits / commodity.basePrice);
+          const maxAffordable = Math.floor(this.player.credits / unitPrice);
           const initial = Math.min(entry.qty, maxAffordable);
           this.openModal(new ModalInputDialog({
             title: commodity.name.toUpperCase(),
             field: { label: 'Quantity', initialValue: initial, min: 0, max: initial },
-            derivedRows: [{ label: 'Total', compute: qty => `${qty * commodity.basePrice} CR` }],
+            derivedRows: [{ label: 'Total', compute: qty => `${qty * unitPrice} CR` }],
             confirmLabel: 'BUY',
             onConfirm: (qty) => {
-              if (qty > 0) this.onBuy(entry.commodityId, qty);
+              if (qty > 0) {
+                this.onBuy(entry.commodityId, qty, unitPrice);
+                this.accrueReputation(qty * unitPrice);
+              }
               this.syncItems();
               this.clampCursor();
               this.closeModal();
@@ -98,17 +129,18 @@ export class TraderScene extends BaseMenuScene {
     return [...hold].flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
+      const unitPrice = this.sellPrice(commodity.basePrice);
       return [{
         label: `${commodity.name} (x${entry.qty})`,
-        info: `${commodity.basePrice} CR`,
+        info: `${unitPrice} CR`,
         action: () => {
           this.openModal(new ModalInputDialog({
             title: commodity.name.toUpperCase(),
             field: { label: 'Quantity', initialValue: entry.qty, min: 0, max: entry.qty },
-            derivedRows: [{ label: 'Total', compute: qty => `${qty * commodity.basePrice} CR` }],
+            derivedRows: [{ label: 'Total', compute: qty => `${qty * unitPrice} CR` }],
             confirmLabel: 'SELL',
             onConfirm: (qty) => {
-              if (qty > 0) this.onSell(entry.commodityId, qty);
+              if (qty > 0) this.onSell(entry.commodityId, qty, unitPrice);
               this.syncItems();
               this.clampCursor();
               this.closeModal();
@@ -118,6 +150,17 @@ export class TraderScene extends BaseMenuScene {
         },
       }];
     });
+  }
+
+  private accrueReputation(creditsSpent: number): void {
+    if (!this.eligibleFactionId) return;
+    const balance = getGameBalance();
+    const remaining = balance.reputation.maxRepPerVisit - this.repGainedThisVisit;
+    if (remaining <= 0) return;
+    const gain = Math.min(remaining, creditsSpent * balance.reputation.repPerCredit);
+    if (gain <= 0) return;
+    this.repGainedThisVisit += gain;
+    this.player.modifyFactionReputation(this.eligibleFactionId, gain, balance);
   }
 
   // Rebuild tab item arrays from live data. Pure data sync — no cursor mutation.
@@ -169,9 +212,22 @@ export class TraderScene extends BaseMenuScene {
     this.syncItems(); // refresh display data; no cursor mutation
     super.render(buffer);
 
+    if (this.eligibleFactionId) {
+      const balance = getGameBalance();
+      const points = this.player.getFactionReputation(this.eligibleFactionId);
+      const level = getReputationLevel(points, balance);
+      const label = getReputationLabel(level);
+      const modifier = getTradeModifier(level, balance);
+      const modText = `x${modifier.toFixed(2)}`;
+      const modFg: Color = modifier < 1.0 ? 'bright-green' : modifier > 1.0 ? 'yellow' : 'bright-black';
+      // Row CONTENT_TOP+2 is blank (between underline and tab bar) — safe to use
+      const standingText = `STANDING: ${label}  `;
+      writeText(buffer, CONTENT_TOP + 2, 2, standingText, 'bright-black', 'black');
+      writeText(buffer, CONTENT_TOP + 2, 2 + standingText.length, modText, modFg, 'black');
+    }
+
     const h = buffer.length;
-    const footerText = `HOLD: ${this.player.cargoWeightKg}/${this.player.cargoCapacity}KG`;
     const footerRow = contentBottom(h, true) - 2;
-    writeText(buffer, footerRow, 2, footerText, 'bright-black', 'black');
+    writeText(buffer, footerRow, 2, `HOLD: ${this.player.cargoWeightKg}/${this.player.cargoCapacity}KG`, 'bright-black', 'black');
   }
 }

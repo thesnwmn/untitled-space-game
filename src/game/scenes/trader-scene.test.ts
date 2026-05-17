@@ -3,6 +3,7 @@ import { TraderScene } from './trader-scene';
 import type { InputHandler, GameAction, CharBuffer, Color, GameContext } from '../../shared/types';
 import type { TraderStockEntry } from '../world/types';
 import { makePlayer } from '../../tests/makePlayer';
+import { getGameBalance } from '../world/world-data';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -272,7 +273,7 @@ describe('TraderScene', () => {
       input.triggerAction('SELECT'); // opens modal — onBuy NOT called yet
       expect(onBuy).not.toHaveBeenCalled();
       input.triggerAction('SELECT'); // confirm modal (field focused)
-      expect(onBuy).toHaveBeenCalledWith('iron-ore', 5);
+      expect(onBuy).toHaveBeenCalledWith('iron-ore', 5, 80);
     });
 
     it('SELECT on SELL tab opens modal; confirm calls onSell with correct id and qty', () => {
@@ -288,7 +289,7 @@ describe('TraderScene', () => {
       input.triggerAction('SELECT'); // opens modal — initial qty=3 (full hold)
       expect(onSell).not.toHaveBeenCalled();
       input.triggerAction('SELECT'); // confirm
-      expect(onSell).toHaveBeenCalledWith('rations', 3);
+      expect(onSell).toHaveBeenCalledWith('rations', 3, 60);
     });
 
     it('BUY tab shows NO STOCK AVAILABLE after all items are bought via modal', () => {
@@ -378,7 +379,7 @@ describe('TraderScene', () => {
       input.triggerTap(5, ITEM_ROW_START); // opens modal
       expect(onBuy).not.toHaveBeenCalled();
       input.triggerAction('SELECT'); // confirm (field focused)
-      expect(onBuy).toHaveBeenCalledWith('iron-ore', 5);
+      expect(onBuy).toHaveBeenCalledWith('iron-ore', 5, 80);
     });
 
     it('tap on footer UNDOCK button fires onUndock and silences input', () => {
@@ -476,6 +477,104 @@ describe('TraderScene', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input);
       expect(() => scene.update(16.7)).not.toThrow();
+    });
+  });
+
+  describe('reputation trade effects', () => {
+    // elysium-station → helios-directorate (large, eligible)
+    // iron-ore basePrice=80, rations basePrice=60
+
+    it('renders STANDING label when destination has eligible faction', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const text = buf.map(row => row.map(c => c.char).join('')).join('\n');
+      expect(text).toContain('STANDING: NEUTRAL');
+    });
+
+    it('buy price is reduced at FRIENDLY standing', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      const balance = getGameBalance();
+      // Set rep to 200 → FRIENDLY (level 1, modifier 0.92)
+      player.modifyFactionReputation('helios-directorate', 200, balance);
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [{ commodityId: 'iron-ore', qty: 5 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Math.round(80 * 0.92) = 74
+      expect(rowText(buf, ITEM_ROW_START)).toContain('74 CR');
+    });
+
+    it('sell price is increased at FRIENDLY standing', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      const balance = getGameBalance();
+      player.modifyFactionReputation('helios-directorate', 200, balance);
+      player.addCargo('rations', 3);
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      input.triggerAction('RIGHT'); // switch to SELL tab
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Math.round(60 / 0.92) = 65
+      expect(rowText(buf, ITEM_ROW_START)).toContain('65 CR');
+    });
+
+    it('accrues reputation with faction on buy', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      const initialRep = player.getFactionReputation('helios-directorate');
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [{ commodityId: 'iron-ore', qty: 5 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      // Buy 5 iron-ore at NEUTRAL price 80 CR each = 400 CR total
+      // rep gain = 400 * 0.01 = 4 points
+      input.triggerAction('SELECT'); // opens modal
+      input.triggerAction('SELECT'); // confirm (initial qty = 5)
+      expect(player.getFactionReputation('helios-directorate')).toBeCloseTo(initialRep + 4, 5);
+    });
+
+    it('rep gain stops accruing once visit cap is reached', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      // maxRepPerVisit = 10; iron-ore qty=20, price=80 NEUTRAL; buy all (20*80=1600 CR = 16 rep but capped at 10)
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        [{ commodityId: 'iron-ore', qty: 20 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      // First buy: 20 iron-ore = 1600 CR → 16 rep, capped at 10
+      input.triggerAction('SELECT');
+      input.triggerAction('SELECT');
+      const repAfterFirst = player.getFactionReputation('helios-directorate');
+      expect(repAfterFirst).toBe(10); // capped at maxRepPerVisit
+
+      // Second buy: cap already hit, no more rep
+      input.triggerAction('SELECT');
+      input.triggerAction('SELECT');
+      expect(player.getFactionReputation('helios-directorate')).toBe(10);
+    });
+
+    it('standing label updates after rep changes within same scene', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      const balance = getGameBalance();
+      // Push rep to LIKED threshold (300 → LIKED level 2)
+      player.modifyFactionReputation('helios-directorate', 300, balance);
+      const scene = new TraderScene(
+        input, keyboardContext, player, 'elysium-station',
+        makeStock(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+      );
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const text = buf.map(row => row.map(c => c.char).join('')).join('\n');
+      expect(text).toContain('STANDING: LIKED');
     });
   });
 

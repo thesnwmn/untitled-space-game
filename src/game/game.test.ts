@@ -74,7 +74,7 @@ describe('Game — onBuy guards', () => {
     const game = makeGame();
     const player = (game as any).player;
     const stock: TraderStockEntry[] = [{ commodityId: 'rations', qty: 3 }]; // rations: 60 CR, 1 kg
-    (game as any).onBuy('rations', 3, stock);
+    (game as any).onBuy('rations', 3, 60, stock);
     expect(player.credits).toBe(5000 - 3 * 60); // 4820
     expect(player.cargoHold).toHaveLength(1);
     expect(player.cargoHold[0]).toEqual({ commodityId: 'rations', qty: 3 });
@@ -85,7 +85,7 @@ describe('Game — onBuy guards', () => {
     const game = makeGame();
     const player = (game as any).player;
     const stock: TraderStockEntry[] = [{ commodityId: 'rations', qty: 5 }];
-    (game as any).onBuy('rations', 2, stock);
+    (game as any).onBuy('rations', 2, 60, stock);
     expect(player.cargoHold[0]).toEqual({ commodityId: 'rations', qty: 2 });
     expect(stock[0].qty).toBe(3);
   });
@@ -95,7 +95,7 @@ describe('Game — onBuy guards', () => {
     const player = (game as any).player;
     player.spendCredits(5000); // drain all credits
     const stock: TraderStockEntry[] = [{ commodityId: 'rations', qty: 1 }];
-    (game as any).onBuy('rations', 1, stock);
+    (game as any).onBuy('rations', 1, 60, stock);
     expect(player.cargoHold).toHaveLength(0);
     expect(stock).toHaveLength(1);
   });
@@ -107,7 +107,7 @@ describe('Game — onBuy guards', () => {
     player.addCargo('iron-ore', 199);
     // ship-components weighs 15 kg — would push total to 2005 kg, over 2000 kg cap
     const stock: TraderStockEntry[] = [{ commodityId: 'ship-components', qty: 1 }];
-    (game as any).onBuy('ship-components', 1, stock);
+    (game as any).onBuy('ship-components', 1, 650, stock);
     expect(player.cargoHold.find((e: TraderStockEntry) => e.commodityId === 'ship-components')).toBeUndefined();
     expect(stock).toHaveLength(1);
   });
@@ -124,7 +124,7 @@ describe('Game — onSell', () => {
     player.addCargo('rations', 4);
     player.spendCredits(5000); // zero credits to make verification clear
     const stock: TraderStockEntry[] = [];
-    (game as any).onSell('rations', 4, stock);
+    (game as any).onSell('rations', 4, 60, stock);
     expect(player.credits).toBe(4 * 60); // 240
     expect(player.cargoHold).toHaveLength(0);
     expect(stock).toEqual([{ commodityId: 'rations', qty: 4 }]);
@@ -136,7 +136,7 @@ describe('Game — onSell', () => {
     player.addCargo('rations', 5);
     player.spendCredits(5000);
     const stock: TraderStockEntry[] = [];
-    (game as any).onSell('rations', 2, stock);
+    (game as any).onSell('rations', 2, 60, stock);
     expect(player.cargoHold[0].qty).toBe(3);
     expect(stock[0].qty).toBe(2);
   });
@@ -146,7 +146,7 @@ describe('Game — onSell', () => {
     const player = (game as any).player;
     player.addCargo('rations', 2);
     const stock: TraderStockEntry[] = [{ commodityId: 'rations', qty: 3 }];
-    (game as any).onSell('rations', 2, stock);
+    (game as any).onSell('rations', 2, 60, stock);
     expect(stock[0].qty).toBe(5);
   });
 
@@ -155,7 +155,7 @@ describe('Game — onSell', () => {
     const player = (game as any).player;
     const initialCredits = player.credits;
     const stock: TraderStockEntry[] = [];
-    (game as any).onSell('rations', 1, stock);
+    (game as any).onSell('rations', 1, 60, stock);
     expect(player.credits).toBe(initialCredits);
     expect(stock).toHaveLength(0);
   });
