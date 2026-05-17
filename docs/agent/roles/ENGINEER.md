@@ -37,10 +37,6 @@ Never begin implementation without confirming which feature is being worked on.
    - Post the review outcome in the conversation (approved, or a list of specific issues).
 10. If the review finds issues, fix them (returning to step 7) before continuing.
 11. **The Reviewer has approved. Do NOT push yet. Complete steps 11 and 12 first.**
-    Create the approval marker (required by the pre-push hook):
-    ```
-    echo approved > .reviewer-approved
-    ```
     Update the backlogs on the local feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
@@ -55,11 +51,14 @@ Never begin implementation without confirming which feature is being worked on.
     - [ ] Item removed from BACKLOG.md
     - [ ] Item added to BACKLOG_HISTORY.md with evidence and play-test instructions
     - [ ] This feature's spec archived to docs/features/history/ and original deleted (other features' specs left untouched)
-    - [ ] `.reviewer-approved` marker created (step 11)
-    Then push the branch and open a PR against main. Do not merge it.
-    - If the harness pre-assigned a branch for this session, use it.
-    - Otherwise create one named `feature/NNN-short-description`.
-    After the push succeeds, delete the approval marker: `rm .reviewer-approved`
+    - [ ] All changes committed to the branch
+    Then perform the push in a single, deliberate pass — **do not loop**:
+    1. Create the approval marker (required by the pre-push hook): `echo approved > .reviewer-approved`
+    2. Push the branch: `git push -u origin <branch>` (use the harness-assigned branch, or create one named `feature/NNN-short-description`)
+    3. Open a PR against main. Do not merge it.
+    4. Delete the marker immediately: `rm .reviewer-approved`
+
+    **If you realise you forgot a commit after deleting the marker:** stage and commit the missing change, then go back to step 1 of this push sequence and do the whole pass once more — create, push, delete. Never leave the marker present and never recreate it more than once per push attempt.
 
 ## Context Management
 
@@ -155,7 +154,7 @@ to continue without re-reading everything. Include the exact next step to take.]
 - init.sh must pass both before you start and after you finish.
 - Never push directly to main. Always use a feature branch and open a PR.
 - **Never push or open a PR without completing the inline Reviewer role (step 9) and receiving approval.**
-- **Never push without first completing steps 11 and 12.** Backlog cleanup and spec archival happen on the local branch before the push — not after, not as a follow-up. The push is the last act.
+- **Never push without first completing steps 11 and 12.** Backlog cleanup and spec archival happen on the local branch before the push — not after, not as a follow-up. The push sequence (create marker → push → delete marker) is the last act.
 - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
   runtime environment guards (`typeof X === 'undefined'`, `process.platform` checks,
   etc.) to paper over a mismatch between the class's platform and the test environment.
