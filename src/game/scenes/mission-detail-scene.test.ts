@@ -297,6 +297,37 @@ describe('MissionDetailScene', () => {
     });
   });
 
+  describe('render — reputation impact section', () => {
+    it('shows REPUTATION IMPACT header and entries for a faction mission', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpecInSystem);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const allText = Array.from({ length: 30 }, (_, r) => rowText(buf, r)).join('\n');
+      expect(allText).toContain('REPUTATION IMPACT');
+    });
+
+    it('does not show REPUTATION IMPACT when mission has no giverFactionId', () => {
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpec);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const allText = Array.from({ length: 30 }, (_, r) => rowText(buf, r)).join('\n');
+      expect(allText).not.toContain('REPUTATION IMPACT');
+    });
+
+    it('always has a blank row between reputation section and accept/back items', () => {
+      // deliverySpecInSystem has terran-union (1 ally + 2 rivals = 4 entries total).
+      // Without the repLimit guard the 4th entry fills contentLimit (row 21),
+      // leaving no gap before ACCEPT MISSION at row 22.
+      const input = new MockInputHandler();
+      const scene = makeScene(input, deliverySpecInSystem);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(rowText(buf, ITEMS_START - 1)).toBe('');
+    });
+  });
+
   describe('render — supply mission detail', () => {
     it('renders [S] icon in bright-yellow', () => {
       const input = new MockInputHandler();
