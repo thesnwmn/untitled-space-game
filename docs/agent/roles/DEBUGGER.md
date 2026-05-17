@@ -18,25 +18,13 @@ improve, refactor, or extend — only to fix.
    - Existing tests must pass.
    - If the bug had no test, write one that would have caught it.
 7. Run `init.sh` again. It must pass clean.
-8. **Spawn a Reviewer sub-agent** using the Agent tool. Do not push first.
-   - `model: "haiku"`
-   - `description: "Review fix for <short bug description>"`
-   - Prompt template (fill in the bracketed fields):
-     ```
-     You are acting as the Reviewer for this project. The Debugger has just fixed
-     [brief bug description] on branch [branch-name].
-
-     Read docs/agent/roles/REVIEWER.md for your full process and non-negotiables.
-
-     Key context:
-     - Run `git diff main...HEAD` and `git log main..HEAD` to see exactly what changed.
-     - The branch is local; no PR exists yet.
-     - This is a bug fix, not a feature — focus on correctness and architectural consistency.
-
-     Complete the full review and post your findings (approved or issues found with
-     a precise description of each problem).
-     ```
-9. If the Reviewer sub-agent finds issues, fix them (returning to step 6) before continuing.
+8. **Run the Reviewer role inline** (same session, no sub-agent). Do not push first.
+   Read `docs/agent/roles/REVIEWER.md` and follow its full process:
+   - Run `git diff main...HEAD` and `git log main..HEAD` to see exactly what changed.
+   - Read the implementation files that were added or modified.
+   - Check against DECISION_REGISTER.md and the Reviewer non-negotiables.
+   - Post the review outcome in the conversation (approved, or a list of specific issues).
+9. If the review finds issues, fix them (returning to step 6) before continuing.
 10. Update BACKLOG.md if the bug corresponded to a known item, or add a brief note
     to the relevant entry in BACKLOG_HISTORY.md recording what was fixed.
 11. Push to a branch and open a PR against main. Do not merge it.
@@ -56,4 +44,4 @@ whatever is complete.
 - Never mark a bug fixed without a passing test that covers it.
 - init.sh must pass before and after.
 - Never push directly to main. Always use a fix branch and open a PR.
-- **Never push without the Reviewer sub-agent approving first.**
+- **Never push without completing the inline Reviewer role (step 8) and receiving approval.**

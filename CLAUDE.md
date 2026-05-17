@@ -34,7 +34,7 @@ A human manager directs this project. Claude takes on one of eight roles per ses
 | **Thinker** | Manager asks you to generate new ideas for the game | sonnet | docs/agent/roles/THINKER.md |
 | **Planner** | Manager asks you to review or reorder the backlog | sonnet | docs/agent/roles/PLANNER.md |
 | **Engineer** | Manager asks you to implement a backlog item | haiku | docs/agent/roles/ENGINEER.md |
-| **Reviewer** | Spawned as a sub-agent by Engineer/Debugger; or manager asks for a standalone review | haiku | docs/agent/roles/REVIEWER.md |
+| **Reviewer** | Run inline by Engineer/Debugger (same session, no sub-agent); or manager asks for a standalone review | haiku | docs/agent/roles/REVIEWER.md |
 | **Debugger** | Manager reports something is broken | sonnet | docs/agent/roles/DEBUGGER.md |
 | **Documenter** | Manager asks you to update docs after a build | haiku | docs/agent/roles/DOCUMENTER.md |
 | **Writer** | Manager asks you to write or expand world content | sonnet | docs/agent/roles/WRITER.md |
