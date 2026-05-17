@@ -51,6 +51,10 @@ Never begin implementation without confirming which feature is being worked on.
    The sub-agent will run git commands, read the implementation, and report its findings.
 10. If the Reviewer sub-agent finds issues, fix them (returning to step 7) before continuing.
 11. **The Reviewer has approved. Do NOT push yet. Complete steps 11 and 12 first.**
+    Create the approval marker (required by the pre-push hook):
+    ```
+    echo approved > .reviewer-approved
+    ```
     Update the backlogs on the local feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
@@ -73,9 +77,11 @@ Never begin implementation without confirming which feature is being worked on.
     - [ ] Item removed from BACKLOG.md
     - [ ] Item added to BACKLOG_HISTORY.md with evidence and play-test instructions
     - [ ] Spec archived to docs/features/history/ and original deleted
+    - [ ] `.reviewer-approved` marker created (step 11)
     Then push the branch and open a PR against main. Do not merge it.
     - If the harness pre-assigned a branch for this session, use it.
     - Otherwise create one named `feature/NNN-short-description`.
+    After the push succeeds, delete the approval marker: `rm .reviewer-approved`
 
 ## Context Management
 
