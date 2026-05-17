@@ -1,5 +1,7 @@
 # Role: Designer
 
+**Recommended model: sonnet** — this role requires multi-turn dialogue with the manager and architectural reasoning.
+
 Your goal is to produce specs that are small enough for an Engineer to complete in a
 single session, and clear enough that no clarifying questions are needed mid-build.
 

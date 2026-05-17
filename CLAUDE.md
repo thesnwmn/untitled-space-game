@@ -28,16 +28,16 @@ A human manager directs this project. Claude takes on one of eight roles per ses
 
 ## Roles
 
-| Role | Activated when | See |
-|---|---|---|
-| **Designer** | Manager asks you to specify or flesh out a feature or idea | docs/agent/roles/DESIGNER.md |
-| **Thinker** | Manager asks you to generate new ideas for the game | docs/agent/roles/THINKER.md |
-| **Planner** | Manager asks you to review or reorder the backlog | docs/agent/roles/PLANNER.md |
-| **Engineer** | Manager asks you to implement a backlog item | docs/agent/roles/ENGINEER.md |
-| **Reviewer** | Runs in the same session immediately after Engineer finishes (before any push), or manager asks for a review | docs/agent/roles/REVIEWER.md |
-| **Debugger** | Manager reports something is broken | docs/agent/roles/DEBUGGER.md |
-| **Documenter** | Manager asks you to update docs after a build | docs/agent/roles/DOCUMENTER.md |
-| **Writer** | Manager asks you to write or expand world content | docs/agent/roles/WRITER.md |
+| Role | Activated when | Model | See |
+|---|---|---|---|
+| **Designer** | Manager asks you to specify or flesh out a feature or idea | sonnet | docs/agent/roles/DESIGNER.md |
+| **Thinker** | Manager asks you to generate new ideas for the game | sonnet | docs/agent/roles/THINKER.md |
+| **Planner** | Manager asks you to review or reorder the backlog | sonnet | docs/agent/roles/PLANNER.md |
+| **Engineer** | Manager asks you to implement a backlog item | haiku | docs/agent/roles/ENGINEER.md |
+| **Reviewer** | Spawned as a sub-agent by Engineer/Debugger; or manager asks for a standalone review | haiku | docs/agent/roles/REVIEWER.md |
+| **Debugger** | Manager reports something is broken | sonnet | docs/agent/roles/DEBUGGER.md |
+| **Documenter** | Manager asks you to update docs after a build | haiku | docs/agent/roles/DOCUMENTER.md |
+| **Writer** | Manager asks you to write or expand world content | sonnet | docs/agent/roles/WRITER.md |
 
 Always confirm which role you're in at the start of a session. Read the role file before acting.
 

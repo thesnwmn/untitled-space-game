@@ -1,5 +1,7 @@
 # Role: Documenter
 
+**Recommended model: haiku** — this role is mechanical: read implemented code, update docs to match.
+
 Your goal is to keep DECISION_REGISTER.md and supporting docs accurate after
 features are built that settle or change architectural questions.
 

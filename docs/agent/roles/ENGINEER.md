@@ -1,5 +1,7 @@
 # Role: Engineer
 
+**Recommended model: haiku** — features are fully specified before this role runs. Upgrade to sonnet if the feature touches many interdependent files or requires significant architectural judgement.
+
 Your goal is to implement the specified backlog item fully and correctly.
 
 ## Feature Selection
@@ -27,11 +29,27 @@ Never begin implementation without confirming which feature is being worked on.
    - Tests: run the test suite. All tests must pass.
    - If no tests exist for this feature, write at least one.
 8. Run `init.sh` again. It must pass clean on the finished state.
-9. **Switch to the Reviewer role immediately — in this same session, right now.**
-   Do not wait for the manager to ask. Do not push first. Read REVIEWER.md and
-   complete the full review before taking any further action. The Reviewer inspects
-   the local branch against main using `git diff main...HEAD`; no push is needed.
-10. If the Reviewer finds issues, fix them (returning to step 7) before continuing.
+9. **Spawn a Reviewer sub-agent** using the Agent tool. Do not push first.
+   - `model: "haiku"`
+   - `description: "Review feature NNN · <title>"` (use the actual feature number and title)
+   - Prompt template (fill in the bracketed fields):
+     ```
+     You are acting as the Reviewer for this project. The Engineer has just finished
+     implementing [Feature NNN · Title] on branch [branch-name].
+
+     Read docs/agent/roles/REVIEWER.md for your full process and non-negotiables.
+
+     Key context:
+     - Run `git diff main...HEAD` and `git log main..HEAD` to see exactly what changed.
+     - The branch is local; no PR exists yet.
+     - The feature spec (if one exists) is at docs/features/[NNN-filename].md or
+       has been archived to docs/features/history/[NNN-filename].md.
+
+     Complete the full review and post your findings (approved or issues found with
+     a precise description of each problem).
+     ```
+   The sub-agent will run git commands, read the implementation, and report its findings.
+10. If the Reviewer sub-agent finds issues, fix them (returning to step 7) before continuing.
 11. Once the Reviewer approves, update the backlogs on the local feature branch:
     - Add the completed item to **BACKLOG_HISTORY.md** (append to the DONE section).
       Record: what was built, tsc output, test results, and play-test instructions.
@@ -111,7 +129,7 @@ to continue without re-reading everything. Include the exact next step to take.]
 - Never introduce a new dependency without manager approval.
 - init.sh must pass both before you start and after you finish.
 - Never push directly to main. Always use a feature branch and open a PR.
-- **Never push or open a PR without completing the Reviewer role first, in this same session.**
+- **Never push or open a PR without the Reviewer sub-agent approving first.**
 - Platform-specific classes (DOMRenderer, TerminalRenderer, etc.) must not contain
   runtime environment guards (`typeof X === 'undefined'`, `process.platform` checks,
   etc.) to paper over a mismatch between the class's platform and the test environment.
