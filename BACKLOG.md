@@ -183,6 +183,24 @@ See `docs/features/060-navigation-encounter-trigger.md` for the full spec.
 
 ---
 
+### 068 · Ship Upgrade Infrastructure & SHIP Screen
+
+Establishes the world-data schema and PlayerState foundation for ship upgrades. Adds a `SHIP`
+entry to the global menu that opens `ShipUpgradesScene`, listing all installed upgrades as
+togglable ON/OFF rows. Starts with no upgrades purchasable (added by Feature 069).
+See `docs/features/068-ship-upgrade-infrastructure.md` for the full spec.
+
+---
+
+### 069 · Ship Dealer Upgrades & Docking Computer
+
+Adds a purchasable `Docking Computer` upgrade at destinations with `ship_dealer: true`. When
+installed and enabled, bypasses the docking sequence for orbital and deep-space destinations
+entirely — no animation, goes directly to the station. Depends on Feature 068.
+See `docs/features/069-ship-dealer-docking-computer.md` for the full spec.
+
+---
+
 ## NEEDS SPEC
 
 ### 042 · Mission Flavour Text
