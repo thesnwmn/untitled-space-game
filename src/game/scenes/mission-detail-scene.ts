@@ -183,10 +183,6 @@ export class MissionDetailScene extends BaseMenuScene {
     row++;
 
     if (this.spec.giverFactionId) {
-      row++; // blank
-      if (row > contentLimit) return;
-
-      const world = getWorld();
       const givingFaction = world.factions.find(f => f.id === this.spec.giverFactionId);
       if (givingFaction) {
         const balance = getGameBalance();
@@ -212,12 +208,17 @@ export class MissionDetailScene extends BaseMenuScene {
         });
 
         if (impactFactions.length > 0) {
-          if (row <= contentLimit) {
+          row++; // blank between REWARD and REPUTATION IMPACT
+          if (row > contentLimit) return;
+
+          // repLimit reserves the row immediately before items for the guaranteed gap
+          const repLimit = contentLimit - 1;
+          if (row <= repLimit) {
             write(row, 'REPUTATION IMPACT', 'bright-cyan');
             row++;
           }
           for (const impact of impactFactions) {
-            if (row > contentLimit) break;
+            if (row > repLimit) break;
             const label = getMissionTierLabel(impact.delta, true);
             const labelColor: Color = impact.delta > 0 ? 'bright-green' : 'red';
             const maxNameWidth = maxWidth - label.length - 2;
@@ -226,10 +227,6 @@ export class MissionDetailScene extends BaseMenuScene {
             write(row, `  ${name}${padding}${label}`, labelColor);
             row++;
           }
-        }
-
-        if (impactFactions.length > 0) {
-          row++; // blank line before accept/back items
         }
       }
     }
