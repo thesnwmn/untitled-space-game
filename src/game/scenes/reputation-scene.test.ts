@@ -85,7 +85,7 @@ describe('ReputationScene', () => {
       player.modifyFactionReputation(testFaction.id, repValue, balance);
       const item = makeScene(player).testItems.find(i => i.label === testFaction.name)!;
       expect(item.detailsColored![0].right?.text).toBe(String(repValue));
-      expect(item.detailsColored![0].right?.fg).toBe('bright-white');
+      expect(item.detailsColored![0].right?.fg).toBe('white');
     });
 
     it('detailsColored right field contains the raw number for negative reputation', () => {
@@ -106,7 +106,7 @@ describe('ReputationScene', () => {
       const buffer = makeBuffer(W, H);
       scene.render(buffer);
       const repStr = String(repValue);
-      const expectedCol = W - 3 - repStr.length;
+      const expectedCol = (W - 4) - 4 - repStr.length;
       let found = false;
       for (let row = 0; row < H; row++) {
         const slice = buffer[row].slice(expectedCol, expectedCol + repStr.length).map(c => c.char).join('');
