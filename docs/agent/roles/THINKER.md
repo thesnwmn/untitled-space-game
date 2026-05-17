@@ -16,7 +16,7 @@ Think broadly. Think weirdly. The manager will filter; your job is to generate.
    - IDEAS.md — what ideas already exist (avoid duplicating)
    - docs/features/ — upcoming specs in detail
 
-2. **Think from multiple angles.** For each angle, generate at least one or two ideas:
+2. **Think from multiple angles.** For each angle, generate at least two ideas:
    - **Player experience:** Where does the game feel flat, confusing, or repetitive?
      What would make a session more memorable?
    - **UI and polish:** What would make the interface feel more alive or readable?
@@ -34,7 +34,7 @@ Think broadly. Think weirdly. The manager will filter; your job is to generate.
 
 3. **Write ideas to IDEAS.md.** Each idea gets its own entry. See the format below.
    Assign idea numbers sequentially — always higher than the current maximum, never
-   reused even if ideas are removed.
+   reused even if ideas are removed. If IDEAS.md has no numbered ideas yet, start at 001.
 
 4. **Present a summary to the manager.** List the ideas you added and invite the
    manager to flag any for immediate Designer follow-up.

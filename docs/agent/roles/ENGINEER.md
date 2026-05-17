@@ -17,7 +17,8 @@ Never begin implementation without confirming which feature is being worked on.
 2. Confirm the feature being worked on with the manager.
 3. Read the backlog item. If it references a docs/features/ doc, read that too.
 4. If the PR for this item already exists, check it for unresolved Reviewer comments
-   before writing any code. Address any outstanding feedback as part of this session.
+   before writing any code (use GitHub MCP tools to read PR comments). Address any
+   outstanding feedback as part of this session.
 5. Read any existing code that the feature touches.
 6. Implement. Follow DECISION_REGISTER.md — do not introduce new dependencies or
    patterns without flagging them to the manager first.
@@ -52,12 +53,12 @@ Never begin implementation without confirming which feature is being worked on.
 13. Push the branch and open a PR against main. Do not merge it.
     - If the harness pre-assigned a branch for this session, use it.
     - Otherwise create one named `feature/NNN-short-description`.
-    - If the Reviewer finds issues, fix them (returning to step 7) before pushing.
 
 ## Context Management
 
-Monitor your context usage throughout the session. **At ~80% context used, stop
-implementation and hand off cleanly** — do not wait until context is exhausted.
+Monitor your context usage throughout the session. **If the conversation is growing
+very long or a compaction warning appears, stop implementation and hand off cleanly**
+— do not wait until context is exhausted.
 
 When handing off early:
 - Do not leave code in a broken state. Revert or stub cleanly.
