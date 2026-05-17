@@ -36,6 +36,18 @@ export function wrapText(text: string, maxWidth: number): string[] {
   return lines;
 }
 
+export function drawSeparator(buffer: CharBuffer, row: number, w: number, fg: Color = 'bright-black'): void {
+  writeText(buffer, row, 0, '-'.repeat(w), fg, 'black');
+}
+
+export function renderPager(buffer: CharBuffer, row: number, w: number, page: number, total: number): void {
+  const pageStr = `${page + 1}/${total}`;
+  writeText(buffer, row, 0, '|<|', 'white', 'black');
+  const centerCol = Math.floor((w - pageStr.length) / 2);
+  writeText(buffer, row, centerCol, pageStr, 'bright-black', 'black');
+  writeText(buffer, row, w - 3, '|>|', 'white', 'black');
+}
+
 export function drawBorder(buffer: CharBuffer, fg: Color, bg: Color): void {
   const h = buffer.length;
   const w = h > 0 ? buffer[0].length : 0;

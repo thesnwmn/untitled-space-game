@@ -1,23 +1,18 @@
-import type { InputHandler, CharBuffer, Scene, GameContext } from '../../shared/types';
-import { writeText, wrapText } from '../../shared/buffer-utils';
+import type { InputHandler, CharBuffer, GameContext } from '../../shared/types';
+import { writeText, wrapText, renderPager } from '../../shared/buffer-utils';
 import { getStoryBeatsByTrigger } from '../world/world-data';
-import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
+import { BaseScene } from './base-scene';
 
-const YEAR_ROW = 3;
-const BODY_START_ROW = 5;
-
-export class StoryScene implements Scene {
+export class StoryScene extends BaseScene {
   private readonly onContinue: () => void;
-  private activated = false;
   private readonly yearHeader: string;
   private readonly bodyLines: string[];
   private pageIndex = 0;
-  private readonly chrome: ScreenChrome;
 
   constructor(inputHandler: InputHandler, context: GameContext, player: PlayerState, onContinue: () => void) {
+    super(inputHandler, context, player, { navOptions: [] });
     this.onContinue = onContinue;
-    this.chrome = new ScreenChrome(context, player);
 
     const beat = getStoryBeatsByTrigger('game-start')[0];
     const paragraphs = beat.text.split('\n\n');
@@ -39,51 +34,36 @@ export class StoryScene implements Scene {
       allLines.push(...wrapped);
     }
     this.bodyLines = allLines;
+  }
 
-    inputHandler.onAction((action) => {
-      if (this.activated) return;
-      if (action === 'SELECT') {
-        this.activated = true;
-        this.onContinue();
-      } else if (action === 'LEFT') {
-        if (this.pageIndex > 0) this.pageIndex--;
-      } else if (action === 'RIGHT') {
-        // advance to next page; will be clamped in render
-        this.pageIndex++;
-      }
-    });
-
-    if (inputHandler.onTap) {
-      inputHandler.onTap((_col, _row) => {
-        if (this.activated) return;
-        this.activated = true;
-        this.onContinue();
-      });
+  protected override handleAction(action: string): void {
+    if (action === 'SELECT') {
+      this.activated = true;
+      this.onContinue();
+    } else if (action === 'LEFT') {
+      if (this.pageIndex > 0) this.pageIndex--;
+    } else if (action === 'RIGHT') {
+      this.pageIndex++;
     }
   }
 
-  update(_dt: number): void {}
+  protected override handleTap(_col: number, _row: number): void {
+    this.activated = true;
+    this.onContinue();
+  }
 
-  render(buffer: CharBuffer): void {
-    const h = buffer.length;
-    const w = h > 0 ? buffer[0].length : 0;
-
-    for (let r = 0; r < h; r++) {
-      for (let c = 0; c < w; c++) {
-        buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-      }
-    }
-
-    this.chrome.render(buffer, { showHeader: true, showFooter: true, navOptions: [] });
+  protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
+    const w = buffer.length > 0 ? buffer[0].length : 0;
 
     if (this.yearHeader) {
       const col = Math.max(0, Math.floor((w - this.yearHeader.length) / 2));
-      writeText(buffer, YEAR_ROW, col, this.yearHeader, 'bright-yellow', 'black');
+      writeText(buffer, top, col, this.yearHeader, 'bright-yellow', 'black');
     }
 
-    // h-1: chrome footer; h-2: blank above nav; h-3: pager if needed
-    const bodyRows = h - 3 - BODY_START_ROW; // rows BODY_START_ROW..h-4 inclusive
-    const linesPerPage = bodyRows;
+    const bodyStart = top + 2;
+    const pagerRow = bottom - 1;
+    const bodyRows = pagerRow - bodyStart;
+    const linesPerPage = Math.max(1, bodyRows);
 
     const totalPages = Math.max(1, Math.ceil(this.bodyLines.length / linesPerPage));
     if (this.pageIndex >= totalPages) this.pageIndex = totalPages - 1;
@@ -92,7 +72,7 @@ export class StoryScene implements Scene {
     const startLine = this.pageIndex * linesPerPage;
     const endLine = Math.min(startLine + linesPerPage, this.bodyLines.length);
 
-    let row = BODY_START_ROW;
+    let row = bodyStart;
     for (let i = startLine; i < endLine; i++) {
       const line = this.bodyLines[i];
       if (line !== '') {
@@ -102,9 +82,7 @@ export class StoryScene implements Scene {
     }
 
     if (needsPager) {
-      const pageStr = `< ${this.pageIndex + 1}/${totalPages} >`;
-      const col = w - 9;
-      writeText(buffer, h - 3, col, pageStr, 'bright-black', 'black');
+      renderPager(buffer, pagerRow, w, this.pageIndex, totalPages);
     }
   }
 }

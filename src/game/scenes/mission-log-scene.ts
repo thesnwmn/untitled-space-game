@@ -44,11 +44,13 @@ export class MissionLogScene extends BaseMenuScene {
       inputHandler,
       context,
       player,
+      [],
+      null,
+      onGame,
     );
 
     this.onBack = onBack;
     this.onGame = onGame;
-    this.onMenuCallback = onGame;
   }
 
   protected override get items(): MenuItemDef[] {

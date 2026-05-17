@@ -56,10 +56,9 @@ export class TravelMenuScene extends BaseMenuScene {
       { label: 'JUMPS', items: jumpItems },
     ];
 
-    super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, player, [], tabs);
+    super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, player, [], tabs, onMenu);
 
     this.onShip = onShip;
-    this.onMenuCallback = onMenu;
   }
 
   protected override handleNavAction(action: string): void {

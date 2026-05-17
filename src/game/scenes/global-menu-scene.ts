@@ -28,10 +28,12 @@ export class GlobalMenuScene extends BaseMenuScene {
       inputHandler,
       context,
       player,
+      [],
+      null,
+      onClose,
     );
 
     this.onClose = onClose;
-    this.onMenuCallback = onClose;
   }
 
   protected override handleNavAction(action: string): void {

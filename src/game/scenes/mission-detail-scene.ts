@@ -105,7 +105,7 @@ export class MissionDetailScene extends BaseMenuScene {
     const w = h > 0 ? buffer[0].length : 40;
     const maxWidth = w - 4;
     // Stop writing before the items area begins
-    const contentLimit = this.itemStartRow - 1;
+    const contentLimit = this.lastContentTop - 1;
     let row = CONTENT_TOP + 3;
 
     const write = (r: number, text: string, fg: Color) => {

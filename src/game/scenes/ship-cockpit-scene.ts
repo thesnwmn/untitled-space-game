@@ -1,36 +1,32 @@
-import type { InputHandler, GameContext, CharBuffer, Color, Scene } from '../../shared/types';
+import type { InputHandler, GameContext, CharBuffer, Color } from '../../shared/types';
 import { writeText } from '../../shared/buffer-utils';
 import { Starfield } from './starfield';
-import { ScreenChrome } from '../ui/screen-chrome';
 import type { PlayerState } from '../player-state';
+import { BaseScene } from './base-scene';
 
-// Gauge strip column layout — 1-col blank on each side of every gauge bar (cols 0–39, w=40)
-// L-btns: 0–4 | blank:5 | Fuel/Cargo: 6–16 | blank:17 | mid-btns: 18–21 | blank:22 | Shield/Hull: 23–33 | blank:34 | R-btns: 35–39
+// Gauge strip column layout
 const FUEL_LABEL_COL    = 6;
 const CARGO_LABEL_COL   = 6;
 const SHIELD_LABEL_COL  = 23;
 const HULL_LABEL_COL    = 23;
 const GAUGE_FILL_COUNT  = 10;
 
-// Gauge button zones — fill all cols except the 1-col blanks adjacent to each gauge
 const GAUGE_LEFT_START  = 0;
-const GAUGE_LEFT_END    = 4;   // cols 0–4
-const GAUGE_MID_START   = 18;  // cols 18–21 (between the two gauges)
+const GAUGE_LEFT_END    = 4;
+const GAUGE_MID_START   = 18;
 const GAUGE_MID_END     = 21;
-const GAUGE_RIGHT_START = 35;  // cols 35–39
+const GAUGE_RIGHT_START = 35;
 const GAUGE_RIGHT_END   = 39;
 
-// Bottom panel column layout — 1-col blank at 12 and 27 to match action row gaps
-// L-btns: 0–11 | blank:12 | Radar: 13–26 | blank:27 | R-btns: 28–39
-const LEFT_PANEL_W         = 12;   // TRAVEL button width (cols 0–11)
-const LEFT_BTN_END         = 11;   // buttons fill cols 0–11 in non-action rows (matches TRAVEL edge)
-const RADAR_START           = 13;
-const RADAR_END             = 27;
-const RIGHT_PANEL_START     = 28;
-const RIGHT_PANEL_W         = 12;
+const LEFT_PANEL_W      = 12;
+const LEFT_BTN_END      = 11;
+const RADAR_START       = 13;
+const RADAR_END         = 27;
+const RIGHT_PANEL_START = 28;
+const RIGHT_PANEL_W     = 12;
 
-const TICKER_W   = 40;   // ticker spans full display width
-const SCROLL_MS  = 200;  // ms per character scroll step (reduced speed)
+const TICKER_W   = 40;
+const SCROLL_MS  = 200;
 
 const TICKER_MESSAGES = [
   '> SYSTEM STATUS: ALL CLEAR',
@@ -45,11 +41,8 @@ const TICKER_MESSAGES = [
   '> TRANSPONDER HANDSHAKE: ACCEPTED',
 ];
 
-// # is in Share Tech Mono (Basic Latin); avoids fallback-font width risk
 const BUTTON_CHAR = '#';
 const BUTTON_COLORS: Color[] = ['green', 'cyan', 'white', 'yellow'];
-
-// ASCII-only radar contact chars — guaranteed 1-column width
 const RADAR_CHARS = ['*', '.', '+', 'x'] as const;
 
 function lcgRand(seed: number): () => number {
@@ -62,7 +55,7 @@ function lcgRand(seed: number): () => number {
 
 interface Button {
   col: number;
-  row: number;   // gauge: absolute; panel: relative to panel top
+  row: number;
   char: string;
   color: Color;
   phase: number;
@@ -84,8 +77,8 @@ function makeButton(rand: () => number, col: number, row: number): Button {
     char: BUTTON_CHAR,
     color: BUTTON_COLORS[Math.floor(rand() * BUTTON_COLORS.length)],
     phase: rand() * 20000,
-    period: 10000 + rand() * 10000,   // 10–20 s — dims very infrequently
-    active: rand() > 0.2,             // 80 % start on
+    period: 10000 + rand() * 10000,
+    active: rand() > 0.2,
   };
 }
 
@@ -97,22 +90,20 @@ function buildZone(rand: () => number, colStart: number, colEnd: number, rows: n
   return btns;
 }
 
-export class ShipCockpitScene implements Scene {
-  private readonly player: PlayerState;
+export class ShipCockpitScene extends BaseScene {
   private readonly inSpace: boolean;
+  private readonly onTravel: () => void;
+  private readonly onDock: () => void;
+  private readonly onCargo: () => void;
   private cursorIdx = 0;
-  private activated = false;
   private h = 30;
 
   private readonly starfield: Starfield;
-  private readonly chrome: ScreenChrome;
-
   private blinkPhase = 0;
 
   private readonly gaugeBtns: Button[];
-  private readonly leftBtns: Button[];    // relative row 0–3
-  private readonly rightBtns: Button[];   // relative row 0–3
-
+  private readonly leftBtns: Button[];
+  private readonly rightBtns: Button[];
   private readonly radarContacts: RadarContact[];
 
   private msgIdx = 0;
@@ -129,8 +120,11 @@ export class ShipCockpitScene implements Scene {
     onCargo: () => void,
     onMenu: () => void,
   ) {
-    this.player = player;
-    this.chrome = new ScreenChrome(context, player);
+    super(inputHandler, context, player, { navOptions: [], onMenu });
+
+    this.onTravel = onTravel;
+    this.onDock = onDock;
+    this.onCargo = onCargo;
     this.starfield = new Starfield(42);
     this.inSpace = player.destinationId === null;
 
@@ -140,11 +134,9 @@ export class ShipCockpitScene implements Scene {
       ...buildZone(rand, GAUGE_MID_START,   GAUGE_MID_END,   [3, 4]),
       ...buildZone(rand, GAUGE_RIGHT_START, GAUGE_RIGHT_END, [3, 4]),
     ];
-    // Left panel buttons fill cols 0–11 (matches TRAVEL width); right fills 28–39
     this.leftBtns  = buildZone(rand, 0,                 LEFT_BTN_END,     [0, 1, 2, 3]);
     this.rightBtns = buildZone(rand, RIGHT_PANEL_START, 39,               [0, 1, 2, 3]);
 
-    // Radar contacts — bounce at boundaries so they never teleport
     const rRand = lcgRand(77);
     const contactCount = 3 + Math.floor(rRand() * 4);
     this.radarContacts = Array.from({ length: contactCount }, () => ({
@@ -154,60 +146,46 @@ export class ShipCockpitScene implements Scene {
       vy: (rRand() - 0.5) * 1.5,
       char: RADAR_CHARS[Math.floor(rRand() * RADAR_CHARS.length)],
     }));
+  }
 
-    const navCount = () => this.inSpace ? 1 : 2;
+  private navCount(): number { return this.inSpace ? 1 : 2; }
 
-    inputHandler.onAction((action) => {
-      if (this.activated) return;
-      if (action === 'MENU') {
-        onMenu();
-      } else if (action === 'CARGO') {
+  protected override handleAction(action: string): void {
+    if (action === 'CARGO') {
+      this.activated = true;
+      this.onCargo();
+    } else if (action === 'UP') {
+      this.cursorIdx = (this.cursorIdx - 1 + this.navCount()) % this.navCount();
+    } else if (action === 'DOWN') {
+      this.cursorIdx = (this.cursorIdx + 1) % this.navCount();
+    } else if (action === 'SELECT') {
+      if (this.cursorIdx === 0) {
         this.activated = true;
-        onCargo();
-      } else if (action === 'UP') {
-        this.cursorIdx = (this.cursorIdx - 1 + navCount()) % navCount();
-      } else if (action === 'DOWN') {
-        this.cursorIdx = (this.cursorIdx + 1) % navCount();
-      } else if (action === 'SELECT') {
-        if (this.cursorIdx === 0) {
-          this.activated = true;
-          onTravel();
-        } else if (!this.inSpace) {
-          this.activated = true;
-          onDock();
-        }
+        this.onTravel();
+      } else if (!this.inSpace) {
+        this.activated = true;
+        this.onDock();
       }
-    });
-
-    if (inputHandler.onTap) {
-      inputHandler.onTap((col, row) => {
-        if (this.activated) return;
-        if (this.chrome.hitTestHeader(col, row) === 'menu') {
-          onMenu();
-          return;
-        }
-        const h = this.h;
-        if ((row === 3 || row === 4) &&
-            col >= CARGO_LABEL_COL && col < CARGO_LABEL_COL + 1 + GAUGE_FILL_COUNT) {
-          this.activated = true;
-          onCargo();
-        } else if (row === h - 3 && col < LEFT_PANEL_W) {
-          this.activated = true;
-          onTravel();
-        } else if (row === h - 3 && col >= RIGHT_PANEL_START && !this.inSpace) {
-          this.activated = true;
-          onDock();
-        }
-      });
     }
   }
 
-  suspend(): void { this.activated = true; }
-  resume(): void { this.activated = false; }
+  protected override handleTap(col: number, row: number): void {
+    const h = this.h;
+    if ((row === 3 || row === 4) &&
+        col >= CARGO_LABEL_COL && col < CARGO_LABEL_COL + 1 + GAUGE_FILL_COUNT) {
+      this.activated = true;
+      this.onCargo();
+    } else if (row === h - 3 && col < LEFT_PANEL_W) {
+      this.activated = true;
+      this.onTravel();
+    } else if (row === h - 3 && col >= RIGHT_PANEL_START && !this.inSpace) {
+      this.activated = true;
+      this.onDock();
+    }
+  }
 
-  update(dt: number): void {
+  override update(dt: number): void {
     this.starfield.update(dt);
-
     this.blinkPhase = (this.blinkPhase + dt) % 1000;
 
     for (const btn of [...this.gaugeBtns, ...this.leftBtns, ...this.rightBtns]) {
@@ -218,16 +196,15 @@ export class ShipCockpitScene implements Scene {
       }
     }
 
-    const radarW = RADAR_END - RADAR_START;   // 14
+    const radarW = RADAR_END - RADAR_START;
     const radarH = 5;
     for (const c of this.radarContacts) {
       c.x += c.vx * dt / 1000;
       c.y += c.vy * dt / 1000;
-      // Bounce off walls — no teleport jumps
-      if (c.x < 0)         { c.x  = -c.x;              c.vx = -c.vx; }
-      if (c.x > radarW - 1){ c.x  = 2*(radarW-1) - c.x; c.vx = -c.vx; }
-      if (c.y < 0)         { c.y  = -c.y;              c.vy = -c.vy; }
-      if (c.y > radarH - 1){ c.y  = 2*(radarH-1) - c.y; c.vy = -c.vy; }
+      if (c.x < 0)         { c.x  = -c.x;               c.vx = -c.vx; }
+      if (c.x > radarW - 1){ c.x  = 2*(radarW-1) - c.x;  c.vx = -c.vx; }
+      if (c.y < 0)         { c.y  = -c.y;               c.vy = -c.vy; }
+      if (c.y > radarH - 1){ c.y  = 2*(radarH-1) - c.y;  c.vy = -c.vy; }
     }
 
     if (this.tickerPause > 0) {
@@ -249,57 +226,48 @@ export class ShipCockpitScene implements Scene {
     }
   }
 
-  render(buffer: CharBuffer): void {
+  protected override renderContent(buffer: CharBuffer, top: number, _bottom: number): void {
     const h = buffer.length;
     const w = h > 0 ? buffer[0].length : 0;
     this.h = h;
 
-    for (let r = 0; r < h; r++)
-      for (let c = 0; c < w; c++)
-        buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-
-    this.chrome.render(buffer, { showHeader: true, showFooter: true, navOptions: [] });
-
-    const viewportTop = 5;
+    const viewportTop = top + 2;
     const viewportBot = h - 8;
     const bottomTop   = h - 7;
     const bottomBot   = h - 3;
     const tickerRow   = h - 2;
 
-    this.renderGaugeStrip(buffer);
+    this.renderGaugeStrip(buffer, top);
 
     this.starfield.render(buffer, viewportTop, viewportBot, 0, 39);
 
-    // Borders across top and bottom of starfield
     for (let c = 0; c < w; c++) {
       buffer[viewportTop][c] = { char: '-', fg: 'white', bg: 'black' };
       buffer[viewportBot][c] = { char: '-', fg: 'white', bg: 'black' };
     }
 
-    // HUD on second viewport row (first is the border)
     this.renderHUD(buffer, viewportTop + 1);
-    // Crosshair centred in the inner viewport between the two borders
     this.renderCrosshair(buffer, viewportTop + 1, viewportBot - 1);
 
     this.renderBottomPanels(buffer, bottomTop, bottomBot);
     this.renderTicker(buffer, tickerRow);
   }
 
-  private renderGaugeStrip(buffer: CharBuffer): void {
-    // Buttons first, then gauge chars overwrite their own columns
+  private renderGaugeStrip(buffer: CharBuffer, top: number): void {
     for (const btn of this.gaugeBtns) {
+      const absRow = top + btn.row - 3;
       const fg: Color = btn.active ? btn.color : 'bright-black';
-      buffer[btn.row][btn.col] = { char: btn.char, fg, bg: 'black' };
+      if (absRow >= 0 && absRow < buffer.length) buffer[absRow][btn.col] = { char: btn.char, fg, bg: 'black' };
     }
 
     const fuelFrac  = this.player.fuelL / this.player.fuelCapacityL;
     const cargoFrac = this.player.cargoWeightKg / this.player.cargoCapacity;
     const blinkOn   = this.blinkPhase < 500;
 
-    this.renderGauge(buffer, 3, FUEL_LABEL_COL,   'F', fuelFrac,  'yellow', blinkOn);
-    this.renderGauge(buffer, 4, CARGO_LABEL_COL,  'C', cargoFrac, 'blue',   blinkOn);
-    this.renderGauge(buffer, 3, SHIELD_LABEL_COL, 'S', 1.0,       'cyan',   blinkOn);
-    this.renderGauge(buffer, 4, HULL_LABEL_COL,   'H', 1.0,       'green',  blinkOn);
+    this.renderGauge(buffer, top,     FUEL_LABEL_COL,   'F', fuelFrac,  'yellow', blinkOn);
+    this.renderGauge(buffer, top + 1, CARGO_LABEL_COL,  'C', cargoFrac, 'blue',   blinkOn);
+    this.renderGauge(buffer, top,     SHIELD_LABEL_COL, 'S', 1.0,       'cyan',   blinkOn);
+    this.renderGauge(buffer, top + 1, HULL_LABEL_COL,   'H', 1.0,       'green',  blinkOn);
   }
 
   private renderGauge(
@@ -307,6 +275,7 @@ export class ShipCockpitScene implements Scene {
     row: number, labelCol: number,
     label: string, frac: number, color: Color, blinkOn: boolean,
   ): void {
+    if (row < 0 || row >= buffer.length) return;
     buffer[row][labelCol] = { char: label, fg: color, bg: 'black' };
     const filled = Math.round(Math.min(1, Math.max(0, frac)) * GAUGE_FILL_COUNT);
     const low = frac <= 0.2;
@@ -338,20 +307,19 @@ export class ShipCockpitScene implements Scene {
       [centerRow + 3, centerCol + 5],
     ] as const;
     for (const [r, c] of cornerPositions) {
-      if (r >= innerTop && r <= innerBot && c >= 0 && c < 40)
+      const w = buffer[0]?.length ?? 40;
+      if (r >= innerTop && r <= innerBot && c >= 0 && c < w)
         buffer[r][c] = { char: '+', fg: 'bright-green', bg: 'black' };
     }
   }
 
   private renderBottomPanels(buffer: CharBuffer, bottomTop: number, bottomBot: number): void {
-    // Radar: solid bright-black background
     for (let r = bottomTop; r <= bottomBot; r++)
       for (let c = RADAR_START; c < RADAR_END; c++)
         buffer[r][c] = { char: ' ', fg: 'black', bg: 'bright-black' };
 
     this.renderRadar(buffer, bottomTop, bottomBot - bottomTop + 1);
 
-    // Panel buttons (4 rows above the action row)
     for (const btn of this.leftBtns) {
       const absRow = bottomTop + btn.row;
       if (absRow < bottomBot) {
@@ -367,11 +335,9 @@ export class ShipCockpitScene implements Scene {
       }
     }
 
-    // TRAVEL word button (cols 0–11)
     const travelBg: Color = this.cursorIdx === 0 ? 'bright-yellow' : 'yellow';
     writeText(buffer, bottomBot, 0, this.centerPad('TRAVEL', LEFT_PANEL_W), 'black', travelBg);
 
-    // DOCK word button (cols 28–39)
     let dockBg: Color;
     let dockFg: Color;
     if (this.inSpace) {
@@ -383,14 +349,12 @@ export class ShipCockpitScene implements Scene {
     }
     writeText(buffer, bottomBot, RIGHT_PANEL_START, this.centerPad('DOCK', RIGHT_PANEL_W), dockFg, dockBg);
 
-    // Speaker indicator in radar zone between TRAVEL and DOCK
-    const speakerW = RADAR_END - RADAR_START;   // 14
+    const speakerW = RADAR_END - RADAR_START;
     const speakerText = '<)) ' + '-'.repeat(speakerW - 4);
     writeText(buffer, bottomBot, RADAR_START, speakerText, 'white', 'bright-black');
   }
 
   private renderRadar(buffer: CharBuffer, bottomTop: number, radarRows: number): void {
-    // Draw contacts only — no edge arrows (they caused apparent radar movement)
     for (const contact of this.radarContacts) {
       const cx = Math.min(RADAR_END - RADAR_START - 1, Math.max(0, Math.floor(contact.x)));
       const cy = Math.min(radarRows - 1,               Math.max(0, Math.floor(contact.y)));
