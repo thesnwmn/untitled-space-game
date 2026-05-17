@@ -6,6 +6,7 @@ import { getDestination, getGameBalance, getWorld } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
+import { computeReputationDeltas } from '../reputation-utils';
 
 export class StationMenuScene extends BaseMenuScene {
   private readonly onShip: () => void;
@@ -134,6 +135,30 @@ export class StationMenuScene extends BaseMenuScene {
             this.player.removeCargo(req.commodityId, req.qty);
           }
         }
+
+        const balance = getGameBalance();
+        const world = getWorld();
+
+        if (m.giverFactionId) {
+          const givingFaction = world.factions.find(f => f.id === m.giverFactionId);
+          if (givingFaction) {
+            const missionReward = m.reward;
+            let repDelta: number;
+            if (missionReward >= balance.reputation.missionTierLargeReward) {
+              repDelta = balance.reputation.missionDeltaLarge;
+            } else if (missionReward >= balance.reputation.missionTierMediumReward) {
+              repDelta = balance.reputation.missionDeltaMedium;
+            } else {
+              repDelta = balance.reputation.missionDeltaSmall;
+            }
+
+            const deltas = computeReputationDeltas(givingFaction, repDelta, world.factions);
+            for (const [factionId, delta] of deltas) {
+              this.player.modifyFactionReputation(factionId, delta, balance);
+            }
+          }
+        }
+
         this.player.completeMission(m.id);
         this.player.addCredits(m.reward);
         this.openModal(new ModalConfirmDialog({
