@@ -206,12 +206,86 @@ describe('parseWorldFiles', () => {
   });
 
   describe('game settings', () => {
-    it('maps starting_credits and starting_location', () => {
-      const world = parseWorldFiles({ 'game-settings.md': SETTINGS_FILE });
+    it('maps starting_credits and starting_location from settings/new-game.md', () => {
+      const world = parseWorldFiles({ 'settings/new-game.md': SETTINGS_FILE });
       expect(world.settings.player.startingCredits).toBe(5000);
       expect(world.settings.startingLocation.system).toBe('sol');
       expect(world.settings.startingLocation.destination).toBe('elysium-station');
       expect(world.settings.startingShip).toBe('freighter');
+    });
+  });
+
+  describe('game balance', () => {
+    it('uses defaults when balance file is absent', () => {
+      const world = parseWorldFiles({});
+      expect(world.balance.fuel.pricePerLitre).toBe(10);
+      expect(world.balance.fuel.consumptionPerLy).toBe(5);
+      expect(world.balance.npc.specialNameChance).toBe(0.3);
+      expect(world.balance.missions.boardCountMin).toBe(3);
+      expect(world.balance.missions.boardCountMax).toBe(6);
+    });
+
+    it('parses settings/balance.md and overrides defaults', () => {
+      const balanceFile = `---
+id: balance
+npc:
+  special_name_chance: 0.5
+missions:
+  board_count_min: 2
+  board_count_max: 4
+  delivery_chance: 0.7
+  delivery_base_reward: 300
+  delivery_random_reward: 100
+  supply_reward_margin: 0.5
+  supply_random_reward: 200
+  supply_requirements_min: 1
+  supply_requirements_max: 3
+  supply_qty_min: 2
+  supply_qty_max: 6
+trading:
+  stock_count_min: 3
+  stock_count_max: 5
+  stock_qty_min: 2
+  stock_qty_max: 10
+  stock_ttl_ms: 60000
+  mission_ttl_ms: 300000
+fuel:
+  price_per_litre: 15
+  consumption_per_ly: 8
+reputation:
+  level_unfriendly_min: -200
+  level_neutral_min: -50
+  level_friendly_min: 50
+  level_liked_min: 200
+  level_revered_min: 500
+  points_min: -500
+  points_max: 800
+  mission_delta_small: 10
+  mission_delta_medium: 50
+  mission_delta_large: 150
+  mission_tier_medium_reward: 250
+  mission_tier_large_reward: 500
+  trade_modifier_hated: 1.30
+  trade_modifier_unfriendly: 1.15
+  trade_modifier_neutral: 1.00
+  trade_modifier_friendly: 0.90
+  trade_modifier_liked: 0.80
+  trade_modifier_revered: 0.70
+  rep_per_credit: 0.02
+  max_rep_per_visit: 20
+---
+`;
+      const world = parseWorldFiles({ 'settings/balance.md': balanceFile });
+      expect(world.balance.npc.specialNameChance).toBe(0.5);
+      expect(world.balance.fuel.pricePerLitre).toBe(15);
+      expect(world.balance.fuel.consumptionPerLy).toBe(8);
+      expect(world.balance.missions.boardCountMin).toBe(2);
+      expect(world.balance.missions.deliveryChance).toBe(0.7);
+      expect(world.balance.trading.stockTtlMs).toBe(60000);
+      expect(world.balance.trading.missionTtlMs).toBe(300000);
+      expect(world.balance.reputation.levelFriendlyMin).toBe(50);
+      expect(world.balance.reputation.tradeModifierRevered).toBe(0.70);
+      expect(world.balance.reputation.repPerCredit).toBe(0.02);
     });
   });
 

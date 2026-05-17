@@ -2,8 +2,7 @@ import type { InputHandler, GameContext } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import { getMissionStatus } from '../player-state';
 import { wrapText } from '../../shared/buffer-utils';
-import { getDestination } from '../world/world-data';
-import { FUEL_PRICE_PER_L } from '../constants';
+import { getDestination, getGameBalance } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef } from './base-menu-scene';
 import { ModalInputDialog } from '../ui/modal-input-dialog';
 import { ModalConfirmDialog } from '../ui/modal-confirm-dialog';
@@ -51,12 +50,13 @@ export class StationMenuScene extends BaseMenuScene {
     if (dest.amenities.trader) amenityItems.push({ label: 'TRADER', action: onTrader });
     if (dest.amenities.missionBoard) amenityItems.push({ label: 'MISSION BOARD', action: onMissionBoard });
 
+    const fuelPricePerL = getGameBalance().fuel.pricePerLitre;
     const fuelNeeded  = player.fuelCapacityL - player.fuelL;
-    const affordableL = Math.floor(player.credits / FUEL_PRICE_PER_L);
+    const affordableL = Math.floor(player.credits / fuelPricePerL);
     const purchaseL   = Math.min(fuelNeeded, affordableL);
     let fuelIdx: number | null = null;
     if (dest.amenities.fuel && purchaseL > 0) {
-      const cost = purchaseL * FUEL_PRICE_PER_L;
+      const cost = purchaseL * fuelPricePerL;
       fuelIdx = missionMenuItems.length + (missionMenuItems.length > 0 ? 1 : 0) + amenityItems.length;
       amenityItems.push({
         label: `BUY FUEL  +${purchaseL}L  ${cost}CR`,
@@ -150,17 +150,18 @@ export class StationMenuScene extends BaseMenuScene {
 
     if (this.fuelItemIdx !== null && this.cursorIdx === this.fuelItemIdx) {
       this.activated = true;
+      const fuelPricePerL = getGameBalance().fuel.pricePerLitre;
       const fuelNeeded = this.player.fuelCapacityL - this.player.fuelL;
-      const affordableL = Math.floor(this.player.credits / FUEL_PRICE_PER_L);
+      const affordableL = Math.floor(this.player.credits / fuelPricePerL);
       const max = Math.min(fuelNeeded, affordableL);
       this.openModal(new ModalInputDialog({
         title: 'BUY FUEL',
         field: { label: 'Litres', initialValue: max, min: 0, max },
-        derivedRows: [{ label: 'Cost', compute: l => `${l * FUEL_PRICE_PER_L} CR` }],
+        derivedRows: [{ label: 'Cost', compute: l => `${l * fuelPricePerL} CR` }],
         confirmLabel: 'BUY',
         onConfirm: (litres) => {
           this.closeModal();
-          if (litres > 0) this.onRefuel(litres * FUEL_PRICE_PER_L, litres);
+          if (litres > 0) this.onRefuel(litres * fuelPricePerL, litres);
         },
         onCancel: () => {
           this.closeModal();

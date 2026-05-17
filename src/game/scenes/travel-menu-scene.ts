@@ -1,7 +1,6 @@
 import type { InputHandler, GameContext } from '../../shared/types';
 import type { PlayerState } from '../player-state';
-import { getSystem, getDestination, getRoutesFrom, getDrive } from '../world/world-data';
-import { FUEL_PER_LY } from '../constants';
+import { getSystem, getDestination, getRoutesFrom, getDrive, getGameBalance } from '../world/world-data';
 import { BaseMenuScene, type MenuItemDef, type TabDef } from './base-menu-scene';
 
 export class TravelMenuScene extends BaseMenuScene {
@@ -38,7 +37,7 @@ export class TravelMenuScene extends BaseMenuScene {
       const targetId = route.from === player.systemId ? route.to : route.from;
       const targetSystem = getSystem(targetId)!;
       const stability = route.stability.toUpperCase();
-      const fuelNeeded = Math.ceil(FUEL_PER_LY * route.distance * drive.fuelEfficiency);
+      const fuelNeeded = Math.ceil(getGameBalance().fuel.consumptionPerLy * route.distance * drive.fuelEfficiency);
       return {
         label: `${targetSystem.name.toUpperCase()}  ${route.distance}LY  [${stability}]`.slice(0, 36),
         disabled: fuelNeeded > player.fuelL,

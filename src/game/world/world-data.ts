@@ -1,4 +1,4 @@
-import type { WorldData, GameSettings, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry, DeliveryItem, NpcNames } from './types';
+import type { WorldData, GameSettings, GameBalance, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry, DeliveryItem, NpcNames } from './types';
 
 let _world: WorldData | null = null;
 
@@ -37,6 +37,10 @@ export function getStoryBeatsByTrigger(trigger: string): StoryBeat[] {
 
 export function getGameSettings(): GameSettings {
   return getWorld().settings;
+}
+
+export function getGameBalance(): GameBalance {
+  return getWorld().balance;
 }
 
 export function getShip(id: string): Ship | undefined {
