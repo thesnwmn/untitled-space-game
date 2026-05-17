@@ -63,7 +63,7 @@ The effective factor is computed once during stock generation and stored per sto
 
 ### Stock generation
 
-The 4–6 commodity selection in `game.ts` becomes weighted. Effective factor is an inverse probability weight — lower factor increases selection likelihood, higher decreases it. The Engineer chooses the exact weighting function. Each stock item stores its effective factor for use at price render time.
+Feature 062 (Reputation-Scaled Trader Inventory) adjusts the stock count and quantity ranges before this feature runs. The weighted commodity selection here operates on the reputation-adjusted count range, not raw `stockCountMin`/`stockCountMax` balance values directly. Effective factor is an inverse probability weight — lower factor increases selection likelihood, higher decreases it. The Engineer chooses the exact weighting function. Each stock item stores its effective factor for use at price render time.
 
 ### Removing `goodsBias`
 
@@ -116,3 +116,4 @@ Repeat all steps using keyboard navigation.
 ## Dependencies
 
 Feature 052 (Reputation — Trade Effects) — complete.
+Feature 062 (Reputation-Scaled Trader Inventory) — must be built first; provides the reputation-adjusted count range that this feature's weighted selection operates on.
