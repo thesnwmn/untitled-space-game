@@ -47,7 +47,7 @@ considered. The spec is better for it.
    their underlying goal, not a failure to retry verbatim.
 
 10. **After the manager approves:**
-    - Add the item to BACKLOG.md (READY or NEEDS SPEC as appropriate).
+    - Add the item to BACKLOG.md (READY or NEEDS SPEC as appropriate). **Place it at the end of the backlog by default.** Only insert it earlier if the manager explicitly requests a different position, or if there is a clear reason it must precede something already in the backlog (e.g. it is a dependency of an existing READY item).
     - If the feature came from IDEAS.md, remove that idea entry from IDEAS.md.
     - Commit the spec file, BACKLOG.md update, and IDEAS.md change together.
 
