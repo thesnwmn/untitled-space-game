@@ -297,7 +297,7 @@ describe('GalaxyMapScene global menu', () => {
 // ── onGame nav option ──────────────────────────────────────────────────────────
 
 describe('GalaxyMapScene onGame nav option', () => {
-  it('[2] GAME nav option is present when onGame is provided', () => {
+  it('[1] GAME and [2] MENU nav options present when onGame is provided', () => {
     const onBack = vi.fn();
     const onGame = vi.fn();
     const input = new MockInputHandler();
@@ -306,43 +306,71 @@ describe('GalaxyMapScene onGame nav option', () => {
     scene.render(buf);
     const text = allText(buf);
     expect(text).toContain('GAME');
+    expect(text).toContain('MENU');
   });
 
-  it('[2] GAME nav option is absent when onGame is not provided', () => {
+  it('[1] BACK nav option only when onGame is not provided', () => {
     const onBack = vi.fn();
     const input = new MockInputHandler();
     const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack);
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    const text = allText(buf);
-    expect(text).not.toContain('GAME');
+    const footerRow = buf[29].map(c => c.char).join('');
+    expect(footerRow).toContain('[1] BACK');
+    expect(footerRow).not.toContain('GAME');
   });
 
-  it('NAV_2 action calls onGame when provided', () => {
+  it('NAV_1 action calls onGame when provided', () => {
+    const onBack = vi.fn();
+    const onGame = vi.fn();
+    const input = new MockInputHandler();
+    new GalaxyMapScene(input, ctx, makePlayer(), onBack, () => {}, onGame);
+    input.triggerAction('NAV_1');
+    expect(onGame).toHaveBeenCalledTimes(1);
+  });
+
+  it('NAV_2 action calls onBack (MENU) when onGame is provided', () => {
     const onBack = vi.fn();
     const onGame = vi.fn();
     const input = new MockInputHandler();
     new GalaxyMapScene(input, ctx, makePlayer(), onBack, () => {}, onGame);
     input.triggerAction('NAV_2');
-    expect(onGame).toHaveBeenCalledTimes(1);
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(onGame).not.toHaveBeenCalled();
   });
 
-  it('NAV_2 action is a no-op when onGame is not provided', () => {
+  it('NAV_1 and NAV_2 are no-ops when onGame is not provided', () => {
     const onBack = vi.fn();
     const input = new MockInputHandler();
     new GalaxyMapScene(input, ctx, makePlayer(), onBack);
-    expect(() => input.triggerAction('NAV_2')).not.toThrow();
+    expect(() => {
+      input.triggerAction('NAV_1');
+      input.triggerAction('NAV_2');
+    }).not.toThrow();
+    expect(onBack).not.toHaveBeenCalled();
   });
 
-  it('tap on [2] GAME nav area calls onGame', () => {
+  it('tap on [1] GAME nav area calls onGame', () => {
     const onBack = vi.fn();
     const onGame = vi.fn();
     const input = new MockInputHandler();
     const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack, () => {}, onGame);
     const buf = makeBuffer(40, 30);
     scene.render(buf);
-    // [2] GAME footer button is at row 29 (h-1), columns ~15-19
-    input.triggerTap(15, 29);
+    // [1] GAME footer button is at row 29 (h-1), columns ~2-10
+    input.triggerTap(6, 29);
     expect(onGame).toHaveBeenCalledTimes(1);
+  });
+
+  it('tap on [2] MENU nav area calls onBack', () => {
+    const onBack = vi.fn();
+    const onGame = vi.fn();
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack, () => {}, onGame);
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    // [2] MENU footer button is at row 29 (h-1), columns ~15-19
+    input.triggerTap(17, 29);
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 });

@@ -55,10 +55,9 @@ export class GalaxyMapScene extends BaseScene {
     onMenu: () => void = () => {},
     onGame?: () => void,
   ) {
-    const navOptions = [{ id: 'back', label: 'BACK' }];
-    if (onGame) {
-      navOptions.push({ id: 'game', label: 'GAME' });
-    }
+    const navOptions = onGame
+      ? [{ id: 'game', label: 'GAME' }, { id: 'menu', label: 'MENU' }]
+      : [{ id: 'back', label: 'BACK' }];
 
     super(inputHandler, context, player, {
       title: 'GALAXY MAP',
@@ -96,10 +95,18 @@ export class GalaxyMapScene extends BaseScene {
       this.onBack();
       return;
     }
-    if (action === 'NAV_2') {
+    if (action === 'NAV_1') {
       if (this.onGame) {
         this.activated = true;
         this.onGame();
+      }
+      return;
+    }
+    if (action === 'NAV_2') {
+      if (this.onGame) {
+        this.searchText = '';
+        this.activated = true;
+        this.onBack();
       }
       return;
     }
@@ -118,6 +125,10 @@ export class GalaxyMapScene extends BaseScene {
     } else if (navId === 'game' && this.onGame) {
       this.activated = true;
       this.onGame();
+    } else if (navId === 'menu') {
+      this.searchText = '';
+      this.activated = true;
+      this.onBack();
     }
   }
 
