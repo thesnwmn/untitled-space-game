@@ -54,9 +54,12 @@ export class CargoScene extends BaseScene {
       this.renderMissionGoodsTab(buffer, top, totalRow, w, missionItems);
     }
 
-    // Total weight/capacity always visible at bottom - 1
-    const totalText = `TOTAL: ${weight}/${capacity}KG`;
-    writeText(buffer, totalRow, 2, totalText, 'bright-black', 'black');
+    // Total weight/capacity and fuel status always visible at bottom
+    const cargoText = `CARGO: ${weight}/${capacity}KG`;
+    const fuelText = `FUEL: ${this.player.fuelL}/${this.player.fuelCapacityL}L`;
+
+    writeText(buffer, totalRow, 2, cargoText, 'bright-black', 'black');
+    writeText(buffer, totalRow, w - fuelText.length - 2, fuelText, 'bright-black', 'black');
   }
 
   private renderCommoditiesTab(
