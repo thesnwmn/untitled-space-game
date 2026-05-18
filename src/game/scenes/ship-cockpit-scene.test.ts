@@ -138,13 +138,13 @@ describe('ShipCockpitScene', () => {
       expect(buf[GAUGE_TOP][SHIELD_LABEL_COL].fg).toBe('cyan');
     });
 
-    it('renders hull gauge label H with green colour', () => {
+    it('renders hull gauge label H with bright-green colour at full integrity', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(buf[GAUGE_BOT][HULL_LABEL_COL].char).toBe('H');
-      expect(buf[GAUGE_BOT][HULL_LABEL_COL].fg).toBe('green');
+      expect(buf[GAUGE_BOT][HULL_LABEL_COL].fg).toBe('bright-green');
     });
 
     it('fuel gauge fill cells use yellow background when full', () => {
@@ -178,13 +178,13 @@ describe('ShipCockpitScene', () => {
       }
     });
 
-    it('hull gauge fill cells are fully filled (placeholder = 1.0)', () => {
+    it('hull gauge fill cells are fully filled with bright-green at full integrity', () => {
       const input = new MockInputHandler();
       const scene = new ShipCockpitScene(input, keyboardContext, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       for (let i = 0; i < 10; i++) {
-        expect(buf[GAUGE_BOT][HULL_LABEL_COL + 1 + i].bg).toBe('green');
+        expect(buf[GAUGE_BOT][HULL_LABEL_COL + 1 + i].bg).toBe('bright-green');
       }
     });
   });

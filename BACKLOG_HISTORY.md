@@ -14,6 +14,31 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 054 · Hull Integrity — DONE
+
+**What it added:**
+Hull integrity tracking on `PlayerState` (0.0–1.0) as a persistent game state property. Added `applyHullDamage(fraction)` as the sole write path for damage application. `ShipCockpitScene` renders a dynamic `HULL: XX%` text display with colour-based thresholds: bright-green ≥ 80%, yellow 50–79%, red < 50%. The hull gauge bar reflects actual integrity value and colour. Foundation for future mini-game damage integration (features 058, 060).
+
+**Key files:**
+- `src/game/player-state.ts` — added `_hullIntegrity` field (initialized 1.0 in constructor), `hullIntegrity` getter, `applyHullDamage(fraction)` method
+- `src/game/scenes/ship-cockpit-scene.ts` — added `getHullColor(hullIntegrity)` helper; updated gauge rendering to use actual integrity value and dynamic colour; added HUD text display `HULL: XX%` with colour
+- `src/game/player-state.test.ts` — 5 new tests covering initialization, damage application, clamping, accumulation, and value preservation
+- `src/game/scenes/ship-cockpit-scene.test.ts` — 2 test updates for hull gauge colour expectations at full integrity
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 854 passed, 1 skipped (all tests including 5 new)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Start new game — confirm `HULL: 100%` visible in ship HUD, bright-green colour.
+2. Open browser console, run `player.applyHullDamage(0.25)` — confirm `HULL: 75%` displayed in yellow.
+3. Run `player.applyHullDamage(0.40)` — confirm `HULL: 35%` displayed in red.
+4. Run `player.applyHullDamage(1.0)` — confirm `HULL: 0%` displayed in red (clamped).
+5. Terminal (`npm run terminal`): repeat steps 1–4 with `applyHullDamage` called from game state as available.
+
+---
+
 ### 049 · Mini-Game Dev Harness — DONE
 
 **What it added:**
