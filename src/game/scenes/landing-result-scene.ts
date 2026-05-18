@@ -42,11 +42,6 @@ export class LandingResultScene extends BaseScene {
     super.update(dt);
     if (this.arrived) return;
     this.elapsed += dt;
-    if (this.elapsed >= this.duration) {
-      this.elapsed = Infinity;
-      this.arrived = true;
-      this.onComplete();
-    }
   }
 
   protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {

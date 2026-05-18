@@ -78,21 +78,6 @@ describe('LandingResultScene', () => {
     expect(bufferText(buf)).toContain('HULL DAMAGE: 0%');
   });
 
-  describe('auto-advance', () => {
-    it('does not complete before 3000ms', () => {
-      const cb = vi.fn();
-      const scene = makeScene('DOCKED', 80, 0, cb);
-      scene.update(2999);
-      expect(cb).not.toHaveBeenCalled();
-    });
-
-    it('calls onComplete after 3000ms', () => {
-      const cb = vi.fn();
-      const scene = makeScene('DOCKED', 80, 0, cb);
-      scene.update(3000);
-      expect(cb).toHaveBeenCalledOnce();
-    });
-  });
 
   describe('tap advance', () => {
     it('calls onComplete on a center tap', () => {

@@ -120,20 +120,21 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     const vpTop = contentTop + Math.floor((contentH - this.canvasHeight) / 2);
 
     const centerX = left + Math.floor(this.canvasWidth / 2);
-    const centerY = vpTop + Math.floor(this.canvasHeight / 2);
+    const canvasBottom = vpTop + this.canvasHeight;
 
-    const upBtnRow = vpTop - 2;
-    const downBtnRow = vpTop + this.canvasHeight + 1;
-    const leftBtnCol = left - 4;
-    const rightBtnCol = left + this.canvasWidth + 1;
+    const upBtnRow = canvasBottom + 1;
+    const downBtnRow = canvasBottom + 3;
+    const leftBtnCol = centerX - 4;
+    const rightBtnCol = centerX + 2;
+    const centerBtnCol = centerX;
 
-    if (row === upBtnRow && col >= centerX - 1 && col <= centerX + 1) {
+    if (row === upBtnRow && col >= centerBtnCol - 1 && col <= centerBtnCol + 1) {
       this.handleAction('UP');
-    } else if (row === downBtnRow && col >= centerX - 1 && col <= centerX + 1) {
+    } else if (row === downBtnRow && col >= centerBtnCol - 1 && col <= centerBtnCol + 1) {
       this.handleAction('DOWN');
-    } else if (col >= leftBtnCol && col <= leftBtnCol + 2 && row === centerY) {
+    } else if (col >= leftBtnCol && col <= leftBtnCol + 2 && row === upBtnRow + 1) {
       this.handleAction('LEFT');
-    } else if (col >= rightBtnCol && col <= rightBtnCol + 2 && row === centerY) {
+    } else if (col >= rightBtnCol && col <= rightBtnCol + 2 && row === upBtnRow + 1) {
       this.handleAction('RIGHT');
     } else {
       super.handleTap(col, row);
@@ -315,8 +316,8 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
   private drawControlButtons(buffer: CharBuffer, top: number, left: number, width: number, height: number): void {
     const h = buffer.length;
     const w = h > 0 ? buffer[0].length : 0;
-    const canvasRight = left + width;
     const canvasBottom = top + height;
+    const centerX = left + Math.floor(width / 2);
 
     const upActive = this.heldKeys.has('UP');
     const downActive = this.heldKeys.has('DOWN');
@@ -325,24 +326,36 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
     const activeFg = 'bright-green';
     const inactiveFg = 'bright-black';
-
-    const centerY = top + Math.floor(height / 2);
-    const centerX = left + Math.floor(width / 2);
-
-    const upBtnRow = top - 2;
-    const downBtnRow = canvasBottom + 1;
-    const leftBtnCol = left - 4;
-    const rightBtnCol = canvasRight + 1;
-
-    const btnWidth = 3;
     const btnText = (char: string) => `[${char}]`;
 
-    if (upBtnRow >= 0 && centerX - 1 >= 0 && centerX + 1 < w) {
+    const upBtnRow = canvasBottom + 1;
+    const midBtnRow = canvasBottom + 2;
+    const downBtnRow = canvasBottom + 3;
+    const leftBtnCol = centerX - 4;
+    const rightBtnCol = centerX + 2;
+
+    if (upBtnRow < h && centerX - 1 >= 0 && centerX + 1 < w) {
       const text = btnText('^');
       const col = centerX - 1;
       for (let i = 0; i < text.length; i++) {
-        if (col + i < w) {
+        if (col + i >= 0 && col + i < w) {
           buffer[upBtnRow][col + i] = { char: text[i], fg: upActive ? activeFg : inactiveFg, bg: 'black' };
+        }
+      }
+    }
+
+    if (midBtnRow < h) {
+      const text = btnText('<');
+      for (let i = 0; i < text.length; i++) {
+        if (leftBtnCol + i >= 0 && leftBtnCol + i < w) {
+          buffer[midBtnRow][leftBtnCol + i] = { char: text[i], fg: leftActive ? activeFg : inactiveFg, bg: 'black' };
+        }
+      }
+
+      const text2 = btnText('>');
+      for (let i = 0; i < text2.length; i++) {
+        if (rightBtnCol + i >= 0 && rightBtnCol + i < w) {
+          buffer[midBtnRow][rightBtnCol + i] = { char: text2[i], fg: rightActive ? activeFg : inactiveFg, bg: 'black' };
         }
       }
     }
@@ -351,26 +364,8 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
       const text = btnText('v');
       const col = centerX - 1;
       for (let i = 0; i < text.length; i++) {
-        if (col + i < w) {
+        if (col + i >= 0 && col + i < w) {
           buffer[downBtnRow][col + i] = { char: text[i], fg: downActive ? activeFg : inactiveFg, bg: 'black' };
-        }
-      }
-    }
-
-    if (centerY >= 0 && centerY < h && leftBtnCol >= 0 && leftBtnCol + 2 < w) {
-      const text = btnText('<');
-      for (let i = 0; i < text.length; i++) {
-        if (leftBtnCol + i >= 0 && leftBtnCol + i < w) {
-          buffer[centerY][leftBtnCol + i] = { char: text[i], fg: leftActive ? activeFg : inactiveFg, bg: 'black' };
-        }
-      }
-    }
-
-    if (centerY >= 0 && centerY < h && rightBtnCol >= 0 && rightBtnCol + 2 < w) {
-      const text = btnText('>');
-      for (let i = 0; i < text.length; i++) {
-        if (rightBtnCol + i < w) {
-          buffer[centerY][rightBtnCol + i] = { char: text[i], fg: rightActive ? activeFg : inactiveFg, bg: 'black' };
         }
       }
     }
