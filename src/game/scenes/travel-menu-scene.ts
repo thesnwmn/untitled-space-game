@@ -47,10 +47,9 @@ export class TravelMenuScene extends BaseMenuScene {
     const routeItems: MenuItemDef[] = getRoutesFrom(player.systemId).map(route => {
       const targetId = route.from === player.systemId ? route.to : route.from;
       const targetSystem = getSystem(targetId)!;
-      const stability = route.stability.toUpperCase();
       const fuelNeeded = Math.ceil(getGameBalance().fuel.consumptionPerLy * route.distance * drive.fuelEfficiency);
       return {
-        label: `${targetSystem.name.toUpperCase()}  ${route.distance}LY  [${stability}]  [${fuelNeeded}L]`.slice(0, 40),
+        label: `${targetSystem.name.toUpperCase()}  ${route.distance}LY  [${fuelNeeded}L]`,
         disabled: fuelNeeded > player.fuelL,
         action: () => onJumpSelected(targetId),
       };
