@@ -49,6 +49,12 @@ const BUTTON_CHAR = '#';
 const BUTTON_COLORS: Color[] = ['green', 'cyan', 'white', 'yellow'];
 const RADAR_CHARS = ['*', '.', '+', 'x'] as const;
 
+function getHullColor(hullIntegrity: number): Color {
+  if (hullIntegrity >= 0.8) return 'bright-green';
+  if (hullIntegrity >= 0.5) return 'yellow';
+  return 'red';
+}
+
 function lcgRand(seed: number): () => number {
   let s = seed >>> 0;
   return () => {
@@ -288,10 +294,11 @@ export class ShipCockpitScene extends BaseScene {
     const cargoFrac = this.player.cargoWeightKg / this.player.cargoCapacity;
     const blinkOn   = this.blinkPhase < 500;
 
+    const hullColor = getHullColor(this.player.hullIntegrity);
     this.renderGauge(buffer, top,     FUEL_LABEL_COL,   'F', fuelFrac,  'yellow', blinkOn);
     this.renderGauge(buffer, top + 1, CARGO_LABEL_COL,  'C', cargoFrac, 'blue',   blinkOn);
     this.renderGauge(buffer, top,     SHIELD_LABEL_COL, 'S', 1.0,       'cyan',   blinkOn);
-    this.renderGauge(buffer, top + 1, HULL_LABEL_COL,   'H', 1.0,       'green',  blinkOn);
+    this.renderGauge(buffer, top + 1, HULL_LABEL_COL,   'H', this.player.hullIntegrity, hullColor, blinkOn);
   }
 
   private renderGauge(
@@ -318,6 +325,11 @@ export class ShipCockpitScene extends BaseScene {
     writeText(buffer, row,  1, 'VEL:----', 'bright-black', 'black');
     writeText(buffer, row, 16, 'ATT:---°', 'bright-black', 'black');
     writeText(buffer, row, 30, 'ROT:--°',  'bright-black', 'black');
+
+    const hullPercent = Math.round(this.player.hullIntegrity * 100);
+    const hullColor = getHullColor(this.player.hullIntegrity);
+    const hullText = `HULL:${hullPercent.toString().padStart(3, ' ')}%`;
+    writeText(buffer, row + 1,  1, hullText, hullColor, 'black');
   }
 
   private renderCrosshair(buffer: CharBuffer, innerTop: number, innerBot: number): void {

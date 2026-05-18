@@ -194,6 +194,40 @@ describe('PlayerState', () => {
       expect(p.destinationId).toBeNull();
     });
   });
+
+  describe('hull integrity', () => {
+    it('starts at 1.0 on construction', () => {
+      const p = makePlayer();
+      expect(p.hullIntegrity).toBe(1.0);
+    });
+
+    it('applyHullDamage subtracts fraction from hullIntegrity', () => {
+      const p = makePlayer();
+      p.applyHullDamage(0.25);
+      expect(p.hullIntegrity).toBe(0.75);
+    });
+
+    it('applyHullDamage can be called multiple times', () => {
+      const p = makePlayer();
+      p.applyHullDamage(0.25);
+      p.applyHullDamage(0.40);
+      expect(p.hullIntegrity).toBe(0.35);
+    });
+
+    it('applyHullDamage clamps at 0.0', () => {
+      const p = makePlayer();
+      p.applyHullDamage(1.0);
+      expect(p.hullIntegrity).toBe(0);
+      p.applyHullDamage(0.5);
+      expect(p.hullIntegrity).toBe(0);
+    });
+
+    it('hullIntegrity value 0.75 is preserved', () => {
+      const p = makePlayer();
+      p.applyHullDamage(0.25);
+      expect(p.hullIntegrity).toBe(0.75);
+    });
+  });
 });
 
 // ─── Mission helpers ────────────────────────────────────────────────────────

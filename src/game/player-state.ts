@@ -55,6 +55,7 @@ export class PlayerState {
   private _missionItems: MissionItem[];
   private _factionReputation: Map<string, number>;
   private _destinationMissions: Map<string, { specs: MissionSpec[]; generatedAt: number }>;
+  private _hullIntegrity: number;
 
   constructor(init: PlayerStateInit) {
     const ship = getShip(init.shipId);
@@ -71,6 +72,7 @@ export class PlayerState {
     this._cargoHold = [];
     this._activeMissions = [];
     this._missionItems = [];
+    this._hullIntegrity = 1.0;
 
     this._factionReputation = new Map();
     for (const faction of getWorld().factions) {
@@ -230,6 +232,13 @@ export class PlayerState {
       m => m.deliveryDestinationId === destinationId &&
            getMissionStatus(m, this) === 'ready-to-deliver',
     );
+  }
+
+  // Hull Integrity
+  get hullIntegrity(): number { return this._hullIntegrity; }
+
+  applyHullDamage(fraction: number): void {
+    this._hullIntegrity = Math.max(0, this._hullIntegrity - fraction);
   }
 
   // Reputation
