@@ -211,8 +211,8 @@ describe('TraderScene', () => {
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('Ration Packs (x3)');
       // Sol has administrative (0.9) and military (0.85) economies for rations
-      // avg factor = 0.875; price = 60 / 0.875 = 68.57... ≈ 69 CR
-      expect(rowText(buf, ITEM_ROW_START)).toContain('69 CR');
+      // avg factor = 0.875; price = 60 * 0.875 = 52.5 ≈ 53 CR
+      expect(rowText(buf, ITEM_ROW_START)).toContain('53 CR');
     });
 
     it('SELL tab shows CARGO HOLD EMPTY when hold is empty', () => {
@@ -292,8 +292,8 @@ describe('TraderScene', () => {
       expect(onSell).not.toHaveBeenCalled();
       input.triggerAction('SELECT'); // confirm
       // Sol has administrative (0.9) and military (0.85) economies for rations
-      // avg factor = 0.875; price = 60 / 0.875 = 68.57... ≈ 69 CR
-      expect(onSell).toHaveBeenCalledWith('rations', 3, 69);
+      // avg factor = 0.875; price = 60 * 0.875 = 52.5 ≈ 53 CR
+      expect(onSell).toHaveBeenCalledWith('rations', 3, 53);
     });
 
     it('BUY tab shows NO STOCK AVAILABLE after all items are bought via modal', () => {
@@ -528,8 +528,8 @@ describe('TraderScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // Sol has administrative and military economies: rations factors = [0.9, 0.85] → avg 0.875
-      // Math.round(60 / 0.875) = 69
-      expect(rowText(buf, ITEM_ROW_START)).toContain('69 CR');
+      // Math.round(60 * 0.875) = 53
+      expect(rowText(buf, ITEM_ROW_START)).toContain('53 CR');
     });
 
     it('accrues reputation with faction on buy', () => {

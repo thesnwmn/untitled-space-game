@@ -73,7 +73,7 @@ export class TraderScene extends BaseMenuScene {
   }
 
   private sellPrice(basePrice: number, effectiveFactor: number): number {
-    return Math.round(basePrice / effectiveFactor);
+    return Math.round(basePrice * effectiveFactor);
   }
 
   private buildBuyItems(): MenuItemDef[] {
