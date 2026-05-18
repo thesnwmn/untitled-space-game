@@ -14,6 +14,28 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 048 · Mini-Game Base Scene — DONE
+
+**What it added:**
+Added `BaseMiniGameScene` as the universal abstract base for all mini games, extending `BaseScene`. It handles standard screen chrome via the inherited `BaseScene`, optional viewport centering (for mini games smaller than the full content area), and result reporting via a guarded `complete()` method with a typed `MiniGameResult` callback. Added five new shared types to `src/shared/types.ts` (`MiniGameResult`, `MiniGameViewport`, `MiniGameVariant`, `MiniGameDescriptorMeta`, `MiniGameOptions`). Both registries (`miniGameDescriptors` and `miniGameRegistry`) start empty and live in `src/game/mini-games/registry.ts`.
+
+**Key files:**
+- `src/shared/types.ts` — added `NavOption` (relocated from `screen-chrome.ts`), `MiniGameResult`, `MiniGameViewport`, `MiniGameVariant`, `MiniGameDescriptorMeta`, `MiniGameOptions`
+- `src/game/ui/screen-chrome.ts` — removed `NavOption` definition; imports it from `types.ts` and re-exports for backward compatibility
+- `src/game/scenes/base-mini-game-scene.ts` — new abstract class; `renderContent` implements centering arithmetic; `complete()` is double-call guarded
+- `src/game/mini-games/registry.ts` — `miniGameDescriptors`, `MiniGameEntry`, `miniGameRegistry` (both empty)
+- `src/game/scenes/base-mini-game-scene.test.ts` — 5 tests covering full-area viewport, centred viewport, `complete()` once, double-call no-op, no callback no-throw
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 849 passed, 1 skipped (all tests including 5 new)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+No playable content is added by this feature. Verify via `npm test` and `npx tsc --noEmit`.
+
+---
+
 ### 045 · Global Menu · Galaxy Map — DONE
 
 **What it added:**
