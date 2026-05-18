@@ -13,7 +13,8 @@ Trading at each star system reflects local economic specialization — systems t
 - `StarSystem.economy` is renamed to `StarSystem.economies` (type unchanged: `string[]`); all system doc front matter, the parser, and all call sites updated.
 - `Destination.goodsBias` is removed from the type definition, world parser, all destination doc front matter, and all call sites; no tests reference it.
 - Commodity stock selection is biased by the system's economies: commodities with effective factor < 1.0 are weighted more likely in generated stock; commodities with factor > 1.0 are weighted less likely.
-- Buy and sell prices follow: `price = basePrice × clamp(effectiveFactor, minFactor, maxFactor) × reputationModifier`.
+- Buy and sell prices follow: `price = basePrice × clamp(effectiveFactor, minFactor, maxFactor)`. Reputation does not affect commodity prices.
+- The trader screen's standing line shows `STANDING: <label>` without a price-modifier suffix.
 - `GameBalance` includes `economies.minFactor` and `economies.maxFactor`, defaulting to 0.75 and 1.25.
 - Supply mission commodity selection uses economies: commodities with above-1.0 effective factor at the destination's system are preferred candidates (the system needs them delivered), falling back to all legal commodities if no economies apply.
 - `npx tsc --noEmit` passes with zero errors; `npm test` passes with tests covering factor averaging, clamping, stock weighting, and price calculation.
@@ -56,10 +57,11 @@ This should be a pure helper function — no side effects, easily unit-tested. A
 
 ### Price formula
 
-Extend the existing trader price (currently `basePrice × reputationModifier`) to:
-`basePrice × clamp(effectiveFactor, minFactor, maxFactor) × reputationModifier`.
+The commodity price formula is `basePrice × clamp(effectiveFactor, minFactor, maxFactor)`. The existing `reputationModifier` is removed from commodity buy and sell price calculations; reputation continues to influence fuel prices only.
 
 The effective factor is computed once during stock generation and stored per stock item so `TraderScene` reads it rather than re-deriving it each render.
+
+Remove the price-modifier suffix (e.g. `x1.05`) from the standing line in `TraderScene.render()`. The `STANDING: <label>` text and its colour coding remain; the `getTradeModifier` call and `modText` render are removed from that method.
 
 ### Stock generation
 
@@ -105,7 +107,8 @@ Rename the field from `economy` to `economies` in:
 3. Confirm ship components and refined metals are priced above base (the system needs them).
 4. Travel to an industrial system (e.g. Sol). Confirm refined metals and ship components are now cheaper; raw ores cost more.
 5. Compare the same commodity price across two systems to verify the spread.
-6. Visit the mission board and confirm supply missions request commodities the system needs (above-1.0 factor goods).
+6. If docked at a station with a reputation-eligible faction, confirm the standing line shows only `STANDING: <label>` with no multiplier suffix.
+7. Visit the mission board and confirm supply missions request commodities the system needs (above-1.0 factor goods).
 
 ### Terminal (`npm run terminal`)
 
