@@ -1,5 +1,15 @@
 import type { CharBuffer, Color } from '../../shared/types';
 
+export function hashStringToSeed(s: string): number {
+  if (s.length === 0) return 2166136261;
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h === 0 ? 1 : h;
+}
+
 export interface Star {
   row: number;
   col: number;

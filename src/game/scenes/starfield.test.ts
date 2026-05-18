@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Starfield } from './starfield';
+import { Starfield, hashStringToSeed } from './starfield';
 import type { CharBuffer, Color } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -235,5 +235,38 @@ describe('Starfield', () => {
       expect(buf[6][5].fg).toBe('bright-black');
       expect(buf[7][5].fg).toBe('white');
     });
+  });
+});
+
+describe('hashStringToSeed', () => {
+  it('returns the same value for the same input on multiple calls', () => {
+    const a = hashStringToSeed('elysium-station');
+    const b = hashStringToSeed('elysium-station');
+    expect(a).toBe(b);
+  });
+
+  it('returns a non-zero value for empty string', () => {
+    expect(hashStringToSeed('')).toBeGreaterThan(0);
+  });
+
+  it('returns a non-zero value for non-empty strings', () => {
+    expect(hashStringToSeed('elysium-station')).toBeGreaterThan(0);
+    expect(hashStringToSeed('eridani-anchorage')).toBeGreaterThan(0);
+    expect(hashStringToSeed('ceti-landfall')).toBeGreaterThan(0);
+  });
+
+  it('returns different values for distinct destination-like inputs', () => {
+    const seeds = [
+      hashStringToSeed('elysium-station'),
+      hashStringToSeed('eridani-anchorage'),
+      hashStringToSeed('ceti-landfall'),
+      hashStringToSeed('orrery-anchorage'),
+    ];
+    const unique = new Set(seeds);
+    expect(unique.size).toBe(4);
+  });
+
+  it('empty string and non-empty string produce different seeds', () => {
+    expect(hashStringToSeed('')).not.toBe(hashStringToSeed('x'));
   });
 });

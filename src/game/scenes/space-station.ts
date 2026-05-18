@@ -1,5 +1,5 @@
 import type { CharBuffer, Color } from '../../shared/types';
-import type { SpaceStationDef } from './station-types';
+import type { StationGlyph } from './station-types';
 
 const AMP_ROW = 2;
 const AMP_COL = 3;
@@ -12,7 +12,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export class SpaceStation {
-  private def: SpaceStationDef;
+  private readonly glyph: StationGlyph;
   private anchorRow: number;
   private anchorCol: number;
   private time = 0;
@@ -24,20 +24,20 @@ export class SpaceStation {
   private glyphWidth: number;
 
   constructor(
-    def: SpaceStationDef,
+    glyph: StationGlyph,
     intRowStart: number,
     intRowEnd: number,
     intColStart: number,
     intColEnd: number,
   ) {
-    this.def = def;
+    this.glyph = glyph;
     this.intRowStart = intRowStart;
     this.intRowEnd = intRowEnd;
     this.intColStart = intColStart;
     this.intColEnd = intColEnd;
 
-    this.glyphHeight = def.glyph.rows.length;
-    this.glyphWidth = Math.max(...def.glyph.rows.map(r => r.length));
+    this.glyphHeight = glyph.rows.length;
+    this.glyphWidth = Math.max(...glyph.rows.map(r => r.length));
 
     this.anchorRow = intRowStart
       + Math.floor((intRowEnd - intRowStart) / 2)
@@ -70,10 +70,10 @@ export class SpaceStation {
 
   render(buffer: CharBuffer): void {
     const { row: displayRow, col: displayCol } = this.getDisplayPosition();
-    const fg: Color = this.def.glyph.fg;
+    const fg: Color = this.glyph.fg;
 
-    for (let r = 0; r < this.def.glyph.rows.length; r++) {
-      const rowStr = this.def.glyph.rows[r];
+    for (let r = 0; r < this.glyph.rows.length; r++) {
+      const rowStr = this.glyph.rows[r];
       for (let c = 0; c < rowStr.length; c++) {
         const ch = rowStr[c];
         if (ch === ' ') continue;

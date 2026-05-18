@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SpaceStation } from './space-station';
-import { STATION_TYPES } from './station-types';
+import { STATION_TYPES, STATION_GLYPHS, ASTEROID_GLYPHS, PLANET_GLYPHS, selectDestinationGlyph } from './station-types';
 import type { CharBuffer, Color } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ const INT_COL_START = 2;
 const INT_COL_END = 37;
 
 function makeRelay(): SpaceStation {
-  return new SpaceStation(STATION_TYPES.RELAY, INT_ROW_START, INT_ROW_END, INT_COL_START, INT_COL_END);
+  return new SpaceStation(STATION_TYPES.RELAY.glyph, INT_ROW_START, INT_ROW_END, INT_COL_START, INT_COL_END);
 }
 
 // Anchor for RELAY on 40×30 grid (verified by spec formula):
@@ -121,5 +121,43 @@ describe('SpaceStation', () => {
       expect(buf[pos.row][pos.col].char).toBe('>');
       expect(buf[pos.row][pos.col].fg).toBe('bright-yellow');
     });
+  });
+});
+
+describe('selectDestinationGlyph', () => {
+  it('orbital returns a glyph from STATION_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('orbital', 42);
+    expect(STATION_GLYPHS).toContain(glyph);
+  });
+
+  it('deep-space returns a glyph from STATION_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('deep-space', 42);
+    expect(STATION_GLYPHS).toContain(glyph);
+  });
+
+  it('asteroid returns a glyph from ASTEROID_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('asteroid', 42);
+    expect(ASTEROID_GLYPHS).toContain(glyph);
+  });
+
+  it('surface returns a glyph from PLANET_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('surface', 42);
+    expect(PLANET_GLYPHS).toContain(glyph);
+  });
+
+  it('undefined returns null', () => {
+    expect(selectDestinationGlyph(undefined, 42)).toBeNull();
+  });
+
+  it('same seed returns same glyph for same category', () => {
+    expect(selectDestinationGlyph('orbital', 7)).toBe(selectDestinationGlyph('orbital', 7));
+    expect(selectDestinationGlyph('asteroid', 99)).toBe(selectDestinationGlyph('asteroid', 99));
+  });
+
+  it('seed modulo selects different variants across categories', () => {
+    const stationGlyphs = new Set(
+      [0, 1, 2, 3, 4, 5].map(s => selectDestinationGlyph('orbital', s))
+    );
+    expect(stationGlyphs.size).toBeGreaterThan(1);
   });
 });
