@@ -1,6 +1,10 @@
 import type { InputHandler, GameContext, CharBuffer, Color } from '../../shared/types';
 import { writeText } from '../../shared/buffer-utils';
-import { Starfield } from './starfield';
+import { Starfield, hashStringToSeed } from './starfield';
+import { SpaceStation } from './space-station';
+import { selectDestinationGlyph } from './station-types';
+import type { StationGlyph } from './station-types';
+import { getDestination } from '../world/world-data';
 import type { PlayerState } from '../player-state';
 import { BaseScene } from './base-scene';
 
@@ -99,6 +103,10 @@ export class ShipCockpitScene extends BaseScene {
   private h = 30;
 
   private readonly starfield: Starfield;
+  private readonly destGlyph: StationGlyph | null;
+  private readonly destRowFrac: number;
+  private readonly destColFrac: number;
+  private destObject: SpaceStation | null = null;
   private blinkPhase = 0;
 
   private readonly gaugeBtns: Button[];
@@ -125,8 +133,15 @@ export class ShipCockpitScene extends BaseScene {
     this.onTravel = onTravel;
     this.onDock = onDock;
     this.onCargo = onCargo;
-    this.starfield = new Starfield(42);
+    const seed = hashStringToSeed(player.destinationId ?? '');
+    this.starfield = new Starfield(seed);
     this.inSpace = player.destinationId === null;
+    const locationType = player.destinationId != null
+      ? getDestination(player.destinationId)?.locationType
+      : undefined;
+    this.destGlyph = selectDestinationGlyph(locationType, seed);
+    this.destRowFrac = 0.15 + Math.random() * 0.70;
+    this.destColFrac = 0.15 + Math.random() * 0.70;
 
     const rand = lcgRand(99);
     this.gaugeBtns = [
@@ -186,6 +201,7 @@ export class ShipCockpitScene extends BaseScene {
 
   override update(dt: number): void {
     this.starfield.update(dt);
+    this.destObject?.update(dt);
     this.blinkPhase = (this.blinkPhase + dt) % 1000;
 
     for (const btn of [...this.gaugeBtns, ...this.leftBtns, ...this.rightBtns]) {
@@ -240,6 +256,14 @@ export class ShipCockpitScene extends BaseScene {
     this.renderGaugeStrip(buffer, top);
 
     this.starfield.render(buffer, viewportTop, viewportBot, 0, 39);
+
+    if (!this.destObject && this.destGlyph) {
+      this.destObject = new SpaceStation(
+        this.destGlyph, viewportTop + 1, viewportBot - 1, 0, 39,
+        this.destRowFrac, this.destColFrac,
+      );
+    }
+    this.destObject?.render(buffer);
 
     for (let c = 0; c < w; c++) {
       buffer[viewportTop][c] = { char: '-', fg: 'white', bg: 'black' };

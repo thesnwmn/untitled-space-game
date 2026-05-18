@@ -14,6 +14,33 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 025 · Overhaul Star Field & Destination Display — DONE
+
+**Built:**
+- `src/game/scenes/starfield.ts` — added exported `hashStringToSeed(s: string): number` (FNV-1a 32-bit); returns the FNV offset basis as a non-zero fallback for empty string.
+- `src/game/scenes/station-types.ts` — added `STATION_GLYPHS` (3 station variants, `bright-white`/`cyan`), `ASTEROID_GLYPHS` (3 jagged shapes, `yellow`), `PLANET_GLYPHS` (3 roughly circular shapes, `blue`/`bright-yellow`/`bright-cyan`); added `selectDestinationGlyph(locationType, seed)` pure helper.
+- `src/game/scenes/space-station.ts` — `SpaceStation` constructor now accepts `StationGlyph` directly instead of `SpaceStationDef`; drift and render logic unchanged.
+- `src/game/scenes/ship-cockpit-scene.ts` — replaced `new Starfield(42)` with `new Starfield(hashStringToSeed(player.destinationId ?? '')))`; added lazy-init `SpaceStation` rendered after starfield and before HUD/crosshair; no destination object when in open space; no `starfieldSeed` parameter.
+- `src/game/scenes/starfield.test.ts` — 5 new tests for `hashStringToSeed` (determinism, non-zero, distinct outputs).
+- `src/game/scenes/space-station.test.ts` — updated `makeRelay()` to pass `.glyph`; added 7 new tests for `selectDestinationGlyph` covering all `LocationType` values and seed-based variant selection.
+
+**Evidence:**
+- `tsc --noEmit`: zero errors.
+- Tests: 836 passed (12 new), 1 skipped.
+- `init.sh`: passes clean before and after.
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Undock from a station — confirm a destination object (space station glyph) appears in the starfield viewport and drifts slowly.
+2. Dock and undock again — confirm the star pattern and object are identical.
+3. Navigate to the main menu, travel to a different destination of a different `locationType` — confirm a different star pattern and a different object type.
+4. Travel to two different `orbital` destinations — confirm star patterns differ and the station variant may differ.
+5. Travel to an asteroid destination (e.g. Eridani Anchorage) — confirm an asteroid glyph (yellow, jagged) appears.
+6. Travel to a surface destination (e.g. Ceti Landfall) — confirm a planet glyph (circular) appears.
+7. Fly into open space — confirm no destination object is rendered.
+8. Terminal (`npm run terminal`): repeat all seven steps with keyboard navigation.
+
+---
+
 ### 061 · Economic Supply & Demand — DONE
 
 **Built:**

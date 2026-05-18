@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SpaceStation } from './space-station';
-import { STATION_TYPES } from './station-types';
+import { STATION_TYPES, STATION_GLYPHS, ASTEROID_GLYPHS, PLANET_GLYPHS, selectDestinationGlyph } from './station-types';
 import type { CharBuffer, Color } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ const INT_COL_START = 2;
 const INT_COL_END = 37;
 
 function makeRelay(): SpaceStation {
-  return new SpaceStation(STATION_TYPES.RELAY, INT_ROW_START, INT_ROW_END, INT_COL_START, INT_COL_END);
+  return new SpaceStation(STATION_TYPES.RELAY.glyph, INT_ROW_START, INT_ROW_END, INT_COL_START, INT_COL_END);
 }
 
 // Anchor for RELAY on 40×30 grid (verified by spec formula):
@@ -99,15 +99,31 @@ describe('SpaceStation', () => {
       expect(buf[pos.row][pos.col + 4].char).toBe('<');
     });
 
-    it('space characters in glyph are not written to buffer', () => {
+    it('leading spaces in glyph rows are not written to buffer', () => {
       const st = makeRelay();
       const pos = st.getDisplayPosition();
       const buf = makeBuffer(40, 30);
-      // Place a marker at position of the leading space in RELAY row 1 (' |*|')
+      // Place a marker at the leading space in RELAY row 1 (' |*|', col 0)
       buf[pos.row + 1][pos.col] = { char: '.', fg: 'bright-black', bg: 'black' };
       st.render(buf);
-      // The space at row+1, col+0 must NOT overwrite our marker
       expect(buf[pos.row + 1][pos.col].char).toBe('.');
+    });
+
+    it('interior spaces in glyph rows are rendered as opaque black, hiding stars behind them', () => {
+      // Use a glyph with a clear interior space: '< ** >' has spaces at cols 1 and 4
+      const glyphWithInterior = { rows: ['< ** >'], fg: 'yellow' as const };
+      const st = new SpaceStation(glyphWithInterior, INT_ROW_START, INT_ROW_END, INT_COL_START, INT_COL_END);
+      const pos = st.getDisplayPosition();
+      const buf = makeBuffer(40, 30);
+      // Pre-fill the interior-space cells with stars
+      buf[pos.row][pos.col + 1] = { char: '*', fg: 'bright-white', bg: 'black' };
+      buf[pos.row][pos.col + 4] = { char: '+', fg: 'bright-cyan', bg: 'black' };
+      st.render(buf);
+      // Interior spaces must overwrite stars with blank black cells
+      expect(buf[pos.row][pos.col + 1].char).toBe(' ');
+      expect(buf[pos.row][pos.col + 1].fg).toBe('black');
+      expect(buf[pos.row][pos.col + 4].char).toBe(' ');
+      expect(buf[pos.row][pos.col + 4].fg).toBe('black');
     });
 
     it('station glyph chars overwrite prior content at the same cell', () => {
@@ -121,5 +137,43 @@ describe('SpaceStation', () => {
       expect(buf[pos.row][pos.col].char).toBe('>');
       expect(buf[pos.row][pos.col].fg).toBe('bright-yellow');
     });
+  });
+});
+
+describe('selectDestinationGlyph', () => {
+  it('orbital returns a glyph from STATION_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('orbital', 42);
+    expect(STATION_GLYPHS).toContain(glyph);
+  });
+
+  it('deep-space returns a glyph from STATION_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('deep-space', 42);
+    expect(STATION_GLYPHS).toContain(glyph);
+  });
+
+  it('asteroid returns a glyph from ASTEROID_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('asteroid', 42);
+    expect(ASTEROID_GLYPHS).toContain(glyph);
+  });
+
+  it('surface returns a glyph from PLANET_GLYPHS', () => {
+    const glyph = selectDestinationGlyph('surface', 42);
+    expect(PLANET_GLYPHS).toContain(glyph);
+  });
+
+  it('undefined returns null', () => {
+    expect(selectDestinationGlyph(undefined, 42)).toBeNull();
+  });
+
+  it('same seed returns same glyph for same category', () => {
+    expect(selectDestinationGlyph('orbital', 7)).toBe(selectDestinationGlyph('orbital', 7));
+    expect(selectDestinationGlyph('asteroid', 99)).toBe(selectDestinationGlyph('asteroid', 99));
+  });
+
+  it('seed modulo selects different variants across categories', () => {
+    const stationGlyphs = new Set(
+      [0, 1, 2, 3, 4, 5].map(s => selectDestinationGlyph('orbital', s))
+    );
+    expect(stationGlyphs.size).toBeGreaterThan(1);
   });
 });

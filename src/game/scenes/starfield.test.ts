@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Starfield } from './starfield';
+import { Starfield, hashStringToSeed } from './starfield';
 import type { CharBuffer, Color } from '../../shared/types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -28,17 +28,17 @@ function renderBuf(sf: Starfield): CharBuffer {
 
 describe('Starfield', () => {
   describe('initialisation', () => {
-    it('creates 33 stars total (18 + 10 + 5)', () => {
+    it('creates 45 stars total (30 + 10 + 5)', () => {
       const sf = new Starfield(42);
-      expect(sf.getStars().length).toBe(33);
+      expect(sf.getStars().length).toBe(45);
     });
 
-    it('layer distribution is exactly 18/10/5', () => {
+    it('layer distribution is exactly 30/10/5', () => {
       const sf = new Starfield(42);
       const stars = sf.getStars();
       const counts = [0, 0, 0];
       for (const s of stars) counts[s.layer]++;
-      expect(counts).toEqual([18, 10, 5]);
+      expect(counts).toEqual([30, 10, 5]);
     });
 
     it('all stars have row as integer within [intRowStart, intRowEnd]', () => {
@@ -178,9 +178,9 @@ describe('Starfield', () => {
       stars[0].row = 10;
       stars[0].col = 20;
       stars[0].twinklePhase = 0; // normal state
-      stars[28].row = 10; // first layer-2 star (18+10 = index 28)
-      stars[28].col = 20;
-      stars[28].twinklePhase = 0; // normal state → bright-white
+      stars[40].row = 10; // first layer-2 star (30+10 = index 40)
+      stars[40].col = 20;
+      stars[40].twinklePhase = 0; // normal state → bright-white
       const buf = renderBuf(sf);
       expect(buf[10][20].char).toBe('+');
       expect(buf[10][20].fg).toBe('bright-white');
@@ -235,5 +235,38 @@ describe('Starfield', () => {
       expect(buf[6][5].fg).toBe('bright-black');
       expect(buf[7][5].fg).toBe('white');
     });
+  });
+});
+
+describe('hashStringToSeed', () => {
+  it('returns the same value for the same input on multiple calls', () => {
+    const a = hashStringToSeed('elysium-station');
+    const b = hashStringToSeed('elysium-station');
+    expect(a).toBe(b);
+  });
+
+  it('returns a non-zero value for empty string', () => {
+    expect(hashStringToSeed('')).toBeGreaterThan(0);
+  });
+
+  it('returns a non-zero value for non-empty strings', () => {
+    expect(hashStringToSeed('elysium-station')).toBeGreaterThan(0);
+    expect(hashStringToSeed('eridani-anchorage')).toBeGreaterThan(0);
+    expect(hashStringToSeed('ceti-landfall')).toBeGreaterThan(0);
+  });
+
+  it('returns different values for distinct destination-like inputs', () => {
+    const seeds = [
+      hashStringToSeed('elysium-station'),
+      hashStringToSeed('eridani-anchorage'),
+      hashStringToSeed('ceti-landfall'),
+      hashStringToSeed('orrery-anchorage'),
+    ];
+    const unique = new Set(seeds);
+    expect(unique.size).toBe(4);
+  });
+
+  it('empty string and non-empty string produce different seeds', () => {
+    expect(hashStringToSeed('')).not.toBe(hashStringToSeed('x'));
   });
 });

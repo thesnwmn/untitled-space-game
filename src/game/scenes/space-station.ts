@@ -1,5 +1,5 @@
 import type { CharBuffer, Color } from '../../shared/types';
-import type { SpaceStationDef } from './station-types';
+import type { StationGlyph } from './station-types';
 
 const AMP_ROW = 2;
 const AMP_COL = 3;
@@ -12,7 +12,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export class SpaceStation {
-  private def: SpaceStationDef;
+  private readonly glyph: StationGlyph;
   private anchorRow: number;
   private anchorCol: number;
   private time = 0;
@@ -24,26 +24,28 @@ export class SpaceStation {
   private glyphWidth: number;
 
   constructor(
-    def: SpaceStationDef,
+    glyph: StationGlyph,
     intRowStart: number,
     intRowEnd: number,
     intColStart: number,
     intColEnd: number,
+    rowFrac = 0.5,
+    colFrac = 0.6,
   ) {
-    this.def = def;
+    this.glyph = glyph;
     this.intRowStart = intRowStart;
     this.intRowEnd = intRowEnd;
     this.intColStart = intColStart;
     this.intColEnd = intColEnd;
 
-    this.glyphHeight = def.glyph.rows.length;
-    this.glyphWidth = Math.max(...def.glyph.rows.map(r => r.length));
+    this.glyphHeight = glyph.rows.length;
+    this.glyphWidth = Math.max(...glyph.rows.map(r => r.length));
 
     this.anchorRow = intRowStart
-      + Math.floor((intRowEnd - intRowStart) / 2)
+      + Math.floor((intRowEnd - intRowStart) * rowFrac)
       - Math.floor(this.glyphHeight / 2);
     this.anchorCol = intColStart
-      + Math.floor((intColEnd - intColStart) * 0.60)
+      + Math.floor((intColEnd - intColStart) * colFrac)
       - Math.floor(this.glyphWidth / 2);
   }
 
@@ -70,17 +72,24 @@ export class SpaceStation {
 
   render(buffer: CharBuffer): void {
     const { row: displayRow, col: displayCol } = this.getDisplayPosition();
-    const fg: Color = this.def.glyph.fg;
+    const fg: Color = this.glyph.fg;
 
-    for (let r = 0; r < this.def.glyph.rows.length; r++) {
-      const rowStr = this.def.glyph.rows[r];
+    for (let r = 0; r < this.glyph.rows.length; r++) {
+      const rowStr = this.glyph.rows[r];
+      let first = -1;
+      let last = -1;
       for (let c = 0; c < rowStr.length; c++) {
+        if (rowStr[c] !== ' ') { if (first === -1) first = c; last = c; }
+      }
+      if (first === -1) continue;
+      for (let c = first; c <= last; c++) {
         const ch = rowStr[c];
-        if (ch === ' ') continue;
         const bufRow = displayRow + r;
         const bufCol = displayCol + c;
         if (bufRow >= 0 && bufRow < buffer.length && bufCol >= 0 && bufCol < buffer[bufRow].length) {
-          buffer[bufRow][bufCol] = { char: ch, fg, bg: 'black' };
+          buffer[bufRow][bufCol] = ch === ' '
+            ? { char: ' ', fg: 'black', bg: 'black' }
+            : { char: ch, fg, bg: 'black' };
         }
       }
     }
