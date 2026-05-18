@@ -325,11 +325,6 @@ export class ShipCockpitScene extends BaseScene {
     writeText(buffer, row,  1, 'VEL:----', 'bright-black', 'black');
     writeText(buffer, row, 16, 'ATT:---°', 'bright-black', 'black');
     writeText(buffer, row, 30, 'ROT:--°',  'bright-black', 'black');
-
-    const hullPercent = Math.round(this.player.hullIntegrity * 100);
-    const hullColor = getHullColor(this.player.hullIntegrity);
-    const hullText = `HULL:${hullPercent.toString().padStart(3, ' ')}%`;
-    writeText(buffer, row + 1,  1, hullText, hullColor, 'black');
   }
 
   private renderCrosshair(buffer: CharBuffer, innerTop: number, innerBot: number): void {
