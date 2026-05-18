@@ -15,10 +15,7 @@ map_position:
   y: -32
 
 economies:
-  - military
-  - industrial
   - mining
-
 major_factions:
   - terran-union
   - eridani-colonial-council

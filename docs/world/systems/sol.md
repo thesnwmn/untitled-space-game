@@ -18,7 +18,6 @@ economies:
   - industrial
   - administrative
   - military
-
 major_factions:
   - terran-union
   - helios-directorate

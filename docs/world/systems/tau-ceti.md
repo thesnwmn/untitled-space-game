@@ -16,9 +16,6 @@ map_position:
 
 economies:
   - trade
-  - industrial
-  - shipping
-
 major_factions:
   - terran-union
   - eridani-colonial-council

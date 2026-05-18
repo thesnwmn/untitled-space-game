@@ -17,8 +17,7 @@ map_position:
 economies:
   - trade
   - shipping
-  - finance
-
+  - industrial
 major_factions:
   - centauri-trade-league
   - terran-union

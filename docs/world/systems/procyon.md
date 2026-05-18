@@ -15,9 +15,7 @@ map_position:
   y: 52
 
 economies:
-  - industrial
-  - administrative
-
+  - salvage
 major_factions:
   - terran-union
   - procyon-institute

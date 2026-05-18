@@ -16,9 +16,7 @@ map_position:
 
 economies:
   - mining
-  - refining
-  - fuel-production
-
+  - military
 major_factions:
   - independent-miners-guild
 
