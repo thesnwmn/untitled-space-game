@@ -81,6 +81,11 @@ const DEFAULT_BALANCE: GameBalance = {
     repPerCredit: 0.01,
     maxRepPerVisit: 10,
   },
+  emergencyRescue: {
+    towFee: 500,
+    fuelDropFee: 800,
+    fuelDropLitres: 15,
+  },
 };
 
 export function parseWorldFiles(files: Record<string, string>): WorldData {
@@ -321,6 +326,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
   const trading = data.trading ?? {};
   const fuel = data.fuel ?? {};
   const rep = data.reputation ?? {};
+  const rescue = data.emergency_rescue ?? {};
   return {
     npc: {
       specialNameChance: npc.special_name_chance ?? d.npc.specialNameChance,
@@ -372,6 +378,11 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       tradeModifierRevered: rep.trade_modifier_revered ?? d.reputation.tradeModifierRevered,
       repPerCredit: rep.rep_per_credit ?? d.reputation.repPerCredit,
       maxRepPerVisit: rep.max_rep_per_visit ?? d.reputation.maxRepPerVisit,
+    },
+    emergencyRescue: {
+      towFee: rescue.tow_fee ?? d.emergencyRescue.towFee,
+      fuelDropFee: rescue.fuel_drop_fee ?? d.emergencyRescue.fuelDropFee,
+      fuelDropLitres: rescue.fuel_drop_litres ?? d.emergencyRescue.fuelDropLitres,
     },
   };
 }

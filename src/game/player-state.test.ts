@@ -104,6 +104,12 @@ describe('PlayerState', () => {
       p.spendCredits(75);
       expect(p.credits).toBe(125);
     });
+
+    it('spendCredits allows negative balance for emergency fees', () => {
+      const p = makePlayer({ credits: 100 });
+      p.spendCredits(500);
+      expect(p.credits).toBe(-400);
+    });
   });
 
   describe('cargo', () => {

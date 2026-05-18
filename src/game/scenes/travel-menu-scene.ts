@@ -16,6 +16,7 @@ export class TravelMenuScene extends BaseMenuScene {
     onShip: () => void,
     onGalaxyMap: () => void,
     onMenu: () => void = () => {},
+    onEmergency?: () => void,
   ) {
     const system = getSystem(player.systemId)!;
     const drive = getDrive(player.driveId)!;
@@ -34,6 +35,14 @@ export class TravelMenuScene extends BaseMenuScene {
         action: onFlyIntoSpace,
       },
     ];
+
+    if (insufficientFuel && onEmergency) {
+      destItems.push({
+        label: '[EMERGENCY]',
+        disabled: false,
+        action: onEmergency,
+      });
+    }
 
     const routeItems: MenuItemDef[] = getRoutesFrom(player.systemId).map(route => {
       const targetId = route.from === player.systemId ? route.to : route.from;
