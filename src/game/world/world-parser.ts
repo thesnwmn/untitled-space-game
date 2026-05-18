@@ -34,7 +34,7 @@ function parseFrontMatter(source: string): { data: Record<string, unknown>; cont
 const DEFAULT_BALANCE: GameBalance = {
   npc: { specialNameChance: 0.3 },
   missions: {
-    boardMaxCount: 10,
+    boardMaxCount: 8,
     missionTtlMs: 900000,
     deliveryChance: 0.6,
     deliveryBaseReward: 200,

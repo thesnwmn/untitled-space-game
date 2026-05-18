@@ -223,7 +223,7 @@ describe('parseWorldFiles', () => {
       expect(world.balance.fuel.pricePerLitre).toBe(10);
       expect(world.balance.fuel.consumptionPerLy).toBe(5);
       expect(world.balance.npc.specialNameChance).toBe(0.3);
-      expect(world.balance.missions.boardMaxCount).toBe(10);
+      expect(world.balance.missions.boardMaxCount).toBe(8);
     });
 
     it('parses settings/balance.md and overrides defaults', () => {
@@ -232,7 +232,7 @@ id: balance
 npc:
   special_name_chance: 0.5
 missions:
-  board_max_count: 8
+  board_max_count: 12
   mission_ttl_ms: 300000
   delivery_chance: 0.7
   delivery_base_reward: 300
@@ -279,7 +279,7 @@ reputation:
       expect(world.balance.npc.specialNameChance).toBe(0.5);
       expect(world.balance.fuel.pricePerLitre).toBe(15);
       expect(world.balance.fuel.consumptionPerLy).toBe(8);
-      expect(world.balance.missions.boardMaxCount).toBe(8);
+      expect(world.balance.missions.boardMaxCount).toBe(12);
       expect(world.balance.missions.deliveryChance).toBe(0.7);
       expect(world.balance.trading.stockTtlMs).toBe(60000);
       expect(world.balance.missions.missionTtlMs).toBe(300000);
