@@ -7,6 +7,7 @@ cargo_capacity_kg: 500
 fuel_capacity_l: 80
 hull_points: 40
 default_jump_drive: civilian-mk2
+fuel_efficiency: 0.7
 tags:
   - fast
   - exploration

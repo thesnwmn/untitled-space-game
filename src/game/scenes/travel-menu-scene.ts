@@ -19,16 +19,18 @@ export class TravelMenuScene extends BaseMenuScene {
   ) {
     const system = getSystem(player.systemId)!;
     const drive = getDrive(player.driveId)!;
+    const hopCost = player.getInSystemHopCost();
+    const insufficientFuel = player.fuelL < hopCost;
 
     const destItems: MenuItemDef[] = [
       ...system.destinations.map(destId => ({
         label: getDestination(destId)!.name.toUpperCase(),
-        disabled: destId === player.destinationId,
+        disabled: destId === player.destinationId || insufficientFuel,
         action: () => onDestinationSelected(destId),
       })),
       {
         label: 'FLY INTO SPACE',
-        disabled: player.destinationId === null,
+        disabled: player.destinationId === null || insufficientFuel,
         action: onFlyIntoSpace,
       },
     ];
@@ -50,12 +52,14 @@ export class TravelMenuScene extends BaseMenuScene {
       { label: 'GALAXY MAP...', action: onGalaxyMap },
     ];
 
+    const summaryLines = [`FUEL  ${hopCost} L per hop`];
+
     const tabs: TabDef[] = [
       { label: 'DESTINATIONS', items: destItems },
       { label: 'JUMPS', items: jumpItems },
     ];
 
-    super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, player, [], tabs, onMenu);
+    super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, player, summaryLines, tabs, onMenu);
 
     this.onShip = onShip;
   }

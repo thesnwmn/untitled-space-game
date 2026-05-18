@@ -351,11 +351,15 @@ export class Game {
   }
 
   private goToFlyIntoSpace(): void {
+    const hopCost = this.player.getInSystemHopCost();
+    this.player.consumeFuel(hopCost);
     this.player.undock();
     this.currentScene = new InSystemTravelAnimationScene(this.player, this.context, () => this.goToShip(), 'OPEN SPACE');
   }
 
   private onDestinationSelected(destinationId: string): void {
+    const hopCost = this.player.getInSystemHopCost();
+    this.player.consumeFuel(hopCost);
     this.player.dock(destinationId);
     this.currentScene = new InSystemTravelAnimationScene(this.player, this.context, () => this.goToShip());
   }

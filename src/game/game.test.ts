@@ -268,3 +268,36 @@ describe('Game — undock from station sub-scenes plays animation', () => {
     expect((game as any).currentScene).toBeInstanceOf(OrbitalUndockingAnimationScene);
   });
 });
+
+describe('Game — in-system travel fuel deduction', () => {
+  function makeGame() {
+    return new Game(makeMockRenderer(), makeMockInput(), context);
+  }
+
+  it('onDestinationSelected deducts hop cost from fuel', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    const initialFuel = player.fuelL;
+    const hopCost = player.getInSystemHopCost();
+    (game as any).onDestinationSelected('ceti-landfall');
+    expect(player.fuelL).toBe(initialFuel - hopCost);
+  });
+
+  it('goToFlyIntoSpace deducts hop cost from fuel', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    const initialFuel = player.fuelL;
+    const hopCost = player.getInSystemHopCost();
+    (game as any).goToFlyIntoSpace();
+    expect(player.fuelL).toBe(initialFuel - hopCost);
+  });
+
+  it('fuel deduction does not go below zero', () => {
+    const game = makeGame();
+    const player = (game as any).player;
+    player.consumeFuel(player.fuelL - 1); // Leave 1 L
+    const hopCost = player.getInSystemHopCost(); // 4 L
+    (game as any).onDestinationSelected('ceti-landfall');
+    expect(player.fuelL).toBe(0); // 1 - 4 clamped to 0
+  });
+});

@@ -57,6 +57,7 @@ const DEFAULT_BALANCE: GameBalance = {
   fuel: {
     pricePerLitre: 10,
     consumptionPerLy: 5,
+    inSystemBaseConsumptionL: 4,
   },
   reputation: {
     levelUnfriendlyMin: -300,
@@ -227,6 +228,7 @@ function parseShip(data: { [key: string]: any }, body: string): Ship {
     fuelCapacityL: data.fuel_capacity_l,
     hullPoints: data.hull_points,
     defaultJumpDrive: data.default_jump_drive,
+    fuelEfficiency: data.fuel_efficiency,
     tags: data.tags ?? [],
     description: extractDescription(body),
   };
@@ -347,6 +349,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
     fuel: {
       pricePerLitre: fuel.price_per_litre ?? d.fuel.pricePerLitre,
       consumptionPerLy: fuel.consumption_per_ly ?? d.fuel.consumptionPerLy,
+      inSystemBaseConsumptionL: fuel.in_system_base_consumption_l ?? d.fuel.inSystemBaseConsumptionL,
     },
     reputation: {
       levelUnfriendlyMin: rep.level_unfriendly_min ?? d.reputation.levelUnfriendlyMin,
