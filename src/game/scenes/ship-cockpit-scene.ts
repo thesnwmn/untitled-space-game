@@ -140,10 +140,8 @@ export class ShipCockpitScene extends BaseScene {
       ? getDestination(player.destinationId)?.locationType
       : undefined;
     this.destGlyph = selectDestinationGlyph(locationType, seed);
-    const r1 = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-    const r2 = (Math.imul(r1,   1664525) + 1013904223) >>> 0;
-    this.destRowFrac = 0.15 + (r1 / 0x100000000) * 0.70;
-    this.destColFrac = 0.15 + (r2 / 0x100000000) * 0.70;
+    this.destRowFrac = 0.15 + Math.random() * 0.70;
+    this.destColFrac = 0.15 + Math.random() * 0.70;
 
     const rand = lcgRand(99);
     this.gaugeBtns = [
