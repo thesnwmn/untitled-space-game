@@ -180,6 +180,11 @@ export interface GameBalance {
     repPerCredit: number;
     maxRepPerVisit: number;
   };
+  emergencyRescue: {
+    towFee: number;
+    fuelDropFee: number;
+    fuelDropLitres: number;
+  };
 }
 
 export interface CargoEntry {

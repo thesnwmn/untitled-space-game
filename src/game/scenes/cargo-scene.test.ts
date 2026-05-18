@@ -62,13 +62,22 @@ describe('CargoScene', () => {
       expect(bufferText(buf)).toContain('CARGO HOLD');
     });
 
-    it('shows total weight 0 and capacity for a fresh player', () => {
+    it('shows cargo total weight 0 and capacity for a fresh player', () => {
       const input = new MockInputHandler();
       const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // Freighter capacity = 2000kg
-      expect(bufferText(buf)).toContain('0/2000KG');
+      expect(bufferText(buf)).toContain('CARGO: 0/2000KG');
+    });
+
+    it('shows fuel status for a fresh player', () => {
+      const input = new MockInputHandler();
+      const scene = new CargoScene(input, context, makePlayer(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Freighter fuel capacity = 100L, starts full
+      expect(bufferText(buf)).toContain('FUEL: 100/100L');
     });
   });
 
@@ -107,7 +116,7 @@ describe('CargoScene', () => {
       const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(bufferText(buf)).toContain('120/2000KG');
+      expect(bufferText(buf)).toContain('CARGO: 120/2000KG');
     });
 
     it('shows correct capacity', () => {
@@ -117,6 +126,7 @@ describe('CargoScene', () => {
       const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
+      expect(bufferText(buf)).toContain('CARGO:');
       expect(bufferText(buf)).toContain('/2000KG');
     });
   });
@@ -240,7 +250,7 @@ describe('CargoScene', () => {
       const scene = new CargoScene(input, context, player, vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      expect(bufferText(buf)).toContain('150/2000KG');
+      expect(bufferText(buf)).toContain('CARGO: 150/2000KG');
     });
 
     it('commodities tab shows regular cargo', () => {

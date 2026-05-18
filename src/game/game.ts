@@ -10,6 +10,7 @@ import { MissionDetailScene } from './scenes/mission-detail-scene';
 import { ShipCockpitScene } from './scenes/ship-cockpit-scene';
 import { CargoScene } from './scenes/cargo-scene';
 import { TravelMenuScene } from './scenes/travel-menu-scene';
+import { EmergencyRescueScene } from './scenes/emergency-rescue-scene';
 import { GalaxyMapScene } from './scenes/galaxy-map-scene';
 import { JumpAnimationScene } from './scenes/jump-animation-scene';
 import { InSystemTravelAnimationScene } from './scenes/in-system-travel-animation-scene';
@@ -327,6 +328,7 @@ export class Game {
       () => this.goToShip(),
       () => this.goToGalaxyMap(),
       () => this.goToGlobalMenu(),
+      () => this.goToEmergencyRescue(),
     );
   }
 
@@ -339,6 +341,7 @@ export class Game {
       () => this.goToShip(),
       () => this.goToGalaxyMap(),
       () => this.goToGlobalMenu(),
+      () => this.goToEmergencyRescue(),
     );
   }
 
@@ -371,5 +374,28 @@ export class Game {
     this.player.consumeFuel(used);
     this.player.jumpTo(targetSystemId);
     this.currentScene = new JumpAnimationScene(this.player, this.context, () => this.goToArrival());
+  }
+
+  private goToEmergencyRescue(): void {
+    this.currentScene = new EmergencyRescueScene(
+      this.input, this.context, this.player,
+      (destinationId: string) => this.onEmergencyTow(destinationId),
+      () => this.onEmergencyFuelDrop(),
+      () => this.goToTravelMenu(),
+    );
+  }
+
+  private onEmergencyTow(destinationId: string): void {
+    const balance = getGameBalance();
+    this.player.spendCredits(balance.emergencyRescue.towFee);
+    this.player.dock(destinationId);
+    this.currentScene = new InSystemTravelAnimationScene(this.player, this.context, () => this.goToShip());
+  }
+
+  private onEmergencyFuelDrop(): void {
+    const balance = getGameBalance();
+    this.player.spendCredits(balance.emergencyRescue.fuelDropFee);
+    this.player.addFuel(balance.emergencyRescue.fuelDropLitres);
+    this.goToTravelMenu();
   }
 }

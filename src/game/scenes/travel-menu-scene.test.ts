@@ -368,14 +368,13 @@ describe('TravelMenuScene global menu', () => {
   });
 
   describe('in-system fuel cost', () => {
-    it('renders the fuel cost in the summary', () => {
+    it('renders the fuel cost on destination and FLY INTO SPACE items', () => {
       const input = new MockInputHandler();
       const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = allText(buf);
-      expect(text).toContain('FUEL');
-      expect(text).toContain('per hop');
+      expect(text).toContain('[4L]'); // hop cost for freighter
     });
 
     it('greys out all destinations when fuel is insufficient', () => {
@@ -407,6 +406,44 @@ describe('TravelMenuScene global menu', () => {
       }
       input.triggerAction('SELECT');
       expect(onFlyIntoSpace).not.toHaveBeenCalled();
+    });
+
+    it('shows [EMERGENCY] entry when fuel is insufficient', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      player.consumeFuel(player.fuelL - 1); // Leave only 1 L, but hop costs 4 L
+      const onEmergency = vi.fn();
+      const scene = new TravelMenuScene(input, context, player, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), () => {}, onEmergency);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(allText(buf)).toContain('[EMERGENCY]');
+    });
+
+    it('does not show [EMERGENCY] entry when fuel is sufficient', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer(); // starts with full fuel
+      const onEmergency = vi.fn();
+      const scene = new TravelMenuScene(input, context, player, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), () => {}, onEmergency);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      expect(allText(buf)).not.toContain('[EMERGENCY]');
+    });
+
+    it('[EMERGENCY] entry calls onEmergency when selected', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      player.consumeFuel(player.fuelL - 1); // Leave only 1 L
+      const onEmergency = vi.fn();
+      const scene = new TravelMenuScene(input, context, player, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), () => {}, onEmergency);
+
+      // Navigate to emergency entry (after all destinations and FLY INTO SPACE)
+      const itemCount = getSystem(player.systemId)!.destinations.length + 1; // destinations + FLY INTO SPACE
+      for (let i = 0; i < itemCount; i++) {
+        input.triggerAction('DOWN');
+      }
+
+      input.triggerAction('SELECT');
+      expect(onEmergency).toHaveBeenCalledTimes(1);
     });
   });
 });

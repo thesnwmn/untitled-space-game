@@ -51,4 +51,9 @@ reputation:
   trade_modifier_revered: 0.80
   rep_per_credit: 0.01
   max_rep_per_visit: 10
+
+emergency_rescue:
+  tow_fee: 500
+  fuel_drop_fee: 800
+  fuel_drop_litres: 15
 ---
