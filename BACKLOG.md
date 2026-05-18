@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 064 · Mission Balance & Deposit
-
-Supply rewards corrected to a randomly varied multiplier above cost (`supplyRewardMultiplierMin`/`Max`), biased toward the upper end for heavier requests. Supply quantities raised. Delivery item selection weighted by `weightKg`. Delivery missions require a credit deposit (forfeited on cancel), shown prominently before accepting.
-See `docs/features/064-mission-balance-deposit.md` for the full spec.
-
----
-
 ### 065 · Mission Board & Log Display Overhaul
 
 Board sorted by delivery destination then type; log sorted by destination, status priority, then type. Supply missions in both views show per-item cargo availability lines coloured by sufficiency. Delivery missions in the board show their delivery destination coloured by proximity.

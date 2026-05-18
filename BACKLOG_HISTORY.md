@@ -14,6 +14,37 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 064 · Mission Balance & Deposit — DONE
+
+**Built:**
+- `src/game/world/types.ts` — replaced `supplyRewardMargin` and `supplyRandomReward` with `supplyRewardMultiplierMin` (1.15) and `supplyRewardMultiplierMax` (1.50); added `deliveryDepositFraction` (0.20) to `GameBalance.missions`; added `deposit: number` field to `DeliveryMissionSpec`
+- `docs/world/settings/balance.md` — updated balance params: removed `supply_reward_margin` and `supply_random_reward`; added `supply_reward_multiplier_min: 1.15`, `supply_reward_multiplier_max: 1.50`, `delivery_deposit_fraction: 0.20`; raised `supply_qty_min: 3` and `supply_qty_max: 10`
+- `src/game/world/world-parser.ts` — updated `DEFAULT_BALANCE` and `parseBalance()` to use new multiplier and deposit fraction keys
+- `src/game/mission-generator.ts` — implemented `weightedPickDeliveryItem()` for weighted random selection by `weightKg`; updated `generateDeliveryMission()` to use weighted selection and calculate `deposit = floor(reward × deliveryDepositFraction)`; refactored `generateSupplyMission()` to replace fixed-margin reward with weight-biased multiplier formula (nudges random toward 1.0 by 15% proportional to supply weight relative to 500 kg reference)
+- `src/game/player-state.ts` — updated `canAcceptMission()` to check `player.credits >= spec.deposit` for delivery missions; modified `acceptMission()` to immediately deduct deposit from credits for delivery missions
+- `src/game/scenes/mission-detail-scene.ts` — added DEPOSIT line display in bright-yellow immediately after REWARD line for delivery missions where deposit > 0
+- All test files updated: added `deposit` field to delivery mission test specs
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 811 passed, 1 skipped (41 test files); added 12 new tests covering: weighted item selection, supply multiplier bias toward heavy requests, deposit deduction, deposit forfeiture on cancel, credit check in `canAcceptMission`, reward payout on complete
+- `init.sh` (before and after): passes clean
+- Reviewer approval: all acceptance criteria met; weighted selection tested (heavier items appear more frequently); multiplier tested (rewards exceed cost; heavy missions trend higher); deposit logic tested (deducted on accept, not refunded on cancel, payout on complete)
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Dock at station with mission board; open board and select delivery mission.
+2. Confirm REWARD and DEPOSIT lines both visible; DEPOSIT in bright-yellow.
+3. Test insufficient credits: spend credits until below mission deposit; re-enter board with same mission — confirm ACCEPT MISSION disabled with "Insufficient credits for deposit" message.
+4. Accept delivery mission with sufficient credits — verify credits decrease by deposit amount immediately.
+5. Cancel mission via Missions log — verify credits are NOT refunded.
+6. Accept and complete a delivery mission — verify credits increase by full gross reward (net gain = reward − deposit).
+7. Browse supply missions across multiple stations — confirm rewards consistently exceed material cost and quantities are high (3–10 per commodity).
+8. Accept supply missions from several stations; check that heavier requirement sets tend to have higher rewards than lighter ones (statistical bias).
+9. Enter mission board multiple times and observe that delivery missions with heavier items (`weightKg`) appear more frequently than lighter items.
+10. Repeat all steps in terminal (`npm run terminal`) using keyboard navigation.
+
+---
+
 ### 063 · Mission Destination Ownership & Generation — DONE
 
 **Built:**
