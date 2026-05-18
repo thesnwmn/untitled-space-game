@@ -1,12 +1,9 @@
-import type { CharBuffer, GameContext } from '../../shared/types';
+import type { CharBuffer, GameContext, NavOption } from '../../shared/types';
 import { writeText } from '../../shared/buffer-utils';
 import { getSystem, getDestination } from '../world/world-data';
 import type { PlayerState } from '../player-state';
 
-export interface NavOption {
-  id: string;
-  label: string;
-}
+export type { NavOption };
 
 export interface ChromeConfig {
   showHeader: boolean;

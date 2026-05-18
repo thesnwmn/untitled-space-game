@@ -51,3 +51,40 @@ export interface GameContext {
   primaryInput: PrimaryInput;
   debug: boolean;
 }
+
+export interface NavOption {
+  id: string;
+  label: string;
+}
+
+export type MiniGameResult =
+  | { outcome: 'completed'; result: Record<string, unknown> }
+  | { outcome: 'skipped' };
+
+export interface MiniGameViewport {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+export interface MiniGameVariant {
+  id: string;
+  label: string;
+  params: Record<string, string>;
+}
+
+export interface MiniGameDescriptorMeta {
+  id: string;
+  name: string;
+  description: string;
+  variants?: MiniGameVariant[];
+}
+
+export interface MiniGameOptions {
+  navOptions: ReadonlyArray<NavOption>;
+  title?: string;
+  canvasWidth?: number;
+  canvasHeight?: number;
+  onComplete?: (result: MiniGameResult) => void;
+}

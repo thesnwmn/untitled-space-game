@@ -12,17 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 048 · Mini-Game Base Scene
-
-`BaseMiniGameScene` abstract class extending `BaseScene`, providing standard screen chrome,
-optional viewport centering (for mini games smaller than the full content area), result
-reporting via a typed `MiniGameResult` callback, and read-only `PlayerState` access. Includes
-`miniGameDescriptors` (pure-data registry) and `miniGameRegistry` (with factory functions)
-in `src/game/mini-games/registry.ts`. Both registries start empty. Depends on feature 046.
-See `docs/features/048-mini-game-base-scene.md` for the full spec.
-
----
-
 ### 049 · Mini-Game Dev Harness
 
 Standalone browser and terminal entry points for running any registered mini game outside
