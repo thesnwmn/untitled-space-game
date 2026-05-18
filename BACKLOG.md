@@ -26,15 +26,6 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
-### 055 · Docking Mini-Game (Orbital Alignment)
-
-Crosshair alignment game for `'orbital'` and `'deep-space'` destinations. 32×18 centred
-canvas; momentum-based ship crosshair; slowly drifting airlock target seeded from
-destination ID; 30-second countdown; score by distance at expiry.
-See `docs/features/055-docking-mini-game.md` for the full spec.
-
----
-
 ### 056 · Planet Landing Mini-Game
 
 Side-on descent for `'surface'` destinations. Gravity, air resistance, seeded terrain with
