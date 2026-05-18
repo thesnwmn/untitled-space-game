@@ -99,15 +99,31 @@ describe('SpaceStation', () => {
       expect(buf[pos.row][pos.col + 4].char).toBe('<');
     });
 
-    it('space characters in glyph are not written to buffer', () => {
+    it('leading spaces in glyph rows are not written to buffer', () => {
       const st = makeRelay();
       const pos = st.getDisplayPosition();
       const buf = makeBuffer(40, 30);
-      // Place a marker at position of the leading space in RELAY row 1 (' |*|')
+      // Place a marker at the leading space in RELAY row 1 (' |*|', col 0)
       buf[pos.row + 1][pos.col] = { char: '.', fg: 'bright-black', bg: 'black' };
       st.render(buf);
-      // The space at row+1, col+0 must NOT overwrite our marker
       expect(buf[pos.row + 1][pos.col].char).toBe('.');
+    });
+
+    it('interior spaces in glyph rows are rendered as opaque black, hiding stars behind them', () => {
+      // Use a glyph with a clear interior space: '< ** >' has spaces at cols 1 and 4
+      const glyphWithInterior = { rows: ['< ** >'], fg: 'yellow' as const };
+      const st = new SpaceStation(glyphWithInterior, INT_ROW_START, INT_ROW_END, INT_COL_START, INT_COL_END);
+      const pos = st.getDisplayPosition();
+      const buf = makeBuffer(40, 30);
+      // Pre-fill the interior-space cells with stars
+      buf[pos.row][pos.col + 1] = { char: '*', fg: 'bright-white', bg: 'black' };
+      buf[pos.row][pos.col + 4] = { char: '+', fg: 'bright-cyan', bg: 'black' };
+      st.render(buf);
+      // Interior spaces must overwrite stars with blank black cells
+      expect(buf[pos.row][pos.col + 1].char).toBe(' ');
+      expect(buf[pos.row][pos.col + 1].fg).toBe('black');
+      expect(buf[pos.row][pos.col + 4].char).toBe(' ');
+      expect(buf[pos.row][pos.col + 4].fg).toBe('black');
     });
 
     it('station glyph chars overwrite prior content at the same cell', () => {

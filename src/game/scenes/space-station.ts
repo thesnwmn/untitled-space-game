@@ -74,13 +74,20 @@ export class SpaceStation {
 
     for (let r = 0; r < this.glyph.rows.length; r++) {
       const rowStr = this.glyph.rows[r];
+      let first = -1;
+      let last = -1;
       for (let c = 0; c < rowStr.length; c++) {
+        if (rowStr[c] !== ' ') { if (first === -1) first = c; last = c; }
+      }
+      if (first === -1) continue;
+      for (let c = first; c <= last; c++) {
         const ch = rowStr[c];
-        if (ch === ' ') continue;
         const bufRow = displayRow + r;
         const bufCol = displayCol + c;
         if (bufRow >= 0 && bufRow < buffer.length && bufCol >= 0 && bufCol < buffer[bufRow].length) {
-          buffer[bufRow][bufCol] = { char: ch, fg, bg: 'black' };
+          buffer[bufRow][bufCol] = ch === ' '
+            ? { char: ' ', fg: 'black', bg: 'black' }
+            : { char: ch, fg, bg: 'black' };
         }
       }
     }
