@@ -21,16 +21,70 @@ import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animat
 import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
-import type { TraderStockEntry, MissionSpec } from './world/types';
-import { getGameSettings, getGameBalance, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld } from './world/world-data';
+import type { TraderStockEntry, MissionSpec, Commodity, GameBalance } from './world/types';
+import { getGameSettings, getGameBalance, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld, getFaction } from './world/world-data';
+import { isReputationEligible, getReputationLevel } from './reputation-utils';
 import { PlayerState } from './player-state';
 import { generateMissions } from './mission-generator';
 
 const MAX_DT = 100;
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+export function generateTraderStock(
+  commodities: Commodity[],
+  repLevel: number,
+  balance: GameBalance,
+): TraderStockEntry[] {
+  const {
+    stockCountMin, stockCountMax, stockQtyMin, stockQtyMax,
+    stockRepCountBonusPerLevel, stockRepCountBonusMin, stockRepCountBonusMax,
+    stockRepQtyBonusPerLevel, stockRepQtyBonusMin, stockRepQtyBonusMax,
+  } = balance.trading;
+
+  const countBonus = clamp(repLevel * stockRepCountBonusPerLevel, stockRepCountBonusMin, stockRepCountBonusMax);
+  const qtyBonus = clamp(repLevel * stockRepQtyBonusPerLevel, stockRepQtyBonusMin, stockRepQtyBonusMax);
+
+  const total = commodities.length;
+  const adjCountMin = clamp(stockCountMin + countBonus, 1, total);
+  const adjCountMax = clamp(stockCountMax + countBonus, 1, total);
+
+  const count = adjCountMin + Math.floor(Math.random() * (adjCountMax - adjCountMin + 1));
+
+  const shuffled = [...commodities];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const adjQtyMin = stockQtyMin + qtyBonus;
+  const adjQtyMax = stockQtyMax + qtyBonus;
+
+  const logScores = commodities.map(c => Math.log(c.basePrice * c.weightKg));
+  const scoreMin = Math.min(...logScores);
+  const scoreMax = Math.max(...logScores);
+  const scoreRange = scoreMax - scoreMin;
+
+  return shuffled.slice(0, count).map(c => {
+    const rawQty = adjQtyMin + Math.floor(Math.random() * (adjQtyMax - adjQtyMin + 1));
+    let factor = 1.0;
+    if (scoreRange > 0) {
+      const t = (Math.log(c.basePrice * c.weightKg) - scoreMin) / scoreRange;
+      factor = 1.5 - t; // cheapest/lightest (t=0) → 1.5×; most expensive/heavy (t=1) → 0.5×
+    }
+    return {
+      commodityId: c.id,
+      qty: Math.max(1, Math.floor(rawQty * factor)),
+    };
+  });
+}
+
 interface StockCache {
   entries: TraderStockEntry[];
   generatedAt: number;
+  repLevel: number;
 }
 
 export class Game {
@@ -76,26 +130,15 @@ export class Game {
     );
   }
 
-  private getOrCreateTraderStock(destinationId: string): TraderStockEntry[] {
+  private getOrCreateTraderStock(destinationId: string, repLevel: number): TraderStockEntry[] {
     const now = Date.now();
     const cached = this.traderStockCache.get(destinationId);
     const balance = getGameBalance();
-    if (cached && now - cached.generatedAt < balance.trading.stockTtlMs) {
+    if (cached && cached.repLevel === repLevel && now - cached.generatedAt < balance.trading.stockTtlMs) {
       return cached.entries;
     }
-    const commodities = getCommodities();
-    const { stockCountMin, stockCountMax, stockQtyMin, stockQtyMax } = balance.trading;
-    const count = stockCountMin + Math.floor(Math.random() * (stockCountMax - stockCountMin + 1));
-    const shuffled = [...commodities];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    const entries: TraderStockEntry[] = shuffled.slice(0, count).map(c => ({
-      commodityId: c.id,
-      qty: stockQtyMin + Math.floor(Math.random() * (stockQtyMax - stockQtyMin + 1)),
-    }));
-    this.traderStockCache.set(destinationId, { entries, generatedAt: now });
+    const entries = generateTraderStock(getCommodities(), repLevel, balance);
+    this.traderStockCache.set(destinationId, { entries, generatedAt: now, repLevel });
     return entries;
   }
 
@@ -199,7 +242,17 @@ export class Game {
 
   private goToTrader(): void {
     const destinationId = this.player.destinationId!;
-    const stock = this.getOrCreateTraderStock(destinationId);
+    const dest = getDestination(destinationId)!;
+    let repLevel = 0;
+    if (dest.owningFactionId) {
+      const faction = getFaction(dest.owningFactionId);
+      if (faction && isReputationEligible(faction)) {
+        const balance = getGameBalance();
+        const points = this.player.getFactionReputation(dest.owningFactionId);
+        repLevel = getReputationLevel(points, balance);
+      }
+    }
+    const stock = this.getOrCreateTraderStock(destinationId, repLevel);
     this.currentScene = new TraderScene(
       this.input, this.context, this.player, destinationId, stock,
       (commodityId, qty, unitPrice) => this.onBuy(commodityId, qty, unitPrice, stock),

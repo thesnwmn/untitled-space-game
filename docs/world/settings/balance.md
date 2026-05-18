@@ -21,9 +21,15 @@ missions:
 trading:
   stock_count_min: 4
   stock_count_max: 6
-  stock_qty_min: 1
-  stock_qty_max: 8
+  stock_qty_min: 5
+  stock_qty_max: 10
   stock_ttl_ms: 120000
+  stock_rep_count_bonus_per_level: 1
+  stock_rep_count_bonus_min: -2
+  stock_rep_count_bonus_max: 3
+  stock_rep_qty_bonus_per_level: 2
+  stock_rep_qty_bonus_min: -4
+  stock_rep_qty_bonus_max: 6
 
 fuel:
   price_per_litre: 10

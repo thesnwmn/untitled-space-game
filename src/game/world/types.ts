@@ -153,6 +153,12 @@ export interface GameBalance {
     stockQtyMin: number;
     stockQtyMax: number;
     stockTtlMs: number;
+    stockRepCountBonusPerLevel: number;
+    stockRepCountBonusMin: number;
+    stockRepCountBonusMax: number;
+    stockRepQtyBonusPerLevel: number;
+    stockRepQtyBonusMin: number;
+    stockRepQtyBonusMax: number;
   };
   fuel: {
     pricePerLitre: number;

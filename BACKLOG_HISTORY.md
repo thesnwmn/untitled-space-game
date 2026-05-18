@@ -14,6 +14,28 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 062 · Reputation-Scaled Trader Inventory — DONE
+
+**Built:**
+- `src/game/world/types.ts` — added six new fields to `GameBalance.trading`: `stockRepCountBonusPerLevel`, `stockRepCountBonusMin`, `stockRepCountBonusMax`, `stockRepQtyBonusPerLevel`, `stockRepQtyBonusMin`, `stockRepQtyBonusMax`.
+- `src/game/world/world-parser.ts` — updated `DEFAULT_BALANCE.trading` (`stockQtyMin`→5, `stockQtyMax`→10, six new keys with defaults); `parseBalance` parses them from YAML.
+- `src/game/game.ts` — extracted `generateTraderStock` (exported pure function) that computes reputation-adjusted count and qty ranges and applies per-commodity log-based qty scaling (factor range 0.5–1.5, cheapest/lightest gets 1.5×, most expensive/heavy gets 0.5×); `StockCache` now stores `repLevel`; cache invalidates on rep change; `goToTrader` looks up faction reputation level using the same path as trade price modifiers.
+- `docs/world/settings/balance.md` — updated `stock_qty_min`/`stock_qty_max` defaults and added six new keys.
+- `src/game/game.test.ts` — 8 new tests covering count range and qty bounds at rep −2, 0, +3; rations vs. ship-components comparative test; floor-at-1 guard test.
+
+**Evidence:**
+- `tsc --noEmit`: zero errors.
+- Tests: 824 passed (817→825 total, 8 new), 1 skipped (pre-existing).
+
+**Play-test instructions:**
+1. `npm run dev` — start new game, dock at any station with a trader. Note item count and quantities shown for Ration Packs and Ship Components.
+2. Complete missions to reach FRIENDLY (+1) with the controlling faction; dock at that faction's station. Confirm at least one additional item type and higher quantities.
+3. Reach REVERED (+3): confirm 7–9 item types; confirm Ration Packs show substantially more units than Ship Components.
+4. Reach HATED (−2): confirm only 2–4 item types and reduced quantities.
+5. Confirm Ration Packs consistently show higher quantity than Ship Components across multiple dockings at the same rep level.
+
+---
+
 ### 065 · Mission Board & Log Display Overhaul — DONE
 
 **Built:**
