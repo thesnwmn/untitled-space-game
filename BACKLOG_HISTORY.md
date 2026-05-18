@@ -14,6 +14,38 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 067 · Emergency Rescue — DONE
+
+**Built:**
+- `src/game/world/types.ts` — added `emergencyRescue` block to `GameBalance` interface with `towFee`, `fuelDropFee`, `fuelDropLitres`
+- `src/game/world/world-parser.ts` — updated `DEFAULT_BALANCE` and `parseBalance` to handle `emergency_rescue` YAML section
+- `docs/world/settings/balance.md` — added balance params: `tow_fee: 500`, `fuel_drop_fee: 800`, `fuel_drop_litres: 15`
+- `src/game/scenes/emergency-rescue-scene.ts` — new scene extending `BaseScene` displaying stranded situation and rescue options; renders fee and projected balance (warning color when negative) for each option; implements cursor navigation (UP/DOWN/SELECT/BACK)
+- `src/game/scenes/travel-menu-scene.ts` — added optional `onEmergency` callback; appends `[EMERGENCY]` entry to DESTINATIONS tab when `player.fuelL < hopCost`
+- `src/game/game.ts` — added `goToEmergencyRescue()` and emergency fee handlers `onEmergencyTow()` / `onEmergencyFuelDrop()`; threads callbacks through `goToTravelMenu()` and `goToArrival()`
+- `src/game/player-state.test.ts` — added test confirming `spendCredits` allows negative balance
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 795 passed, 1 skipped (41 test files); 10 new emergency rescue tests + 3 travel menu + 1 player-state test; 3 pre-existing tab-coloring failures in TravelMenuScene (unrelated to this feature)
+- `init.sh` (before and after): passes clean
+- Reviewer approval: all 10 acceptance criteria met; tests cover emergency entry visibility/absence, option selection, balance calculation, tow/drop effects, negative credits
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Start new game with scout (80 L, 3 L/hop).
+2. Travel within Sol system to consume fuel until `fuelL < 3 L`.
+3. Open TRAVEL → DESTINATIONS tab — confirm `[EMERGENCY]` entry appears at bottom in bright color.
+4. Select `[EMERGENCY]` — confirm `EmergencyRescueScene` opens showing stranded status.
+5. Confirm TOW option shows fee (500 CR) and projected balance.
+6. Select TOW → confirm fee deducted, travel animation plays, docked at fuel destination, fuel unchanged, game returns to ship.
+7. Travel again until stranded with low credits (e.g., 400 CR remaining). Select EMERGENCY again.
+8. Select FUEL DROP → confirm fee deducted (credits go negative), fuel increases by 15 L (capped at max), stays at current location, returns to TRAVEL menu.
+9. Confirm `[EMERGENCY]` entry is gone (fuel sufficient for at least one hop).
+10. Test BACK: returns to travel menu with no changes.
+11. Repeat all steps in terminal (`npm run terminal`) using keyboard navigation.
+
+---
+
 ### 066 · In-System Travel Fuel Cost — DONE
 
 **Built:**

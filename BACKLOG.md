@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 067 · Emergency Rescue
-
-When stranded without fuel, the player can request a tow to the nearest in-system fuel destination or an in-place emergency fuel drop. Both options charge a fee (balance params) that may push credits below zero. Credits are never floored at zero for emergency charges. An `[EMERGENCY]` entry appears in the DESTINATIONS tab when all normal travel is unavailable. Depends on Feature 066.
-See `docs/features/067-emergency-rescue.md` for the full spec.
-
----
-
 ### 063 · Mission Destination Ownership & Generation
 
 Missions belong to destinations, generated at dock time (not board-open), stored on `PlayerState` with TTL for save/restore. Each destination gains `minMissions` and `missionChance` fields replacing the static `amenities.missionBoard` flag. The station hub shows the mission board entry only when missions exist. Primary destinations can guarantee a baseline count; minor ones generate rarely.
