@@ -20,7 +20,9 @@ import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animatio
 import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animation-scene';
 import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
-import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
+import { LandingResultScene } from './scenes/landing-result-scene';
+import { miniGameRegistry } from './mini-games/registry';
+import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene, MiniGameResult } from '../shared/types';
 import type { TraderStockEntry, MissionSpec, Commodity, GameBalance, StarSystem } from './world/types';
 import { getGameSettings, getGameBalance, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld, getFaction, computeEffectiveFactor } from './world/world-data';
 import { isReputationEligible, getReputationLevel } from './reputation-utils';
@@ -28,6 +30,40 @@ import { PlayerState } from './player-state';
 import { generateMissions } from './mission-generator';
 
 const MAX_DT = 100;
+
+const LOCATION_TYPE_TO_REGISTRY_KEY: Record<string, string> = {
+  'orbital': 'docking',
+  'deep-space': 'docking',
+  'surface': 'surface-landing',
+  'asteroid': 'asteroid-landing',
+};
+
+export function computeMiniGameDamage(
+  result: MiniGameResult,
+  difficultyMultiplier: number,
+  balance: { maxHullDamageFraction: number; abandonDamageFraction: number; noDamageThreshold: number },
+): { damageFraction: number; score: number | null } {
+  if (result.outcome === 'skipped') {
+    return { damageFraction: balance.abandonDamageFraction * difficultyMultiplier, score: null };
+  }
+  const score = result.result.score as number;
+  if (score >= balance.noDamageThreshold) {
+    return { damageFraction: 0, score };
+  }
+  return {
+    damageFraction: balance.maxHullDamageFraction * (1 - score / balance.noDamageThreshold) * difficultyMultiplier,
+    score,
+  };
+}
+
+export function getMiniGameOutcomeLabel(registryKey: string, score: number | null): string {
+  const isDocking = registryKey === 'docking';
+  if (score === null) return 'ABORTED';
+  if (score < 40) return isDocking ? 'COLLISION' : 'CRASH';
+  if (score < 70) return isDocking ? 'ROUGH DOCK' : 'HARD LANDING';
+  if (score < 90) return isDocking ? 'DOCKED' : 'LANDED';
+  return isDocking ? 'PERFECT DOCK' : 'PERFECT LANDING';
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -247,8 +283,30 @@ export class Game {
   }
 
   private goToLandOrDock(): void {
-    const locationType = getDestination(this.player.destinationId!)?.locationType;
-    if (locationType === 'surface') {
+    const destination = getDestination(this.player.destinationId!);
+    const locationType = destination?.locationType;
+    const registryKey = locationType ? LOCATION_TYPE_TO_REGISTRY_KEY[locationType] : undefined;
+    const registryEntry = registryKey ? miniGameRegistry.find(e => e.meta.id === registryKey) : undefined;
+
+    if (registryKey && registryEntry) {
+      const difficultyMultiplier = destination?.difficultyMultiplier ?? 1.0;
+      const balance = getGameBalance();
+      this.currentScene = registryEntry.factory(
+        this.input, this.context, this.player, {},
+        (result) => {
+          const { damageFraction, score } = computeMiniGameDamage(result, difficultyMultiplier, balance.miniGames);
+          if (damageFraction > 0) {
+            this.player.applyHullDamage(damageFraction);
+          }
+          const outcomeLabel = getMiniGameOutcomeLabel(registryKey, score);
+          this.currentScene = new LandingResultScene(
+            this.input, this.player, this.context,
+            outcomeLabel, score, damageFraction,
+            () => this.goToStation(),
+          );
+        },
+      );
+    } else if (locationType === 'surface') {
       this.currentScene = new SurfaceLandingAnimationScene(this.player, this.context, () => this.goToStation());
     } else if (locationType === 'asteroid') {
       this.currentScene = new AsteroidLandingAnimationScene(this.player, this.context, () => this.goToStation());

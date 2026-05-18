@@ -56,6 +56,7 @@ export interface Destination {
   tags: string[];
   description: string;
   owningFactionId?: string;
+  difficultyMultiplier?: number;
 }
 
 export interface StoryBeat {
@@ -200,6 +201,12 @@ export interface GameBalance {
   economies: {
     minFactor: number;
     maxFactor: number;
+  };
+  miniGames: {
+    maxHullDamageFraction: number;
+    abandonDamageFraction: number;
+    noDamageThreshold: number;
+    [key: string]: unknown;
   };
 }
 
