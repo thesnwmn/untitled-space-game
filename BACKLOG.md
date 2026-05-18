@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 065 · Mission Board & Log Display Overhaul
-
-Board sorted by delivery destination then type; log sorted by destination, status priority, then type. Supply missions in both views show per-item cargo availability lines coloured by sufficiency. Delivery missions in the board show their delivery destination coloured by proximity.
-See `docs/features/065-mission-display-overhaul.md` for the full spec.
-
----
-
 ### 062 · Reputation-Scaled Trader Inventory
 
 Trader stock count and quantity scale with player reputation: more item types and larger quantities for favoured pilots, fewer and smaller for despised ones. Quantities also scale per-commodity by base price and weight (cheap/light goods appear in higher quantities). Six new balance params with clamps; `stockQtyMin`/`stockQtyMax` updated to 5/10.
