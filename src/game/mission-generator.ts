@@ -150,18 +150,52 @@ function generateSupplyMission(
   };
 }
 
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) ^ s.charCodeAt(i);
+  }
+  return h >>> 0;
+}
+
 export function generateMissions(
   destination: Destination,
   worldData: WorldData,
   seed: number,
 ): MissionSpec[] {
-  const rand = lcgRand(seed);
-  const { boardCountMin, boardCountMax, deliveryChance } = getGameBalance().missions;
-  const count = boardCountMin + Math.floor(rand() * (boardCountMax - boardCountMin + 1));
+  const balance = getGameBalance();
+
+  // When seed is 0 (production call from Game), use time-window-based determinism
+  // Otherwise (test call), use the provided seed directly for consistent test results
+  let finalSeed: number;
+  if (seed === 0) {
+    const windowMs = balance.missions.missionTtlMs;
+    const now = Date.now();
+    const window = Math.floor(now / windowMs);
+    const destHash = hashString(destination.id);
+    finalSeed = destHash ^ window;
+  } else {
+    finalSeed = seed;
+  }
+
+  const rand = lcgRand(finalSeed);
+  const { boardMaxCount, deliveryChance } = balance.missions;
 
   const missions: MissionSpec[] = [];
-  for (let i = 0; i < count; i++) {
-    const missionId = `m-${(seed >>> 0).toString(16)}-${i}`;
+
+  // Generate minMissions baseline
+  for (let i = 0; i < destination.minMissions && missions.length < boardMaxCount; i++) {
+    const missionId = `m-${(finalSeed >>> 0).toString(16)}-${missions.length}`;
+    const isDelivery = rand() < deliveryChance;
+    const mission = isDelivery
+      ? generateDeliveryMission(rand, destination, worldData, missionId)
+      : generateSupplyMission(rand, destination, worldData, missionId);
+    if (mission) missions.push(mission);
+  }
+
+  // Loop rolling missionChance until failure or max reached
+  while (missions.length < boardMaxCount && rand() < destination.missionChance) {
+    const missionId = `m-${(finalSeed >>> 0).toString(16)}-${missions.length}`;
     const isDelivery = rand() < deliveryChance;
     const mission = isDelivery
       ? generateDeliveryMission(rand, destination, worldData, missionId)

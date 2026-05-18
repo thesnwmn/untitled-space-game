@@ -8,12 +8,12 @@ function getElysium() {
 
 describe('generateMissions', () => {
   describe('output structure', () => {
-    it('returns between 3 and 6 missions', () => {
+    it('respects boardMaxCount limit', () => {
       const dest = getElysium();
       const world = getWorld();
       const missions = generateMissions(dest, world, 42);
-      expect(missions.length).toBeGreaterThanOrEqual(3);
-      expect(missions.length).toBeLessThanOrEqual(6);
+      expect(missions.length).toBeGreaterThanOrEqual(dest.minMissions);
+      expect(missions.length).toBeLessThanOrEqual(world.balance.missions.boardMaxCount);
     });
 
     it('every mission has required base fields', () => {

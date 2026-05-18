@@ -34,8 +34,7 @@ function parseFrontMatter(source: string): { data: Record<string, unknown>; cont
 const DEFAULT_BALANCE: GameBalance = {
   npc: { specialNameChance: 0.3 },
   missions: {
-    boardCountMin: 3,
-    boardCountMax: 6,
+    boardMaxCount: 8,
     missionTtlMs: 900000,
     deliveryChance: 0.6,
     deliveryBaseReward: 200,
@@ -186,7 +185,6 @@ function parseDestination(data: { [key: string]: any }, body: string): Destinati
   const a = data.amenities ?? {};
   const amenities: DestinationAmenities = {
     trader: a.trader ?? false,
-    missionBoard: a.mission_board ?? false,
     shipRepair: a.ship_repair ?? false,
     fuel: a.fuel ?? false,
     shipDealer: a.ship_dealer ?? false,
@@ -201,6 +199,8 @@ function parseDestination(data: { [key: string]: any }, body: string): Destinati
     amenities,
     npcs: data.npcs ?? {},
     goodsBias: data.goods_bias ?? [],
+    minMissions: data.min_missions ?? 0,
+    missionChance: data.mission_chance ?? 0.0,
     dangerLevel: data.danger_level,
     tags: data.tags ?? [],
     description: extractDescription(body),
@@ -332,8 +332,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       specialNameChance: npc.special_name_chance ?? d.npc.specialNameChance,
     },
     missions: {
-      boardCountMin: missions.board_count_min ?? d.missions.boardCountMin,
-      boardCountMax: missions.board_count_max ?? d.missions.boardCountMax,
+      boardMaxCount: missions.board_max_count ?? d.missions.boardMaxCount,
       missionTtlMs: missions.mission_ttl_ms ?? d.missions.missionTtlMs,
       deliveryChance: missions.delivery_chance ?? d.missions.deliveryChance,
       deliveryBaseReward: missions.delivery_base_reward ?? d.missions.deliveryBaseReward,

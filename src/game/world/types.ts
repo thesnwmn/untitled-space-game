@@ -31,7 +31,6 @@ export interface StarSystem {
 
 export interface DestinationAmenities {
   trader: boolean;
-  missionBoard: boolean;
   shipRepair: boolean;
   fuel: boolean;
   shipDealer: boolean;
@@ -46,6 +45,8 @@ export interface Destination {
   amenities: DestinationAmenities;
   npcs: { trader?: string };
   goodsBias: string[];
+  minMissions: number;
+  missionChance: number;
   dangerLevel: DangerLevel;
   tags: string[];
   description: string;
@@ -133,8 +134,7 @@ export interface GameBalance {
     specialNameChance: number;
   };
   missions: {
-    boardCountMin: number;
-    boardCountMax: number;
+    boardMaxCount: number;
     missionTtlMs: number;
     deliveryChance: number;
     deliveryBaseReward: number;

@@ -8,10 +8,11 @@ owning_faction: grey-market-cartel
 
 amenities:
   trader: false
-  mission_board: false
   ship_repair: true
   fuel: true
   ship_dealer: false
+min_missions: 0
+mission_chance: 0.0
 
 goods_bias:
   - salvage

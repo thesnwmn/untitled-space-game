@@ -27,9 +27,6 @@ properties:
       trader:
         type: boolean
         description: buy/sell commodities
-      mission_board:
-        type: boolean
-        description: take and hand in missions
       ship_repair:
         type: boolean
         description: repair hull damage
@@ -41,10 +38,15 @@ properties:
         description: buy or trade ships
     required:
       - trader
-      - mission_board
       - ship_repair
       - fuel
       - ship_dealer
+  min_missions:
+    type: number
+    description: guaranteed minimum missions generated when docked
+  mission_chance:
+    type: number
+    description: probability (0.0-1.0) of generating additional missions after minMissions
   npcs:
     type: object
     description: only include an entry if the corresponding amenity is true
@@ -80,6 +82,8 @@ required:
   - location_type
   - type
   - amenities
+  - min_missions
+  - mission_chance
 ---
 
 # Destination Name

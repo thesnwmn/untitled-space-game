@@ -51,6 +51,7 @@ export class PlayerState {
   private _activeMissions: ActiveMission[];
   private _missionItems: MissionItem[];
   private _factionReputation: Map<string, number>;
+  private _destinationMissions: Map<string, { specs: MissionSpec[]; generatedAt: number }>;
 
   constructor(init: PlayerStateInit) {
     const ship = getShip(init.shipId);
@@ -74,6 +75,8 @@ export class PlayerState {
         this._factionReputation.set(faction.id, 0);
       }
     }
+
+    this._destinationMissions = new Map();
   }
 
   // Fuel
@@ -218,5 +221,20 @@ export class PlayerState {
     const current = this.getFactionReputation(factionId);
     const updated = Math.min(balance.reputation.pointsMax, Math.max(balance.reputation.pointsMin, current + delta));
     this._factionReputation.set(factionId, updated);
+  }
+
+  // Destination Missions
+  getDestinationMissions(destinationId: string): MissionSpec[] {
+    const cached = this._destinationMissions.get(destinationId);
+    if (!cached) return [];
+    const now = Date.now();
+    if (now - cached.generatedAt > getWorld().balance.missions.missionTtlMs) {
+      return [];
+    }
+    return cached.specs;
+  }
+
+  refreshDestinationMissions(destinationId: string, specs: MissionSpec[]): void {
+    this._destinationMissions.set(destinationId, { specs, generatedAt: Date.now() });
   }
 }

@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 063 · Mission Destination Ownership & Generation
-
-Missions belong to destinations, generated at dock time (not board-open), stored on `PlayerState` with TTL for save/restore. Each destination gains `minMissions` and `missionChance` fields replacing the static `amenities.missionBoard` flag. The station hub shows the mission board entry only when missions exist. Primary destinations can guarantee a baseline count; minor ones generate rarely.
-See `docs/features/063-mission-destination-ownership.md` for the full spec.
-
----
-
 ### 064 · Mission Balance & Deposit
 
 Supply rewards corrected to a randomly varied multiplier above cost (`supplyRewardMultiplierMin`/`Max`), biased toward the upper end for heavier requests. Supply quantities raised. Delivery item selection weighted by `weightKg`. Delivery missions require a credit deposit (forfeited on cancel), shown prominently before accepting.

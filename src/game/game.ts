@@ -33,11 +33,6 @@ interface StockCache {
   generatedAt: number;
 }
 
-interface MissionBoardCache {
-  specs: MissionSpec[];
-  generatedAt: number;
-}
-
 export class Game {
   private readonly renderer: Renderer;
   private readonly input: InputHandler;
@@ -46,7 +41,6 @@ export class Game {
   private currentScene: Scene;
   private sceneBeforeMenu: Scene | null = null;
   private readonly traderStockCache = new Map<string, StockCache>();
-  private readonly missionBoardCache = new Map<string, MissionBoardCache>();
 
   constructor(renderer: Renderer, input: InputHandler, context: GameContext) {
     this.renderer = renderer;
@@ -105,18 +99,11 @@ export class Game {
     return entries;
   }
 
-  private getOrCreateMissionBoard(destinationId: string): MissionSpec[] {
-    const now = Date.now();
-    const cached = this.missionBoardCache.get(destinationId);
-    if (cached && now - cached.generatedAt < getGameBalance().missions.missionTtlMs) {
-      return cached.specs;
-    }
+  private refreshDestinationMissions(destinationId: string): void {
     const destination = getDestination(destinationId)!;
     const worldData = getWorld();
-    const seed = Math.floor(Math.random() * 0xFFFFFFFF);
-    const specs = generateMissions(destination, worldData, seed);
-    this.missionBoardCache.set(destinationId, { specs, generatedAt: now });
-    return specs;
+    const specs = generateMissions(destination, worldData, 0);
+    this.player.refreshDestinationMissions(destinationId, specs);
   }
 
   private onBuy(commodityId: string, qty: number, unitPrice: number, traderStock: TraderStockEntry[]): void {
@@ -172,8 +159,10 @@ export class Game {
   }
 
   private goToStation(): void {
+    const destinationId = this.player.destinationId!;
+    this.refreshDestinationMissions(destinationId);
     this.currentScene = new StationMenuScene(
-      this.input, this.context, this.player, this.player.destinationId!,
+      this.input, this.context, this.player, destinationId,
       (cost: number, litres: number) => {
         this.player.spendCredits(cost);
         this.player.addFuel(litres);
@@ -222,9 +211,10 @@ export class Game {
 
   private goToMissionBoard(): void {
     const destinationId = this.player.destinationId!;
+    const missions = this.player.getDestinationMissions(destinationId);
     this.currentScene = new MissionBoardScene(
       this.input, this.context, this.player, destinationId,
-      () => this.getOrCreateMissionBoard(destinationId),
+      missions,
       (spec) => this.goToMissionDetail(spec, destinationId),
       () => this.goToStation(),
       () => this.goToTakeOffOrUndock(),
@@ -243,10 +233,11 @@ export class Game {
   }
 
   private onMissionAccepted(spec: MissionSpec, giveItemNow: boolean, boardDestinationId: string): void {
-    const cached = this.missionBoardCache.get(boardDestinationId);
-    if (cached) {
-      const idx = cached.specs.findIndex(s => s.id === spec.id);
-      if (idx >= 0) cached.specs.splice(idx, 1);
+    const missions = this.player.getDestinationMissions(boardDestinationId);
+    const idx = missions.findIndex(s => s.id === spec.id);
+    if (idx >= 0) {
+      missions.splice(idx, 1);
+      this.player.refreshDestinationMissions(boardDestinationId, missions);
     }
     this.player.acceptMission(spec, giveItemNow);
     this.goToMissionBoard();

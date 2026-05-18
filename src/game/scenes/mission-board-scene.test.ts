@@ -102,7 +102,7 @@ function makeScene(
 ) {
   return new MissionBoardScene(
     input, keyboardContext, makePlayer(), 'elysium-station',
-    () => missions,
+    missions,
     onMissionSelected,
     onHub,
     onUndock,
