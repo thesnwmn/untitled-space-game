@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { Game } from './game';
+import { Game, generateTraderStock } from './game';
 import type { Renderer, InputHandler, GameContext, CharBuffer } from '../shared/types';
 import type { MissionSpec, TraderStockEntry } from './world/types';
+import { getCommodities, getGameBalance } from './world/world-data';
 import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation-scene';
 import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
 import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
@@ -300,5 +301,95 @@ describe('Game — in-system travel fuel deduction', () => {
     const hopCost = player.getInSystemHopCost(); // 4 L
     (game as any).onDestinationSelected('ceti-landfall');
     expect(player.fuelL).toBe(0); // 1 - 4 clamped to 0
+  });
+});
+
+describe('generateTraderStock — reputation-scaled count and qty', () => {
+  const commodities = getCommodities();
+  const balance = getGameBalance();
+
+  // Run N iterations and collect all counts.
+  function collectCounts(repLevel: number, iterations = 60): number[] {
+    return Array.from({ length: iterations }, () => generateTraderStock(commodities, repLevel, balance).length);
+  }
+
+  it('at rep -2 (HATED), count is always in [2, 4]', () => {
+    const counts = collectCounts(-2);
+    expect(Math.min(...counts)).toBeGreaterThanOrEqual(2);
+    expect(Math.max(...counts)).toBeLessThanOrEqual(4);
+  });
+
+  it('at rep 0 (NEUTRAL), count is always in [4, 6]', () => {
+    const counts = collectCounts(0);
+    expect(Math.min(...counts)).toBeGreaterThanOrEqual(4);
+    expect(Math.max(...counts)).toBeLessThanOrEqual(6);
+  });
+
+  it('at rep +3 (REVERED), count is always in [7, 9]', () => {
+    const counts = collectCounts(3);
+    expect(Math.min(...counts)).toBeGreaterThanOrEqual(7);
+    expect(Math.max(...counts)).toBeLessThanOrEqual(9);
+  });
+
+  it('at rep -2, base qty range before commodity scaling is [1, 6] — all qtys in [1, 9]', () => {
+    // adjQtyMin=1, adjQtyMax=6; max commodity factor=1.5 → max qty=floor(6*1.5)=9
+    for (let i = 0; i < 80; i++) {
+      const stock = generateTraderStock(commodities, -2, balance);
+      for (const entry of stock) {
+        expect(entry.qty).toBeGreaterThanOrEqual(1);
+        expect(entry.qty).toBeLessThanOrEqual(9);
+      }
+    }
+  });
+
+  it('at rep 0, base qty range before commodity scaling is [5, 10] — all qtys in [2, 15]', () => {
+    // adjQtyMin=5, adjQtyMax=10; factor range [0.5, 1.5]
+    // min possible: floor(5*0.5)=2; max possible: floor(10*1.5)=15
+    for (let i = 0; i < 80; i++) {
+      const stock = generateTraderStock(commodities, 0, balance);
+      for (const entry of stock) {
+        expect(entry.qty).toBeGreaterThanOrEqual(2);
+        expect(entry.qty).toBeLessThanOrEqual(15);
+      }
+    }
+  });
+
+  it('at rep +3, base qty range before commodity scaling is [11, 16] — all qtys in [5, 24]', () => {
+    // adjQtyMin=11, adjQtyMax=16; factor range [0.5, 1.5]
+    // min possible: floor(11*0.5)=5; max possible: floor(16*1.5)=24
+    for (let i = 0; i < 80; i++) {
+      const stock = generateTraderStock(commodities, 3, balance);
+      for (const entry of stock) {
+        expect(entry.qty).toBeGreaterThanOrEqual(5);
+        expect(entry.qty).toBeLessThanOrEqual(24);
+      }
+    }
+  });
+
+  it('rations (cheap/light) consistently appear in higher qty than ship-components (expensive/heavy)', () => {
+    // Run many iterations; when both appear, rations qty should exceed ship-components qty on average
+    let rationSum = 0, shipCompSum = 0, pairCount = 0;
+    for (let i = 0; i < 200; i++) {
+      const stock = generateTraderStock(commodities, 0, balance);
+      const rations = stock.find(e => e.commodityId === 'rations');
+      const shipComp = stock.find(e => e.commodityId === 'ship-components');
+      if (rations && shipComp) {
+        rationSum += rations.qty;
+        shipCompSum += shipComp.qty;
+        pairCount++;
+      }
+    }
+    if (pairCount > 0) {
+      expect(rationSum / pairCount).toBeGreaterThan(shipCompSum / pairCount);
+    }
+  });
+
+  it('all qty values are at least 1 (floor guard)', () => {
+    for (let i = 0; i < 80; i++) {
+      const stock = generateTraderStock(commodities, -2, balance);
+      for (const entry of stock) {
+        expect(entry.qty).toBeGreaterThanOrEqual(1);
+      }
+    }
   });
 });

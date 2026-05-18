@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 062 · Reputation-Scaled Trader Inventory
-
-Trader stock count and quantity scale with player reputation: more item types and larger quantities for favoured pilots, fewer and smaller for despised ones. Quantities also scale per-commodity by base price and weight (cheap/light goods appear in higher quantities). Six new balance params with clamps; `stockQtyMin`/`stockQtyMax` updated to 5/10.
-See `docs/features/062-reputation-trader-inventory.md` for the full spec.
-
----
-
 ### 061 · Economic Supply & Demand
 
 Each system's `economies` tags drive trader stock weighting and pricing: produced commodities appear more often and sell below base price; needed commodities appear rarely and command above-base prices. Removes `Destination.goodsBias`; mission generation uses economy factors instead. Renames `StarSystem.economy` → `StarSystem.economies` throughout.
