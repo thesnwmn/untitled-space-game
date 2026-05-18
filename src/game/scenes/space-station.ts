@@ -29,6 +29,8 @@ export class SpaceStation {
     intRowEnd: number,
     intColStart: number,
     intColEnd: number,
+    rowFrac = 0.5,
+    colFrac = 0.6,
   ) {
     this.glyph = glyph;
     this.intRowStart = intRowStart;
@@ -40,10 +42,10 @@ export class SpaceStation {
     this.glyphWidth = Math.max(...glyph.rows.map(r => r.length));
 
     this.anchorRow = intRowStart
-      + Math.floor((intRowEnd - intRowStart) / 2)
+      + Math.floor((intRowEnd - intRowStart) * rowFrac)
       - Math.floor(this.glyphHeight / 2);
     this.anchorCol = intColStart
-      + Math.floor((intColEnd - intColStart) * 0.60)
+      + Math.floor((intColEnd - intColStart) * colFrac)
       - Math.floor(this.glyphWidth / 2);
   }
 

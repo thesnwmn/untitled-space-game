@@ -28,17 +28,17 @@ function renderBuf(sf: Starfield): CharBuffer {
 
 describe('Starfield', () => {
   describe('initialisation', () => {
-    it('creates 33 stars total (18 + 10 + 5)', () => {
+    it('creates 45 stars total (30 + 10 + 5)', () => {
       const sf = new Starfield(42);
-      expect(sf.getStars().length).toBe(33);
+      expect(sf.getStars().length).toBe(45);
     });
 
-    it('layer distribution is exactly 18/10/5', () => {
+    it('layer distribution is exactly 30/10/5', () => {
       const sf = new Starfield(42);
       const stars = sf.getStars();
       const counts = [0, 0, 0];
       for (const s of stars) counts[s.layer]++;
-      expect(counts).toEqual([18, 10, 5]);
+      expect(counts).toEqual([30, 10, 5]);
     });
 
     it('all stars have row as integer within [intRowStart, intRowEnd]', () => {
@@ -178,9 +178,9 @@ describe('Starfield', () => {
       stars[0].row = 10;
       stars[0].col = 20;
       stars[0].twinklePhase = 0; // normal state
-      stars[28].row = 10; // first layer-2 star (18+10 = index 28)
-      stars[28].col = 20;
-      stars[28].twinklePhase = 0; // normal state → bright-white
+      stars[40].row = 10; // first layer-2 star (30+10 = index 40)
+      stars[40].col = 20;
+      stars[40].twinklePhase = 0; // normal state → bright-white
       const buf = renderBuf(sf);
       expect(buf[10][20].char).toBe('+');
       expect(buf[10][20].fg).toBe('bright-white');

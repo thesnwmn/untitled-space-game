@@ -18,7 +18,7 @@ export interface Star {
   twinklePeriod: number;
 }
 
-const LAYER_COUNT = [18, 10, 5] as const;
+const LAYER_COUNT = [30, 10, 5] as const;
 const LAYER_CHAR = ['.', '*', '+'] as const;
 
 const PERIOD_MIN = [4000, 2000, 800] as const;

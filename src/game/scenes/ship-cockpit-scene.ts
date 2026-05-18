@@ -104,6 +104,8 @@ export class ShipCockpitScene extends BaseScene {
 
   private readonly starfield: Starfield;
   private readonly destGlyph: StationGlyph | null;
+  private readonly destRowFrac: number;
+  private readonly destColFrac: number;
   private destObject: SpaceStation | null = null;
   private blinkPhase = 0;
 
@@ -138,6 +140,10 @@ export class ShipCockpitScene extends BaseScene {
       ? getDestination(player.destinationId)?.locationType
       : undefined;
     this.destGlyph = selectDestinationGlyph(locationType, seed);
+    const r1 = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    const r2 = (Math.imul(r1,   1664525) + 1013904223) >>> 0;
+    this.destRowFrac = 0.15 + (r1 / 0x100000000) * 0.70;
+    this.destColFrac = 0.15 + (r2 / 0x100000000) * 0.70;
 
     const rand = lcgRand(99);
     this.gaugeBtns = [
@@ -254,7 +260,10 @@ export class ShipCockpitScene extends BaseScene {
     this.starfield.render(buffer, viewportTop, viewportBot, 0, 39);
 
     if (!this.destObject && this.destGlyph) {
-      this.destObject = new SpaceStation(this.destGlyph, viewportTop + 1, viewportBot - 1, 0, 39);
+      this.destObject = new SpaceStation(
+        this.destGlyph, viewportTop + 1, viewportBot - 1, 0, 39,
+        this.destRowFrac, this.destColFrac,
+      );
     }
     this.destObject?.render(buffer);
 
