@@ -89,6 +89,25 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     };
   }
 
+  protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
+    const bufW = buffer[0]?.length ?? 0;
+    const bufH = buffer.length;
+    const contentH = bottom - top;
+
+    const canvasWidth = this.canvasWidth;
+    const canvasHeight = this.canvasHeight + 3;
+
+    let left = Math.floor((bufW - canvasWidth) / 2);
+    let vpTop = top + Math.floor((contentH - canvasHeight) / 2);
+
+    const maxLeft = Math.max(0, bufW - this.canvasWidth);
+    const maxTop = Math.max(0, bufH - this.canvasHeight);
+    left = Math.max(0, Math.min(left, maxLeft));
+    vpTop = Math.max(0, Math.min(vpTop, maxTop));
+
+    this.renderGame(buffer, { top: vpTop, left, width: this.canvasWidth, height: this.canvasHeight });
+  }
+
   protected override handleAction(action: GameAction): void {
     super.handleAction(action);
 
