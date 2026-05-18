@@ -93,7 +93,8 @@ export class MissionBoardScene extends BaseMenuScene {
     const destName = dest?.name ?? m.deliveryDestinationId;
 
     const details: string[] = [];
-    details.push(destName);
+    details.push('');  // blank line for spacing
+    details.push(`Dest: ${destName}`);
 
     if (m.giverFactionId) {
       const faction = getWorld().factions.find(f => f.id === m.giverFactionId);

@@ -37,6 +37,10 @@ function rowText(buffer: CharBuffer, row: number): string {
   return buffer[row].map(c => c.char).join('').trimEnd();
 }
 
+function bufferText(buffer: CharBuffer): string {
+  return buffer.map(row => row.map(c => c.char).join('')).join('\n');
+}
+
 const keyboardContext: GameContext = {
   environment: 'browser', primaryInput: 'keyboard', debug: false,
 };
@@ -186,10 +190,10 @@ describe('MissionBoardScene', () => {
       const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 0 (delivery) takes 1 title + 1 destination detail row = 2 rows total
-      // Mission 1 (supply) starts at ITEM_START + 2
-      expect(buf[ITEM_START + 2][4].char).toBe('S');
-      expect(buf[ITEM_START + 2][4].fg).toBe('bright-yellow');
+      // Mission 0 (delivery) takes 1 title + 1 blank + 1 "Dest: " = 3 rows total
+      // Mission 1 (supply) starts at ITEM_START + 3
+      expect(buf[ITEM_START + 3][4].char).toBe('S');
+      expect(buf[ITEM_START + 3][4].fg).toBe('bright-yellow');
     });
 
     it('renders mission title', () => {
@@ -229,8 +233,8 @@ describe('MissionBoardScene', () => {
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 0 (delivery) takes 2 rows; Mission 1 starts at ITEM_START + 2
-      expect(buf[ITEM_START + 2][2].char).toBe('>');
+      // Mission 0 (delivery) takes 3 rows (title + blank + dest); Mission 1 starts at ITEM_START + 3
+      expect(buf[ITEM_START + 3][2].char).toBe('>');
     });
 
     it('UP from first mission wraps to last', () => {
@@ -239,9 +243,9 @@ describe('MissionBoardScene', () => {
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 0: 2 rows, Mission 1: 3 rows (title + dest + supply), Mission 2: 2 rows
-      // Mission 2 is at ITEM_START + 5
-      expect(buf[ITEM_START + 5][2].char).toBe('>');
+      // Mission 0: 3 rows, Mission 1: 4 rows (title + blank + dest + supply), Mission 2: 3 rows
+      // Mission 2 is at ITEM_START + 7
+      expect(buf[ITEM_START + 7][2].char).toBe('>');
     });
 
     it('DOWN wraps from last mission back to first', () => {
@@ -427,6 +431,7 @@ describe('MissionBoardScene', () => {
       const scene = makeScene(input, missions);
       const buf = makeBuffer(40, 30);
       scene.render(buf);
+      const fullText = bufferText(buf);
 
       // Expected sorted order:
       // 1. alpha-station (supply)
@@ -435,24 +440,16 @@ describe('MissionBoardScene', () => {
       // 4. mars-anchor (delivery before supply)
       // 5. mars-anchor (supply)
 
-      const getTitleAtItem = (itemNum: number): string => {
-        let row = ITEM_START;
-        for (let i = 0; i < itemNum; i++) {
-          const details = buf[row + 1]
-            .map(c => c.char)
-            .join('')
-            .trim();
-          const detailLines = details.length > 0 ? 1 : 0;
-          row += 1 + detailLines; // title + details
-        }
-        return rowText(buf, row);
-      };
+      const alphaPos = fullText.indexOf('Alpha Supply');
+      const cetiDelPos = fullText.indexOf('Ceti Delivery');
+      const cetiSupPos = fullText.indexOf('Ceti Supply');
+      const marsDelPos = fullText.indexOf('Mars Delivery');
+      const marsSupPos = fullText.indexOf('Mars Supply A');
 
-      expect(getTitleAtItem(0)).toContain('Alpha Supply');
-      expect(getTitleAtItem(1)).toContain('Ceti Delivery');
-      expect(getTitleAtItem(2)).toContain('Ceti Supply');
-      expect(getTitleAtItem(3)).toContain('Mars Delivery');
-      expect(getTitleAtItem(4)).toContain('Mars Supply A');
+      expect(alphaPos).toBeLessThan(cetiDelPos);
+      expect(cetiDelPos).toBeLessThan(cetiSupPos);
+      expect(cetiSupPos).toBeLessThan(marsDelPos);
+      expect(marsDelPos).toBeLessThan(marsSupPos);
     });
 
     it('displays destination name below delivery mission title', () => {
@@ -462,9 +459,9 @@ describe('MissionBoardScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
 
-      // Title at ITEM_START, destination detail at ITEM_START + 1
+      // Title at ITEM_START, blank at ITEM_START + 1, destination detail at ITEM_START + 2
       // The actual destination name from world data is 'Ceti Landfall'
-      expect(rowText(buf, ITEM_START + 1)).toContain('Ceti Landfall');
+      expect(rowText(buf, ITEM_START + 2)).toContain('Dest: Ceti Landfall');
     });
 
     it('displays supply mission requirements with cargo quantities', () => {
@@ -509,14 +506,15 @@ describe('MissionBoardScene', () => {
       scene.render(buf);
 
       // Title at ITEM_START
-      // Destination at ITEM_START + 1
-      // Requirements start at ITEM_START + 2
-      expect(rowText(buf, ITEM_START + 2)).toContain('2x Ration Packs');
-      expect(rowText(buf, ITEM_START + 2)).toContain('(have: 1)');
-      expect(rowText(buf, ITEM_START + 3)).toContain('5x Fuel Cell');
-      expect(rowText(buf, ITEM_START + 3)).toContain('(have: 5)');
-      expect(rowText(buf, ITEM_START + 4)).toContain('1x water');
-      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 0)');
+      // Blank at ITEM_START + 1
+      // Destination at ITEM_START + 2
+      // Requirements start at ITEM_START + 3
+      expect(rowText(buf, ITEM_START + 3)).toContain('2x Ration Packs');
+      expect(rowText(buf, ITEM_START + 3)).toContain('(have: 1)');
+      expect(rowText(buf, ITEM_START + 4)).toContain('5x Fuel Cell');
+      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 5)');
+      expect(rowText(buf, ITEM_START + 5)).toContain('1x water');
+      expect(rowText(buf, ITEM_START + 5)).toContain('(have: 0)');
     });
   });
 });

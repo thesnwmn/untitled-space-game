@@ -145,8 +145,8 @@ describe('MissionLogScene', () => {
       });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // First item at ITEM_START, detail at ITEM_START+1
-      const detailRow = ITEM_START + 1;
+      // First item at ITEM_START, blank at ITEM_START+1, status at ITEM_START+2
+      const detailRow = ITEM_START + 2;
       const text = rowText(buf, detailRow);
       expect(text).toContain('PENDING PICKUP');
       expect(buf[detailRow][2].fg).toBe('yellow');
@@ -160,7 +160,7 @@ describe('MissionLogScene', () => {
       });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const detailRow = ITEM_START + 1;
+      const detailRow = ITEM_START + 2;
       const text = rowText(buf, detailRow);
       expect(text).toContain('IN TRANSIT');
       expect(buf[detailRow][2].fg).toBe('bright-black');
@@ -173,7 +173,7 @@ describe('MissionLogScene', () => {
       });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const detailRow = ITEM_START + 1;
+      const detailRow = ITEM_START + 2;
       const text = rowText(buf, detailRow);
       expect(text).toContain('NEEDS SUPPLIES');
       expect(buf[detailRow][2].fg).toBe('yellow');
@@ -189,7 +189,7 @@ describe('MissionLogScene', () => {
       });
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      const detailRow = ITEM_START + 1;
+      const detailRow = ITEM_START + 2;
       const text = rowText(buf, detailRow);
       expect(text).toContain('READY TO DELIVER');
       expect(buf[detailRow][2].fg).toBe('bright-green');
@@ -411,14 +411,16 @@ describe('MissionLogScene', () => {
       scene.render(buf);
 
       // Title at ITEM_START
-      // Status detail at ITEM_START + 1
-      // Requirements start at ITEM_START + 2
-      expect(rowText(buf, ITEM_START + 2)).toContain('2x Ration Packs');
-      expect(rowText(buf, ITEM_START + 2)).toContain('(have: 1)');
-      expect(rowText(buf, ITEM_START + 3)).toContain('5x Fuel Cell');
-      expect(rowText(buf, ITEM_START + 3)).toContain('(have: 5)');
-      expect(rowText(buf, ITEM_START + 4)).toContain('1x water');
-      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 0)');
+      // Blank at ITEM_START + 1
+      // Status at ITEM_START + 2
+      // Dest at ITEM_START + 3
+      // Requirements start at ITEM_START + 4
+      expect(rowText(buf, ITEM_START + 4)).toContain('2x Ration Packs');
+      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 1)');
+      expect(rowText(buf, ITEM_START + 5)).toContain('5x Fuel Cell');
+      expect(rowText(buf, ITEM_START + 5)).toContain('(have: 5)');
+      expect(rowText(buf, ITEM_START + 6)).toContain('1x water');
+      expect(rowText(buf, ITEM_START + 6)).toContain('(have: 0)');
     });
   });
 });
