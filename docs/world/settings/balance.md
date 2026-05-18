@@ -10,12 +10,13 @@ missions:
   delivery_chance: 0.6
   delivery_base_reward: 200
   delivery_random_reward: 200
-  supply_reward_margin: 0.4
-  supply_random_reward: 150
+  supply_reward_multiplier_min: 1.15
+  supply_reward_multiplier_max: 1.50
   supply_requirements_min: 1
   supply_requirements_max: 2
-  supply_qty_min: 1
-  supply_qty_max: 4
+  supply_qty_min: 3
+  supply_qty_max: 10
+  delivery_deposit_fraction: 0.20
 
 trading:
   stock_count_min: 4

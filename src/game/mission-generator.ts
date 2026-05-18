@@ -37,6 +37,17 @@ function legalCommodities(worldData: WorldData) {
   return worldData.commodities.filter(c => c.legal);
 }
 
+function weightedPickDeliveryItem(rand: () => number, items: Array<{ id: string; name: string; weightKg: number }>): typeof items[0] {
+  const totalWeight = items.reduce((sum, item) => sum + item.weightKg, 0);
+  if (totalWeight === 0) return items[0];
+  let pick = rand() * totalWeight;
+  for (const item of items) {
+    pick -= item.weightKg;
+    if (pick < 0) return item;
+  }
+  return items[items.length - 1];
+}
+
 function generateDeliveryMission(
   rand: () => number,
   destination: Destination,
@@ -49,13 +60,14 @@ function generateDeliveryMission(
   const candidates = candidateDeliveryDestinations(destination, worldData);
   if (candidates.length === 0) return null;
 
-  const item = pickItem(rand, items);
+  const item = weightedPickDeliveryItem(rand, items);
   const deliveryDest = pickItem(rand, candidates);
   const giver = buildGiverName(rand, worldData);
 
-  const { deliveryBaseReward, deliveryRandomReward } = getGameBalance().missions;
+  const { deliveryBaseReward, deliveryRandomReward, deliveryDepositFraction } = getGameBalance().missions;
   const weightBonus = Math.floor(item.weightKg * 1.5);
   const reward = deliveryBaseReward + weightBonus + Math.floor(rand() * deliveryRandomReward);
+  const deposit = Math.floor(reward * deliveryDepositFraction);
 
   const giverFactionId = destination.owningFactionId
     ? getWorld().factions.find(f => f.id === destination.owningFactionId && isReputationEligible(f))?.id
@@ -74,6 +86,7 @@ function generateDeliveryMission(
     itemWeightKg: item.weightKg,
     pickupDestinationId: destination.id,
     deliveryDestinationId: deliveryDest.id,
+    deposit,
   };
 }
 
@@ -117,12 +130,22 @@ function generateSupplyMission(
 
   if (requirements.length === 0) return null;
 
-  const totalValue = requirements.reduce((sum, r) => {
+  const totalMaterialCost = requirements.reduce((sum, r) => {
     const comm = worldData.commodities.find(c => c.id === r.commodityId);
     return sum + (comm?.basePrice ?? 100) * r.qty;
   }, 0);
-  const { supplyRewardMargin, supplyRandomReward } = getGameBalance().missions;
-  const reward = Math.floor(totalValue * supplyRewardMargin) + Math.floor(rand() * supplyRandomReward);
+
+  const totalSupplyWeight = requirements.reduce((sum, r) => {
+    const comm = worldData.commodities.find(c => c.id === r.commodityId);
+    return sum + (comm?.weightKg ?? 1) * r.qty;
+  }, 0);
+
+  const { supplyRewardMultiplierMin, supplyRewardMultiplierMax } = getGameBalance().missions;
+  const weightBias = Math.min(1, totalSupplyWeight / 500);
+  const rawRand = rand();
+  const nudged = rawRand + weightBias * (1 - rawRand) * 0.15;
+  const multiplier = supplyRewardMultiplierMin + nudged * (supplyRewardMultiplierMax - supplyRewardMultiplierMin);
+  const reward = Math.floor(totalMaterialCost * multiplier);
 
   const giver = buildGiverName(rand, worldData);
   const reqSummary = requirements

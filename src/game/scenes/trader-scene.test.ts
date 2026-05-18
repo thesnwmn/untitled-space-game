@@ -594,6 +594,7 @@ describe('TraderScene', () => {
         itemWeightKg: 50,
         pickupDestinationId: 'tycho-orbital',
         deliveryDestinationId: 'elysium-station',
+        deposit: 100,
       }, true); // giveItemNow → item in missionItems only, not cargoHold
       const input = new MockInputHandler();
       const scene = new TraderScene(

@@ -60,6 +60,7 @@ const deliverySpec: MissionSpec = {
   itemWeightKg: 80,
   pickupDestinationId: 'elysium-station',
   deliveryDestinationId: 'ceti-landfall',
+  deposit: 100,
 };
 
 // Delivery mission with faction and in-system delivery destination

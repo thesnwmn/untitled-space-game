@@ -33,6 +33,9 @@ export function canAcceptMission(
     if (available < spec.itemWeightKg) {
       return { ok: false, reason: 'Insufficient cargo space' };
     }
+    if (player.credits < spec.deposit) {
+      return { ok: false, reason: 'Insufficient credits for deposit' };
+    }
   }
   return { ok: true };
 }
@@ -166,13 +169,16 @@ export class PlayerState {
     };
     this._activeMissions.push(mission);
 
-    if (spec.type === 'delivery' && giveItemNow) {
-      this._missionItems.push({
-        missionId: spec.id,
-        itemName: spec.itemName,
-        weightKg: spec.itemWeightKg,
-      });
-      mission.pickupComplete = true;
+    if (spec.type === 'delivery') {
+      this._credits -= spec.deposit;
+      if (giveItemNow) {
+        this._missionItems.push({
+          missionId: spec.id,
+          itemName: spec.itemName,
+          weightKg: spec.itemWeightKg,
+        });
+        mission.pickupComplete = true;
+      }
     }
   }
 
