@@ -119,8 +119,9 @@ export class ScreenChrome {
     }
     col += fillCount;
 
-    // Credits (green) + " CR" (white) + "::" (bright-black)
-    writeText(buffer, 1, col, creditsStr, 'green', 'black');
+    // Credits (green if positive, bright-red if negative) + " CR" (white) + "::" (bright-black)
+    const creditsColor = this.player.credits < 0 ? 'bright-red' : 'green';
+    writeText(buffer, 1, col, creditsStr, creditsColor, 'black');
     col += creditsStr.length;
     writeText(buffer, 1, col, ' CR', 'white', 'black');
     col += 3;
