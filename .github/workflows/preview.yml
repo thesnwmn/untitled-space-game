@@ -37,6 +37,7 @@ jobs:
       - name: Build
         run: |
           npm run build -- --base=/untitled-space-game/preview/${{ steps.branch.outputs.slug }}/game/
+          npm run build:mini-games -- --base=/untitled-space-game/preview/${{ steps.branch.outputs.slug }}/mini-games/
           bun scripts/build-docs.ts
           bun scripts/build-map.ts
           bun scripts/build-font-report.ts
