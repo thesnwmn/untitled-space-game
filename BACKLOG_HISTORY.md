@@ -14,6 +14,33 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 045 · Global Menu · Galaxy Map — DONE
+
+**What it added:**
+Added a `GALAXY MAP` entry to the global menu below `MISSIONS`, providing quick access to the star chart from anywhere in the game. When opened from the menu, the scene displays `[1] BACK` to return to the menu and `[2] GAME` to return directly to the underlying game scene. The existing travel menu access path is unchanged.
+
+**Key files:**
+- `src/game/scenes/galaxy-map-scene.ts` — added optional `onGame?: () => void` parameter; includes `{ id: 'game', label: 'GAME' }` nav option when provided
+- `src/game/game.ts` — added `GALAXY MAP` entry to `buildMenuEntries()`; implemented `goToGalaxyMapFromMenu()` with proper callback routing
+- `src/game/scenes/galaxy-map-scene.test.ts` — 5 new tests covering nav option presence/absence, `NAV_2` action routing, and nav tap handling
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 842 passed (all tests including 5 new), 1 skipped
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Start new game, dock at any station.
+2. Press `[M]` or tap to open global menu — confirm `GALAXY MAP` entry appears below `MISSIONS`.
+3. Select `GALAXY MAP` — confirm scene opens with MAP tab active showing neighboring systems.
+4. Confirm footer shows `[1] BACK` and `[2] GAME` buttons.
+5. Press `[2]` or tap the GAME button — confirm the scene closes and returns directly to the ship.
+6. Re-enter global menu and select `GALAXY MAP` again — confirm MAP/ROUTE tabs, search, and all existing chart interactions work unchanged.
+7. Dock at another station, then access `GALAXY MAP` from travel menu (existing path) — confirm footer shows only `[1] BACK` (no GAME button).
+8. Terminal (`npm run terminal`): repeat steps 2–7 with keyboard navigation.
+
+---
+
 ### 025 · Overhaul Star Field & Destination Display — DONE
 
 **Built:**

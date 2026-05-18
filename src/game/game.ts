@@ -342,6 +342,7 @@ export class Game {
   private buildMenuEntries(): GlobalMenuEntry[] {
     return [
       { label: 'MISSIONS', action: () => this.goToMissionLog() },
+      { label: 'GALAXY MAP', action: () => this.goToGalaxyMapFromMenu() },
       { label: 'REPUTATION', action: () => this.goToReputation() },
     ];
   }
@@ -422,6 +423,15 @@ export class Game {
       this.input, this.context, this.player,
       () => this.goToTravelMenu(),
       () => this.goToGlobalMenu(),
+    );
+  }
+
+  private goToGalaxyMapFromMenu(): void {
+    this.currentScene = new GalaxyMapScene(
+      this.input, this.context, this.player,
+      () => this.goToGlobalMenu(),
+      () => this.goToGlobalMenu(),
+      () => this.returnFromMenu(),
     );
   }
 

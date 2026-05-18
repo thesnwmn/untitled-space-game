@@ -38,6 +38,7 @@ function nameBox(name: string, boxLen: number): string {
 
 export class GalaxyMapScene extends BaseScene {
   private readonly onBack: () => void;
+  private readonly onGame?: () => void;
   private mapBrowsingSystemId: string;
   private mapCursorIdx = 0;
   private routeDestIdx = 0;
@@ -52,15 +53,21 @@ export class GalaxyMapScene extends BaseScene {
     player: PlayerState,
     onBack: () => void,
     onMenu: () => void = () => {},
+    onGame?: () => void,
   ) {
+    const navOptions = onGame
+      ? [{ id: 'game', label: 'GAME' }, { id: 'menu', label: 'MENU' }]
+      : [{ id: 'back', label: 'BACK' }];
+
     super(inputHandler, context, player, {
       title: 'GALAXY MAP',
       tabs: ['MAP', 'ROUTE'],
-      navOptions: [{ id: 'back', label: 'BACK' }],
+      navOptions,
       onMenu,
     });
 
     this.onBack = onBack;
+    this.onGame = onGame;
     this.publicSystems = getPublicSystems().sort((a, b) => a.distanceFromSol - b.distanceFromSol);
     this.otherSystems = this.publicSystems.filter(s => s.id !== player.systemId);
     this.mapBrowsingSystemId = player.systemId;
@@ -88,6 +95,21 @@ export class GalaxyMapScene extends BaseScene {
       this.onBack();
       return;
     }
+    if (action === 'NAV_1') {
+      if (this.onGame) {
+        this.activated = true;
+        this.onGame();
+      }
+      return;
+    }
+    if (action === 'NAV_2') {
+      if (this.onGame) {
+        this.searchText = '';
+        this.activated = true;
+        this.onBack();
+      }
+      return;
+    }
     if (this.activeTabIdx === 0) {
       this.handleMapAction(action);
     } else {
@@ -97,6 +119,13 @@ export class GalaxyMapScene extends BaseScene {
 
   protected override handleNavTap(navId: string): void {
     if (navId === 'back') {
+      this.searchText = '';
+      this.activated = true;
+      this.onBack();
+    } else if (navId === 'game' && this.onGame) {
+      this.activated = true;
+      this.onGame();
+    } else if (navId === 'menu') {
       this.searchText = '';
       this.activated = true;
       this.onBack();
