@@ -26,7 +26,10 @@ export class EmergencyRescueScene extends BaseScene {
     onDrop: () => void,
     onBack: () => void,
   ) {
-    super(inputHandler, context, player, { navOptions: [], title: 'EMERGENCY RESCUE' });
+    super(inputHandler, context, player, {
+      navOptions: [],
+      title: 'EMERGENCY RESCUE',
+    });
 
     this.onBack = onBack;
     const system = getSystem(player.systemId)!;
@@ -89,26 +92,9 @@ export class EmergencyRescueScene extends BaseScene {
     }
   }
 
-  public override render(buffer: CharBuffer): void {
+  protected override renderContent(buffer: CharBuffer, top: number, contentBottomRow: number): void {
     const h = buffer.length;
     const w = h > 0 ? buffer[0].length : 0;
-
-    for (let r = 0; r < h; r++) {
-      for (let c = 0; c < w; c++) {
-        buffer[r][c] = { char: ' ', fg: 'black', bg: 'black' };
-      }
-    }
-
-    const config = this.buildChromeConfig();
-    this.chrome.render(buffer, config);
-
-    const base = CONTENT_TOP;
-    const bottom = contentBottom(h, true);
-
-    // Title and underline
-    const title = 'EMERGENCY RESCUE';
-    writeText(buffer, base, 2, title, 'bright-white', 'black');
-    writeText(buffer, base + 1, 2, "'".repeat(title.length), 'bright-black', 'black');
 
     // Show current location
     const system = getSystem(this.player.systemId)!;
@@ -120,10 +106,10 @@ export class EmergencyRescueScene extends BaseScene {
       status = `STRANDED AT ${dest.name.toUpperCase()}`;
     }
 
-    writeText(buffer, base + 3, 2, status, 'bright-yellow', 'black');
+    writeText(buffer, top, 2, status, 'bright-yellow', 'black');
 
     // Separator
-    const separatorRow = base + 5;
+    const separatorRow = top + 2;
     drawSeparator(buffer, separatorRow, w);
 
     // Render options
