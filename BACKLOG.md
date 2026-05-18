@@ -12,19 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 049 · Mini-Game Dev Harness
-
-Standalone browser and terminal entry points for running any registered mini game outside
-the main game. Browser: `mini-games.html` + `src/mini-game-runner.ts` built via a second
-Vite config (`base: /untitled-space-game/mini-games/`); index mode lists all mini games,
-runner mode launches by `?game=<id>`. Terminal: `terminal-mini-games.ts` lists games when
-run with no args; runs a specific game by id with optional `--variant=<id>` flag. Both use
-a mock `PlayerState`. Adds `dev:mini-games` and `build:mini-games` scripts; `build:all`
-updated. Depends on feature 048.
-See `docs/features/049-mini-game-dev-harness.md` for the full spec.
-
----
-
 ### 043 · Knowledge Base — Discovery
 
 The game silently records visited systems and destinations as the player travels. On entering a system the names of its destinations and direct jump-route neighbours are noted. On docking, the destination is marked fully visited. NPC mention hooks are defined for future use. Data only — no UI screens.

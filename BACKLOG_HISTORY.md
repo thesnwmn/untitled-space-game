@@ -14,6 +14,39 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 049 · Mini-Game Dev Harness — DONE
+
+**What it added:**
+Standalone browser and terminal entry points for developing and testing mini games in isolation. Browser harness (`mini-games.html`, `src/mini-game-runner.ts`) displays an index listing all registered mini games with variant links; supports `?game=<id>` URL param to run a specific game with optional variant params; shows results on completion. Terminal harness (`terminal-mini-games.ts`) lists games with no args; runs a specific game by id with optional `--variant=<id>` flag. Both runners use a mock `PlayerState` (new `PlayerState.createMock()` static method) initialized from world settings. Added second Vite config (`vite.mini-games.config.ts`) with base path `/untitled-space-game/mini-games/` building to `dist/mini-games/`. Updated landing page to link to mini-games hub.
+
+**Key files:**
+- `src/game/player-state.ts` — added static `createMock()` method returning a player at starter location with full fuel and default credits
+- `mini-games.html` — entry point; same chrome as `index.html`
+- `src/mini-game-runner.ts` — browser runner; index mode renders HTML listing; runner mode uses `requestAnimationFrame` loop; result display on `complete()`
+- `terminal-mini-games.ts` — terminal runner; argument parsing for id and variant; uses `setInterval` loop
+- `vite.mini-games.config.ts` — second Vite config with mini-games base and output dir
+- `scripts/build-landing.ts` — added `[ MINI GAMES ]` tile linking to `mini-games/index.html`
+- `package.json` — added `dev:mini-games` and `build:mini-games` scripts; `build:all` updated to include mini-games build
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 850 passed, 1 skipped (no new tests added; registry remains empty per spec)
+- `npm run dev:mini-games`: Vite dev server starts successfully
+- `npm run build:mini-games`: builds to `dist/mini-games/` with index.html, CSS, JS assets
+- `npm run build:all`: includes mini-games build; landing page generated with mini-games link
+- `bun run terminal-mini-games.ts`: prints "No mini games registered." and exits 0
+- `bun run terminal-mini-games.ts invalid-game`: prints error and exits 1
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Browser index mode (`npm run dev:mini-games`): Navigate to dev server root — confirm empty game listing and on-theme styling.
+2. Browser error mode: Append `?game=nonexistent` to URL — confirm error message and link back to index.
+3. Terminal listing (`bun run terminal-mini-games.ts`): Confirm "No mini games registered." output and exit code 0.
+4. Terminal error (`bun run terminal-mini-games.ts invalid-game`): Confirm error message and exit code 1.
+5. Build (`npm run build:all`): Confirm `dist/mini-games/` directory created with `index.html`, assets; landing page includes mini-games link.
+
+---
+
 ### 048 · Mini-Game Base Scene — DONE
 
 **What it added:**
