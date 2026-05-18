@@ -98,7 +98,7 @@ const DEFAULT_BALANCE: GameBalance = {
     maxFactor: 1.25,
   },
   miniGames: {
-    maxHullDamageFraction: 0.10,
+    maxHullDamageFraction: 0.05,
     abandonDamageFraction: 0.05,
     noDamageThreshold: 90,
   },

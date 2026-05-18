@@ -64,7 +64,7 @@ emergency_rescue:
   fuel_drop_litres: 15
 
 mini_games:
-  max_hull_damage_fraction: 0.10
+  max_hull_damage_fraction: 0.05
   abandon_damage_fraction: 0.05
   no_damage_threshold: 90
 ---
