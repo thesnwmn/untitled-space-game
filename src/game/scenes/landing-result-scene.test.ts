@@ -10,12 +10,16 @@ function makeBuffer(w: number, h: number): CharBuffer {
 }
 
 class MockInput implements InputHandler {
-  private handlers: Array<(action: GameAction) => void> = [];
-  onAction(h: (action: GameAction) => void): void { this.handlers.push(h); }
-  dispatch(action: GameAction): void { this.handlers.forEach(h => h(action)); }
+  private actionHandlers: Array<(action: GameAction) => void> = [];
+  private tapHandlers: Array<(col: number, row: number) => void> = [];
+  onAction(h: (action: GameAction) => void): void { this.actionHandlers.push(h); }
+  onTap(h: (col: number, row: number) => void): void { this.tapHandlers.push(h); }
+  dispatch(action: GameAction): void { this.actionHandlers.forEach(h => h(action)); }
+  tap(col: number, row: number): void { this.tapHandlers.forEach(h => h(col, row)); }
 }
 
 const ctx: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const touchCtx: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 function makeScene(
   outcomeLabel: string,
@@ -23,11 +27,12 @@ function makeScene(
   damageFraction: number,
   onComplete = vi.fn(),
   input?: MockInput,
+  context: GameContext = ctx,
 ): LandingResultScene {
   return new LandingResultScene(
     input ?? new MockInput(),
     makePlayer(),
-    ctx,
+    context,
     outcomeLabel,
     score,
     damageFraction,
@@ -75,37 +80,41 @@ describe('LandingResultScene', () => {
     expect(bufferText(buf)).toContain('HULL DAMAGE: 0%');
   });
 
-  describe('auto-advance', () => {
-    it('does not complete before 3000ms', () => {
+
+  describe('tap advance (touch platform)', () => {
+    it('calls onComplete on continue button tap', () => {
       const cb = vi.fn();
-      const scene = makeScene('DOCKED', 80, 0, cb);
-      scene.update(2999);
-      expect(cb).not.toHaveBeenCalled();
+      const input = new MockInput();
+      const scene = makeScene('DOCKED', 80, 0, cb, input, touchCtx);
+      scene.render(makeBuffer(40, 30));
+      input.tap(18, 20);
+      expect(cb).toHaveBeenCalledOnce();
     });
 
-    it('calls onComplete after 3000ms', () => {
+    it('does not call onComplete on non-button tap', () => {
       const cb = vi.fn();
-      const scene = makeScene('DOCKED', 80, 0, cb);
-      scene.update(3000);
-      expect(cb).toHaveBeenCalledOnce();
+      const input = new MockInput();
+      const scene = makeScene('DOCKED', 80, 0, cb, input, touchCtx);
+      scene.render(makeBuffer(40, 30));
+      input.tap(0, 0);
+      expect(cb).not.toHaveBeenCalled();
     });
   });
 
-  describe('keypress advance', () => {
-    it('calls onComplete on next tick after a keypress', () => {
+  describe('keyboard platform', () => {
+    it('calls onComplete on SELECT action', () => {
       const cb = vi.fn();
       const input = new MockInput();
-      const scene = makeScene('DOCKED', 80, 0, cb, input);
+      makeScene('DOCKED', 80, 0, cb, input, ctx);
       input.dispatch('SELECT');
-      scene.update(1);
       expect(cb).toHaveBeenCalledOnce();
     });
 
-    it('does not call onComplete without a tick after keypress', () => {
+    it('does not call onComplete on other actions', () => {
       const cb = vi.fn();
       const input = new MockInput();
-      makeScene('DOCKED', 80, 0, cb, input);
-      input.dispatch('SELECT');
+      makeScene('DOCKED', 80, 0, cb, input, ctx);
+      input.dispatch('UP');
       expect(cb).not.toHaveBeenCalled();
     });
   });

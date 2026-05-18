@@ -14,6 +14,39 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 055 · Docking Mini-Game (Orbital Alignment) — DONE
+
+**What it added:**
+Implemented `DockingMiniGameScene` for orbital and deep-space station docking. A 32×18 centred canvas displays a ship crosshair `(+)` (bright-green) and airlock target `[+]` (bright-yellow), both starting at canvas centre. Arrow keys thrust the ship with momentum (no passive drag); velocity is capped per axis. Airlock drifts in a seeded pattern (seeded from destination ID) choosing random targets within 8 chars of centre and moving at 1.2 chars/sec. A 30-second countdown counts down with 1-second precision. On timeout, score is calculated as `round(clamp(1 / (1 + distance/3)) * 100)`, integer 0–100. MENU key aborts with `skipped` outcome. Registered in `miniGameRegistry` as `'docking'` with two variants: `'orbital'` and `'deep-space'`. Routing in `game.ts` `goToLandOrDock()` uses the mini-game for these location types, feeding results to `LandingResultScene` (feature 058).
+
+**Key files:**
+- `src/game/scenes/docking-mini-game-scene.ts` — new 254-line scene class; extends `BaseMiniGameScene`; state tracks ship position/velocity, airlock position/drift, countdown
+- `src/game/mini-games/registry.ts` — added descriptor meta and factory entry for docking mini-game
+- `src/game/game.test.ts` — updated test to expect `DockingMiniGameScene` instead of `OrbitalDockingAnimationScene` for orbital destinations
+
+**Architectural decisions embedded:**
+- Seeded PRNG (LCG) ensures consistent airlock drift per destination within a session.
+- Momentum model (no passive drag) makes gameplay feel responsive and physics-like.
+- Distance-based score rewards precision without hard time pressure.
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 888 passed, 1 skipped (8 new tests for docking scene)
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. **Browser mini-games harness** (`npm run dev:mini-games`): Navigate to `?game=docking` — confirm canvas (32×18) appears centred, airlock target `[+]` at canvas centre, ship crosshair `(+)` at centre, countdown shows `T: 30` in top-right corner, distance shows in bottom-left.
+2. Hold arrow keys — confirm crosshair moves with momentum; releasing a key does not immediately stop movement.
+3. Counter-thrust to stop the crosshair — confirm it holds position when no keys are pressed.
+4. Watch for 10–15 seconds — confirm airlock drifts slowly and resets to a new target.
+5. Wait for countdown to reach 0 — confirm result overlay shows and displays score.
+6. Start again, immediately press MENU — confirm game aborts with `skipped` outcome.
+7. **Full game** (`npm run dev`): Dock at an orbital station (e.g. Elysium in Alpha Centauri) — confirm docking mini-game plays; result scene shows outcome and score; station opens.
+8. Press MENU during mini-game — confirm abort damage applies; result scene shows `ABORTED`; station opens.
+9. **Terminal** (`npm run terminal`): Repeat steps 7–8 using keyboard navigation.
+
+---
+
 ### 058 · Mini-Game Landing Hook — DONE
 
 **What it added:**

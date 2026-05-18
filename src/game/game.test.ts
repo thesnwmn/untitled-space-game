@@ -7,7 +7,7 @@ import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation
 import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
 import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
 import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animation-scene';
-import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
+import { DockingMiniGameScene } from './scenes/docking-mini-game-scene';
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 
 function makeMockRenderer(width = 40, height = 30): Renderer & { drawBuffer: ReturnType<typeof vi.fn> } {
@@ -183,12 +183,12 @@ describe('Game — goToLandOrDock routing', () => {
     expect((game as any).currentScene).toBeInstanceOf(AsteroidLandingAnimationScene);
   });
 
-  it('orbital destination plays OrbitalDockingAnimationScene', () => {
+  it('orbital destination plays DockingMiniGameScene', () => {
     const game = makeGame();
     const player = (game as any).player;
     player.dock('elysium-station'); // orbital destination
     (game as any).goToLandOrDock();
-    expect((game as any).currentScene).toBeInstanceOf(OrbitalDockingAnimationScene);
+    expect((game as any).currentScene).toBeInstanceOf(DockingMiniGameScene);
   });
 });
 
