@@ -51,6 +51,7 @@ Never begin implementation without confirming which feature is being worked on.
     - [ ] Item removed from BACKLOG.md
     - [ ] Item added to BACKLOG_HISTORY.md with evidence and play-test instructions
     - [ ] This feature's spec archived to docs/features/history/ and original deleted (other features' specs left untouched)
+    - [ ] If this feature adds a new `bun scripts/build-*.ts`, it is listed in the `Build` step of `.github/workflows/preview.yml`
     - [ ] All changes committed to the branch
     Then perform the push in a single, deliberate pass — **do not loop**:
     1. Create the approval marker (required by the pre-push hook): `echo approved > .reviewer-approved`
