@@ -103,9 +103,9 @@ export class MissionLogScene extends BaseMenuScene {
     const statusColor = STATUS_COLORS[status] ?? 'white';
 
     const details = [
-      '',  // blank line for spacing
       `Status: ${statusLabel}`,
       `Dest: ${destName}`,
+      '',  // blank line for spacing after details
     ];
     const detailsColored = m.type === 'supply' ? this.buildSupplyDetails(m) : [];
 

@@ -190,7 +190,7 @@ describe('MissionBoardScene', () => {
       const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 0 (delivery) takes 1 title + 1 blank + 1 "Dest: " = 3 rows total
+      // Mission 0 (delivery) takes 1 title + 1 "Dest: " + 1 blank = 3 rows total
       // Mission 1 (supply) starts at ITEM_START + 3
       expect(buf[ITEM_START + 3][4].char).toBe('S');
       expect(buf[ITEM_START + 3][4].fg).toBe('bright-yellow');
@@ -459,9 +459,9 @@ describe('MissionBoardScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
 
-      // Title at ITEM_START, blank at ITEM_START + 1, destination detail at ITEM_START + 2
+      // Title at ITEM_START, destination detail at ITEM_START + 1, blank at ITEM_START + 2
       // The actual destination name from world data is 'Ceti Landfall'
-      expect(rowText(buf, ITEM_START + 2)).toContain('Dest: Ceti Landfall');
+      expect(rowText(buf, ITEM_START + 1)).toContain('Dest: Ceti Landfall');
     });
 
     it('displays supply mission requirements with cargo quantities', () => {
@@ -506,8 +506,8 @@ describe('MissionBoardScene', () => {
       scene.render(buf);
 
       // Title at ITEM_START
-      // Blank at ITEM_START + 1
-      // Destination at ITEM_START + 2
+      // Destination at ITEM_START + 1
+      // Blank at ITEM_START + 2
       // Requirements start at ITEM_START + 3
       expect(rowText(buf, ITEM_START + 3)).toContain('2x Ration Packs');
       expect(rowText(buf, ITEM_START + 3)).toContain('(have: 1)');
