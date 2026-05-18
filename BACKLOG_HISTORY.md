@@ -14,6 +14,35 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 066 · In-System Travel Fuel Cost — DONE
+
+**Built:**
+- `src/game/world/types.ts` — added `fuelEfficiency: number` to Ship interface; added `inSystemBaseConsumptionL: number` to GameBalance.fuel
+- `src/game/world/world-parser.ts` — parseShip now reads `fuel_efficiency` from YAML; DEFAULT_BALANCE and parseBalance updated for `inSystemBaseConsumptionL`
+- `docs/world/ships/*.md` — added `fuel_efficiency: 0.7` (scout), `0.85` (freighter), `0.95` (hauler)
+- `docs/world/settings/balance.md` — added `in_system_base_consumption_l: 4`
+- `src/game/player-state.ts` — added `getInSystemHopCost()` method using formula `Math.ceil(inSystemBaseConsumptionL × ship.fuelEfficiency)`
+- `src/game/scenes/travel-menu-scene.ts` — destinations and FLY INTO SPACE greyed out when `player.fuelL < hopCost`; summary line displays `FUEL  X L per hop`
+- `src/game/game.ts` — `onDestinationSelected` and `goToFlyIntoSpace` deduct hop cost before animation scene creation
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 785 passed, 1 skipped (40 test files); 9 new tests added (3 for hop cost calc per ship, 3 for greying logic, 3 for fuel deduction)
+- `init.sh` (before and after): passes clean
+- Reviewer approval: all 10 acceptance criteria met; no violations to DECISION_REGISTER.md
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Start new game with freighter (100 L fuel, 4 L/hop).
+2. Travel → DESTINATIONS tab — confirm summary shows "FUEL  4 L per hop".
+3. Travel to a destination — fuel decreases by 4 L; confirm display updates.
+4. Travel until fuel < 4 L (e.g., 3 L remaining).
+5. Try to travel — all destinations and FLY INTO SPACE are greyed out and unselectable.
+6. Dock at a station and refuel to 8 L.
+7. Repeat with scout (80 L fuel, 3 L/hop) and hauler (200 L fuel, 4 L/hop) if available.
+8. Repeat steps 1–7 in terminal (`npm run terminal`) using keyboard navigation.
+
+---
+
 ### 053 · BaseChoiceScene — DONE
 
 **Built:**
