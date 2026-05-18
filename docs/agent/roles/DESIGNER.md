@@ -128,6 +128,10 @@ job is to prevent wrong architectural choices, not to pre-write TypeScript.
 - Behavioural constraints the Engineer might miss (e.g. "seed is preserved across
   dock/undock within a visit, but cleared on navigation to the main menu").
 - Edge cases relevant to acceptance criteria that are easy to overlook.
+- **If the feature adds a new build script** (e.g. a new `bun scripts/build-*.ts`
+  for a docs page, map, or report), explicitly note that `.github/workflows/preview.yml`
+  must be updated to include the new script in its `Build` step. Engineers miss this
+  frequently — calling it out in the spec prevents it.
 
 **Do not include:**
 - Method or function bodies.
