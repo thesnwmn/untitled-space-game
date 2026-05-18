@@ -10,21 +10,21 @@ if [ ! -f .reviewer-approved ]; then
 fi
 
 # 2. Feature removed from BACKLOG.md
-if ! git diff main...HEAD -- BACKLOG.md | grep -q '^-[^-]'; then
+if ! git diff origin/main...HEAD -- BACKLOG.md | grep -q '^-[^-]'; then
   ERRORS+=("BACKLOG.md unchanged. The completed feature must be removed from BACKLOG.md (step 11).")
 fi
 
 # 3. Feature recorded in BACKLOG_HISTORY.md
-if ! git diff main...HEAD -- BACKLOG_HISTORY.md | grep -q '^+[^+]'; then
+if ! git diff origin/main...HEAD -- BACKLOG_HISTORY.md | grep -q '^+[^+]'; then
   ERRORS+=("BACKLOG_HISTORY.md unchanged. The completed feature must be added to BACKLOG_HISTORY.md (step 11).")
 fi
 
 # 4. Feature spec archived to docs/features/history/
 # Extract the feature number from the lines removed from BACKLOG.md.
-FEATURE_NUM=$(git diff main...HEAD -- BACKLOG.md | grep '^-### ' | grep -oE '[0-9]+' | head -1)
+FEATURE_NUM=$(git diff origin/main...HEAD -- BACKLOG.md | grep '^-### ' | grep -oE '[0-9]+' | head -1)
 if [ -n "$FEATURE_NUM" ]; then
   # Check whether a spec existed on main for this feature number.
-  SPEC_ON_MAIN=$(git ls-tree --name-only main -- docs/features/ 2>/dev/null \
+  SPEC_ON_MAIN=$(git ls-tree --name-only origin/main -- docs/features/ 2>/dev/null \
     | grep "docs/features/${FEATURE_NUM}-" | head -1)
   if [ -n "$SPEC_ON_MAIN" ]; then
     SPEC_BASENAME=$(basename "$SPEC_ON_MAIN")
