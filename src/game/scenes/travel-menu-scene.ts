@@ -25,12 +25,12 @@ export class TravelMenuScene extends BaseMenuScene {
 
     const destItems: MenuItemDef[] = [
       ...system.destinations.map(destId => ({
-        label: getDestination(destId)!.name.toUpperCase(),
+        label: `${getDestination(destId)!.name.toUpperCase()}  [${hopCost}L]`,
         disabled: destId === player.destinationId || insufficientFuel,
         action: () => onDestinationSelected(destId),
       })),
       {
-        label: 'FLY INTO SPACE',
+        label: `FLY INTO SPACE  [${hopCost}L]`,
         disabled: player.destinationId === null || insufficientFuel,
         action: onFlyIntoSpace,
       },
@@ -50,7 +50,7 @@ export class TravelMenuScene extends BaseMenuScene {
       const stability = route.stability.toUpperCase();
       const fuelNeeded = Math.ceil(getGameBalance().fuel.consumptionPerLy * route.distance * drive.fuelEfficiency);
       return {
-        label: `${targetSystem.name.toUpperCase()}  ${route.distance}LY  [${stability}]`.slice(0, 36),
+        label: `${targetSystem.name.toUpperCase()}  ${route.distance}LY  [${stability}]  [${fuelNeeded}L]`.slice(0, 40),
         disabled: fuelNeeded > player.fuelL,
         action: () => onJumpSelected(targetId),
       };
@@ -61,14 +61,12 @@ export class TravelMenuScene extends BaseMenuScene {
       { label: 'GALAXY MAP...', action: onGalaxyMap },
     ];
 
-    const summaryLines = [`FUEL  ${hopCost} L per hop`];
-
     const tabs: TabDef[] = [
       { label: 'DESTINATIONS', items: destItems },
       { label: 'JUMPS', items: jumpItems },
     ];
 
-    super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, player, summaryLines, tabs, onMenu);
+    super('TRAVEL', [], [{ id: 'ship', label: 'SHIP' }], inputHandler, context, player, [], tabs, onMenu);
 
     this.onShip = onShip;
   }

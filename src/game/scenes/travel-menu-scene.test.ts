@@ -368,14 +368,13 @@ describe('TravelMenuScene global menu', () => {
   });
 
   describe('in-system fuel cost', () => {
-    it('renders the fuel cost in the summary', () => {
+    it('renders the fuel cost on destination and FLY INTO SPACE items', () => {
       const input = new MockInputHandler();
       const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       const text = allText(buf);
-      expect(text).toContain('FUEL');
-      expect(text).toContain('per hop');
+      expect(text).toContain('[4L]'); // hop cost for freighter
     });
 
     it('greys out all destinations when fuel is insufficient', () => {
