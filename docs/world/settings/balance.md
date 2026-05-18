@@ -5,8 +5,7 @@ npc:
   special_name_chance: 0.3
 
 missions:
-  board_count_min: 3
-  board_count_max: 6
+  board_max_count: 8
   mission_ttl_ms: 900000
   delivery_chance: 0.6
   delivery_base_reward: 200
