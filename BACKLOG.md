@@ -12,13 +12,6 @@ Completed items are in [BACKLOG_HISTORY.md](BACKLOG_HISTORY.md).
 
 ## READY
 
-### 061 · Economic Supply & Demand
-
-Each system's `economies` tags drive trader stock weighting and pricing: produced commodities appear more often and sell below base price; needed commodities appear rarely and command above-base prices. Removes `Destination.goodsBias`; mission generation uses economy factors instead. Renames `StarSystem.economy` → `StarSystem.economies` throughout.
-See `docs/features/061-economic-supply-demand.md` for the full spec.
-
----
-
 ### 025 · Overhaul Star Field & Destination Display
 
 Each destination has a unique, stable starfield pattern derived deterministically from its ID (no orchestrator seed state needed). A type-appropriate foreground object — space station, asteroid, or planet — is rendered in the viewport with variant also selected by destination ID. Depends on feature 036.
