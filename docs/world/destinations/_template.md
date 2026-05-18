@@ -57,13 +57,6 @@ properties:
       ship_dealer:
         type: string
         description: display name of the ship dealer NPC
-  goods_bias:
-    type: array
-    items:
-      type: string
-    description: >
-      economy tags that influence commodity pricing at this destination.
-      Values should match economy tags used on system docs.
   danger_level:
     enum:
       - none

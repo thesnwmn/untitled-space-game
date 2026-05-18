@@ -210,7 +210,9 @@ describe('TraderScene', () => {
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       expect(rowText(buf, ITEM_ROW_START)).toContain('Ration Packs (x3)');
-      expect(rowText(buf, ITEM_ROW_START)).toContain('60 CR');
+      // Sol has administrative (0.9) and military (0.85) economies for rations
+      // avg factor = 0.875; price = 60 * 0.875 = 52.5 ≈ 53 CR
+      expect(rowText(buf, ITEM_ROW_START)).toContain('53 CR');
     });
 
     it('SELL tab shows CARGO HOLD EMPTY when hold is empty', () => {
@@ -289,7 +291,9 @@ describe('TraderScene', () => {
       input.triggerAction('SELECT'); // opens modal — initial qty=3 (full hold)
       expect(onSell).not.toHaveBeenCalled();
       input.triggerAction('SELECT'); // confirm
-      expect(onSell).toHaveBeenCalledWith('rations', 3, 60);
+      // Sol has administrative (0.9) and military (0.85) economies for rations
+      // avg factor = 0.875; price = 60 * 0.875 = 52.5 ≈ 53 CR
+      expect(onSell).toHaveBeenCalledWith('rations', 3, 53);
     });
 
     it('BUY tab shows NO STOCK AVAILABLE after all items are bought via modal', () => {
@@ -493,23 +497,24 @@ describe('TraderScene', () => {
       expect(text).toContain('STANDING: NEUTRAL');
     });
 
-    it('buy price is reduced at FRIENDLY standing', () => {
+    it('buy price reflects economic supply/demand factors', () => {
       const input = new MockInputHandler();
       const player = makePlayer();
       const balance = getGameBalance();
-      // Set rep to 200 → FRIENDLY (level 1, modifier 0.92)
+      // Set rep to 200 → FRIENDLY (no longer affects commodity prices)
       player.modifyFactionReputation('helios-directorate', 200, balance);
       const scene = new TraderScene(
         input, keyboardContext, player, 'elysium-station',
-        [{ commodityId: 'iron-ore', qty: 5 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
+        [{ commodityId: 'iron-ore', qty: 5, effectiveFactor: 0.85 }], vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(),
       );
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Math.round(80 * 0.92) = 74
-      expect(rowText(buf, ITEM_ROW_START)).toContain('74 CR');
+      // Sol has industrial economy: iron-ore factor = 0.85
+      // Math.round(80 * 0.85) = 68
+      expect(rowText(buf, ITEM_ROW_START)).toContain('68 CR');
     });
 
-    it('sell price is increased at FRIENDLY standing', () => {
+    it('sell price reflects economic supply/demand factors', () => {
       const input = new MockInputHandler();
       const player = makePlayer();
       const balance = getGameBalance();
@@ -522,8 +527,9 @@ describe('TraderScene', () => {
       input.triggerAction('RIGHT'); // switch to SELL tab
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Math.round(60 / 0.92) = 65
-      expect(rowText(buf, ITEM_ROW_START)).toContain('65 CR');
+      // Sol has administrative and military economies: rations factors = [0.9, 0.85] → avg 0.875
+      // Math.round(60 * 0.875) = 53
+      expect(rowText(buf, ITEM_ROW_START)).toContain('53 CR');
     });
 
     it('accrues reputation with faction on buy', () => {

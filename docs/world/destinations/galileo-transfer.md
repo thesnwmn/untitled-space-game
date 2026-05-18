@@ -17,11 +17,6 @@ mission_chance: 0.75
 npcs:
   trader: Broker Valdis
 
-goods_bias:
-  - industrial
-  - administrative
-  - military
-
 danger_level: low
 tags:
   - busy

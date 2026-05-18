@@ -17,10 +17,6 @@ mission_chance: 0.75
 npcs:
   trader: Merchant Kess
 
-goods_bias:
-  - administrative
-  - trade
-
 danger_level: low
 tags:
   - starter

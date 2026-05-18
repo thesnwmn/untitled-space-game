@@ -14,10 +14,8 @@ map_position:
   x: -8
   y: 52
 
-economy:
-  - industrial
-  - administrative
-
+economies:
+  - salvage
 major_factions:
   - terran-union
   - procyon-institute

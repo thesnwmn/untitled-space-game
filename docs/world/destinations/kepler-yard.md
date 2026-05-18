@@ -17,10 +17,6 @@ mission_chance: 0.65
 npcs:
   ship_dealer: Dealer Mast
 
-goods_bias:
-  - mining
-  - salvage
-
 danger_level: medium
 tags:
   - shipbreaking

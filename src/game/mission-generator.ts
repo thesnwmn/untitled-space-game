@@ -1,5 +1,5 @@
 import type { Destination, WorldData, MissionSpec } from './world/types';
-import { getGameBalance, getWorld } from './world/world-data';
+import { getGameBalance, getWorld, getSystem, computeEffectiveFactor } from './world/world-data';
 import { isReputationEligible } from './reputation-utils';
 
 function lcgRand(seed: number): () => number {
@@ -99,14 +99,24 @@ function generateSupplyMission(
   const commodities = legalCommodities(worldData);
   if (commodities.length === 0) return null;
 
-  // Weight commodities by goodsBias: commodities whose category keyword appears
-  // in goodsBias get doubled weight.
-  const biasKeywords = destination.goodsBias.map(b => b.toLowerCase());
+  // Weight commodities by system economy: commodities with above-1.0 effective factor
+  // (i.e., the system needs them) get doubled weight. Fall back to all commodities
+  // if none have above-1.0 factors.
+  const system = getSystem(destination.system);
   const weighted: typeof commodities = [];
+  const neededCommodities: typeof commodities = [];
+
   for (const c of commodities) {
-    const boosted = biasKeywords.some(k => c.category.includes(k) || c.id.includes(k) || k.includes(c.category));
+    const effectiveFactor = system ? computeEffectiveFactor(c.id, system) : 1.0;
+    if (effectiveFactor > 1.0) {
+      neededCommodities.push(c);
+    }
     weighted.push(c);
-    if (boosted) weighted.push(c); // double weight for biased commodities
+  }
+
+  const candidates = neededCommodities.length > 0 ? neededCommodities : commodities;
+  for (const c of candidates) {
+    weighted.push(c); // double weight for commodities the system needs
   }
 
   const { supplyRequirementsMin, supplyRequirementsMax, supplyQtyMin, supplyQtyMax } = getGameBalance().missions;

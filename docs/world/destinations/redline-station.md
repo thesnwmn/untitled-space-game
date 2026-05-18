@@ -17,11 +17,6 @@ mission_chance: 0.75
 npcs:
   trader: Smelter Haag
 
-goods_bias:
-  - mining
-  - refining
-  - fuel-production
-
 danger_level: medium
 tags:
   - industrial

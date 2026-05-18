@@ -11,7 +11,7 @@ security: high
 population: massive
 danger_level: low
 player_knowledge: public
-economy:
+economies:
   - industrial
 major_factions:
   - terran-union
@@ -43,8 +43,6 @@ min_missions: 2
 mission_chance: 0.75
 npcs:
   trader: Merchant Kess
-goods_bias:
-  - trade
 danger_level: low
 tags:
   - starter
@@ -155,11 +153,10 @@ describe('parseWorldFiles', () => {
       expect(dest.amenities.fuel).toBe(true);
     });
 
-    it('preserves npcs and goodsBias', () => {
+    it('preserves npcs', () => {
       const world = parseWorldFiles({ 'destinations/elysium-station.md': DESTINATION_FILE });
       const dest = world.destinations[0];
       expect(dest.npcs.trader).toBe('Merchant Kess');
-      expect(dest.goodsBias).toEqual(['trade']);
     });
   });
 

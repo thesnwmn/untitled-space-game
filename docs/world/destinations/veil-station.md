@@ -17,10 +17,6 @@ mission_chance: 0.65
 npcs:
   trader: Archivist Dain
 
-goods_bias:
-  - industrial
-  - administrative
-
 danger_level: none
 tags:
   - research

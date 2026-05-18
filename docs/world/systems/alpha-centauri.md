@@ -14,11 +14,10 @@ map_position:
   x: -15
   y: -17
 
-economy:
+economies:
   - trade
   - shipping
-  - finance
-
+  - industrial
 major_factions:
   - centauri-trade-league
   - terran-union

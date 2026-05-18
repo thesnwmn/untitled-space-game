@@ -67,6 +67,10 @@ function frontMatterTable(data: Record<string, unknown>, category: string): stri
         cell = renderArray(v, category, 'factions');
       } else if (k === 'destinations' && Array.isArray(v)) {
         cell = renderArray(v, category, 'destinations');
+      } else if (k === 'economies' && Array.isArray(v)) {
+        cell = (v as unknown[])
+          .map((item) => `<a href="../economies/${esc(String(item))}.html">${esc(String(item))}</a>`)
+          .join(' ');
       } else if ((k === 'system' || k === 'home_system') && typeof v === 'string') {
         cell = `<a href="../systems/${v}.html">${v}</a>`;
       } else if (k === 'influence' && Array.isArray(v)) {
@@ -219,6 +223,87 @@ if (commoditiesDoc) {
   console.log('  ✓ commodities.html');
 }
 
+// ── economies (landing page + individual pages) ──────────────────────────────
+
+const economiesDoc = rootDocs.find((d) => d.id === 'economies');
+if (economiesDoc) {
+  const economies = (economiesDoc.data.economies ?? []) as Array<Record<string, unknown>>;
+  const economiesDir = join(OUT_DIR, 'economies');
+  ensureDir(economiesDir);
+
+  // economies.html landing page
+  const ecoRows = economies
+    .map(
+      (e) => `<tr>
+        <td><a href="${esc(String(e.id))}.html">${esc(String(e.id))}</a></td>
+        <td>${esc(String(e.summary))}</td>
+      </tr>`
+    )
+    .join('\n');
+
+  const ecoBody = `
+    <h1>Economies</h1>
+    <p class="dimmed">Each system specializes in one or more economic sectors, which influence commodity pricing and availability.</p>
+    <table>
+      <tr><th>Economy</th><th>Summary</th></tr>
+      ${ecoRows}
+    </table>
+    ${marked.parse(economiesDoc.content) as string}
+  `;
+
+  write(
+    join(economiesDir, 'index.html'),
+    page('Economies', [
+      { ...DOCS_BASE, href: '../../index.html' },
+      { ...DOCS_INDEX, href: '../index.html' },
+      { label: 'ECONOMIES' },
+    ], ecoBody)
+  );
+
+  // Individual economy pages
+  for (const eco of economies) {
+    const ecoId = String(eco.id);
+    const ecoName = esc(ecoId);
+    const commoditiesList = (eco.commodities ?? []) as Array<Record<string, unknown>>;
+    const commodRows = commoditiesList
+      .map(
+        (c) => `<tr>
+          <td>${esc(String(c.id))}</td>
+          <td>${c.factor != null ? esc(String(c.factor)) : '—'}</td>
+        </tr>`
+      )
+      .join('\n');
+
+    const ecoDetailBody = `
+      <h1>${ecoName}</h1>
+      <p class="dimmed">${esc(String(eco.summary))}</p>
+      <h2>Commodities</h2>
+      <table>
+        <tr><th>Commodity</th><th>Factor</th></tr>
+        ${commodRows}
+      </table>
+      <p style="font-size:0.9rem; margin-top:1rem;">
+        <strong>Factor interpretation:</strong>
+        A factor of <code>0.5</code> means the commodity is abundant and cheap (50% of base price);
+        <code>1.0</code> is neutral;
+        <code>1.3</code> means the commodity is rare and expensive (130% of base price).
+      </p>
+    `;
+
+    write(
+      join(economiesDir, `${ecoId}.html`),
+      page(ecoName, [
+        { ...DOCS_BASE, href: '../../index.html' },
+        { ...DOCS_INDEX, href: '../index.html' },
+        { label: 'ECONOMIES', href: 'index.html' },
+        { label: ecoName },
+      ], ecoDetailBody)
+    );
+  }
+
+  console.log(`  ✓ economies/ (${economies.length} economies)`);
+}
+
 // ── category index + detail pages ────────────────────────────────────────────
 
 for (const cat of CATEGORIES) {
@@ -280,11 +365,17 @@ const commoditiesLink = hasCommodities
   ? `<li><a href="commodities.html">[ COMMODITIES ]</a></li>`
   : '';
 
+const hasEconomies = economiesDoc != null;
+const economiesLink = hasEconomies
+  ? `<li><a href="economies/index.html">[ ECONOMIES ]</a></li>`
+  : '';
+
 const indexBody = `
   <h1>World Docs</h1>
   <p class="dimmed">Browse the factions, systems, destinations, ships, and story of Untitled Space Game.</p>
   <ul style="list-style:none;padding:0;margin-top:1.5rem;line-height:2.5">
     ${catLinks}
+    ${economiesLink}
     ${commoditiesLink}
   </ul>
 `;

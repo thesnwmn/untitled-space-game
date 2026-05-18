@@ -17,10 +17,6 @@ mission_chance: 0.75
 npcs:
   trader: Warden Fleck
 
-goods_bias:
-  - mining
-  - industrial
-
 danger_level: low
 tags:
   - mining-support

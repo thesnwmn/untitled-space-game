@@ -17,10 +17,6 @@ mission_chance: 0.75
 npcs:
   trader: Factor Yeln
 
-goods_bias:
-  - trade
-  - shipping
-
 danger_level: low
 tags:
   - transit-hub

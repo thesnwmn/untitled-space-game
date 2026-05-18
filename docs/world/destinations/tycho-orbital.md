@@ -14,10 +14,6 @@ amenities:
 min_missions: 0
 mission_chance: 0.65
 
-goods_bias:
-  - military
-  - industrial
-
 danger_level: low
 tags:
   - restricted

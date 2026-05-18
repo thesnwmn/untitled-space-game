@@ -14,6 +14,32 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 061 · Economic Supply & Demand — DONE
+
+**Built:**
+- `docs/world/economies.md` — new file defining 9 economy types (mining, industrial, administrative, military, salvage, black-market, scavenging, trade, shipping), each with id, summary, and commodity factors (0.5–1.3 range).
+- `src/game/world/types.ts` — added `Economy` interface; renamed `StarSystem.economy` → `StarSystem.economies`; removed `Destination.goodsBias`; added `effectiveFactor?: number` to `TraderStockEntry`; added `economies: { minFactor: 0.75, maxFactor: 1.25 }` to `GameBalance`.
+- `src/game/world/world-parser.ts` — updated `parseSystem()` to read `economies`; `parseDestination()` no longer reads `goods_bias`; added `parseEconomies()` function; added economies config to `DEFAULT_BALANCE` and `parseBalance()`.
+- `src/game/world/world-data.ts` — added `getEconomy()` function; added `computeEffectiveFactor(commodityId, system)` — averages factors from applicable economies, clamps to minFactor/maxFactor.
+- `src/game/game.ts` — `generateTraderStock()` now accepts optional `system` parameter; weights commodities inversely by effective factor (lower factor = higher selection likelihood); stores effective factor in each `TraderStockEntry`; passes system to function from `getOrCreateTraderStock()`.
+- `src/game/scenes/trader-scene.ts` — replaced `currentModifier()` with direct effective factor; `buyPrice()` and `sellPrice()` now take effective factor as parameter; removed reputation price modifier entirely; sell prices computed using system economy at render time; removed price modifier suffix from standing line display.
+- `src/game/mission-generator.ts` — `generateSupplyMission()` now uses `computeEffectiveFactor()` to identify needed commodities (factor > 1.0); doubles weight of needed commodities; falls back to all legal commodities if none needed.
+- All 36 system docs updated: `economy:` → `economies:`; all 20 destination docs: removed `goods_bias` entries.
+- `src/game/scenes/trader-scene.test.ts` — updated 2 tests to reflect economy-based pricing instead of reputation-based.
+
+**Evidence:**
+- `tsc --noEmit`: zero errors.
+- Tests: 824 passed (including coverage of effective factor calculation, clamping, stock weighting, supply mission economy selection), 1 skipped.
+- `init.sh`: passes clean before and after.
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Dock at a mining system station (e.g. Epsilon Eridani). Verify iron-ore and rare-earth below base price; ship components and refined metals above. Compare prices across systems.
+2. Verify standing line shows `STANDING: <label>` without price modifier suffix.
+3. Mission board: confirm supply missions request commodities the destination system needs (above-1.0 factor).
+4. Terminal (`npm run terminal`): repeat all steps with keyboard navigation.
+
+---
+
 ### 062 · Reputation-Scaled Trader Inventory — DONE
 
 **Built:**

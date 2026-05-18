@@ -21,8 +21,8 @@ import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animat
 import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene } from '../shared/types';
-import type { TraderStockEntry, MissionSpec, Commodity, GameBalance } from './world/types';
-import { getGameSettings, getGameBalance, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld, getFaction } from './world/world-data';
+import type { TraderStockEntry, MissionSpec, Commodity, GameBalance, StarSystem } from './world/types';
+import { getGameSettings, getGameBalance, getSystem, getDestination, getShip, getDrive, getRoute, getCommodities, getCommodity, getWorld, getFaction, computeEffectiveFactor } from './world/world-data';
 import { isReputationEligible, getReputationLevel } from './reputation-utils';
 import { PlayerState } from './player-state';
 import { generateMissions } from './mission-generator';
@@ -37,6 +37,7 @@ export function generateTraderStock(
   commodities: Commodity[],
   repLevel: number,
   balance: GameBalance,
+  system?: StarSystem,
 ): TraderStockEntry[] {
   const {
     stockCountMin, stockCountMax, stockQtyMin, stockQtyMax,
@@ -53,7 +54,25 @@ export function generateTraderStock(
 
   const count = adjCountMin + Math.floor(Math.random() * (adjCountMax - adjCountMin + 1));
 
-  const shuffled = [...commodities];
+  // Weight commodities by effective factor (inverse probability: lower factor = more likely)
+  const weighted: Commodity[] = [];
+  if (system) {
+    for (const c of commodities) {
+      const effectiveFactor = computeEffectiveFactor(c.id, system);
+      const invFactor = 1.0 / effectiveFactor;
+      // weight inversely: 0.75 factor → 1.33 weight; 1.25 factor → 0.8 weight
+      const weight = Math.ceil(invFactor * 10); // scale to reasonable integers
+      for (let i = 0; i < weight; i++) {
+        weighted.push(c);
+      }
+    }
+  } else {
+    // fallback: uniform distribution
+    weighted.push(...commodities);
+  }
+
+  // Fisher-Yates shuffle
+  const shuffled = [...weighted];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -67,18 +86,25 @@ export function generateTraderStock(
   const scoreMax = Math.max(...logScores);
   const scoreRange = scoreMax - scoreMin;
 
-  return shuffled.slice(0, count).map(c => {
+  // Track selected commodities to avoid duplicates in output
+  const selected: Map<string, TraderStockEntry> = new Map();
+  for (const c of shuffled.slice(0, count)) {
+    if (selected.has(c.id)) continue; // already selected
     const rawQty = adjQtyMin + Math.floor(Math.random() * (adjQtyMax - adjQtyMin + 1));
-    let factor = 1.0;
+    let qtyFactor = 1.0;
     if (scoreRange > 0) {
       const t = (Math.log(c.basePrice * c.weightKg) - scoreMin) / scoreRange;
-      factor = 1.5 - t; // cheapest/lightest (t=0) → 1.5×; most expensive/heavy (t=1) → 0.5×
+      qtyFactor = 1.5 - t; // cheapest/lightest (t=0) → 1.5×; most expensive/heavy (t=1) → 0.5×
     }
-    return {
+    const effectiveFactor = system ? computeEffectiveFactor(c.id, system) : 1.0;
+    selected.set(c.id, {
       commodityId: c.id,
-      qty: Math.max(1, Math.floor(rawQty * factor)),
-    };
-  });
+      qty: Math.max(1, Math.floor(rawQty * qtyFactor)),
+      effectiveFactor,
+    });
+  }
+
+  return Array.from(selected.values());
 }
 
 interface StockCache {
@@ -137,7 +163,9 @@ export class Game {
     if (cached && cached.repLevel === repLevel && now - cached.generatedAt < balance.trading.stockTtlMs) {
       return cached.entries;
     }
-    const entries = generateTraderStock(getCommodities(), repLevel, balance);
+    const destination = getDestination(destinationId);
+    const system = destination ? getSystem(destination.system) : undefined;
+    const entries = generateTraderStock(getCommodities(), repLevel, balance, system);
     this.traderStockCache.set(destinationId, { entries, generatedAt: now, repLevel });
     return entries;
   }

@@ -18,11 +18,6 @@ npcs:
   trader: Syndic Marelle
   ship_dealer: Broker Cassel
 
-goods_bias:
-  - trade
-  - finance
-  - shipping
-
 danger_level: low
 tags:
   - trade-hub

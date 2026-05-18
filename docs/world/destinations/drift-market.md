@@ -18,11 +18,6 @@ npcs:
   trader: The Quartermaster
   ship_dealer: The Fence
 
-goods_bias:
-  - salvage
-  - black-market
-  - scavenging
-
 danger_level: high
 tags:
   - lawless

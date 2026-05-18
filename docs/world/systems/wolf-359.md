@@ -14,11 +14,8 @@ map_position:
   x: -32
   y: 2
 
-economy:
-  - salvage
-  - black-market
+economies:
   - scavenging
-
 major_factions:
   - free-captains
   - grey-market-cartel

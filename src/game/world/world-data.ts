@@ -1,4 +1,4 @@
-import type { WorldData, GameSettings, GameBalance, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry, DeliveryItem, NpcNames, Faction } from './types';
+import type { WorldData, GameSettings, GameBalance, StarSystem, Destination, JumpRoute, JumpDrive, Ship, StoryBeat, Commodity, CargoEntry, DeliveryItem, NpcNames, Faction, Economy } from './types';
 
 let _world: WorldData | null = null;
 
@@ -83,4 +83,27 @@ export function computeCargoWeightKg(cargoHold: CargoEntry[]): number {
     const commodity = getCommodity(entry.commodityId);
     return total + entry.qty * (commodity?.weightKg ?? 0);
   }, 0);
+}
+
+export function getEconomy(id: string): Economy | undefined {
+  return getWorld().economies.find(e => e.id === id);
+}
+
+export function computeEffectiveFactor(commodityId: string, system: StarSystem): number {
+  const balance = getGameBalance();
+  const factors: number[] = [];
+
+  for (const economyId of system.economies) {
+    const economy = getEconomy(economyId);
+    if (!economy) continue;
+    for (const c of economy.commodities) {
+      if (c.id === commodityId) {
+        factors.push(c.factor);
+        break;
+      }
+    }
+  }
+
+  const avg = factors.length === 0 ? 1.0 : factors.reduce((a, b) => a + b, 0) / factors.length;
+  return Math.max(balance.economies.minFactor, Math.min(balance.economies.maxFactor, avg));
 }

@@ -18,11 +18,6 @@ npcs:
   trader: Syndic Havel
   ship_dealer: Agent Vorrel
 
-goods_bias:
-  - trade
-  - shipping
-  - industrial
-
 danger_level: low
 tags:
   - trade-hub

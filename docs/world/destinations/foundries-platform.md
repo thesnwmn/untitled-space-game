@@ -17,10 +17,6 @@ mission_chance: 0.75
 npcs:
   trader: Steward Karras
 
-goods_bias:
-  - industrial
-  - military
-
 danger_level: low
 tags:
   - industrial

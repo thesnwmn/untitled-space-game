@@ -14,11 +14,8 @@ map_position:
   x: 10
   y: -48
 
-economy:
+economies:
   - trade
-  - industrial
-  - shipping
-
 major_factions:
   - terran-union
   - eridani-colonial-council
