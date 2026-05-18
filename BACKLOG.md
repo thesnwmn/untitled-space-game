@@ -26,17 +26,6 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
-### 058 · Mini-Game Landing Hook
-
-`GameBalance.miniGames` top-level balance keys (`maxHullDamageFraction`,
-`abandonDamageFraction`, `noDamageThreshold`); `difficultyMultiplier` on `Destination`;
-`goToLandOrDock` routes through `miniGameRegistry` by `locationType` (falls back to
-animation scene when no game registered); damage formula applied on `complete`;
-`LandingResultScene` shown before station. Depends on features 048 and 054.
-See `docs/features/058-mini-game-landing-hook.md` for the full spec.
-
----
-
 ### 055 · Docking Mini-Game (Orbital Alignment)
 
 Crosshair alignment game for `'orbital'` and `'deep-space'` destinations. 32×18 centred

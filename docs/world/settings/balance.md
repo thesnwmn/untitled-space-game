@@ -62,4 +62,9 @@ emergency_rescue:
   tow_fee: 500
   fuel_drop_fee: 800
   fuel_drop_litres: 15
+
+mini_games:
+  max_hull_damage_fraction: 0.10
+  abandon_damage_fraction: 0.05
+  no_damage_threshold: 90
 ---

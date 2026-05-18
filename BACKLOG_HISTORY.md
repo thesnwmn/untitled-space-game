@@ -14,6 +14,23 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 058 · Mini-Game Landing Hook — DONE
+
+**What it added:**
+`GameBalance.miniGames` top-level balance section (`maxHullDamageFraction: 0.10`, `abandonDamageFraction: 0.05`, `noDamageThreshold: 90`) in types, parser, and balance.md. `Destination.difficultyMultiplier?: number` field parsed from world data. `goToLandOrDock()` routes by locationType through `miniGameRegistry`; if a matching entry is found, the mini-game runs and its result feeds `computeMiniGameDamage()` which applies hull damage proportional to score. `LandingResultScene` (extends `BaseTransitionScene`, 3000 ms, advances on any keypress) shows outcome label, score, and damage % before the station opens. Falls back to the existing animation scenes when no mini-game is registered.
+
+**tsc:** zero errors. **Tests:** 880 passed, 1 skipped (pre-existing).
+
+**Play-test instructions:**
+1. Run `npm run dev` and dock anywhere — the existing docking/landing animation plays unchanged (no mini-game registered yet) and hull integrity is unaffected.
+2. Once feature 055/056/057 registers a mini-game, dock at the relevant destination type — confirm the mini-game plays, then `LandingResultScene` shows the outcome label, score, and damage fraction before the station opens.
+3. Press a key during `LandingResultScene` — it should advance immediately instead of waiting 3 s.
+4. When a registered mini-game fires a `skipped` outcome, confirm `LandingResultScene` shows `ABORTED`, no score row, and `abandonDamageFraction * difficultyMultiplier` damage.
+5. Achieve a score ≥ 90 — confirm `HULL DAMAGE: 0%` in bright-green.
+6. Terminal: `npm run terminal` and repeat steps 1–5.
+
+---
+
 ### 054 · Hull Integrity — DONE
 
 **What it added:**

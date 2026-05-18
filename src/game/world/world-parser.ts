@@ -97,6 +97,11 @@ const DEFAULT_BALANCE: GameBalance = {
     minFactor: 0.75,
     maxFactor: 1.25,
   },
+  miniGames: {
+    maxHullDamageFraction: 0.10,
+    abandonDamageFraction: 0.05,
+    noDamageThreshold: 90,
+  },
 };
 
 export function parseWorldFiles(files: Record<string, string>): WorldData {
@@ -219,6 +224,7 @@ function parseDestination(data: { [key: string]: any }, body: string): Destinati
     tags: data.tags ?? [],
     description: extractDescription(body),
     owningFactionId: data.owning_faction,
+    difficultyMultiplier: data.difficulty_multiplier !== undefined ? parseFloat(data.difficulty_multiplier) : undefined,
   };
 }
 
@@ -354,6 +360,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
   const rep = data.reputation ?? {};
   const rescue = data.emergency_rescue ?? {};
   const econ = data.economies ?? {};
+  const mg = data.mini_games ?? {};
   return {
     npc: {
       specialNameChance: npc.special_name_chance ?? d.npc.specialNameChance,
@@ -420,6 +427,11 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
     economies: {
       minFactor: econ.min_factor ?? d.economies.minFactor,
       maxFactor: econ.max_factor ?? d.economies.maxFactor,
+    },
+    miniGames: {
+      maxHullDamageFraction: mg.max_hull_damage_fraction ?? d.miniGames.maxHullDamageFraction,
+      abandonDamageFraction: mg.abandon_damage_fraction ?? d.miniGames.abandonDamageFraction,
+      noDamageThreshold: mg.no_damage_threshold ?? d.miniGames.noDamageThreshold,
     },
   };
 }
