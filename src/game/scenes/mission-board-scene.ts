@@ -18,15 +18,13 @@ export class MissionBoardScene extends BaseMenuScene {
     context: GameContext,
     player: PlayerState,
     destinationId: string,
-    getMissions: () => MissionSpec[],
+    missions: MissionSpec[],
     onMissionSelected: (spec: MissionSpec) => void,
     onHub: () => void,
     onUndock: () => void,
     onMenu: () => void,
   ) {
     getDestination(destinationId)!;
-
-    const missions = getMissions();
     let items: MenuItemDef[];
 
     if (missions.length === 0) {

@@ -14,6 +14,37 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 063 · Mission Destination Ownership & Generation — DONE
+
+**Built:**
+- `src/game/world/types.ts` — removed `missionBoard` from `DestinationAmenities`; added `minMissions: number` and `missionChance: number` to `Destination`; replaced `boardCountMin`/`boardCountMax` with `boardMaxCount` in `GameBalance.missions`
+- `src/game/world/world-parser.ts` — updated `DEFAULT_BALANCE` (boardMaxCount: 10); modified `parseDestination()` to read `min_missions` and `mission_chance`; updated `parseBalance()` to use `board_max_count`
+- `src/game/player-state.ts` — added mission cache Map with TTL; implemented `getDestinationMissions()` and `refreshDestinationMissions()` methods
+- `src/game/mission-generator.ts` — replaced fixed-count algorithm with minMissions baseline + probabilistic chance loop; uses destination-id + time-window seeding for TTL-aligned determinism while respecting seed parameter for test repeatability
+- `src/game/game.ts` — removed `missionBoardCache` field and `getOrCreateMissionBoard()` method; added `refreshDestinationMissions()` called on dock; updated `goToMissionBoard()` to pass missions array directly; updated `onMissionAccepted()` to mutate player state cache
+- `src/game/scenes/mission-board-scene.ts` — changed constructor parameter from `getMissions: () => MissionSpec[]` callback to `missions: MissionSpec[]` array
+- `src/game/scenes/station-menu-scene.ts` — changed MISSION BOARD button visibility from `dest.amenities.missionBoard` to `player.getDestinationMissions(destinationId).length > 0`
+- `docs/world/destinations/_template.md` — updated schema: removed `mission_board` from amenities properties; added top-level `min_missions` and `mission_chance` fields
+- All 19 destination world files (elysium-station, keelhaul-station, etc.) — replaced `amenities.mission_board: true/false` with appropriate `min_missions` and `mission_chance` values per destination role
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 799 passed, 1 skipped (41 test files); updated tests: mission-board-scene (direct missions array), station-menu-scene (missions in player cache), mission-generator (new algorithm and seeding), world-parser (new fields)
+- `init.sh` (before and after): passes clean
+- Reviewer approval: all acceptance criteria met; generation algorithm tested (min respected, chance loop, max cap); conditional menu entry tested
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Start new game; dock at Elysium Station (min_missions: 2, mission_chance: 0.75).
+2. Enter station hub — confirm MISSION BOARD button appears.
+3. Open MISSION BOARD — confirm at least 2 missions present (minMissions baseline).
+4. Note missions; undock and re-dock within TTL window (15 min) — confirm same missions reappear (cache hit).
+5. Wait for TTL to expire or change system time — re-dock to Elysium, confirm new missions generated (cache miss).
+6. Travel to a destination with mission_chance: 0.0 (e.g., Blackwake Yard) — confirm no MISSION BOARD button in hub.
+7. Verify mission count never exceeds boardMaxCount (10) by examining logs or multiple generations.
+8. Repeat all steps in terminal (`npm run terminal`) using keyboard navigation.
+
+---
+
 ### 067 · Emergency Rescue — DONE
 
 **Built:**

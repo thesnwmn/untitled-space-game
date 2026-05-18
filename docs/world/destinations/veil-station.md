@@ -8,10 +8,11 @@ owning_faction: procyon-institute
 
 amenities:
   trader: true
-  mission_board: true
   ship_repair: true
   fuel: true
   ship_dealer: false
+min_missions: 0
+mission_chance: 0.65
 
 npcs:
   trader: Archivist Dain

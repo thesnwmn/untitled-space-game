@@ -8,10 +8,11 @@ owning_faction: helios-directorate
 
 amenities:
   trader: true
-  mission_board: false
   ship_repair: true
   fuel: true
   ship_dealer: true
+min_missions: 0
+mission_chance: 0.0
 
 npcs:
   trader: Factor Orin

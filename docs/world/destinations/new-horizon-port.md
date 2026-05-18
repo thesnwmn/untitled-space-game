@@ -8,10 +8,11 @@ owning_faction: centauri-trade-league
 
 amenities:
   trader: true
-  mission_board: true
   ship_repair: true
   fuel: true
   ship_dealer: true
+min_missions: 2
+mission_chance: 0.75
 
 npcs:
   trader: Syndic Marelle

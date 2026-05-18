@@ -86,6 +86,12 @@ function makeScene(
   const player = makePlayer({ credits });
   // Consume fuel to reach the desired fuelL (player starts at full capacity 100)
   if (fuelL < fuelCapacityL) player.consumeFuel(fuelCapacityL - fuelL);
+  // Add test missions to the destination
+  const testMissions: MissionSpec[] = [
+    makeDeliveryPickupSpec(),
+    makeDeliveryPickupSpec({ itemName: 'Second Package' }),
+  ];
+  player.refreshDestinationMissions('elysium-station', testMissions);
   return new StationMenuScene(input, ctx, player, 'elysium-station', onRefuel, onTrader, onMissionBoard, vi.fn(), onShip, vi.fn());
 }
 
@@ -235,7 +241,9 @@ describe('StationMenuScene', () => {
     it('does not show TRADER item when amenities.trader is false', () => {
       const input = new MockInputHandler();
       // tycho-orbital: trader=false; only MISSION BOARD
-      const scene = new StationMenuScene(input, keyboardContext, makePlayer({ destinationId: 'tycho-orbital' }), 'tycho-orbital', vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+      const player = makePlayer({ destinationId: 'tycho-orbital' });
+      player.refreshDestinationMissions('tycho-orbital', [makeDeliveryPickupSpec()]);
+      const scene = new StationMenuScene(input, keyboardContext, player, 'tycho-orbital', vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
       // First item should be MISSION BOARD

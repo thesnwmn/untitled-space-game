@@ -50,7 +50,7 @@ export class StationMenuScene extends BaseMenuScene {
     // Amenity items
     const amenityItems: MenuItemDef[] = [];
     if (dest.amenities.trader) amenityItems.push({ label: 'TRADER', action: onTrader });
-    if (dest.amenities.missionBoard) amenityItems.push({ label: 'MISSION BOARD', action: onMissionBoard });
+    if (player.getDestinationMissions(destinationId).length > 0) amenityItems.push({ label: 'MISSION BOARD', action: onMissionBoard });
 
     const balance = getGameBalance();
     let localEligibleFactionId: string | null = null;

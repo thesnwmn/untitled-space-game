@@ -8,10 +8,11 @@ owning_faction: eridani-colonial-council
 
 amenities:
   trader: true
-  mission_board: true
   ship_repair: false
   fuel: true
   ship_dealer: true
+min_missions: 2
+mission_chance: 0.75
 
 npcs:
   trader: Broker Senne

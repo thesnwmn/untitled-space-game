@@ -8,10 +8,11 @@ owning_faction: independent-miners-guild
 
 amenities:
   trader: false
-  mission_board: true
   ship_repair: true
   fuel: true
   ship_dealer: true
+min_missions: 0
+mission_chance: 0.65
 
 npcs:
   ship_dealer: Dealer Mast
