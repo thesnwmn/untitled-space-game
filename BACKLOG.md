@@ -26,16 +26,6 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
-
-### 054 · Hull Integrity
-
-Hull integrity tracking on `PlayerState` (0.0–1.0, serialised, backfilled on load);
-`applyHullDamage(fraction)` as the sole write path; `HULL: XX%` display in `ShipScene`
-(colour by threshold). No callers yet — this is pure state and display.
-See `docs/features/054-hull-integrity-minigame-hook.md` for the full spec.
-
----
-
 ### 058 · Mini-Game Landing Hook
 
 `GameBalance.miniGames` top-level balance keys (`maxHullDamageFraction`,
