@@ -14,6 +14,32 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 065 · Mission Board & Log Display Overhaul — DONE
+
+**Built:**
+- `src/game/scenes/mission-board-scene.ts` — added sorting (primary: delivery destination name A–Z, secondary: type delivery-before-supply); refactored mission building to use `buildMenuItem()` and `buildSupplyDetails()` methods; supply missions now display destination name plus per-requirement cargo lines with colour-coded availability (bright-green if sufficient, bright-black otherwise); delivery missions display destination name coloured by proximity (bright-green if current destination, bright-yellow if in current system, white otherwise)
+- `src/game/scenes/mission-log-scene.ts` — added sorting (primary: destination name, secondary: status priority ready-to-deliver > needs-supplies/pending-pickup > in-transit, tertiary: type); implemented `getStatusPriority()`, `sortMissions()`, `buildMenuItem()`, and `buildSupplyDetails()` methods; supply missions display same per-requirement cargo lines as board with colour-coded availability
+- `src/game/scenes/mission-board-scene.test.ts` — updated existing tests for new multi-row layout (missions now occupy 2+ rows due to destination detail lines); added 27 new tests covering: sort order verification, destination name display, supply requirement lines with cargo quantities and colours
+- `src/game/scenes/mission-log-scene.test.ts` — added 22 new tests covering: sort order verification (destination > status priority > type), supply requirement display with cargo colours
+
+**Evidence:**
+- `tsc --noEmit`: zero errors
+- `npm test`: 816 passed, 1 skipped (41 test files); all new tests pass covering sort order, display detail lines, and colour coding
+- `init.sh` (before and after): passes clean
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Dock at station with multiple missions (several supply, several delivery to different destinations).
+2. Open mission board — confirm missions are grouped by delivery destination name alphabetically, with deliveries preceding supplies within each destination group.
+3. Select a supply mission — confirm per-requirement lines visible (e.g., "2x Rations (have: 1)") with green colour if cargo sufficient, dim colour otherwise.
+4. Visit trader and purchase some required commodities — return to board, re-select supply mission — confirm requirement colours change to green.
+5. Accept multiple missions to different destinations and statuses.
+6. Open Missions from global menu — confirm log is sorted: destination name first, then ready-to-deliver missions appear before in-transit ones.
+7. Confirm supply missions in log show same requirement lines as board.
+8. Confirm delivery destination names in board are coloured: bright-green if current destination, bright-yellow if in current system, white otherwise.
+9. Repeat all steps in terminal (`npm run terminal`) using keyboard navigation.
+
+---
+
 ### 064 · Mission Balance & Deposit — DONE
 
 **Built:**
