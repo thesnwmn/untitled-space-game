@@ -81,9 +81,6 @@ export class LandingResultScene extends BaseScene {
 
     const buttonColor: Color = this.isTouch ? 'bright-yellow' : 'bright-green';
     writeCentered(buffer, buttonRow, buttonText, buttonColor, 'black');
-
-    const promptText = this.isTouch ? '(tap button)' : '(any key)';
-    writeCentered(buffer, buttonRow + 1, promptText, 'bright-black', 'black');
   }
 
   private getOutcomeColor(): Color {
