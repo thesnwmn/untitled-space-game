@@ -49,7 +49,9 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
   private readonly driftIntervalMs = 3000;
   private readonly driftMaxDistanceChars = 8;
   private readonly driftSpeedCharsPerSec = 1.2;
-  private readonly perfectRadiusChars = 3;
+  private readonly perfectRadiusChars = 5;
+  private readonly airlockWidth = 5;
+  private readonly airlockHeight = 3;
 
   constructor(
     input: InputHandler,
@@ -100,6 +102,41 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     if (action === 'UP' || action === 'DOWN' || action === 'LEFT' || action === 'RIGHT') {
       this.heldKeys.add(action);
       this.lastActionTime = performance.now();
+    }
+  }
+
+  protected override handleTap(col: number, row: number): void {
+    super.handleTap(col, row);
+
+    if (this.state.completed) return;
+
+    const bufW = 40;
+    const bufH = 30;
+    const contentTop = 4;
+    const contentH = bufH - contentTop - 2;
+
+    const left = Math.floor((bufW - this.canvasWidth) / 2);
+    const vpTop = contentTop + Math.floor((contentH - this.canvasHeight) / 2);
+
+    const centerX = left + Math.floor(this.canvasWidth / 2);
+    const centerY = vpTop + Math.floor(this.canvasHeight / 2);
+
+    const upBtnRow = vpTop - 2;
+    const downBtnRow = vpTop + this.canvasHeight + 1;
+    const leftBtnCol = left - 3;
+    const rightBtnCol = left + this.canvasWidth + 2;
+
+    const tapDist = Math.max(Math.abs(col - centerX), Math.abs(row - centerY));
+    const btnSize = 1;
+
+    if (row === upBtnRow && Math.abs(col - centerX) <= btnSize) {
+      this.handleAction('UP');
+    } else if (row === downBtnRow && Math.abs(col - centerX) <= btnSize) {
+      this.handleAction('DOWN');
+    } else if (col === leftBtnCol && Math.abs(row - centerY) <= btnSize) {
+      this.handleAction('LEFT');
+    } else if (col === rightBtnCol && Math.abs(row - centerY) <= btnSize) {
+      this.handleAction('RIGHT');
     }
   }
 
@@ -216,17 +253,28 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
   }
 
   private drawAirlock(buffer: CharBuffer, top: number, left: number): void {
-    const col = left + 1 + Math.round(this.state.airlockX);
-    const row = top + 1 + Math.round(this.state.airlockY);
-    if (col >= left && col < left + this.canvasWidth && row >= top && row < top + this.canvasHeight) {
-      if (row < buffer.length && col < buffer[row].length) {
-        buffer[row][col] = { char: '[', fg: 'bright-yellow', bg: 'black' };
-      }
-      if (col + 1 < left + this.canvasWidth && row < buffer.length && col + 1 < buffer[row].length) {
-        buffer[row][col + 1] = { char: '+', fg: 'bright-yellow', bg: 'black' };
-      }
-      if (col + 2 < left + this.canvasWidth && row < buffer.length && col + 2 < buffer[row].length) {
-        buffer[row][col + 2] = { char: ']', fg: 'bright-yellow', bg: 'black' };
+    const centerCol = left + 1 + Math.round(this.state.airlockX);
+    const centerRow = top + 1 + Math.round(this.state.airlockY);
+
+    const startCol = centerCol - Math.floor(this.airlockWidth / 2);
+    const startRow = centerRow - Math.floor(this.airlockHeight / 2);
+
+    const airlockPattern = [
+      ['+', '-', '+', '-', '+'],
+      ['|', ' ', '+', ' ', '|'],
+      ['+', '-', '+', '-', '+'],
+    ];
+
+    for (let r = 0; r < this.airlockHeight; r++) {
+      for (let c = 0; c < this.airlockWidth; c++) {
+        const row = startRow + r;
+        const col = startCol + c;
+        if (row >= top && row < top + this.canvasHeight && col >= left && col < left + this.canvasWidth) {
+          if (row < buffer.length && col < buffer[row].length) {
+            const char = airlockPattern[r][c];
+            buffer[row][col] = { char, fg: 'bright-yellow', bg: 'black' };
+          }
+        }
       }
     }
   }
@@ -283,23 +331,48 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
     const upBtnRow = top - 2;
     const downBtnRow = canvasBottom + 1;
-    const leftBtnCol = left - 3;
-    const rightBtnCol = canvasRight + 2;
+    const leftBtnCol = left - 4;
+    const rightBtnCol = canvasRight + 3;
 
-    if (upBtnRow >= 0 && centerX >= 0 && centerX < w) {
-      buffer[upBtnRow][centerX] = { char: '▲', fg: upActive ? activeFg : inactiveFg, bg: 'black' };
+    const btnWidth = 3;
+    const btnText = (char: string) => `[${char}]`;
+
+    if (upBtnRow >= 0 && centerX - 1 >= 0 && centerX + 1 < w) {
+      const text = btnText('^');
+      const col = centerX - 1;
+      for (let i = 0; i < text.length; i++) {
+        if (col + i < w) {
+          buffer[upBtnRow][col + i] = { char: text[i], fg: upActive ? activeFg : inactiveFg, bg: 'black' };
+        }
+      }
     }
 
-    if (downBtnRow < h && centerX >= 0 && centerX < w) {
-      buffer[downBtnRow][centerX] = { char: '▼', fg: downActive ? activeFg : inactiveFg, bg: 'black' };
+    if (downBtnRow < h && centerX - 1 >= 0 && centerX + 1 < w) {
+      const text = btnText('v');
+      const col = centerX - 1;
+      for (let i = 0; i < text.length; i++) {
+        if (col + i < w) {
+          buffer[downBtnRow][col + i] = { char: text[i], fg: downActive ? activeFg : inactiveFg, bg: 'black' };
+        }
+      }
     }
 
-    if (centerY >= 0 && centerY < h && leftBtnCol >= 0 && leftBtnCol < w) {
-      buffer[centerY][leftBtnCol] = { char: '◄', fg: leftActive ? activeFg : inactiveFg, bg: 'black' };
+    if (centerY >= 0 && centerY < h && leftBtnCol >= 0 && leftBtnCol + 2 < w) {
+      const text = btnText('<');
+      for (let i = 0; i < text.length; i++) {
+        if (leftBtnCol + i >= 0 && leftBtnCol + i < w) {
+          buffer[centerY][leftBtnCol + i] = { char: text[i], fg: leftActive ? activeFg : inactiveFg, bg: 'black' };
+        }
+      }
     }
 
-    if (centerY >= 0 && centerY < h && rightBtnCol >= 0 && rightBtnCol < w) {
-      buffer[centerY][rightBtnCol] = { char: '►', fg: rightActive ? activeFg : inactiveFg, bg: 'black' };
+    if (centerY >= 0 && centerY < h && rightBtnCol >= 0 && rightBtnCol + 2 < w) {
+      const text = btnText('>');
+      for (let i = 0; i < text.length; i++) {
+        if (rightBtnCol + i < w) {
+          buffer[centerY][rightBtnCol + i] = { char: text[i], fg: rightActive ? activeFg : inactiveFg, bg: 'black' };
+        }
+      }
     }
   }
 }
