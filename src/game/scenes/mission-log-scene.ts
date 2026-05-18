@@ -59,23 +59,8 @@ export class MissionLogScene extends BaseMenuScene {
     if (missions.length === 0) {
       return [{ label: 'NO ACTIVE MISSIONS', disabled: true, action: () => {} }];
     }
-    return missions.map(m => {
-      const status = getMissionStatus(m, this.player);
-      const dest = getDestination(m.deliveryDestinationId);
-      const destName = dest?.name ?? m.deliveryDestinationId;
-      const statusLabel = STATUS_LABELS[status] ?? status;
-      const statusColor = STATUS_COLORS[status] ?? 'white';
-      return {
-        label: m.title,
-        icon: TYPE_ICONS[m.type],
-        iconFg: 'bright-yellow' as Color,
-        info: `${m.reward} CR`,
-        infoFg: 'bright-green' as Color,
-        details: [`${statusLabel} → ${destName}`],
-        detailsFg: statusColor,
-        action: () => this.openMissionModal(m),
-      };
-    });
+    const sortedMissions = this.sortMissions(missions);
+    return sortedMissions.map(m => this.buildMenuItem(m));
   }
 
   protected override activateCurrent(): void {
@@ -86,7 +71,73 @@ export class MissionLogScene extends BaseMenuScene {
     item.action();
   }
 
-  private openMissionModal(mission: ActiveMission): void {
+  private getStatusPriority(status: string): number {
+    if (status === 'ready-to-deliver') return 0;
+    if (status === 'needs-supplies' || status === 'pending-pickup') return 1;
+    if (status === 'in-transit') return 2;
+    return 3;
+  }
+
+  private sortMissions(missions: typeof this.player.activeMissions): typeof this.player.activeMissions {
+    return [...missions].sort((a, b) => {
+      const destA = getDestination(a.deliveryDestinationId)?.name ?? a.deliveryDestinationId;
+      const destB = getDestination(b.deliveryDestinationId)?.name ?? b.deliveryDestinationId;
+      const destCmp = destA.localeCompare(destB);
+      if (destCmp !== 0) return destCmp;
+
+      const statusA = getMissionStatus(a, this.player);
+      const statusB = getMissionStatus(b, this.player);
+      const statusCmp = this.getStatusPriority(statusA) - this.getStatusPriority(statusB);
+      if (statusCmp !== 0) return statusCmp;
+
+      const typeOrder = { delivery: 0, supply: 1 };
+      return typeOrder[a.type] - typeOrder[b.type];
+    });
+  }
+
+  private buildMenuItem(m: import('../world/types').ActiveMission): MenuItemDef {
+    const status = getMissionStatus(m, this.player);
+    const dest = getDestination(m.deliveryDestinationId);
+    const destName = dest?.name ?? m.deliveryDestinationId;
+    const statusLabel = STATUS_LABELS[status] ?? status;
+    const statusColor = STATUS_COLORS[status] ?? 'white';
+
+    const details = [`${statusLabel} → ${destName}`];
+    const detailsColored = m.type === 'supply' ? this.buildSupplyDetails(m) : [];
+
+    return {
+      label: m.title,
+      icon: TYPE_ICONS[m.type],
+      iconFg: 'bright-yellow' as Color,
+      info: `${m.reward} CR`,
+      infoFg: 'bright-green' as Color,
+      details,
+      detailsFg: statusColor,
+      detailsColored,
+      action: () => this.openMissionModal(m),
+    };
+  }
+
+  private buildSupplyDetails(m: import('../world/types').ActiveMission): Array<{ left: Array<{ text: string; fg: Color }>; }> {
+    if (m.type !== 'supply') return [];
+
+    return m.requirements.map(req => {
+      const commodity = getWorld().commodities.find(c => c.id === req.commodityId);
+      const commodityName = commodity?.name ?? req.commodityId;
+      const cargoEntry = this.player.cargoHold.find(c => c.commodityId === req.commodityId);
+      const qty = cargoEntry?.qty ?? 0;
+      const isSufficient = qty >= req.qty;
+
+      return {
+        left: [
+          { text: `${req.qty}x ${commodityName} `, fg: 'white' },
+          { text: `(have: ${qty})`, fg: isSufficient ? 'bright-green' : 'bright-black' },
+        ],
+      };
+    });
+  }
+
+  private openMissionModal(mission: import('../world/types').ActiveMission): void {
     let body = mission.description;
 
     if (mission.giverFactionId) {

@@ -329,4 +329,96 @@ describe('MissionLogScene', () => {
       expect(onGame).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('sorting', () => {
+    it('sorts missions by destination, status, then type', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+
+      // Create two supply missions for the same destination with different statuses
+      const supplyReadyAlpha: MissionSpec = {
+        id: 'm-alpha-supply-ready',
+        type: 'supply',
+        title: 'Alpha Ready Supply',
+        description: 'Test',
+        reward: 300,
+        issuingDestinationId: 'elysium-station',
+        giverName: 'Test',
+        requirements: [{ commodityId: 'rations', qty: 1 }],
+        deliveryDestinationId: 'alpha-station',
+      };
+
+      const supplyNeedsAlpha: MissionSpec = {
+        id: 'm-alpha-supply-needs',
+        type: 'supply',
+        title: 'Alpha Needs Supply',
+        description: 'Test',
+        reward: 250,
+        issuingDestinationId: 'elysium-station',
+        giverName: 'Test',
+        requirements: [{ commodityId: 'fuel-cells', qty: 10 }],
+        deliveryDestinationId: 'alpha-station',
+      };
+
+      // Accept in reverse order
+      player.acceptMission(supplyNeedsAlpha, false);  // needs-supplies (player has no fuel)
+      player.addCargo('rations', 1);  // now has rations
+      player.acceptMission(supplyReadyAlpha, false);  // ready-to-deliver (player has rations)
+
+      const scene = new MissionLogScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const fullText = bufferText(buf);
+
+      // Expected: ready-to-deliver missions appear before needs-supplies
+      // So "Alpha Ready Supply" should appear before "Alpha Needs Supply"
+      const readyPos = fullText.indexOf('Alpha Ready Supply');
+      const needsPos = fullText.indexOf('Alpha Needs Supply');
+
+      expect(readyPos).toBeGreaterThan(-1);
+      expect(needsPos).toBeGreaterThan(-1);
+      expect(readyPos).toBeLessThan(needsPos);
+    });
+  });
+
+  describe('supply mission display', () => {
+    it('renders supply mission requirements with cargo quantities', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      player.addCargo('rations', 1);
+      player.addCargo('fuel-cells', 5);
+
+      const supplyMission: MissionSpec = {
+        id: 'm-supply',
+        type: 'supply',
+        title: 'Supply Test',
+        description: 'Test',
+        reward: 300,
+        issuingDestinationId: 'elysium-station',
+        giverName: 'Test',
+        requirements: [
+          { commodityId: 'rations', qty: 2 },
+          { commodityId: 'fuel-cells', qty: 5 },
+          { commodityId: 'water', qty: 1 },
+        ],
+        deliveryDestinationId: 'elysium-station',
+      };
+
+      player.acceptMission(supplyMission, false);
+
+      const scene = new MissionLogScene(input, context, player, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+
+      // Title at ITEM_START
+      // Status detail at ITEM_START + 1
+      // Requirements start at ITEM_START + 2
+      expect(rowText(buf, ITEM_START + 2)).toContain('2x Ration Packs');
+      expect(rowText(buf, ITEM_START + 2)).toContain('(have: 1)');
+      expect(rowText(buf, ITEM_START + 3)).toContain('5x Fuel Cell');
+      expect(rowText(buf, ITEM_START + 3)).toContain('(have: 5)');
+      expect(rowText(buf, ITEM_START + 4)).toContain('1x water');
+      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 0)');
+    });
+  });
 });

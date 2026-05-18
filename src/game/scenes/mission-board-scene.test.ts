@@ -186,9 +186,10 @@ describe('MissionBoardScene', () => {
       const scene = makeScene(input, makeMissions());
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 1 (supply) is at ITEM_START + 1 (each mission takes 1 row)
-      expect(buf[ITEM_START + 1][4].char).toBe('S');
-      expect(buf[ITEM_START + 1][4].fg).toBe('bright-yellow');
+      // Mission 0 (delivery) takes 1 title + 1 destination detail row = 2 rows total
+      // Mission 1 (supply) starts at ITEM_START + 2
+      expect(buf[ITEM_START + 2][4].char).toBe('S');
+      expect(buf[ITEM_START + 2][4].fg).toBe('bright-yellow');
     });
 
     it('renders mission title', () => {
@@ -228,8 +229,8 @@ describe('MissionBoardScene', () => {
       input.triggerAction('DOWN');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 1 is at ITEM_START + 1 (each item takes 1 row)
-      expect(buf[ITEM_START + 1][2].char).toBe('>');
+      // Mission 0 (delivery) takes 2 rows; Mission 1 starts at ITEM_START + 2
+      expect(buf[ITEM_START + 2][2].char).toBe('>');
     });
 
     it('UP from first mission wraps to last', () => {
@@ -238,8 +239,9 @@ describe('MissionBoardScene', () => {
       input.triggerAction('UP');
       const buf = makeBuffer(40, 30);
       scene.render(buf);
-      // Mission 2 (last) is at ITEM_START + 2
-      expect(buf[ITEM_START + 2][2].char).toBe('>');
+      // Mission 0: 2 rows, Mission 1: 3 rows (title + dest + supply), Mission 2: 2 rows
+      // Mission 2 is at ITEM_START + 5
+      expect(buf[ITEM_START + 5][2].char).toBe('>');
     });
 
     it('DOWN wraps from last mission back to first', () => {
@@ -351,6 +353,170 @@ describe('MissionBoardScene', () => {
       const input = new MockInputHandler();
       const scene = makeScene(input, makeMissions());
       expect(() => scene.update(16.7)).not.toThrow();
+    });
+  });
+
+  describe('sorting and display', () => {
+    it('sorts missions by destination name then type (delivery before supply)', () => {
+      const input = new MockInputHandler();
+      // Create missions: 2 for mars, then 1 for alpha, then 2 for ceti
+      const missions: MissionSpec[] = [
+        {
+          id: 'm-mars-1',
+          type: 'supply',
+          title: 'Mars Supply A',
+          description: 'Test',
+          reward: 100,
+          issuingDestinationId: 'elysium-station',
+          giverName: 'Giver A',
+          requirements: [],
+          deliveryDestinationId: 'mars-anchor',
+        },
+        {
+          id: 'm-mars-2',
+          type: 'delivery',
+          title: 'Mars Delivery',
+          description: 'Test',
+          reward: 200,
+          issuingDestinationId: 'elysium-station',
+          giverName: 'Giver B',
+          itemName: 'Item',
+          itemWeightKg: 10,
+          pickupDestinationId: 'elysium-station',
+          deliveryDestinationId: 'mars-anchor',
+          deposit: 50,
+        },
+        {
+          id: 'm-alpha-1',
+          type: 'supply',
+          title: 'Alpha Supply',
+          description: 'Test',
+          reward: 150,
+          issuingDestinationId: 'elysium-station',
+          giverName: 'Giver C',
+          requirements: [],
+          deliveryDestinationId: 'alpha-station',
+        },
+        {
+          id: 'm-ceti-1',
+          type: 'delivery',
+          title: 'Ceti Delivery',
+          description: 'Test',
+          reward: 300,
+          issuingDestinationId: 'elysium-station',
+          giverName: 'Giver D',
+          itemName: 'Item2',
+          itemWeightKg: 20,
+          pickupDestinationId: 'elysium-station',
+          deliveryDestinationId: 'ceti-landfall',
+          deposit: 75,
+        },
+        {
+          id: 'm-ceti-2',
+          type: 'supply',
+          title: 'Ceti Supply',
+          description: 'Test',
+          reward: 250,
+          issuingDestinationId: 'elysium-station',
+          giverName: 'Giver E',
+          requirements: [],
+          deliveryDestinationId: 'ceti-landfall',
+        },
+      ];
+
+      const scene = makeScene(input, missions);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+
+      // Expected sorted order:
+      // 1. alpha-station (supply)
+      // 2. ceti-landfall (delivery before supply)
+      // 3. ceti-landfall (supply)
+      // 4. mars-anchor (delivery before supply)
+      // 5. mars-anchor (supply)
+
+      const getTitleAtItem = (itemNum: number): string => {
+        let row = ITEM_START;
+        for (let i = 0; i < itemNum; i++) {
+          const details = buf[row + 1]
+            .map(c => c.char)
+            .join('')
+            .trim();
+          const detailLines = details.length > 0 ? 1 : 0;
+          row += 1 + detailLines; // title + details
+        }
+        return rowText(buf, row);
+      };
+
+      expect(getTitleAtItem(0)).toContain('Alpha Supply');
+      expect(getTitleAtItem(1)).toContain('Ceti Delivery');
+      expect(getTitleAtItem(2)).toContain('Ceti Supply');
+      expect(getTitleAtItem(3)).toContain('Mars Delivery');
+      expect(getTitleAtItem(4)).toContain('Mars Supply A');
+    });
+
+    it('displays destination name below delivery mission title', () => {
+      const input = new MockInputHandler();
+      const missions = makeMissions(1); // Just the first delivery mission
+      const scene = makeScene(input, missions);
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+
+      // Title at ITEM_START, destination detail at ITEM_START + 1
+      // The actual destination name from world data is 'Ceti Landfall'
+      expect(rowText(buf, ITEM_START + 1)).toContain('Ceti Landfall');
+    });
+
+    it('displays supply mission requirements with cargo quantities', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      // Add some cargo
+      player.addCargo('rations', 1);
+      player.addCargo('fuel-cells', 5);
+
+      const missions: MissionSpec[] = [
+        {
+          id: 'm-supply',
+          type: 'supply',
+          title: 'Supply Test',
+          description: 'Test',
+          reward: 300,
+          issuingDestinationId: 'elysium-station',
+          giverName: 'Jane',
+          requirements: [
+            { commodityId: 'rations', qty: 2 },
+            { commodityId: 'fuel-cells', qty: 5 },
+            { commodityId: 'water', qty: 1 },
+          ],
+          deliveryDestinationId: 'elysium-station',
+        },
+      ];
+
+      const inputHandler = new MockInputHandler();
+      const scene = new MissionBoardScene(
+        inputHandler,
+        keyboardContext,
+        player,
+        'elysium-station',
+        missions,
+        vi.fn(),
+        vi.fn(),
+        vi.fn(),
+        vi.fn(),
+      );
+
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+
+      // Title at ITEM_START
+      // Destination at ITEM_START + 1
+      // Requirements start at ITEM_START + 2
+      expect(rowText(buf, ITEM_START + 2)).toContain('2x Ration Packs');
+      expect(rowText(buf, ITEM_START + 2)).toContain('(have: 1)');
+      expect(rowText(buf, ITEM_START + 3)).toContain('5x Fuel Cell');
+      expect(rowText(buf, ITEM_START + 3)).toContain('(have: 5)');
+      expect(rowText(buf, ITEM_START + 4)).toContain('1x water');
+      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 0)');
     });
   });
 });
