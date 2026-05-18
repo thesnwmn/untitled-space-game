@@ -87,6 +87,12 @@ export class PlayerState {
     this._fuelL = Math.max(0, this._fuelL - litres);
   }
 
+  getInSystemHopCost(): number {
+    const ship = getShip(this.shipId)!;
+    const balance = getWorld().balance;
+    return Math.ceil(balance.fuel.inSystemBaseConsumptionL * ship.fuelEfficiency);
+  }
+
   // Credits
   get credits(): number { return this._credits; }
 

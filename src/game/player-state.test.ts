@@ -72,6 +72,24 @@ describe('PlayerState', () => {
       p.consumeFuel(9999);
       expect(p.fuelL).toBe(0);
     });
+
+    it('getInSystemHopCost calculates for scout ship', () => {
+      const p = makePlayer({ shipId: 'scout' });
+      const hopCost = p.getInSystemHopCost();
+      expect(hopCost).toBe(3); // Math.ceil(4 * 0.7) = 3
+    });
+
+    it('getInSystemHopCost calculates for freighter ship', () => {
+      const p = makePlayer({ shipId: 'freighter' });
+      const hopCost = p.getInSystemHopCost();
+      expect(hopCost).toBe(4); // Math.ceil(4 * 0.85) = 4
+    });
+
+    it('getInSystemHopCost calculates for hauler ship', () => {
+      const p = makePlayer({ shipId: 'hauler' });
+      const hopCost = p.getInSystemHopCost();
+      expect(hopCost).toBe(4); // Math.ceil(4 * 0.95) = 4
+    });
   });
 
   describe('credits', () => {

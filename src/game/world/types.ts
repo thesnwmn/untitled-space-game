@@ -88,6 +88,7 @@ export interface Ship {
   fuelCapacityL: number;
   hullPoints: number;
   defaultJumpDrive: string;
+  fuelEfficiency: number;
   tags: string[];
   description: string;
 }
@@ -155,6 +156,7 @@ export interface GameBalance {
   fuel: {
     pricePerLitre: number;
     consumptionPerLy: number;
+    inSystemBaseConsumptionL: number;
   };
   reputation: {
     levelUnfriendlyMin: number;

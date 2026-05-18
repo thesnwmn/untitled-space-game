@@ -366,4 +366,47 @@ describe('TravelMenuScene global menu', () => {
     input.triggerAction('BACK');
     expect(onShip).toHaveBeenCalledTimes(1);
   });
+
+  describe('in-system fuel cost', () => {
+    it('renders the fuel cost in the summary', () => {
+      const input = new MockInputHandler();
+      const scene = new TravelMenuScene(input, context, makePlayer(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      const text = allText(buf);
+      expect(text).toContain('FUEL');
+      expect(text).toContain('per hop');
+    });
+
+    it('greys out all destinations when fuel is insufficient', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      player.consumeFuel(player.fuelL - 1); // Leave only 1 L, but hop costs 4 L
+      const onDestSelected = vi.fn();
+      const scene = new TravelMenuScene(input, context, player, onDestSelected, vi.fn(), vi.fn(), vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      input.triggerAction('DOWN');
+      input.triggerAction('SELECT');
+      // Should not call the action because the item is disabled
+      expect(onDestSelected).not.toHaveBeenCalled();
+    });
+
+    it('greys out FLY INTO SPACE when fuel is insufficient', () => {
+      const input = new MockInputHandler();
+      const player = makePlayer();
+      player.consumeFuel(player.fuelL - 1);
+      const onFlyIntoSpace = vi.fn();
+      const scene = new TravelMenuScene(input, context, player, vi.fn(), vi.fn(), onFlyIntoSpace, vi.fn(), vi.fn());
+      const buf = makeBuffer(40, 30);
+      scene.render(buf);
+      // Move to FLY INTO SPACE item
+      const items = getSystem(player.systemId)!.destinations.length + 1; // destinations + FLY INTO SPACE
+      for (let i = 0; i < items - 1; i++) {
+        input.triggerAction('DOWN');
+      }
+      input.triggerAction('SELECT');
+      expect(onFlyIntoSpace).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -7,6 +7,7 @@ cargo_capacity_kg: 8000
 fuel_capacity_l: 200
 hull_points: 100
 default_jump_drive: hauler
+fuel_efficiency: 0.95
 tags:
   - high-cargo
   - durable

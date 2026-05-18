@@ -28,6 +28,7 @@ trading:
 fuel:
   price_per_litre: 10
   consumption_per_ly: 5
+  in_system_base_consumption_l: 4
 
 reputation:
   level_unfriendly_min: -300

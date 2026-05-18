@@ -7,6 +7,7 @@ cargo_capacity_kg: 2000
 fuel_capacity_l: 100
 hull_points: 60
 default_jump_drive: civilian-mk1
+fuel_efficiency: 0.85
 tags:
   - starter
   - slow
