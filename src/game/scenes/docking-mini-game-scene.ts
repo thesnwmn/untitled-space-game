@@ -38,6 +38,8 @@ interface DockingState {
 export class DockingMiniGameScene extends BaseMiniGameScene {
   private state: DockingState;
   private heldKeys = new Set<string>();
+  private lastActionTime = 0;
+  private actionTimeoutMs = 200;
   private rand: () => number;
   private readonly canvasWidth = 32;
   private readonly canvasHeight = 18;
@@ -97,6 +99,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
     if (action === 'UP' || action === 'DOWN' || action === 'LEFT' || action === 'RIGHT') {
       this.heldKeys.add(action);
+      this.lastActionTime = performance.now();
     }
   }
 
@@ -107,6 +110,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
     if (this.state.completed) return;
 
+    this.clearExpiredActions();
     this.updateMovement(dtSeconds);
     this.updateAirlockDrift(dtSeconds);
     this.updateCountdown(dtSeconds);
@@ -168,6 +172,13 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     this.state.timeRemaining = Math.max(0, this.state.timeRemaining - dt);
   }
 
+  private clearExpiredActions(): void {
+    const now = performance.now();
+    if (now - this.lastActionTime > this.actionTimeoutMs) {
+      this.heldKeys.clear();
+    }
+  }
+
   protected renderGame(buffer: CharBuffer, viewport: MiniGameViewport): void {
     const { top, left, width, height } = viewport;
 
@@ -176,6 +187,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     this.drawShip(buffer, top, left);
     this.drawCountdown(buffer, top, left, width);
     this.drawDistance(buffer, top, left, height);
+    this.drawControlButtons(buffer, top, left, width, height);
   }
 
   private drawBorder(buffer: CharBuffer, top: number, left: number, width: number, height: number): void {
@@ -250,5 +262,44 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     const distStr = `DIST: ${distance.toFixed(1)}`;
     const row = top + height - 1;
     writeText(buffer, row, left + 2, distStr, 'white', 'black');
+  }
+
+  private drawControlButtons(buffer: CharBuffer, top: number, left: number, width: number, height: number): void {
+    const h = buffer.length;
+    const w = h > 0 ? buffer[0].length : 0;
+    const canvasRight = left + width;
+    const canvasBottom = top + height;
+
+    const upActive = this.heldKeys.has('UP');
+    const downActive = this.heldKeys.has('DOWN');
+    const leftActive = this.heldKeys.has('LEFT');
+    const rightActive = this.heldKeys.has('RIGHT');
+
+    const activeFg = 'bright-green';
+    const inactiveFg = 'bright-black';
+
+    const centerY = top + Math.floor(height / 2);
+    const centerX = left + Math.floor(width / 2);
+
+    const upBtnRow = top - 2;
+    const downBtnRow = canvasBottom + 1;
+    const leftBtnCol = left - 3;
+    const rightBtnCol = canvasRight + 2;
+
+    if (upBtnRow >= 0 && centerX >= 0 && centerX < w) {
+      buffer[upBtnRow][centerX] = { char: '▲', fg: upActive ? activeFg : inactiveFg, bg: 'black' };
+    }
+
+    if (downBtnRow < h && centerX >= 0 && centerX < w) {
+      buffer[downBtnRow][centerX] = { char: '▼', fg: downActive ? activeFg : inactiveFg, bg: 'black' };
+    }
+
+    if (centerY >= 0 && centerY < h && leftBtnCol >= 0 && leftBtnCol < w) {
+      buffer[centerY][leftBtnCol] = { char: '◄', fg: leftActive ? activeFg : inactiveFg, bg: 'black' };
+    }
+
+    if (centerY >= 0 && centerY < h && rightBtnCol >= 0 && rightBtnCol < w) {
+      buffer[centerY][rightBtnCol] = { char: '►', fg: rightActive ? activeFg : inactiveFg, bg: 'black' };
+    }
   }
 }
