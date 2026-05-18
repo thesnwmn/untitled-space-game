@@ -9,6 +9,8 @@ export class LandingResultScene extends BaseScene {
   private elapsed = 0;
   private arrived = false;
   private readonly duration = DURATION;
+  private lastContentTop = 4;
+  private lastContentBottom = 26;
 
   constructor(
     input: InputHandler,
@@ -27,10 +29,7 @@ export class LandingResultScene extends BaseScene {
 
   private handleTapCustom(col: number, row: number): void {
     const bufW = 40;
-    const bufH = 30;
-    const contentTop = 4;
-    const contentH = bufH - contentTop - 2;
-    const mid = contentTop + Math.floor(contentH / 2);
+    const mid = Math.floor((this.lastContentTop + this.lastContentBottom) / 2);
 
     if (Math.abs(row - mid) <= 2 && Math.abs(col - Math.floor(bufW / 2)) <= 15) {
       this.arrived = true;
@@ -45,6 +44,9 @@ export class LandingResultScene extends BaseScene {
   }
 
   protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
+    this.lastContentTop = top;
+    this.lastContentBottom = bottom;
+
     const mid = Math.floor((top + bottom) / 2);
 
     const labelColor = this.getOutcomeColor();

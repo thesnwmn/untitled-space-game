@@ -52,6 +52,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
   private readonly perfectRadiusChars = 5;
   private readonly airlockWidth = 5;
   private readonly airlockHeight = 3;
+  private lastViewport: { top: number; left: number; width: number; height: number } = { top: 0, left: 0, width: 32, height: 18 };
 
   constructor(
     input: InputHandler,
@@ -111,16 +112,9 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
       return;
     }
 
-    const bufW = 40;
-    const bufH = 30;
-    const contentTop = 4;
-    const contentH = bufH - contentTop - 2;
-
-    const left = Math.floor((bufW - this.canvasWidth) / 2);
-    const vpTop = contentTop + Math.floor((contentH - this.canvasHeight) / 2);
-
-    const centerX = left + Math.floor(this.canvasWidth / 2);
-    const canvasBottom = vpTop + this.canvasHeight;
+    const { top: vpTop, left, width, height } = this.lastViewport;
+    const centerX = left + Math.floor(width / 2);
+    const canvasBottom = vpTop + height;
 
     const upBtnRow = canvasBottom + 1;
     const downBtnRow = canvasBottom + 3;
@@ -219,6 +213,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
   protected renderGame(buffer: CharBuffer, viewport: MiniGameViewport): void {
     const { top, left, width, height } = viewport;
+    this.lastViewport = { top, left, width, height };
 
     this.drawBorder(buffer, top, left, width, height);
     this.drawAirlock(buffer, top, left);
