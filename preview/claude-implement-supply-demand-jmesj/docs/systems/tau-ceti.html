@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tau Ceti — Untitled Space Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --black: #000000;
+    --white: #ffffff;
+    --cyan: #00ffff;
+    --bright-black: #555555;
+    --green: #00ff00;
+    --yellow: #ffff00;
+    --red: #ff0000;
+    --blue: #0000ff;
+    --magenta: #ff00ff;
+    --bright-cyan: #55ffff;
+    --bright-yellow: #ffff55;
+    --bright-magenta: #ff55ff;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Share Tech Mono', 'VT323', monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 1rem 2rem 3rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header {
+    color: var(--cyan);
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--bright-black);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+  }
+  footer {
+    color: var(--bright-black);
+    border-top: 1px solid var(--bright-black);
+    margin-top: 2rem;
+    padding-top: 0.75rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+  h1, h2, h3 { color: var(--cyan); margin: 1.5rem 0 0.5rem; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.2rem; }
+  h3 { font-size: 1rem; }
+  p { margin: 0.5rem 0; }
+  ul, ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+  li { margin: 0.25rem 0; }
+  table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid var(--bright-black);
+    padding: 0.4rem 0.75rem;
+    text-align: left;
+  }
+  th { color: var(--cyan); background: #111; }
+  tr:nth-child(even) td { background: #0a0a0a; }
+  .tag {
+    display: inline-block;
+    color: var(--bright-black);
+    border: 1px solid var(--bright-black);
+    padding: 0 0.4rem;
+    margin: 0.1rem;
+    font-size: 0.8rem;
+  }
+  .dimmed { color: var(--bright-black); }
+  .legal-true { color: var(--green); }
+  .legal-false { color: var(--red); }
+</style>
+</head>
+<body>
+  <header><a href="../../index.html">[ UNTITLED SPACE GAME ]</a> &gt; <a href="../index.html">[ DOCS ]</a> &gt; <a href="index.html">[ SYSTEMS ]</a> &gt; <span>[ Tau Ceti ]</span></header>
+  <main>
+      <h1>Tau Ceti</h1>
+      <table><tr><th>name</th><td>Tau Ceti</td></tr>
+<tr><th>star type</th><td>G8V</td></tr>
+<tr><th>distance from sol</th><td>11.9</td></tr>
+<tr><th>zone</th><td>core</td></tr>
+<tr><th>security</th><td>medium</td></tr>
+<tr><th>population</th><td>high</td></tr>
+<tr><th>danger level</th><td>low</td></tr>
+<tr><th>player knowledge</th><td>public</td></tr>
+<tr><th>map position</th><td><pre>{
+  "x": 10,
+  "y": -48
+}</pre></td></tr>
+<tr><th>economies</th><td><pre>[
+  "trade",
+  "industrial",
+  "shipping"
+]</pre></td></tr>
+<tr><th>major factions</th><td><a href="../factions/terran-union.html">terran-union</a> <a href="../factions/eridani-colonial-council.html">eridani-colonial-council</a></td></tr>
+<tr><th>destinations</th><td><a href="../destinations/waypoint-ceti.html">waypoint-ceti</a> <a href="../destinations/ceti-landfall.html">ceti-landfall</a></td></tr>
+<tr><th>tags</th><td><span class="tag">core-world</span> <span class="tag">colonial</span> <span class="tag">agricultural</span></td></tr></table>
+      <h1>Tau Ceti System</h1>
+<p>Tau Ceti&#39;s primary inhabited world, Ceti Prime, was partially terraformed over
+several generations and now supports large-scale agriculture across its temperate
+latitudes. It is the closest thing to a farming world in core space — not the most
+glamorous system, but one with steady contracts, decent food, and a population
+that takes genuine pride in feeding the inner systems.</p>
+<p>The Eridani Colonial Council holds real administrative authority here, a legacy of
+the system&#39;s independent development before the Terran Union extended its reach
+this far. The Union maintains nominal oversight but rarely pushes — the food supply
+contracts are too important to disrupt with political friction.</p>
+<h2>Major Bodies</h2>
+<h3>Ceti Prime</h3>
+<p>A partially terraformed world. Engineered microbial colonies transformed the
+atmosphere over two centuries; the result is breathable but thin, requiring
+adaptation time for visitors from higher-pressure environments. Vast agricultural
+settlements cover the northern and equatorial continents. Surface transport links
+connect the major harvest districts to Ceti Landfall.</p>
+<h3>Waypoint Ceti</h3>
+<p>The main orbital transit station above Ceti Prime, handling both passenger liners
+and bulk freight bound for core system markets. Crowded during harvest season;
+quieter but never empty otherwise.</p>
+<h3>The Granaries</h3>
+<p>A cluster of bulk orbital storage and processing platforms in the outer system.
+Goods staged here await jump transport during high-volume export periods. No
+civilian docking — strictly logistics infrastructure.</p>
+<h2>Major Stations</h2>
+<h3>Waypoint Ceti</h3>
+<p>A busy mid-sized orbital with a mixed merchant and passenger population.
+The Colonial Council runs the mission board here, which leans heavily toward
+agricultural freight and colony supply contracts. Pilots comfortable with
+low-glamour bulk runs find consistent work.</p>
+<h3>Ceti Landfall</h3>
+<p>The main surface port on Ceti Prime&#39;s northern plateau. Handles agricultural
+exports and incoming supply goods for the surface settlements. The ship dealer
+here stocks reliable freighters and light haulers suited to planetary surface
+operations.</p>
+<h2>Governance</h2>
+<p>The Eridani Colonial Council governs Tau Ceti under a colonial charter that
+predates the Union&#39;s extension into the outer core. The Union holds inspection
+rights over export licensing but delegates day-to-day governance to the Council.
+Pilots filing cargo manifests deal with Council paperwork, not Union forms.</p>
+<h2>History</h2>
+<p>Ceti Prime&#39;s terraforming programme was initiated by a consortium of private
+colonial interests before the Terran Union&#39;s administrative reach extended this
+far. By the time Union representatives arrived to establish oversight, the colony
+was already functional and politically organised. The Colonial Council formalised
+from that existing colonial administration.</p>
+<h2>Local Reputation</h2>
+<p>Honest work, reasonable pay, no drama. Pilots willing to haul agricultural cargo
+and colony supplies find Tau Ceti predictable in the best sense. The locals are
+hospitable but quietly proud of their independence from Sol&#39;s bureaucracy.</p>
+
+    </main>
+  <footer>UNTITLED SPACE GAME — WORLD DOCS</footer>
+</body>
+</html>
