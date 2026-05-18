@@ -105,8 +105,13 @@ export class MissionLogScene extends BaseMenuScene {
     const details = [
       `Status: ${statusLabel}`,
       `Dest: ${destName}`,
-      '',  // blank line for spacing after details
     ];
+
+    // Only add blank line for delivery missions (supply missions add it after requirements)
+    if (m.type !== 'supply') {
+      details.push('');
+    }
+
     const detailsColored = m.type === 'supply' ? this.buildSupplyDetails(m) : [];
 
     return {
@@ -125,7 +130,7 @@ export class MissionLogScene extends BaseMenuScene {
   private buildSupplyDetails(m: import('../world/types').ActiveMission): Array<{ left: Array<{ text: string; fg: Color }>; }> {
     if (m.type !== 'supply') return [];
 
-    return m.requirements.map(req => {
+    const details = m.requirements.map(req => {
       const commodity = getWorld().commodities.find(c => c.id === req.commodityId);
       const commodityName = commodity?.name ?? req.commodityId;
       const cargoEntry = this.player.cargoHold.find(c => c.commodityId === req.commodityId);
@@ -134,11 +139,16 @@ export class MissionLogScene extends BaseMenuScene {
 
       return {
         left: [
-          { text: `${req.qty}x ${commodityName} `, fg: 'white' },
-          { text: `(have: ${qty})`, fg: isSufficient ? 'bright-green' : 'bright-black' },
+          { text: `${req.qty}x ${commodityName} `, fg: 'white' as Color },
+          { text: `(have: ${qty})`, fg: isSufficient ? 'bright-green' : 'bright-black' as Color },
         ],
       };
     });
+
+    // Add blank line at the end
+    details.push({ left: [] });
+
+    return details;
   }
 
   private openMissionModal(mission: import('../world/types').ActiveMission): void {

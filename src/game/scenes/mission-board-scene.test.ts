@@ -507,14 +507,13 @@ describe('MissionBoardScene', () => {
 
       // Title at ITEM_START
       // Destination at ITEM_START + 1
-      // Blank at ITEM_START + 2
-      // Requirements start at ITEM_START + 3
-      expect(rowText(buf, ITEM_START + 3)).toContain('2x Ration Packs');
-      expect(rowText(buf, ITEM_START + 3)).toContain('(have: 1)');
-      expect(rowText(buf, ITEM_START + 4)).toContain('5x Fuel Cell');
-      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 5)');
-      expect(rowText(buf, ITEM_START + 5)).toContain('1x water');
-      expect(rowText(buf, ITEM_START + 5)).toContain('(have: 0)');
+      // Requirements start at ITEM_START + 2
+      expect(rowText(buf, ITEM_START + 2)).toContain('2x Ration Packs');
+      expect(rowText(buf, ITEM_START + 2)).toContain('(have: 1)');
+      expect(rowText(buf, ITEM_START + 3)).toContain('5x Fuel Cell');
+      expect(rowText(buf, ITEM_START + 3)).toContain('(have: 5)');
+      expect(rowText(buf, ITEM_START + 4)).toContain('1x water');
+      expect(rowText(buf, ITEM_START + 4)).toContain('(have: 0)');
     });
   });
 });
