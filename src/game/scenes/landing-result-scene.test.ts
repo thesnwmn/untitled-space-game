@@ -19,6 +19,7 @@ class MockInput implements InputHandler {
 }
 
 const ctx: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const touchCtx: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 function makeScene(
   outcomeLabel: string,
@@ -26,11 +27,12 @@ function makeScene(
   damageFraction: number,
   onComplete = vi.fn(),
   input?: MockInput,
+  context: GameContext = ctx,
 ): LandingResultScene {
   return new LandingResultScene(
     input ?? new MockInput(),
     makePlayer(),
-    ctx,
+    context,
     outcomeLabel,
     score,
     damageFraction,
@@ -79,21 +81,33 @@ describe('LandingResultScene', () => {
   });
 
 
-  describe('tap advance', () => {
-    it('calls onComplete on a center tap', () => {
+  describe('tap advance (touch platform)', () => {
+    it('calls onComplete on continue button tap', () => {
       const cb = vi.fn();
       const input = new MockInput();
-      const scene = makeScene('DOCKED', 80, 0, cb, input);
-      input.tap(20, 15);
+      const scene = makeScene('DOCKED', 80, 0, cb, input, touchCtx);
+      scene.render(makeBuffer(40, 30));
+      input.tap(18, 20);
       expect(cb).toHaveBeenCalledOnce();
     });
 
-    it('does not call onComplete on an edge tap', () => {
+    it('does not call onComplete on non-button tap', () => {
       const cb = vi.fn();
       const input = new MockInput();
-      makeScene('DOCKED', 80, 0, cb, input);
+      const scene = makeScene('DOCKED', 80, 0, cb, input, touchCtx);
+      scene.render(makeBuffer(40, 30));
       input.tap(0, 0);
       expect(cb).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('auto-advance (keyboard platform)', () => {
+    it('calls onComplete on any action', () => {
+      const cb = vi.fn();
+      const input = new MockInput();
+      makeScene('DOCKED', 80, 0, cb, input, ctx);
+      input.dispatch('SELECT');
+      expect(cb).toHaveBeenCalledOnce();
     });
   });
 });

@@ -152,8 +152,8 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
         this.state.shipX - this.state.airlockX,
         this.state.shipY - this.state.airlockY,
       );
-      const rawScore = Math.max(0, Math.min(1, 1 / (1 + distance / this.perfectRadiusChars)));
-      const score = Math.round(rawScore * 100);
+      const airlockRadius = 2.5;
+      const score = distance <= airlockRadius ? 0 : Math.round(Math.max(0, Math.min(1, 1 / (1 + (distance - airlockRadius) / this.perfectRadiusChars))) * 100);
       this.state.completed = true;
       this.complete({ outcome: 'completed', result: { score } });
     }

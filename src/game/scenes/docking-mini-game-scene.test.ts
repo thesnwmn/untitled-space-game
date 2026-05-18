@@ -30,28 +30,39 @@ function makeScene(onComplete?: (result: MiniGameResult) => void): DockingMiniGa
 
 describe('DockingMiniGameScene', () => {
   describe('score calculation', () => {
-    it('score is 100 when distance is 0', () => {
+    it('score is 0 when inside airlock radius', () => {
       const cb = vi.fn();
       const scene = makeScene(cb);
 
-      // Place both ship and airlock at the same position
       (scene as any).state.shipX = (scene as any).state.airlockX;
       (scene as any).state.shipY = (scene as any).state.airlockY;
 
-      // Fast-forward countdown to 0
       (scene as any).state.timeRemaining = 0.001;
       scene.update(1);
 
       expect(cb).toHaveBeenCalled();
       const result = cb.mock.calls[0][0];
       expect(result.outcome).toBe('completed');
-      expect(result.result.score).toBe(100);
+      expect(result.result.score).toBe(0);
+    });
+
+    it('score is high just outside airlock radius', () => {
+      const cb = vi.fn();
+      const scene = makeScene(cb);
+
+      (scene as any).state.airlockX = (scene as any).state.shipX;
+      (scene as any).state.airlockY = (scene as any).state.shipY + 3.5;
+      (scene as any).state.timeRemaining = 0.001;
+      scene.update(1);
+
+      const result = cb.mock.calls[0][0];
+      expect(result.result.score).toBeGreaterThan(50);
     });
 
     it('score decreases as distance increases', () => {
       const scores: number[] = [];
 
-      for (let distance = 0; distance <= 10; distance += 2) {
+      for (let distance = 3.5; distance <= 10; distance += 2) {
         const cb = vi.fn();
         const scene = makeScene(cb);
 
@@ -64,7 +75,6 @@ describe('DockingMiniGameScene', () => {
         scores.push(result.result.score);
       }
 
-      // Verify scores are descending
       for (let i = 0; i < scores.length - 1; i++) {
         expect(scores[i]).toBeGreaterThanOrEqual(scores[i + 1]);
       }
