@@ -1,4 +1,4 @@
-import { getShip, computeCargoWeightKg, getWorld } from './world/world-data';
+import { getShip, computeCargoWeightKg, getWorld, getGameSettings } from './world/world-data';
 import type { CargoEntry, MissionSpec, ActiveMission, MissionItem, MissionStatus, GameBalance } from './world/types';
 import { isReputationEligible } from './reputation-utils';
 
@@ -80,6 +80,20 @@ export class PlayerState {
     }
 
     this._destinationMissions = new Map();
+  }
+
+  static createMock(): PlayerState {
+    const settings = getGameSettings();
+    const ship = getShip(settings.startingShip);
+    if (!ship) throw new Error(`Unknown starting ship: ${settings.startingShip}`);
+
+    return new PlayerState({
+      shipId: settings.startingShip,
+      driveId: ship.defaultJumpDrive,
+      credits: settings.player.startingCredits,
+      systemId: settings.startingLocation.system,
+      destinationId: settings.startingLocation.destination,
+    });
   }
 
   // Fuel
