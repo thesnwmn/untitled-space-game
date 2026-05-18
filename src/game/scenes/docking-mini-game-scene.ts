@@ -43,12 +43,12 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
   private rand: () => number;
   private readonly canvasWidth = 32;
   private readonly canvasHeight = 18;
-  private readonly countdownSeconds = 30;
+  private readonly countdownSeconds = 15;
   private readonly thrustForce = 8;
   private readonly maxVelocity = 6;
   private readonly driftIntervalMs = 3000;
-  private readonly driftMaxDistanceChars = 8;
-  private readonly driftSpeedCharsPerSec = 1.2;
+  private readonly driftMaxDistanceChars = 4;
+  private readonly driftSpeedCharsPerSec = 0.8;
   private readonly perfectRadiusChars = 5;
   private readonly airlockWidth = 5;
   private readonly airlockHeight = 3;
@@ -106,9 +106,10 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
   }
 
   protected override handleTap(col: number, row: number): void {
-    super.handleTap(col, row);
-
-    if (this.state.completed) return;
+    if (this.state.completed) {
+      super.handleTap(col, row);
+      return;
+    }
 
     const bufW = 40;
     const bufH = 30;
@@ -123,20 +124,19 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
     const upBtnRow = vpTop - 2;
     const downBtnRow = vpTop + this.canvasHeight + 1;
-    const leftBtnCol = left - 3;
-    const rightBtnCol = left + this.canvasWidth + 2;
+    const leftBtnCol = left - 4;
+    const rightBtnCol = left + this.canvasWidth + 1;
 
-    const tapDist = Math.max(Math.abs(col - centerX), Math.abs(row - centerY));
-    const btnSize = 1;
-
-    if (row === upBtnRow && Math.abs(col - centerX) <= btnSize) {
+    if (row === upBtnRow && col >= centerX - 1 && col <= centerX + 1) {
       this.handleAction('UP');
-    } else if (row === downBtnRow && Math.abs(col - centerX) <= btnSize) {
+    } else if (row === downBtnRow && col >= centerX - 1 && col <= centerX + 1) {
       this.handleAction('DOWN');
-    } else if (col === leftBtnCol && Math.abs(row - centerY) <= btnSize) {
+    } else if (col >= leftBtnCol && col <= leftBtnCol + 2 && row === centerY) {
       this.handleAction('LEFT');
-    } else if (col === rightBtnCol && Math.abs(row - centerY) <= btnSize) {
+    } else if (col >= rightBtnCol && col <= rightBtnCol + 2 && row === centerY) {
       this.handleAction('RIGHT');
+    } else {
+      super.handleTap(col, row);
     }
   }
 
@@ -332,7 +332,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     const upBtnRow = top - 2;
     const downBtnRow = canvasBottom + 1;
     const leftBtnCol = left - 4;
-    const rightBtnCol = canvasRight + 3;
+    const rightBtnCol = canvasRight + 1;
 
     const btnWidth = 3;
     const btnText = (char: string) => `[${char}]`;

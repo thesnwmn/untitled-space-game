@@ -10,9 +10,12 @@ function makeBuffer(w: number, h: number): CharBuffer {
 }
 
 class MockInput implements InputHandler {
-  private handlers: Array<(action: GameAction) => void> = [];
-  onAction(h: (action: GameAction) => void): void { this.handlers.push(h); }
-  dispatch(action: GameAction): void { this.handlers.forEach(h => h(action)); }
+  private actionHandlers: Array<(action: GameAction) => void> = [];
+  private tapHandlers: Array<(col: number, row: number) => void> = [];
+  onAction(h: (action: GameAction) => void): void { this.actionHandlers.push(h); }
+  onTap(h: (col: number, row: number) => void): void { this.tapHandlers.push(h); }
+  dispatch(action: GameAction): void { this.actionHandlers.forEach(h => h(action)); }
+  tap(col: number, row: number): void { this.tapHandlers.forEach(h => h(col, row)); }
 }
 
 const ctx: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
@@ -91,21 +94,20 @@ describe('LandingResultScene', () => {
     });
   });
 
-  describe('keypress advance', () => {
-    it('calls onComplete on next tick after a keypress', () => {
+  describe('tap advance', () => {
+    it('calls onComplete on a center tap', () => {
       const cb = vi.fn();
       const input = new MockInput();
       const scene = makeScene('DOCKED', 80, 0, cb, input);
-      input.dispatch('SELECT');
-      scene.update(1);
+      input.tap(20, 15);
       expect(cb).toHaveBeenCalledOnce();
     });
 
-    it('does not call onComplete without a tick after keypress', () => {
+    it('does not call onComplete on an edge tap', () => {
       const cb = vi.fn();
       const input = new MockInput();
       makeScene('DOCKED', 80, 0, cb, input);
-      input.dispatch('SELECT');
+      input.tap(0, 0);
       expect(cb).not.toHaveBeenCalled();
     });
   });
