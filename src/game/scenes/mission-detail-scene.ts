@@ -170,6 +170,13 @@ export class MissionDetailScene extends BaseChoiceScene {
     write(row, `REWARD: ${this.spec.reward} CR`, 'bright-green');
     row++;
 
+    if (this.spec.type === 'delivery' && this.spec.deposit > 0) {
+      if (row <= contentLimit) {
+        write(row, `DEPOSIT: ${this.spec.deposit} CR`, 'bright-yellow');
+      }
+      row++;
+    }
+
     if (this.spec.giverFactionId) {
       const givingFaction = world.factions.find(f => f.id === this.spec.giverFactionId);
       if (givingFaction) {

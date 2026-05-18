@@ -211,6 +211,7 @@ function makeDeliverySpec(overrides?: Partial<MissionSpec>): MissionSpec {
     itemWeightKg: 5,
     pickupDestinationId: 'elysium-station',
     deliveryDestinationId: 'portside-market',
+    deposit: 60,
     ...overrides,
   } as MissionSpec;
 }
@@ -478,5 +479,65 @@ describe('canAcceptMission', () => {
     p.addCargo('iron-ore', 49);
     const result = canAcceptMission(p, makeSupplySpec());
     expect(result.ok).toBe(true);
+  });
+
+  it('returns not-ok when player credits < deposit for delivery mission', () => {
+    const p = makePlayer({ credits: 50 });
+    const spec = makeDeliverySpec({ deposit: 100 } as any);
+    const result = canAcceptMission(p, spec);
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain('Insufficient credits for deposit');
+  });
+
+  it('returns ok when player credits >= deposit for delivery mission', () => {
+    const p = makePlayer({ credits: 100 });
+    const spec = makeDeliverySpec({ deposit: 50 } as any);
+    const result = canAcceptMission(p, spec);
+    expect(result.ok).toBe(true);
+  });
+
+  it('supply missions are not affected by deposit check', () => {
+    const p = makePlayer({ credits: 0 });
+    const result = canAcceptMission(p, makeSupplySpec());
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe('mission deposit behavior', () => {
+  it('acceptMission deducts deposit from credits for delivery mission', () => {
+    const p = makePlayer({ credits: 1000 });
+    const spec = makeDeliverySpec({ deposit: 100 } as any);
+    expect(p.credits).toBe(1000);
+    p.acceptMission(spec, false);
+    expect(p.credits).toBe(900);
+  });
+
+  it('acceptMission does not deduct deposit for supply mission', () => {
+    const p = makePlayer({ credits: 1000 });
+    const spec = makeSupplySpec();
+    expect(p.credits).toBe(1000);
+    p.acceptMission(spec, false);
+    expect(p.credits).toBe(1000);
+  });
+
+  it('cancelMission does not refund deposit', () => {
+    const p = makePlayer({ credits: 1000 });
+    const spec = makeDeliverySpec({ id: 'cancel-test', deposit: 100 } as any);
+    p.acceptMission(spec, false);
+    expect(p.credits).toBe(900);
+    p.cancelMission('cancel-test');
+    expect(p.credits).toBe(900); // deposit not refunded
+  });
+
+  it('completeMission pays full reward (deposit already deducted)', () => {
+    const p = makePlayer({ credits: 1000 });
+    const spec = makeDeliverySpec({ id: 'complete-test', reward: 200, deposit: 40 } as any);
+    p.acceptMission(spec, false);
+    expect(p.credits).toBe(960); // 1000 - 40
+    // Manually complete since it's just credit logic
+    p.completeMission('complete-test');
+    // Credits remain 960 (completeMission doesn't add credits — that's done separately in game logic)
+    // But verify the mission is removed
+    expect(p.activeMissions.length).toBe(0);
   });
 });

@@ -139,12 +139,13 @@ export interface GameBalance {
     deliveryChance: number;
     deliveryBaseReward: number;
     deliveryRandomReward: number;
-    supplyRewardMargin: number;
-    supplyRandomReward: number;
+    supplyRewardMultiplierMin: number;
+    supplyRewardMultiplierMax: number;
     supplyRequirementsMin: number;
     supplyRequirementsMax: number;
     supplyQtyMin: number;
     supplyQtyMax: number;
+    deliveryDepositFraction: number;
   };
   trading: {
     stockCountMin: number;
@@ -206,6 +207,7 @@ export interface DeliveryMissionSpec {
   itemWeightKg: number;
   pickupDestinationId: string;
   deliveryDestinationId: string;
+  deposit: number;
 }
 
 export interface SupplyMissionSpec {

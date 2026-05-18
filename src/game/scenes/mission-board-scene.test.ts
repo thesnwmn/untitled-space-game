@@ -64,6 +64,7 @@ function makeMissions(count = 3): MissionSpec[] {
       itemWeightKg: 50,
       pickupDestinationId: 'elysium-station',
       deliveryDestinationId: 'ceti-landfall',
+      deposit: 100,
     },
     {
       id: 'm-002',
@@ -88,6 +89,7 @@ function makeMissions(count = 3): MissionSpec[] {
       itemWeightKg: 100,
       pickupDestinationId: 'elysium-station',
       deliveryDestinationId: 'mars-anchor',
+      deposit: 140,
     },
   ];
   return all.slice(0, count);

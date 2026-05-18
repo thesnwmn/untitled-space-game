@@ -109,6 +109,7 @@ function makeDeliveryPickupSpec(overrides: Partial<{ reward: number; itemName: s
     itemWeightKg: 50,
     pickupDestinationId: 'elysium-station',
     deliveryDestinationId: 'tycho-orbital',
+    deposit: 100,
   };
 }
 
@@ -126,6 +127,7 @@ function makeDeliveryDeliverSpec(overrides: Partial<{ reward: number; title: str
     itemWeightKg: 80,
     pickupDestinationId: 'tycho-orbital',
     deliveryDestinationId: 'elysium-station',
+    deposit: 150,
   };
 }
 
@@ -649,7 +651,7 @@ describe('StationMenuScene', () => {
       // cursor starts on DELIVER item
       input.triggerAction('SELECT');
       expect(player.activeMissions.length).toBe(0);
-      expect(player.credits).toBe(1750); // 1000 + 750
+      expect(player.credits).toBe(1600); // 1000 - 150 deposit + 750 reward
     });
 
     it('selecting DELIVER opens completion modal with reward info', () => {

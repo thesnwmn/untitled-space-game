@@ -59,6 +59,7 @@ const deliverySpec: MissionSpec = {
   itemWeightKg: 10,
   pickupDestinationId: 'elysium-station',
   deliveryDestinationId: 'mars-anchor',
+  deposit: 100,
 };
 
 const supplySpec: MissionSpec = {

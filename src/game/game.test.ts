@@ -242,6 +242,7 @@ describe('Game — undock from station sub-scenes plays animation', () => {
     itemWeightKg: 1,
     pickupDestinationId: ORBITAL,
     deliveryDestinationId: 'elysium-station',
+    deposit: 100,
   };
 
   it('undock from TraderScene plays OrbitalUndockingAnimationScene', () => {

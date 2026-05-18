@@ -180,6 +180,7 @@ describe('CargoScene', () => {
         itemWeightKg: overrides.itemWeightKg ?? 50,
         pickupDestinationId: 'elysium-station',
         deliveryDestinationId: 'tycho-orbital',
+        deposit: 100,
       };
     }
 
