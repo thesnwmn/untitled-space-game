@@ -13,7 +13,6 @@ export class LandingResultScene extends BaseScene {
   private lastContentBottom = 26;
   private buttonRow = 0;
   private buttonCol = 0;
-  private readonly isTouch: boolean;
 
   constructor(
     input: InputHandler,
@@ -25,20 +24,17 @@ export class LandingResultScene extends BaseScene {
     private readonly onComplete: () => void,
   ) {
     super(input, context, player, { navOptions: [] });
-    this.isTouch = context.primaryInput === 'touch';
 
     if (input.onTap) {
       input.onTap((col, row) => this.handleTapCustom(col, row));
     }
 
-    if (!this.isTouch) {
-      input.onAction(() => {
-        if (!this.arrived) {
-          this.arrived = true;
-          this.onComplete();
-        }
-      });
-    }
+    input.onAction((action) => {
+      if (!this.arrived && action === 'SELECT') {
+        this.arrived = true;
+        this.onComplete();
+      }
+    });
   }
 
   private handleTapCustom(col: number, row: number): void {
@@ -79,8 +75,7 @@ export class LandingResultScene extends BaseScene {
     this.buttonRow = buttonRow;
     this.buttonCol = buttonCol;
 
-    const buttonColor: Color = this.isTouch ? 'bright-yellow' : 'bright-green';
-    writeCentered(buffer, buttonRow, buttonText, buttonColor, 'black');
+    writeCentered(buffer, buttonRow, buttonText, 'bright-green', 'black');
   }
 
   private getOutcomeColor(): Color {

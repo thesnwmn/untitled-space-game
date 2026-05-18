@@ -101,13 +101,21 @@ describe('LandingResultScene', () => {
     });
   });
 
-  describe('auto-advance (keyboard platform)', () => {
-    it('calls onComplete on any action', () => {
+  describe('keyboard platform', () => {
+    it('calls onComplete on SELECT action', () => {
       const cb = vi.fn();
       const input = new MockInput();
       makeScene('DOCKED', 80, 0, cb, input, ctx);
       input.dispatch('SELECT');
       expect(cb).toHaveBeenCalledOnce();
+    });
+
+    it('does not call onComplete on other actions', () => {
+      const cb = vi.fn();
+      const input = new MockInput();
+      makeScene('DOCKED', 80, 0, cb, input, ctx);
+      input.dispatch('UP');
+      expect(cb).not.toHaveBeenCalled();
     });
   });
 });
