@@ -293,3 +293,56 @@ describe('GalaxyMapScene global menu', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
+
+// ── onGame nav option ──────────────────────────────────────────────────────────
+
+describe('GalaxyMapScene onGame nav option', () => {
+  it('[2] GAME nav option is present when onGame is provided', () => {
+    const onBack = vi.fn();
+    const onGame = vi.fn();
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack, () => {}, onGame);
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    const text = allText(buf);
+    expect(text).toContain('GAME');
+  });
+
+  it('[2] GAME nav option is absent when onGame is not provided', () => {
+    const onBack = vi.fn();
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack);
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    const text = allText(buf);
+    expect(text).not.toContain('GAME');
+  });
+
+  it('NAV_2 action calls onGame when provided', () => {
+    const onBack = vi.fn();
+    const onGame = vi.fn();
+    const input = new MockInputHandler();
+    new GalaxyMapScene(input, ctx, makePlayer(), onBack, () => {}, onGame);
+    input.triggerAction('NAV_2');
+    expect(onGame).toHaveBeenCalledTimes(1);
+  });
+
+  it('NAV_2 action is a no-op when onGame is not provided', () => {
+    const onBack = vi.fn();
+    const input = new MockInputHandler();
+    new GalaxyMapScene(input, ctx, makePlayer(), onBack);
+    expect(() => input.triggerAction('NAV_2')).not.toThrow();
+  });
+
+  it('tap on [2] GAME nav area calls onGame', () => {
+    const onBack = vi.fn();
+    const onGame = vi.fn();
+    const input = new MockInputHandler();
+    const scene = new GalaxyMapScene(input, ctx, makePlayer(), onBack, () => {}, onGame);
+    const buf = makeBuffer(40, 30);
+    scene.render(buf);
+    // [2] GAME footer button is at row 29 (h-1), columns ~15-19
+    input.triggerTap(15, 29);
+    expect(onGame).toHaveBeenCalledTimes(1);
+  });
+});
