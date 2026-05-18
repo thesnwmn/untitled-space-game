@@ -118,8 +118,8 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
     const upBtnRow = canvasBottom + 1;
     const downBtnRow = canvasBottom + 3;
-    const leftBtnCol = centerX - 4;
-    const rightBtnCol = centerX + 2;
+    const leftBtnCol = centerX - 5;
+    const rightBtnCol = centerX + 3;
     const centerBtnCol = centerX;
 
     if (row === upBtnRow && col >= centerBtnCol - 1 && col <= centerBtnCol + 1) {
@@ -326,8 +326,8 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     const upBtnRow = canvasBottom + 1;
     const midBtnRow = canvasBottom + 2;
     const downBtnRow = canvasBottom + 3;
-    const leftBtnCol = centerX - 4;
-    const rightBtnCol = centerX + 2;
+    const leftBtnCol = centerX - 5;
+    const rightBtnCol = centerX + 3;
 
     if (upBtnRow < h && centerX - 1 >= 0 && centerX + 1 < w) {
       const text = btnText('^');
