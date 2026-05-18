@@ -14,7 +14,7 @@ map_position:
   x: 28
   y: -32
 
-economy:
+economies:
   - military
   - industrial
   - mining

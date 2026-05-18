@@ -12,6 +12,12 @@ export type CommodityCategory = 'raw-material' | 'manufactured' | 'consumable' |
 export type ShipClass = 'freighter' | 'scout' | 'hauler' | 'fighter';
 export type RouteStability = 'stable' | 'unstable' | 'dangerous';
 
+export interface Economy {
+  id: string;
+  summary: string;
+  commodities: { id: string; factor: number }[];
+}
+
 export interface StarSystem {
   id: string;
   name: string;
@@ -22,7 +28,7 @@ export interface StarSystem {
   population: PopulationLevel;
   dangerLevel: DangerLevel;
   playerKnowledge: KnowledgeLevel;
-  economy: string[];
+  economies: string[];
   majorFactions: string[];
   destinations: string[];
   tags: string[];
@@ -44,7 +50,6 @@ export interface Destination {
   type: DestinationType;
   amenities: DestinationAmenities;
   npcs: { trader?: string };
-  goodsBias: string[];
   minMissions: number;
   missionChance: number;
   dangerLevel: DangerLevel;
@@ -192,6 +197,10 @@ export interface GameBalance {
     fuelDropFee: number;
     fuelDropLitres: number;
   };
+  economies: {
+    minFactor: number;
+    maxFactor: number;
+  };
 }
 
 export interface CargoEntry {
@@ -202,6 +211,7 @@ export interface CargoEntry {
 export interface TraderStockEntry {
   commodityId: string;
   qty: number;
+  effectiveFactor?: number;
 }
 
 export type MissionType = 'delivery' | 'supply';
@@ -267,6 +277,7 @@ export interface WorldData {
   ships: Ship[];
   factions: Faction[];
   commodities: Commodity[];
+  economies: Economy[];
   storyBeats: StoryBeat[];
   deliveryItems: DeliveryItem[];
   npcNames: NpcNames;

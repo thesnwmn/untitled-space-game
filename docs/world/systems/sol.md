@@ -14,7 +14,7 @@ map_position:
   x: 0
   y: 0
 
-economy:
+economies:
   - industrial
   - administrative
   - military

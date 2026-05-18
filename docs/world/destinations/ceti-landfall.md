@@ -18,9 +18,6 @@ npcs:
   trader: Broker Senne
   ship_dealer: Agent Oxa
 
-goods_bias:
-  - trade
-
 danger_level: none
 tags:
   - surface-port

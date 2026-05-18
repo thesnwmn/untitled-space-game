@@ -41,7 +41,7 @@ properties:
     enum:
       - public
       - private
-  economy:
+  economies:
     type: array
     items:
       type: string

@@ -17,10 +17,6 @@ mission_chance: 0.65
 npcs:
   ship_dealer: Fleet Liaison Brek
 
-goods_bias:
-  - military
-  - industrial
-
 danger_level: low
 tags:
   - restricted

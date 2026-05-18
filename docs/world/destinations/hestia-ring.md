@@ -17,10 +17,6 @@ mission_chance: 0.75
 npcs:
   trader: Runner Cho
 
-goods_bias:
-  - shipping
-  - trade
-
 danger_level: low
 tags:
   - fast-turnaround

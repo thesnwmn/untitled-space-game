@@ -14,7 +14,7 @@ map_position:
   x: -22
   y: 15
 
-economy:
+economies:
   - mining
   - refining
   - fuel-production

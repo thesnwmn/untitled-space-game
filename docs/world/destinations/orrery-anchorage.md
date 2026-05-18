@@ -14,8 +14,6 @@ amenities:
 min_missions: 0
 mission_chance: 0.0
 
-goods_bias: []
-
 danger_level: none
 tags:
   - waypoint

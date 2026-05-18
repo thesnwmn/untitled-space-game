@@ -14,7 +14,7 @@ map_position:
   x: -32
   y: 2
 
-economy:
+economies:
   - salvage
   - black-market
   - scavenging

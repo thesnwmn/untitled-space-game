@@ -14,6 +14,7 @@ import type {
   GameBalance,
   DeliveryItem,
   NpcNames,
+  Economy,
 } from './types';
 
 function parseFrontMatter(source: string): { data: Record<string, unknown>; content: string } {
@@ -92,6 +93,10 @@ const DEFAULT_BALANCE: GameBalance = {
     fuelDropFee: 800,
     fuelDropLitres: 15,
   },
+  economies: {
+    minFactor: 0.75,
+    maxFactor: 1.25,
+  },
 };
 
 export function parseWorldFiles(files: Record<string, string>): WorldData {
@@ -109,6 +114,7 @@ export function parseWorldFiles(files: Record<string, string>): WorldData {
     ships: [],
     factions: [],
     commodities: [],
+    economies: [],
     storyBeats: [],
     deliveryItems: [],
     npcNames: { special: [], firstNames: [], lastNames: [] },
@@ -134,6 +140,8 @@ export function parseWorldFiles(files: Record<string, string>): WorldData {
       world.routes = parseRoutes(data);
     } else if (path === 'commodities.md') {
       world.commodities = parseCommodities(data);
+    } else if (path === 'economies.md') {
+      world.economies = parseEconomies(data);
     } else if (/^story\/[^/]+\.md$/.test(path)) {
       world.storyBeats.push(parseStoryBeat(data, body));
     } else if (path === 'settings/new-game.md') {
@@ -180,7 +188,7 @@ function parseSystem(data: { [key: string]: any }, body: string): StarSystem {
     population: data.population,
     dangerLevel: data.danger_level,
     playerKnowledge: data.player_knowledge,
-    economy: data.economy ?? [],
+    economies: data.economies ?? [],
     majorFactions: data.major_factions ?? [],
     destinations: data.destinations ?? [],
     tags: data.tags ?? [],
@@ -205,7 +213,6 @@ function parseDestination(data: { [key: string]: any }, body: string): Destinati
     type: data.type,
     amenities,
     npcs: data.npcs ?? {},
-    goodsBias: data.goods_bias ?? [],
     minMissions: data.min_missions ?? 0,
     missionChance: data.mission_chance ?? 0.0,
     dangerLevel: data.danger_level,
@@ -326,6 +333,18 @@ function parseNpcNames(data: { [key: string]: any }): NpcNames {
   };
 }
 
+function parseEconomies(data: { [key: string]: any }): Economy[] {
+  const list: any[] = data.economies ?? [];
+  return list.map((e): Economy => ({
+    id: e.id,
+    summary: e.summary,
+    commodities: (e.commodities ?? []).map((c: any) => ({
+      id: c.id,
+      factor: c.factor,
+    })),
+  }));
+}
+
 function parseBalance(data: { [key: string]: any }): GameBalance {
   const d = DEFAULT_BALANCE;
   const npc = data.npc ?? {};
@@ -334,6 +353,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
   const fuel = data.fuel ?? {};
   const rep = data.reputation ?? {};
   const rescue = data.emergency_rescue ?? {};
+  const econ = data.economies ?? {};
   return {
     npc: {
       specialNameChance: npc.special_name_chance ?? d.npc.specialNameChance,
@@ -396,6 +416,10 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       towFee: rescue.tow_fee ?? d.emergencyRescue.towFee,
       fuelDropFee: rescue.fuel_drop_fee ?? d.emergencyRescue.fuelDropFee,
       fuelDropLitres: rescue.fuel_drop_litres ?? d.emergencyRescue.fuelDropLitres,
+    },
+    economies: {
+      minFactor: econ.min_factor ?? d.economies.minFactor,
+      maxFactor: econ.max_factor ?? d.economies.maxFactor,
     },
   };
 }

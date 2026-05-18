@@ -1,7 +1,7 @@
 import type { InputHandler, GameContext, CharBuffer, Color } from '../../shared/types';
 import type { PlayerState } from '../player-state';
 import type { TraderStockEntry } from '../world/types';
-import { getCommodity, getDestination, getFaction, getGameBalance } from '../world/world-data';
+import { getCommodity, getDestination, getFaction, getGameBalance, getSystem, computeEffectiveFactor } from '../world/world-data';
 import { isReputationEligible, getReputationLevel, getReputationLabel, getTradeModifier } from '../reputation-utils';
 import { writeText } from '../../shared/buffer-utils';
 import { CONTENT_TOP, contentBottom } from '../ui/screen-chrome';
@@ -68,20 +68,12 @@ export class TraderScene extends BaseMenuScene {
     this.clampCursor();
   }
 
-  private currentModifier(): number {
-    if (!this.eligibleFactionId) return 1.0;
-    const balance = getGameBalance();
-    const points = this.player.getFactionReputation(this.eligibleFactionId);
-    const level = getReputationLevel(points, balance);
-    return getTradeModifier(level, balance);
+  private buyPrice(basePrice: number, effectiveFactor: number): number {
+    return Math.round(basePrice * effectiveFactor);
   }
 
-  private buyPrice(basePrice: number): number {
-    return Math.round(basePrice * this.currentModifier());
-  }
-
-  private sellPrice(basePrice: number): number {
-    return Math.round(basePrice / this.currentModifier());
+  private sellPrice(basePrice: number, effectiveFactor: number): number {
+    return Math.round(basePrice / effectiveFactor);
   }
 
   private buildBuyItems(): MenuItemDef[] {
@@ -91,7 +83,8 @@ export class TraderScene extends BaseMenuScene {
     return this.traderStock.flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
-      const unitPrice = this.buyPrice(commodity.basePrice);
+      const effectiveFactor = entry.effectiveFactor ?? 1.0;
+      const unitPrice = this.buyPrice(commodity.basePrice, effectiveFactor);
       const canAfford = this.player.credits >= unitPrice;
       return [{
         label: `${commodity.name} (x${entry.qty})`,
@@ -129,7 +122,10 @@ export class TraderScene extends BaseMenuScene {
     return [...hold].flatMap(entry => {
       const commodity = getCommodity(entry.commodityId);
       if (!commodity) return [];
-      const unitPrice = this.sellPrice(commodity.basePrice);
+      const dest = getDestination(this.player.destinationId ?? '')!;
+      const system = getSystem(dest.system)!;
+      const effectiveFactor = computeEffectiveFactor(entry.commodityId, system);
+      const unitPrice = this.sellPrice(commodity.basePrice, effectiveFactor);
       return [{
         label: `${commodity.name} (x${entry.qty})`,
         info: `${unitPrice} CR`,
@@ -217,13 +213,9 @@ export class TraderScene extends BaseMenuScene {
       const points = this.player.getFactionReputation(this.eligibleFactionId);
       const level = getReputationLevel(points, balance);
       const label = getReputationLabel(level);
-      const modifier = getTradeModifier(level, balance);
-      const modText = `x${modifier.toFixed(2)}`;
-      const modFg: Color = modifier < 1.0 ? 'bright-green' : modifier > 1.0 ? 'yellow' : 'bright-black';
       // Row CONTENT_TOP+2 is blank (between underline and tab bar) — safe to use
-      const standingText = `STANDING: ${label}  `;
+      const standingText = `STANDING: ${label}`;
       writeText(buffer, CONTENT_TOP + 2, 2, standingText, 'bright-black', 'black');
-      writeText(buffer, CONTENT_TOP + 2, 2 + standingText.length, modText, modFg, 'black');
     }
 
     const h = buffer.length;

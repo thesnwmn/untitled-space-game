@@ -14,7 +14,7 @@ map_position:
   x: 10
   y: -48
 
-economy:
+economies:
   - trade
   - industrial
   - shipping

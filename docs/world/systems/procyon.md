@@ -14,7 +14,7 @@ map_position:
   x: -8
   y: 52
 
-economy:
+economies:
   - industrial
   - administrative
 
