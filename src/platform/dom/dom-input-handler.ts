@@ -1,4 +1,4 @@
-import type { InputHandler, GameAction, GameContext } from '../../shared/types';
+import type { InputHandler, GameAction, GameContext, TouchTrackHandlers } from '../../shared/types';
 
 const KEY_MAP: Record<string, GameAction> = {
   ArrowUp: 'UP',
@@ -41,10 +41,12 @@ export class DOMInputHandler implements InputHandler {
   private actionHandlers: ((action: GameAction) => void)[] = [];
   private tapHandlers: ((col: number, row: number) => void)[] = [];
   private charInputHandlers: ((char: string) => void)[] = [];
+  private touchTrackHandlers: TouchTrackHandlers[] = [];
   private pointerStartMap = new Map<number, PointerStart>();
   private activePointers = new Set<number>();
   private keyListener: ((event: KeyboardEvent) => void) | null = null;
   private pointerDownListener: ((event: PointerEvent) => void) | null = null;
+  private pointerMoveListener: ((event: PointerEvent) => void) | null = null;
   private pointerUpListener: ((event: PointerEvent) => void) | null = null;
   private pointerCancelListener: ((event: PointerEvent) => void) | null = null;
   private readonly debugMode: boolean;
@@ -86,6 +88,10 @@ export class DOMInputHandler implements InputHandler {
     this.charInputHandlers.push(handler);
   }
 
+  onTouchTrack(handlers: TouchTrackHandlers): void {
+    this.touchTrackHandlers.push(handlers);
+  }
+
   connect(): void {
     this.keyListener = (event: KeyboardEvent) => {
       if (PREVENT_DEFAULT_KEYS.has(event.key)) event.preventDefault();
@@ -112,6 +118,22 @@ export class DOMInputHandler implements InputHandler {
       this.pointerStartMap.set(event.pointerId, { startX: event.clientX, startY: event.clientY });
       this.activePointers.add(event.pointerId);
       this.logDebug(`DOWN id=${event.pointerId} (${Math.round(event.clientX)},${Math.round(event.clientY)}) type=${event.pointerType} active=${this.activePointers.size}`);
+      if (this.touchTrackHandlers.length > 0) {
+        const coords = this.getGridCoords(event.clientX, event.clientY);
+        if (coords) {
+          for (const h of this.touchTrackHandlers.slice()) h.start(coords.col, coords.row, event.pointerId);
+        }
+      }
+    };
+
+    this.pointerMoveListener = (event: PointerEvent) => {
+      if (!this.pointerStartMap.has(event.pointerId)) return;
+      if (this.touchTrackHandlers.length > 0) {
+        const coords = this.getGridCoords(event.clientX, event.clientY);
+        if (coords) {
+          for (const h of this.touchTrackHandlers.slice()) h.move(coords.col, coords.row, event.pointerId);
+        }
+      }
     };
 
     this.pointerUpListener = (event: PointerEvent) => {
@@ -119,6 +141,10 @@ export class DOMInputHandler implements InputHandler {
       const activeCount = this.activePointers.size;
       this.activePointers.delete(event.pointerId);
       this.pointerStartMap.delete(event.pointerId);
+
+      if (this.touchTrackHandlers.length > 0) {
+        for (const h of this.touchTrackHandlers.slice()) h.end(event.pointerId);
+      }
 
       if (!start) {
         this.logDebug(`UP id=${event.pointerId} NO START`);
@@ -148,6 +174,11 @@ export class DOMInputHandler implements InputHandler {
           }
         }
       } else {
+        // Large movement: if touch-tracking is active (joystick), skip the swipe action
+        if (this.touchTrackHandlers.length > 0) {
+          this.logDebug(`DRAG-END (joystick) dx=${Math.round(dx)} dy=${Math.round(dy)} -> suppressed`);
+          return;
+        }
         let action: GameAction;
         if (absDx >= absDy) {
           action = dx > 0 ? 'RIGHT' : 'LEFT';
@@ -163,9 +194,13 @@ export class DOMInputHandler implements InputHandler {
       this.logDebug(`CANCEL id=${event.pointerId}`);
       this.activePointers.delete(event.pointerId);
       this.pointerStartMap.delete(event.pointerId);
+      if (this.touchTrackHandlers.length > 0) {
+        for (const h of this.touchTrackHandlers.slice()) h.end(event.pointerId);
+      }
     };
 
     window.addEventListener('pointerdown', this.pointerDownListener);
+    window.addEventListener('pointermove', this.pointerMoveListener);
     window.addEventListener('pointerup', this.pointerUpListener);
     window.addEventListener('pointercancel', this.pointerCancelListener);
   }
@@ -178,6 +213,10 @@ export class DOMInputHandler implements InputHandler {
     if (this.pointerDownListener) {
       window.removeEventListener('pointerdown', this.pointerDownListener);
       this.pointerDownListener = null;
+    }
+    if (this.pointerMoveListener) {
+      window.removeEventListener('pointermove', this.pointerMoveListener);
+      this.pointerMoveListener = null;
     }
     if (this.pointerUpListener) {
       window.removeEventListener('pointerup', this.pointerUpListener);

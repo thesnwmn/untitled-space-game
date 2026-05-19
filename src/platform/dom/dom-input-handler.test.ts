@@ -285,6 +285,77 @@ describe('DOMInputHandler — touch', () => {
     expect(actions).toEqual(['BACK']);
   });
 
+  it('onTouchTrack fires start on pointerdown', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const starts: Array<[number, number, number]> = [];
+    h.onTouchTrack({ start: (c, r, id) => starts.push([c, r, id]), move: () => {}, end: () => {} });
+    h.connect();
+    // cell 10x10px; tap at (105,155) → col=10, row=15
+    firePointerDown(1, 105, 155);
+    firePointerUp(1, 106, 156);
+    h.disconnect();
+    expect(starts).toEqual([[10, 15, 1]]);
+  });
+
+  it('onTouchTrack fires move on pointermove', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const moves: Array<[number, number, number]> = [];
+    h.onTouchTrack({ start: () => {}, move: (c, r, id) => moves.push([c, r, id]), end: () => {} });
+    h.connect();
+    firePointerDown(1, 105, 155);
+    firePointerMove(1, 205, 255); // col=20, row=25
+    firePointerUp(1, 206, 256);
+    h.disconnect();
+    expect(moves).toEqual([[20, 25, 1]]);
+  });
+
+  it('onTouchTrack fires end on pointerup', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const ends: number[] = [];
+    h.onTouchTrack({ start: () => {}, move: () => {}, end: (id) => ends.push(id) });
+    h.connect();
+    firePointerDown(1, 105, 155);
+    firePointerUp(1, 106, 156);
+    h.disconnect();
+    expect(ends).toEqual([1]);
+  });
+
+  it('onTouchTrack fires end on pointercancel', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const ends: number[] = [];
+    h.onTouchTrack({ start: () => {}, move: () => {}, end: (id) => ends.push(id) });
+    h.connect();
+    firePointerDown(1, 105, 155);
+    const cancel = new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 });
+    window.dispatchEvent(cancel);
+    h.disconnect();
+    expect(ends).toEqual([1]);
+  });
+
+  it('large drag with touch track suppresses swipe action', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const actions: GameAction[] = [];
+    h.onAction((a) => actions.push(a));
+    h.onTouchTrack({ start: () => {}, move: () => {}, end: () => {} });
+    h.connect();
+    firePointerDown(1, 100, 100);
+    firePointerUp(1, 200, 105); // large rightward drag
+    h.disconnect();
+    expect(actions).toEqual([]); // swipe suppressed
+  });
+
+  it('small tap still fires with touch track registered', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const taps: Array<[number, number]> = [];
+    h.onTap((c, r) => taps.push([c, r]));
+    h.onTouchTrack({ start: () => {}, move: () => {}, end: () => {} });
+    h.connect();
+    firePointerDown(1, 105, 155);
+    firePointerUp(1, 106, 156); // small movement → still a tap
+    h.disconnect();
+    expect(taps).toEqual([[10, 15]]);
+  });
+
   it('no touch events after disconnect', () => {
     const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
     const taps: Array<[number, number]> = [];
@@ -302,6 +373,12 @@ describe('DOMInputHandler — touch', () => {
     expect(taps).toEqual([]);
     expect(actions).toEqual([]);
   });
+
+  function firePointerMove(id: number, clientX: number, clientY: number): PointerEvent {
+    const event = new PointerEvent('pointermove', { bubbles: true, cancelable: true, pointerId: id, clientX, clientY });
+    window.dispatchEvent(event);
+    return event;
+  }
 
   it('calls preventDefault on pointerdown', () => {
     const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'keyboard', debug: false });
