@@ -1,17 +1,17 @@
-# Feature 069 · Ship Dealer Upgrades & Docking Computer
+# Feature 069 · Ship Dealer Upgrades & Landing & Docking Computers
 
 ## Goal
 
-Add a purchasable docking computer at ship dealers; when installed and enabled it replaces
-the docking sequence for orbital and deep-space destinations with a brief 1-second
-`AUTOPILOT ENGAGED` screen before entering the station.
+Add two purchasable autopilot upgrades at ship dealers: a docking computer (bypasses orbital/deep-space 
+docking animation and transitions directly to station) and a landing computer (bypasses surface and 
+asteroid landing animations and mini-games, transitioning directly to the station).
 
 ---
 
 ## Acceptance criteria
 
-- `docs/world/ships/components/ship-upgrades.md` gains a `docking-computer` entry (id, name,
-  description, cost)
+- `docs/world/ships/components/ship-upgrades.md` gains both `docking-computer` and `landing-computer` 
+  entries (id, name, description, cost)
 - Destinations with `ship_dealer: true` now show a `SHIP UPGRADES` entry in the station hub;
   selecting it opens `ShipDealerScene`
 - `ShipDealerScene` lists all upgrades from world data; upgrades already installed by the player
@@ -24,10 +24,17 @@ the docking sequence for orbital and deep-space destinations with a brief 1-seco
 - `[1] BACK` / BACK action returns to the station hub
 - After purchasing the docking computer, the global menu SHIP screen shows
   `DOCKING COMPUTER   [ON ]`
+- After purchasing the landing computer, the global menu SHIP screen shows
+  `LANDING COMPUTER   [ON ]`
 - When the docking computer is installed and enabled, docking at an `orbital` or `deep-space`
   destination shows `AutopilotDockingScene` for 1 000 ms (or until any keypress), then
   transitions to the station — the normal docking animation does not play
 - When the docking computer is installed but toggled to `OFF`, the docking animation plays as normal
+- When the landing computer is installed and enabled, landing at a `surface` or `asteroid`
+  destination shows `AutopilotLandingScene` for 1 000 ms (or until any keypress), then transitions 
+  to the station — the normal landing animation and mini-game do not play
+- When the landing computer is installed but toggled to `OFF`, the landing animation and 
+  mini-game play as normal
 - `npm test` passes; `npx tsc --noEmit` produces zero errors
 
 ---
@@ -36,25 +43,29 @@ the docking sequence for orbital and deep-space destinations with a brief 1-seco
 
 - Buying a new ship at the dealer (separate future feature)
 - Removing or selling installed upgrades
-- Bypassing surface-landing or asteroid-landing sequences (docking computer is orbital/deep-space only)
-- Changes to the docking animation or mini-game themselves
+- Changes to the landing or docking animations or mini-games themselves
 
 ---
 
 ## Technical notes
 
-### World data — docking computer entry
+### World data — computer entries
 
-Add to `docs/world/ships/components/ship-upgrades.md`:
+Add both entries to `docs/world/ships/components/ship-upgrades.md`:
 
 ```yaml
   - id: docking-computer
     name: Docking Computer
     description: Automated approach-and-lock system that handles station docking without pilot input.
     cost: 8000
+  
+  - id: landing-computer
+    name: Landing Computer
+    description: Autonomous descent and terrain navigation for planetary and asteroid surfaces.
+    cost: 12000
 ```
 
-Cost (8000 CR) is a balance starting point; adjust to taste.
+Costs (8000 CR for docking, 12000 CR for landing) are balance starting points; adjust to taste.
 
 ### Destination.npcs — shipDealer field
 
@@ -101,10 +112,29 @@ behaviour). Receives a single `onComplete: () => void` callback that calls `goTo
 > suggestion: Centred content — `AUTOPILOT ENGAGED` in bright-green, with the destination name
 > on the line below in white.
 
-### Docking bypass in game.ts
+### AutopilotLandingScene
 
-At the top of `goToLandOrDock()`, before the existing locationType routing, add:
+New file `src/game/scenes/autopilot-landing-scene.ts`, extending `BaseTransitionScene`.
+Duration: 1 000 ms; advances immediately on any keypress (standard `BaseTransitionScene`
+behaviour). Receives a single `onComplete: () => void` callback that calls `goToStation()`.
+Visual treatment identical to `AutopilotDockingScene`.
 
+> suggestion: Centred content — `AUTOPILOT ENGAGED` in bright-green, with the destination name
+> on the line below in white.
+
+### Landing and docking bypasses in game.ts
+
+At the top of `goToLandOrDock()`, before the existing locationType routing, add two guards:
+
+**Landing bypass (fires first):**
+```
+if destination.locationType is 'surface' or 'asteroid'
+AND player.isUpgradeEnabled('landing-computer'):
+    show AutopilotLandingScene → goToStation()
+    return
+```
+
+**Docking bypass (fires if landing bypass doesn't):**
 ```
 if destination.locationType is 'orbital' or 'deep-space'
 AND player.isUpgradeEnabled('docking-computer'):
@@ -112,8 +142,10 @@ AND player.isUpgradeEnabled('docking-computer'):
     return
 ```
 
-This bypass has no dependency on mini-game features. When Features 055 and 058 are later
-wired into `goToLandOrDock()`, this guard fires first and the mini-game is never reached.
+Both bypasses fire before any landing animation or mini-game is shown, preventing them from 
+playing entirely when the respective computer is enabled. The landing bypass should fire first 
+in the conditional chain so that surface and asteroid destinations are checked before orbital 
+and deep-space destinations.
 
 ---
 
@@ -123,15 +155,21 @@ wired into `goToLandOrDock()`, this guard fires first and the mini-game is never
 
 1. Start a new game (Sol system, Elysium Station). Mars Anchor is also in Sol and has
    `ship_dealer: true` — dock there.
-2. Station hub shows `SHIP UPGRADES` — open it; confirm `Docking Computer` is listed with its
-   credit cost; credits (5000 CR starting) are insufficient to buy it.
-3. Use a cheat or earn credits, then return; purchase the docking computer — confirm credits
-   deducted and return to hub.
+2. Station hub shows `SHIP UPGRADES` — open it; confirm `Docking Computer` and `Landing Computer` 
+   are both listed with their credit costs (5000 CR starting, insufficient for either).
+3. Use a cheat or earn credits (~20000 CR); return to the ship dealer; purchase the docking computer 
+   — confirm credits deducted and return to hub.
 4. Open global menu → SHIP — confirm `DOCKING COMPUTER   [ON ]`.
 5. Undock; select another orbital destination; choose DOCK — confirm `AUTOPILOT ENGAGED`
    appears briefly (~1 s) then the station opens; the normal docking animation does not play.
 6. Open global menu → SHIP; toggle docking computer to `[OFF]`; re-dock — confirm the
    docking animation plays (no autopilot screen).
+7. Return to ship dealer; purchase the landing computer — confirm credits deducted.
+8. Open global menu → SHIP — confirm both `DOCKING COMPUTER   [ON ]` and `LANDING COMPUTER   [ON ]`.
+9. Travel to a surface or asteroid destination; choose LAND — confirm `AUTOPILOT ENGAGED` appears 
+   briefly (~1 s) then the station opens; the landing animation and mini-game do not play.
+10. Open global menu → SHIP; toggle landing computer to `[OFF]`; re-land — confirm the landing 
+    animation and mini-game play as normal.
 
 ### Terminal (`npm run terminal`)
 
