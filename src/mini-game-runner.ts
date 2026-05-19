@@ -25,7 +25,7 @@ function showIndex(): void {
   const root = document.getElementById('root');
   if (!root) return;
 
-  let html = '<div style="padding: 2em; font-family: \'Share Tech Mono\', monospace; color: #aaa; background: #000; min-height: 100vh;">';
+  let html = '<div style="padding: 2em; font-family: \'Share Tech Mono\', monospace; color: #aaa; background: #000; width: 100%;">';
   html += '<h1 style="color: #0f0; margin-bottom: 1em;">Mini Games</h1>';
 
   if (miniGameDescriptors.length === 0) {
@@ -113,7 +113,7 @@ function showError(message: string): void {
   const root = document.getElementById('root');
   if (!root) return;
 
-  let html = '<div style="padding: 2em; font-family: \'Share Tech Mono\', monospace; color: #f00; background: #000; min-height: 100vh;">';
+  let html = '<div style="padding: 2em; font-family: \'Share Tech Mono\', monospace; color: #f00; background: #000; width: 100%;">';
   html += `<h1 style="margin-bottom: 1em;">Error</h1>`;
   html += `<p style="margin-bottom: 1.5em;">${message}</p>`;
   html += `<a href="?" style="color: #0f0; text-decoration: none; border: 1px solid #0f0; padding: 0.5em 1em; display: inline-block;">Back to Index</a>`;
@@ -126,7 +126,7 @@ function showResult(gameId: string, result: MiniGameResult): void {
   const root = document.getElementById('root');
   if (!root) return;
 
-  let html = '<div style="padding: 2em; font-family: \'Share Tech Mono\', monospace; color: #aaa; background: #000; min-height: 100vh;">';
+  let html = '<div style="padding: 2em; font-family: \'Share Tech Mono\', monospace; color: #aaa; background: #000; width: 100%;">';
   html += '<h1 style="color: #0f0; margin-bottom: 1em;">Result</h1>';
   html += `<div style="margin-bottom: 1.5em; padding: 1em; border: 1px solid #444;">`;
   html += `<div style="color: #0f0; font-weight: bold; margin-bottom: 0.5em;">Outcome: ${escapeHtml(result.outcome)}</div>`;
