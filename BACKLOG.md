@@ -57,11 +57,11 @@ See `docs/features/068-ship-upgrade-infrastructure.md` for the full spec.
 
 ---
 
-### 069 · Ship Dealer Upgrades & Docking Computer
+### 069 · Ship Dealer Upgrades & Landing & Docking Computers
 
-Adds a purchasable `Docking Computer` upgrade at destinations with `ship_dealer: true`. When
-installed and enabled, bypasses the docking sequence for orbital and deep-space destinations
-entirely — no animation, goes directly to the station. Depends on Feature 068.
+Adds two purchasable autopilot upgrades at destinations with `ship_dealer: true`: a `Docking Computer`
+that bypasses orbital/deep-space docking (animation only), and a `Landing Computer` that bypasses
+surface and asteroid landings (both animation and mini-game). Depends on Feature 068.
 See `docs/features/069-ship-dealer-docking-computer.md` for the full spec.
 
 ---
