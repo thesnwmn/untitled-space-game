@@ -118,6 +118,7 @@ const DEFAULT_BALANCE: GameBalance = {
       offPadScoreMultiplier: 0.5,
       padWidth: 6,
       initialDownwardVelocity: 2,
+      maxSpeed: 15,
     },
   },
 };
@@ -396,6 +397,7 @@ function parseAsteroidBalance(
     offPadScoreMultiplier: (data.off_pad_score_multiplier as number) ?? defaults.offPadScoreMultiplier,
     padWidth: (data.pad_width as number) ?? defaults.padWidth,
     initialDownwardVelocity: (data.initial_downward_velocity as number) ?? defaults.initialDownwardVelocity,
+    maxSpeed: (data.max_speed as number) ?? defaults.maxSpeed,
   };
 }
 

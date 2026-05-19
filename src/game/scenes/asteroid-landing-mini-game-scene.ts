@@ -21,6 +21,7 @@ export class AsteroidLandingMiniGameScene extends BaseMiniGameScene {
   private readonly _offPadScoreMultiplier: number;
   private readonly _padWidth: number;
   private readonly _initialDownwardVelocity: number;
+  private readonly _maxSpeed: number;
   private readonly _destId: string;
 
   private _ship: LandingPhysicsState = { x: 0, y: 0, vx: 0, vy: 1 };
@@ -56,6 +57,7 @@ export class AsteroidLandingMiniGameScene extends BaseMiniGameScene {
     this._offPadScoreMultiplier = asteroid.offPadScoreMultiplier;
     this._padWidth = asteroid.padWidth;
     this._initialDownwardVelocity = asteroid.initialDownwardVelocity;
+    this._maxSpeed = asteroid.maxSpeed;
 
     if (input.onTouchTrack) {
       input.onTouchTrack({
@@ -120,6 +122,7 @@ export class AsteroidLandingMiniGameScene extends BaseMiniGameScene {
       gravity: 0,
       airResistance: 1.0,
       thrustForce: this._thrustForce,
+      maxVerticalSpeed: this._maxSpeed,
     };
 
     const thrust = {

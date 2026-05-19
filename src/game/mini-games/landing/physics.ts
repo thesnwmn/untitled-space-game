@@ -18,11 +18,9 @@ export function updatePhysics(
   if (thrust.left) vx -= config.thrustForce * dt;
   if (thrust.right) vx += config.thrustForce * dt;
 
-  const maxVx = config.thrustForce * 3;
-  vx = Math.max(-maxVx, Math.min(maxVx, vx));
-
-  const maxVy = config.maxVerticalSpeed ?? Infinity;
-  vy = Math.max(-maxVy, Math.min(maxVy, vy));
+  const speedCap = config.maxVerticalSpeed ?? (config.thrustForce * 3);
+  vx = Math.max(-speedCap, Math.min(speedCap, vx));
+  vy = Math.max(-speedCap, Math.min(speedCap, vy));
 
   x += vx * dt;
   y += vy * dt;

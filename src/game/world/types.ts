@@ -223,6 +223,7 @@ export interface GameBalance {
       offPadScoreMultiplier: number;
       padWidth: number;
       initialDownwardVelocity: number;
+      maxSpeed: number;
     };
     [key: string]: unknown;
   };
