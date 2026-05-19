@@ -74,8 +74,6 @@ export function renderTerrain(
   viewportHeight: number,
   style: TerrainStyle,
 ): void {
-  const nonPadTopChar = style === 'planet' ? '^' : '/';
-
   for (let col = 0; col < terrain.length; col++) {
     const tc = terrain[col];
     const bufCol = viewportLeft + col;
@@ -88,10 +86,13 @@ export function renderTerrain(
       if (!prevIsPad) topChar = '[';
       else if (!nextIsPad) topChar = ']';
       else topChar = '=';
+    } else if (style === 'asteroid') {
+      topChar = '/';
     } else {
-      topChar = nonPadTopChar;
+      topChar = '^';
     }
 
+    const fillChar = style === 'asteroid' ? '*' : '#';
     const fg = tc.isPad ? 'bright-yellow' : ('white' as const);
 
     const bufTopRow = viewportTop + tc.surfaceRow;
@@ -99,7 +100,7 @@ export function renderTerrain(
       if (row < 0 || row >= buffer.length) continue;
       if (bufCol >= buffer[row].length) continue;
       const isTop = row === bufTopRow;
-      buffer[row][bufCol] = { char: isTop ? topChar : '#', fg, bg: 'black' };
+      buffer[row][bufCol] = { char: isTop ? topChar : fillChar, fg, bg: 'black' };
     }
   }
 }

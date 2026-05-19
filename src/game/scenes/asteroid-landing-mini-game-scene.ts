@@ -13,15 +13,14 @@ const SPRITE_HEIGHT = 2;
 const MAX_PHYSICS_STEP = 1 / 60;
 const JOYSTICK_DEAD_ZONE = 1;
 
-export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
+export class AsteroidLandingMiniGameScene extends BaseMiniGameScene {
   private readonly _primaryInput: 'keyboard' | 'touch';
-  private readonly _gravityAccel: number;
-  private readonly _airResistance: number;
   private readonly _thrustForce: number;
   private readonly _maxSafeSpeed: number;
   private readonly _crashSpeed: number;
   private readonly _offPadScoreMultiplier: number;
   private readonly _padWidth: number;
+  private readonly _initialDownwardVelocity: number;
   private readonly _maxSpeed: number;
   private readonly _destId: string;
 
@@ -51,15 +50,14 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
 
     this._destId = player.destinationId ?? '';
     this._primaryInput = context.primaryInput;
-    const { surface } = getGameBalance().miniGames;
-    this._gravityAccel = surface.gravityAccel;
-    this._airResistance = surface.airResistance;
-    this._thrustForce = surface.thrustForce;
-    this._maxSafeSpeed = surface.maxSafeSpeed;
-    this._crashSpeed = surface.crashSpeed;
-    this._offPadScoreMultiplier = surface.offPadScoreMultiplier;
-    this._padWidth = surface.padWidth;
-    this._maxSpeed = surface.maxSpeed;
+    const { asteroid } = getGameBalance().miniGames;
+    this._thrustForce = asteroid.thrustForce;
+    this._maxSafeSpeed = asteroid.maxSafeSpeed;
+    this._crashSpeed = asteroid.crashSpeed;
+    this._offPadScoreMultiplier = asteroid.offPadScoreMultiplier;
+    this._padWidth = asteroid.padWidth;
+    this._initialDownwardVelocity = asteroid.initialDownwardVelocity;
+    this._maxSpeed = asteroid.maxSpeed;
 
     if (input.onTouchTrack) {
       input.onTouchTrack({
@@ -121,8 +119,8 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
     }
 
     const config: LandingPhysicsConfig = {
-      gravity: this._gravityAccel,
-      airResistance: this._airResistance,
+      gravity: 0,
+      airResistance: 1.0,
       thrustForce: this._thrustForce,
       maxVerticalSpeed: this._maxSpeed,
     };
@@ -193,17 +191,17 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
 
   protected renderGame(buffer: CharBuffer, viewport: MiniGameViewport): void {
     if (!this._terrain) {
-      this._terrain = generateTerrain(this._destId, viewport.width, viewport.height, this._padWidth, 'planet');
+      this._terrain = generateTerrain(this._destId, viewport.width, viewport.height, this._padWidth, 'asteroid');
       this._ship = {
         x: (viewport.width - SPRITE_WIDTH) / 2,
         y: 1,
         vx: 0,
-        vy: 1,
+        vy: this._initialDownwardVelocity,
       };
     }
     this._viewport = viewport;
 
-    renderTerrain(buffer, this._terrain, viewport.top, viewport.left, viewport.height, 'planet');
+    renderTerrain(buffer, this._terrain, viewport.top, viewport.left, viewport.height, 'asteroid');
     this._renderShip(buffer, viewport);
     this._renderHUD(buffer, viewport);
     this._renderJoystick(buffer, viewport);

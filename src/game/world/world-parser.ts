@@ -109,7 +109,16 @@ const DEFAULT_BALANCE: GameBalance = {
       crashSpeed: 10,
       offPadScoreMultiplier: 0.5,
       padWidth: 6,
-      maxVerticalSpeed: 15,
+      maxSpeed: 15,
+    },
+    asteroid: {
+      thrustForce: 8,
+      maxSafeSpeed: 4,
+      crashSpeed: 12,
+      offPadScoreMultiplier: 0.5,
+      padWidth: 6,
+      initialDownwardVelocity: 2,
+      maxSpeed: 15,
     },
   },
 };
@@ -373,7 +382,22 @@ function parseSurfaceBalance(
     crashSpeed: (data.crash_speed as number) ?? defaults.crashSpeed,
     offPadScoreMultiplier: (data.off_pad_score_multiplier as number) ?? defaults.offPadScoreMultiplier,
     padWidth: (data.pad_width as number) ?? defaults.padWidth,
-    maxVerticalSpeed: (data.max_vertical_speed as number) ?? defaults.maxVerticalSpeed,
+    maxSpeed: (data.max_speed as number) ?? defaults.maxSpeed,
+  };
+}
+
+function parseAsteroidBalance(
+  data: Record<string, unknown>,
+  defaults: GameBalance['miniGames']['asteroid'],
+): GameBalance['miniGames']['asteroid'] {
+  return {
+    thrustForce: (data.thrust_force as number) ?? defaults.thrustForce,
+    maxSafeSpeed: (data.max_safe_speed as number) ?? defaults.maxSafeSpeed,
+    crashSpeed: (data.crash_speed as number) ?? defaults.crashSpeed,
+    offPadScoreMultiplier: (data.off_pad_score_multiplier as number) ?? defaults.offPadScoreMultiplier,
+    padWidth: (data.pad_width as number) ?? defaults.padWidth,
+    initialDownwardVelocity: (data.initial_downward_velocity as number) ?? defaults.initialDownwardVelocity,
+    maxSpeed: (data.max_speed as number) ?? defaults.maxSpeed,
   };
 }
 
@@ -459,6 +483,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       abandonDamageFraction: mg.abandon_damage_fraction ?? d.miniGames.abandonDamageFraction,
       noDamageThreshold: mg.no_damage_threshold ?? d.miniGames.noDamageThreshold,
       surface: parseSurfaceBalance(mg.surface ?? {}, d.miniGames.surface),
+      asteroid: parseAsteroidBalance(mg.asteroid ?? {}, d.miniGames.asteroid),
     },
   };
 }

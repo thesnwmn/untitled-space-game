@@ -14,6 +14,32 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 057 · Asteroid Landing Mini-Game — DONE
+
+**What it added:**
+Implemented `AsteroidLandingMiniGameScene` for `locationType: 'asteroid'` destinations. The scene reuses the full landing infrastructure from feature 056 (physics updater, terrain generation, rendering, collision detection) with different parameters: `gravity: 0` (no gravitational pull), `airResistance: 1.0` (no velocity decay), and asteroid-specific balance config (thrustForce, maxSafeSpeed, crashSpeed, offPadScoreMultiplier, padWidth, initialDownwardVelocity). The 3×2 ship sprite starts at top-centre with initial downward velocity; player must actively thrust in all directions to control descent. Terrain is rendered with `/`, `\`, `^` characters (col % 3 pattern) for a jagged silhouette distinct from planet terrain, with `▪` for interior fill. Landing pad marked `[====]` in bright-yellow. Score formula identical to feature 056. MENU aborts with `skipped` outcome. Registered in `miniGameRegistry` with descriptor `id: 'asteroid-landing'`.
+
+**Key files:**
+- `src/game/scenes/asteroid-landing-mini-game-scene.ts` — new 274-line scene class; extends `BaseMiniGameScene`
+- `src/game/scenes/asteroid-landing-mini-game-scene.test.ts` — 14 tests covering no-gravity physics, no-air-resistance, score formula, terrain reproducibility, skip behavior
+- `src/game/mini-games/registry.ts` — added `'asteroid-landing'` descriptor and factory
+- `src/game/mini-games/landing/terrain.ts` — enhanced `renderTerrain()` to use varied characters for asteroid style (`/`, `\`, `^`) and different fill char (`▪`)
+- `src/game/world/types.ts` — added `asteroid` sub-object to `GameBalance.miniGames`
+- `src/game/world/world-parser.ts` — added `parseAsteroidBalance()` function, defaults, and parsing
+- `src/game/game.test.ts` — updated test to expect `AsteroidLandingMiniGameScene` for asteroid routing
+
+**Evidence:** `tsc --noEmit`: zero errors. `npm test`: 937 passed (14 new tests), 1 skipped.
+
+**Architectural decisions embedded:**
+- No-gravity descent is achieved by passing `gravity: 0` to the existing physics updater, which leaves vertical velocity unchanged without thrust
+- No air resistance (airResistance: 1.0) preserves horizontal velocity indefinitely unless thrust is applied
+- Terrain renderer now supports two distinct visual styles per `TerrainStyle` enum value; asteroid uses jagged top characters and cratered fill
+
+**Play-test instructions:** 
+1. Browser dev harness (`?game=asteroid-landing`): verify ship drifts downward, no gravity, velocity persists without decay, terrain identical per destination
+2. Full game: dock at asteroid destination, confirm mini-game plays and landing result scene shows score
+3. Terminal: repeat full game steps
+
 ### 056 · Planet Landing Mini-Game — DONE
 
 **What it added:**
