@@ -26,15 +26,6 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
-### 057 · Asteroid Landing Mini-Game
-
-Side-on descent for `'asteroid'` destinations. No gravity, no air resistance; jagged
-seeded terrain; reuses physics updater and terrain helpers from feature 056 with different
-parameters and visual style.
-See `docs/features/057-asteroid-landing-mini-game.md` for the full spec.
-
----
-
 ### 059 · Space Navigation Mini-Game
 
 Momentum-based obstacle-avoidance mini-game: player pilots a ship through a scrolling

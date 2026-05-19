@@ -4,6 +4,7 @@ import type { Renderer, InputHandler, GameContext, CharBuffer } from '../shared/
 import type { MissionSpec, TraderStockEntry } from './world/types';
 import { getCommodities, getGameBalance } from './world/world-data';
 import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
+import { AsteroidLandingMiniGameScene } from './scenes/asteroid-landing-mini-game-scene';
 import { SurfaceLandingMiniGameScene } from './scenes/surface-landing-mini-game-scene';
 import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
 import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animation-scene';
@@ -175,12 +176,12 @@ describe('Game — goToLandOrDock routing', () => {
     expect((game as any).currentScene).toBeInstanceOf(SurfaceLandingMiniGameScene);
   });
 
-  it('asteroid destination plays AsteroidLandingAnimationScene', () => {
+  it('asteroid destination plays AsteroidLandingMiniGameScene', () => {
     const game = makeGame();
     const player = (game as any).player;
     player.dock('eridani-anchorage'); // asteroid destination in epsilon-eridani
     (game as any).goToLandOrDock();
-    expect((game as any).currentScene).toBeInstanceOf(AsteroidLandingAnimationScene);
+    expect((game as any).currentScene).toBeInstanceOf(AsteroidLandingMiniGameScene);
   });
 
   it('orbital destination plays DockingMiniGameScene', () => {

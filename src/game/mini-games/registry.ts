@@ -3,6 +3,7 @@ import type { PlayerState } from '../player-state';
 import type { BaseMiniGameScene } from '../scenes/base-mini-game-scene';
 import { DockingMiniGameScene } from '../scenes/docking-mini-game-scene';
 import { SurfaceLandingMiniGameScene } from '../scenes/surface-landing-mini-game-scene';
+import { AsteroidLandingMiniGameScene } from '../scenes/asteroid-landing-mini-game-scene';
 
 // Pure data — safe to import from Bun build scripts and terminal harness
 export const miniGameDescriptors: MiniGameDescriptorMeta[] = [
@@ -21,6 +22,14 @@ export const miniGameDescriptors: MiniGameDescriptorMeta[] = [
     description: 'Counter gravity and air resistance to land gently on the marked pad',
     variants: [
       { id: 'surface', label: 'Planet Surface', params: { locationType: 'surface' } },
+    ],
+  },
+  {
+    id: 'asteroid-landing',
+    name: 'Asteroid Landing',
+    description: 'Navigate freely with no gravity to land on the marked pad',
+    variants: [
+      { id: 'asteroid', label: 'Asteroid Surface', params: { locationType: 'asteroid' } },
     ],
   },
 ];
@@ -47,5 +56,10 @@ export const miniGameRegistry: MiniGameEntry[] = [
     meta: miniGameDescriptors[1],
     factory: (input, context, player, _params, onComplete) =>
       new SurfaceLandingMiniGameScene(input, context, player, onComplete),
+  },
+  {
+    meta: miniGameDescriptors[2],
+    factory: (input, context, player, _params, onComplete) =>
+      new AsteroidLandingMiniGameScene(input, context, player, onComplete),
   },
 ];

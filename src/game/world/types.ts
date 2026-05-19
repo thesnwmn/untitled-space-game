@@ -216,6 +216,14 @@ export interface GameBalance {
       padWidth: number;
       maxVerticalSpeed: number;
     };
+    asteroid: {
+      thrustForce: number;
+      maxSafeSpeed: number;
+      crashSpeed: number;
+      offPadScoreMultiplier: number;
+      padWidth: number;
+      initialDownwardVelocity: number;
+    };
     [key: string]: unknown;
   };
 }

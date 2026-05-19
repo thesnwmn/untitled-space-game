@@ -111,6 +111,14 @@ const DEFAULT_BALANCE: GameBalance = {
       padWidth: 6,
       maxVerticalSpeed: 15,
     },
+    asteroid: {
+      thrustForce: 8,
+      maxSafeSpeed: 4,
+      crashSpeed: 12,
+      offPadScoreMultiplier: 0.5,
+      padWidth: 6,
+      initialDownwardVelocity: 2,
+    },
   },
 };
 
@@ -377,6 +385,20 @@ function parseSurfaceBalance(
   };
 }
 
+function parseAsteroidBalance(
+  data: Record<string, unknown>,
+  defaults: GameBalance['miniGames']['asteroid'],
+): GameBalance['miniGames']['asteroid'] {
+  return {
+    thrustForce: (data.thrust_force as number) ?? defaults.thrustForce,
+    maxSafeSpeed: (data.max_safe_speed as number) ?? defaults.maxSafeSpeed,
+    crashSpeed: (data.crash_speed as number) ?? defaults.crashSpeed,
+    offPadScoreMultiplier: (data.off_pad_score_multiplier as number) ?? defaults.offPadScoreMultiplier,
+    padWidth: (data.pad_width as number) ?? defaults.padWidth,
+    initialDownwardVelocity: (data.initial_downward_velocity as number) ?? defaults.initialDownwardVelocity,
+  };
+}
+
 function parseBalance(data: { [key: string]: any }): GameBalance {
   const d = DEFAULT_BALANCE;
   const npc = data.npc ?? {};
@@ -459,6 +481,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       abandonDamageFraction: mg.abandon_damage_fraction ?? d.miniGames.abandonDamageFraction,
       noDamageThreshold: mg.no_damage_threshold ?? d.miniGames.noDamageThreshold,
       surface: parseSurfaceBalance(mg.surface ?? {}, d.miniGames.surface),
+      asteroid: parseAsteroidBalance(mg.asteroid ?? {}, d.miniGames.asteroid),
     },
   };
 }
