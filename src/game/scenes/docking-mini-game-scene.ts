@@ -2,6 +2,7 @@ import type { InputHandler, GameContext, CharBuffer, MiniGameResult, MiniGameVie
 import { writeText } from '../../shared/buffer-utils';
 import type { PlayerState } from '../player-state';
 import { BaseMiniGameScene } from './base-mini-game-scene';
+import { CONTENT_TOP } from '../ui/screen-chrome';
 
 function hashStringToSeed(s: string): number {
   if (s.length === 0) return 2166136261;
@@ -102,8 +103,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     if (input.onTouchTrack) {
       input.onTouchTrack({
         start: (col, row, id) => {
-          const vp = this.lastViewport;
-          if (row < vp.top || row >= vp.top + vp.height) return;
+          if (row < CONTENT_TOP) return;
           this._joystick = { centerCol: col, centerRow: row, currentCol: col, currentRow: row, id };
         },
         move: (col, row, id) => {

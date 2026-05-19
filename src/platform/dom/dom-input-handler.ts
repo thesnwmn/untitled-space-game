@@ -119,7 +119,7 @@ export class DOMInputHandler implements InputHandler {
       this.activePointers.add(event.pointerId);
       this.logDebug(`DOWN id=${event.pointerId} (${Math.round(event.clientX)},${Math.round(event.clientY)}) type=${event.pointerType} active=${this.activePointers.size}`);
       if (this.touchTrackHandlers.length > 0) {
-        const coords = this.getGridCoords(event.clientX, event.clientY);
+        const coords = this.getGridCoordsForTrack(event.clientX, event.clientY);
         if (coords) {
           for (const h of this.touchTrackHandlers.slice()) h.start(coords.col, coords.row, event.pointerId);
         }
@@ -129,7 +129,7 @@ export class DOMInputHandler implements InputHandler {
     this.pointerMoveListener = (event: PointerEvent) => {
       if (!this.pointerStartMap.has(event.pointerId)) return;
       if (this.touchTrackHandlers.length > 0) {
-        const coords = this.getGridCoords(event.clientX, event.clientY);
+        const coords = this.getGridCoordsForTrack(event.clientX, event.clientY);
         if (coords) {
           for (const h of this.touchTrackHandlers.slice()) h.move(coords.col, coords.row, event.pointerId);
         }
@@ -247,6 +247,19 @@ export class DOMInputHandler implements InputHandler {
     const col = Math.floor((clientX - rect.left) / (rect.width / cols));
     const row = Math.floor((clientY - rect.top) / (rect.height / rows));
     if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
+    return { col, row };
+  }
+
+  // Like getGridCoords but extrapolates outside the pre element — for joystick tracking
+  private getGridCoordsForTrack(clientX: number, clientY: number): { col: number; row: number } | null {
+    const pre = document.querySelector('.game-screen') as HTMLElement | null;
+    if (!pre) return null;
+    const rect = pre.getBoundingClientRect();
+    const cols = parseInt(pre.dataset['gridCols'] ?? '1');
+    const rows = parseInt(pre.dataset['gridRows'] ?? '1');
+    if (!cols || !rows || !rect.width || !rect.height) return null;
+    const col = Math.floor((clientX - rect.left) / (rect.width / cols));
+    const row = Math.floor((clientY - rect.top) / (rect.height / rows));
     return { col, row };
   }
 }

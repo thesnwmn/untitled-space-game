@@ -236,13 +236,22 @@ describe('DockingMiniGameScene', () => {
       expect((scene as any).heldKeys.size).toBe(0);
     });
 
-    it('touch start outside viewport is ignored', () => {
+    it('touch start in header rows (0-2) is ignored', () => {
       const { scene, input } = makeTouchScene();
-      // lastViewport default is top=0, height=18, so row 100 is outside
-      input.touchStart(16, 100, 1);
-      input.touchMove(16, 98, 1);
+      for (const headerRow of [0, 1, 2]) {
+        input.touchStart(16, headerRow, 1);
+        input.touchMove(16, headerRow - 1, 1);
+        scene.update(16);
+        expect((scene as any)._joystick, `row ${headerRow} should be rejected`).toBeNull();
+        input.touchEnd(1);
+      }
+    });
+
+    it('touch start in content area (row >= 3) is accepted', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 3, 1);
       scene.update(16);
-      expect((scene as any)._joystick).toBeNull();
+      expect((scene as any)._joystick).not.toBeNull();
     });
   });
 });

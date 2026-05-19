@@ -6,6 +6,7 @@ import { updatePhysics } from '../mini-games/landing/physics';
 import { generateTerrain, detectCollision, renderTerrain } from '../mini-games/landing/terrain';
 import type { TerrainColumn, LandingPhysicsState, LandingPhysicsConfig } from '../mini-games/landing/types';
 import { getGameBalance } from '../world/world-data';
+import { CONTENT_TOP } from '../ui/screen-chrome';
 
 const SPRITE_WIDTH = 3;
 const SPRITE_HEIGHT = 2;
@@ -63,8 +64,7 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
     if (input.onTouchTrack) {
       input.onTouchTrack({
         start: (col, row, id) => {
-          if (!this._viewport) return;
-          if (row < this._viewport.top || row >= this._viewport.top + this._viewport.height) return;
+          if (row < CONTENT_TOP) return;
           this._joystick = { centerCol: col, centerRow: row, currentCol: col, currentRow: row, id };
         },
         move: (col, row, id) => {

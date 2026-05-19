@@ -297,6 +297,30 @@ describe('DOMInputHandler — touch', () => {
     expect(starts).toEqual([[10, 15, 1]]);
   });
 
+  it('onTouchTrack fires start even when pointer is outside the pre element', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const starts: Array<[number, number, number]> = [];
+    h.onTouchTrack({ start: (c, r, id) => starts.push([c, r, id]), move: () => {}, end: () => {} });
+    h.connect();
+    // cell 10x10px; tap at (-5, 155) → col=-1 (outside left edge), row=15
+    firePointerDown(1, -5, 155);
+    firePointerUp(1, -4, 156);
+    h.disconnect();
+    expect(starts).toEqual([[-1, 15, 1]]);
+  });
+
+  it('onTouchTrack fires move even when pointer drifts outside the pre element', () => {
+    const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
+    const moves: Array<[number, number, number]> = [];
+    h.onTouchTrack({ start: () => {}, move: (c, r, id) => moves.push([c, r, id]), end: () => {} });
+    h.connect();
+    firePointerDown(1, 105, 155);
+    firePointerMove(1, 405, 305); // col=40 (past right edge of 40-col grid), row=30
+    firePointerUp(1, 406, 306);
+    h.disconnect();
+    expect(moves).toEqual([[40, 30, 1]]);
+  });
+
   it('onTouchTrack fires move on pointermove', () => {
     const h = new DOMInputHandler({ environment: 'browser', primaryInput: 'touch', debug: false });
     const moves: Array<[number, number, number]> = [];
