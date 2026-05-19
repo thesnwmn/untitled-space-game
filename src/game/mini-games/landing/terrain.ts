@@ -87,13 +87,12 @@ export function renderTerrain(
       else if (!nextIsPad) topChar = ']';
       else topChar = '=';
     } else if (style === 'asteroid') {
-      const pattern = col % 3;
-      topChar = pattern === 0 ? '/' : pattern === 1 ? '\\' : '^';
+      topChar = '/';
     } else {
       topChar = '^';
     }
 
-    const fillChar = style === 'asteroid' ? '▪' : '#';
+    const fillChar = style === 'asteroid' ? '*' : '#';
     const fg = tc.isPad ? 'bright-yellow' : ('white' as const);
 
     const bufTopRow = viewportTop + tc.surfaceRow;
