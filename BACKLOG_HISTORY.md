@@ -14,6 +14,27 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 056 · Planet Landing Mini-Game — DONE
+
+**What it added:**
+Implemented `SurfaceLandingMiniGameScene` for `locationType: 'surface'` destinations. The full content-area viewport renders a side-on descent: a 3×2 ship sprite falls under configurable gravity while air resistance decays horizontal velocity. Arrow keys apply thrust (UP counteracts gravity, LEFT/RIGHT add horizontal momentum). Deterministic seeded terrain (FNV-1a hash + LCG, seeded from destination ID) generates an irregular ASCII contour 3–5 rows tall with one flat landing pad marked `[====]` in bright-yellow. On terrain contact the score formula `speedScore * padScore * 100` is applied, where speedScore interpolates between `maxSafeSpeed` (score 1.0) and `crashSpeed` (score 0), and padScore is 1.0 on-pad or `offPadScoreMultiplier` off-pad. MENU aborts with `skipped` outcome. Shared landing helpers in `src/game/mini-games/landing/` (physics updater, terrain generator/renderer/collision detector, shared types) are ready for reuse by feature 057. `game.ts` routing already maps `'surface'` → `'surface-landing'` via the existing registry lookup.
+
+**Key files:**
+- `src/game/mini-games/landing/types.ts` — `TerrainColumn`, `LandingPhysicsState`, `LandingPhysicsConfig`, `LandingThrustInput`, `TerrainStyle`
+- `src/game/mini-games/landing/physics.ts` — `updatePhysics()` shared physics updater
+- `src/game/mini-games/landing/terrain.ts` — `generateTerrain()`, `detectCollision()`, `renderTerrain()` shared helpers
+- `src/game/scenes/surface-landing-mini-game-scene.ts` — scene implementation
+- `src/game/scenes/surface-landing-mini-game-scene.test.ts` — 15 tests covering score formula, MENU skip, terrain reproducibility, physics, collision
+- `src/game/mini-games/registry.ts` — added `'surface-landing'` descriptor and factory
+- `src/game/world/types.ts` — added `surface` sub-object to `GameBalance.miniGames`
+- `src/game/world/world-parser.ts` — added defaults and parsing for surface balance params
+
+**Evidence:** `tsc --noEmit`: zero errors. `npm test`: 904 passed, 0 failed (1 skipped).
+
+**Architectural decisions embedded:**
+- Shared `src/game/mini-games/landing/` module is parameterised so feature 057 (Asteroid Landing) can reuse it with `gravity: 0, airResistance: 1`.
+- `surface` balance params are typed explicitly in `GameBalance.miniGames` alongside the existing `[key: string]: unknown` index, relying on TypeScript's assignability to `unknown`.
+
 ### 055 · Docking Mini-Game (Orbital Alignment) — DONE
 
 **What it added:**
