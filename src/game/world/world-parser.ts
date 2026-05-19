@@ -101,6 +101,16 @@ const DEFAULT_BALANCE: GameBalance = {
     maxHullDamageFraction: 0.05,
     abandonDamageFraction: 0.05,
     noDamageThreshold: 90,
+    surface: {
+      gravityAccel: 3,
+      airResistance: 0.5,
+      thrustForce: 8,
+      maxSafeSpeed: 3,
+      crashSpeed: 10,
+      offPadScoreMultiplier: 0.5,
+      padWidth: 6,
+      maxVerticalSpeed: 15,
+    },
   },
 };
 
@@ -351,6 +361,22 @@ function parseEconomies(data: { [key: string]: any }): Economy[] {
   }));
 }
 
+function parseSurfaceBalance(
+  data: Record<string, unknown>,
+  defaults: GameBalance['miniGames']['surface'],
+): GameBalance['miniGames']['surface'] {
+  return {
+    gravityAccel: (data.gravity_accel as number) ?? defaults.gravityAccel,
+    airResistance: (data.air_resistance as number) ?? defaults.airResistance,
+    thrustForce: (data.thrust_force as number) ?? defaults.thrustForce,
+    maxSafeSpeed: (data.max_safe_speed as number) ?? defaults.maxSafeSpeed,
+    crashSpeed: (data.crash_speed as number) ?? defaults.crashSpeed,
+    offPadScoreMultiplier: (data.off_pad_score_multiplier as number) ?? defaults.offPadScoreMultiplier,
+    padWidth: (data.pad_width as number) ?? defaults.padWidth,
+    maxVerticalSpeed: (data.max_vertical_speed as number) ?? defaults.maxVerticalSpeed,
+  };
+}
+
 function parseBalance(data: { [key: string]: any }): GameBalance {
   const d = DEFAULT_BALANCE;
   const npc = data.npc ?? {};
@@ -432,6 +458,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       maxHullDamageFraction: mg.max_hull_damage_fraction ?? d.miniGames.maxHullDamageFraction,
       abandonDamageFraction: mg.abandon_damage_fraction ?? d.miniGames.abandonDamageFraction,
       noDamageThreshold: mg.no_damage_threshold ?? d.miniGames.noDamageThreshold,
+      surface: parseSurfaceBalance(mg.surface ?? {}, d.miniGames.surface),
     },
   };
 }

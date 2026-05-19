@@ -3,8 +3,8 @@ import { Game, generateTraderStock } from './game';
 import type { Renderer, InputHandler, GameContext, CharBuffer } from '../shared/types';
 import type { MissionSpec, TraderStockEntry } from './world/types';
 import { getCommodities, getGameBalance } from './world/world-data';
-import { SurfaceLandingAnimationScene } from './scenes/surface-landing-animation-scene';
 import { AsteroidLandingAnimationScene } from './scenes/asteroid-landing-animation-scene';
+import { SurfaceLandingMiniGameScene } from './scenes/surface-landing-mini-game-scene';
 import { SurfaceTakeOffAnimationScene } from './scenes/surface-take-off-animation-scene';
 import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animation-scene';
 import { DockingMiniGameScene } from './scenes/docking-mini-game-scene';
@@ -167,12 +167,12 @@ describe('Game — goToLandOrDock routing', () => {
     return new Game(makeMockRenderer(), makeMockInput(), context);
   }
 
-  it('surface destination plays SurfaceLandingAnimationScene', () => {
+  it('surface destination plays SurfaceLandingMiniGameScene', () => {
     const game = makeGame();
     const player = (game as any).player;
     player.dock('ceti-landfall'); // surface destination in tau-ceti
     (game as any).goToLandOrDock();
-    expect((game as any).currentScene).toBeInstanceOf(SurfaceLandingAnimationScene);
+    expect((game as any).currentScene).toBeInstanceOf(SurfaceLandingMiniGameScene);
   });
 
   it('asteroid destination plays AsteroidLandingAnimationScene', () => {

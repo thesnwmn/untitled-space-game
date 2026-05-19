@@ -25,10 +25,17 @@ export interface Renderer {
   onResize(handler: (width: number, height: number) => void): void;
 }
 
+export interface TouchTrackHandlers {
+  start: (col: number, row: number, id: number) => void;
+  move: (col: number, row: number, id: number) => void;
+  end: (id: number) => void;
+}
+
 export interface InputHandler {
   onAction(handler: (action: GameAction) => void): void;
   onTap?(handler: (col: number, row: number) => void): void;
   onCharInput?(handler: (char: string) => void): void;
+  onTouchTrack?(handlers: TouchTrackHandlers): void;
 }
 
 export interface Scene {

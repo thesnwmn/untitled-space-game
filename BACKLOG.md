@@ -26,15 +26,6 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
-### 056 · Planet Landing Mini-Game
-
-Side-on descent for `'surface'` destinations. Gravity, air resistance, seeded terrain with
-flat landing pad; score by speed and pad accuracy; introduces shared landing helpers in
-`src/game/mini-games/landing/` for reuse by feature 057.
-See `docs/features/056-planet-landing-mini-game.md` for the full spec.
-
----
-
 ### 057 · Asteroid Landing Mini-Game
 
 Side-on descent for `'asteroid'` destinations. No gravity, no air resistance; jagged

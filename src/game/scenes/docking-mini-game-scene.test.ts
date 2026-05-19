@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DockingMiniGameScene } from './docking-mini-game-scene';
-import type { InputHandler, GameAction, GameContext, MiniGameResult } from '../../shared/types';
+import type { InputHandler, GameAction, GameContext, MiniGameResult, TouchTrackHandlers } from '../../shared/types';
 import { makePlayer } from '../../tests/makePlayer';
 
 class MockInputHandler implements InputHandler {
@@ -11,7 +11,23 @@ class MockInputHandler implements InputHandler {
   }
 }
 
+class MockTouchInputHandler implements InputHandler {
+  private actionHandlers: Array<(action: GameAction) => void> = [];
+  private touchHandlers: TouchTrackHandlers | null = null;
+
+  onAction(h: (action: GameAction) => void): void { this.actionHandlers.push(h); }
+  onTouchTrack(handlers: TouchTrackHandlers): void { this.touchHandlers = handlers; }
+
+  fireAction(action: GameAction): void {
+    for (const h of this.actionHandlers) h(action);
+  }
+  touchStart(col: number, row: number, id: number): void { this.touchHandlers?.start(col, row, id); }
+  touchMove(col: number, row: number, id: number): void { this.touchHandlers?.move(col, row, id); }
+  touchEnd(id: number): void { this.touchHandlers?.end(id); }
+}
+
 const ctx: GameContext = { environment: 'browser', primaryInput: 'keyboard', debug: false };
+const touchCtx: GameContext = { environment: 'browser', primaryInput: 'touch', debug: false };
 
 function makeSceneWithInput(): { scene: DockingMiniGameScene; input: MockInputHandler; } {
   const input = new MockInputHandler();
@@ -149,10 +165,93 @@ describe('DockingMiniGameScene', () => {
   describe('input handling', () => {
     it('tracks held directions', () => {
       const scene = makeScene();
-      const input = (scene as any) as any;
-
-      // The scene should have a heldKeys set that tracks directions
       expect((scene as any).heldKeys).toBeDefined();
+    });
+  });
+
+  describe('joystick (touch) controls', () => {
+    function makeTouchScene(): { scene: DockingMiniGameScene; input: MockTouchInputHandler } {
+      const input = new MockTouchInputHandler();
+      const player = makePlayer();
+      player.dock('elysium-station');
+      const scene = new DockingMiniGameScene(input, touchCtx, player);
+      return { scene, input };
+    }
+
+    it('dragging up past dead zone sets UP in heldKeys', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 10, 1);
+      input.touchMove(16, 8, 1);   // dRow = -2, past dead zone of 1
+      scene.update(16);
+      expect((scene as any).heldKeys.has('UP')).toBe(true);
+    });
+
+    it('dragging down past dead zone sets DOWN in heldKeys', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 10, 1);
+      input.touchMove(16, 12, 1);  // dRow = +2
+      scene.update(16);
+      expect((scene as any).heldKeys.has('DOWN')).toBe(true);
+    });
+
+    it('dragging left past dead zone sets LEFT in heldKeys', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 10, 1);
+      input.touchMove(14, 10, 1);  // dCol = -2
+      scene.update(16);
+      expect((scene as any).heldKeys.has('LEFT')).toBe(true);
+    });
+
+    it('dragging right past dead zone sets RIGHT in heldKeys', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 10, 1);
+      input.touchMove(18, 10, 1);  // dCol = +2
+      scene.update(16);
+      expect((scene as any).heldKeys.has('RIGHT')).toBe(true);
+    });
+
+    it('movement within dead zone sets no direction', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 10, 1);
+      input.touchMove(17, 10, 1);  // dCol = +1, exactly at dead zone boundary
+      scene.update(16);
+      expect((scene as any).heldKeys.size).toBe(0);
+    });
+
+    it('touch end clears heldKeys', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 10, 1);
+      input.touchMove(16, 8, 1);
+      scene.update(16);
+      expect((scene as any).heldKeys.has('UP')).toBe(true);
+      input.touchEnd(1);
+      expect((scene as any).heldKeys.size).toBe(0);
+    });
+
+    it('second touch id does not move joystick started by first id', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 10, 1);
+      input.touchMove(16, 8, 2);  // different id
+      scene.update(16);
+      expect((scene as any).heldKeys.size).toBe(0);
+    });
+
+    it('touch start in header rows (0-2) is ignored', () => {
+      const { scene, input } = makeTouchScene();
+      for (const headerRow of [0, 1, 2]) {
+        input.touchStart(16, headerRow, 1);
+        input.touchMove(16, headerRow - 1, 1);
+        scene.update(16);
+        expect((scene as any)._joystick, `row ${headerRow} should be rejected`).toBeNull();
+        input.touchEnd(1);
+      }
+    });
+
+    it('touch start in content area (row >= 3) is accepted', () => {
+      const { scene, input } = makeTouchScene();
+      input.touchStart(16, 3, 1);
+      scene.update(16);
+      expect((scene as any)._joystick).not.toBeNull();
     });
   });
 });

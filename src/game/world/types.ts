@@ -206,6 +206,16 @@ export interface GameBalance {
     maxHullDamageFraction: number;
     abandonDamageFraction: number;
     noDamageThreshold: number;
+    surface: {
+      gravityAccel: number;
+      airResistance: number;
+      thrustForce: number;
+      maxSafeSpeed: number;
+      crashSpeed: number;
+      offPadScoreMultiplier: number;
+      padWidth: number;
+      maxVerticalSpeed: number;
+    };
     [key: string]: unknown;
   };
 }
