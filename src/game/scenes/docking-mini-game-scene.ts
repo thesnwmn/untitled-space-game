@@ -21,6 +21,8 @@ function lcgRand(seed: number): () => number {
   };
 }
 
+const JOYSTICK_DEAD_ZONE = 1;
+
 interface DockingState {
   shipX: number;
   shipY: number;
@@ -53,6 +55,14 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
   private readonly airlockWidth = 5;
   private readonly airlockHeight = 3;
   private lastViewport: { top: number; left: number; width: number; height: number } = { top: 0, left: 0, width: 32, height: 18 };
+  private readonly _primaryInput: 'keyboard' | 'touch';
+  private _joystick: {
+    centerCol: number;
+    centerRow: number;
+    currentCol: number;
+    currentRow: number;
+    id: number;
+  } | null = null;
 
   constructor(
     input: InputHandler,
@@ -69,6 +79,7 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
       onComplete,
     });
 
+    this._primaryInput = context.primaryInput;
     this.rand = lcgRand(hashStringToSeed(destId));
 
     const centerX = (this.canvasWidth - 1) / 2;
@@ -87,6 +98,27 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
       timeRemaining: this.countdownSeconds,
       completed: false,
     };
+
+    if (input.onTouchTrack) {
+      input.onTouchTrack({
+        start: (col, row, id) => {
+          const vp = this.lastViewport;
+          if (row < vp.top || row >= vp.top + vp.height) return;
+          this._joystick = { centerCol: col, centerRow: row, currentCol: col, currentRow: row, id };
+        },
+        move: (col, row, id) => {
+          if (!this._joystick || this._joystick.id !== id) return;
+          this._joystick.currentCol = col;
+          this._joystick.currentRow = row;
+        },
+        end: (id) => {
+          if (this._joystick?.id === id) {
+            this._joystick = null;
+            this.heldKeys.clear();
+          }
+        },
+      });
+    }
   }
 
   protected override renderContent(buffer: CharBuffer, top: number, bottom: number): void {
@@ -95,7 +127,10 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     const contentH = bottom - top;
 
     const canvasWidth = this.canvasWidth;
-    const canvasHeight = this.canvasHeight + 3;
+    // In touch mode the joystick is rendered inside the canvas; no extra rows needed
+    const canvasHeight = this._primaryInput === 'touch'
+      ? this.canvasHeight
+      : this.canvasHeight + 3;
 
     let left = Math.floor((bufW - canvasWidth) / 2);
     let vpTop = top + Math.floor((contentH - canvasHeight) / 2);
@@ -131,6 +166,12 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
       return;
     }
 
+    // In touch mode the joystick replaces the D-pad tap buttons
+    if (this._primaryInput === 'touch') {
+      super.handleTap(col, row);
+      return;
+    }
+
     const { top: vpTop, left, width, height } = this.lastViewport;
     const centerX = left + Math.floor(width / 2);
     const canvasBottom = vpTop + height;
@@ -161,7 +202,18 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
 
     if (this.state.completed) return;
 
-    this.clearExpiredActions();
+    if (this._joystick) {
+      const dCol = this._joystick.currentCol - this._joystick.centerCol;
+      const dRow = this._joystick.currentRow - this._joystick.centerRow;
+      this.heldKeys.clear();
+      if (dRow < -JOYSTICK_DEAD_ZONE) this.heldKeys.add('UP');
+      if (dRow > JOYSTICK_DEAD_ZONE) this.heldKeys.add('DOWN');
+      if (dCol < -JOYSTICK_DEAD_ZONE) this.heldKeys.add('LEFT');
+      if (dCol > JOYSTICK_DEAD_ZONE) this.heldKeys.add('RIGHT');
+    } else {
+      this.clearExpiredActions();
+    }
+
     this.updateMovement(dtSeconds);
     this.updateAirlockDrift(dtSeconds);
     this.updateCountdown(dtSeconds);
@@ -239,7 +291,42 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     this.drawShip(buffer, top, left);
     this.drawCountdown(buffer, top, left, width);
     this.drawDistance(buffer, top, left, height);
-    this.drawControlButtons(buffer, top, left, width, height);
+
+    if (this._primaryInput === 'touch') {
+      this._renderJoystick(buffer, viewport);
+    } else {
+      this.drawControlButtons(buffer, top, left, width, height);
+    }
+  }
+
+  private _renderJoystick(buffer: CharBuffer, viewport: MiniGameViewport): void {
+    const { top, left, width, height } = viewport;
+
+    const safeWrite = (row: number, col: number, char: string, fg: CharBuffer[0][0]['fg']) => {
+      if (row < top || row >= top + height || col < left || col >= left + width) return;
+      if (row < 0 || row >= buffer.length || col < 0 || col >= (buffer[row]?.length ?? 0)) return;
+      buffer[row][col] = { char, fg, bg: 'black' };
+    };
+
+    if (!this._joystick) {
+      const hint = 'DRAG TO DOCK';
+      const hintRow = top + height - 2;
+      const hintCol = left + Math.floor((width - hint.length) / 2);
+      writeText(buffer, hintRow, hintCol, hint, 'bright-black', 'black');
+      return;
+    }
+
+    const { centerCol, centerRow, currentCol, currentRow } = this._joystick;
+    const dCol = currentCol - centerCol;
+    const dRow = currentRow - centerRow;
+    const anyThrust = this.heldKeys.size > 0;
+
+    safeWrite(centerRow, centerCol, 'o', anyThrust ? 'bright-white' : 'white');
+
+    if (dRow < -JOYSTICK_DEAD_ZONE) safeWrite(centerRow - 2, centerCol, '^', 'bright-green');
+    if (dRow > JOYSTICK_DEAD_ZONE)  safeWrite(centerRow + 2, centerCol, 'v', 'bright-green');
+    if (dCol < -JOYSTICK_DEAD_ZONE) safeWrite(centerRow, centerCol - 2, '<', 'bright-green');
+    if (dCol > JOYSTICK_DEAD_ZONE)  safeWrite(centerRow, centerCol + 2, '>', 'bright-green');
   }
 
   private drawBorder(buffer: CharBuffer, top: number, left: number, width: number, height: number): void {
@@ -385,3 +472,4 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     }
   }
 }
+
