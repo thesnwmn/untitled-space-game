@@ -70,9 +70,8 @@ function runGame(id: string, params: URLSearchParams): void {
   const root = document.getElementById('root');
   if (!root) return;
 
-  const gameScreen = document.createElement('div');
-  gameScreen.className = 'game-screen';
-  root.appendChild(gameScreen);
+  // Hide the root container so only the game's <pre> is visible as a flex child
+  root.style.display = 'none';
 
   const renderer = new DOMRenderer();
   const input = new DOMInputHandler(context);
@@ -83,25 +82,28 @@ function runGame(id: string, params: URLSearchParams): void {
   const scene = entry.factory(input, context, player, params, handleComplete);
 
   let lastTime = 0;
-  let animFrameId = 0;
+  let stopped = false;
 
   function handleComplete(result: MiniGameResult): void {
-    cancelAnimationFrame(animFrameId);
-    renderer.clear();
+    stopped = true;
     input.disconnect?.();
-
+    renderer.destroy();
+    root!.style.display = '';
     showResult(id, result);
   }
 
   function loop(timestamp: number): void {
+    if (stopped) return;
+    if (lastTime === 0) lastTime = timestamp;
     scene.update(timestamp - lastTime);
     lastTime = timestamp;
+    if (stopped) return;
 
     const buffer = makeBuffer(renderer.getWidth(), renderer.getHeight());
     scene.render(buffer);
     renderer.drawBuffer(buffer);
 
-    animFrameId = requestAnimationFrame(loop);
+    requestAnimationFrame(loop);
   }
 
   requestAnimationFrame(loop);

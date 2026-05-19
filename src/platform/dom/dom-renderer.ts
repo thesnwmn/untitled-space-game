@@ -103,4 +103,8 @@ export class DOMRenderer implements Renderer {
   clear(): void {
     this.pre.innerHTML = '';
   }
+
+  destroy(): void {
+    this.pre.remove();
+  }
 }
