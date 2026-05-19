@@ -22,7 +22,7 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
   private readonly _crashSpeed: number;
   private readonly _offPadScoreMultiplier: number;
   private readonly _padWidth: number;
-  private readonly _maxVerticalSpeed: number;
+  private readonly _maxSpeed: number;
   private readonly _destId: string;
 
   private _ship: LandingPhysicsState = { x: 0, y: 0, vx: 0, vy: 1 };
@@ -59,7 +59,7 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
     this._crashSpeed = surface.crashSpeed;
     this._offPadScoreMultiplier = surface.offPadScoreMultiplier;
     this._padWidth = surface.padWidth;
-    this._maxVerticalSpeed = surface.maxVerticalSpeed;
+    this._maxSpeed = surface.maxSpeed;
 
     if (input.onTouchTrack) {
       input.onTouchTrack({
@@ -124,7 +124,7 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
       gravity: this._gravityAccel,
       airResistance: this._airResistance,
       thrustForce: this._thrustForce,
-      maxVerticalSpeed: this._maxVerticalSpeed,
+      maxVerticalSpeed: this._maxSpeed,
     };
 
     const thrust = {

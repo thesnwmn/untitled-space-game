@@ -214,7 +214,7 @@ export interface GameBalance {
       crashSpeed: number;
       offPadScoreMultiplier: number;
       padWidth: number;
-      maxVerticalSpeed: number;
+      maxSpeed: number;
     };
     asteroid: {
       thrustForce: number;

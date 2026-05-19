@@ -109,7 +109,7 @@ const DEFAULT_BALANCE: GameBalance = {
       crashSpeed: 10,
       offPadScoreMultiplier: 0.5,
       padWidth: 6,
-      maxVerticalSpeed: 15,
+      maxSpeed: 15,
     },
     asteroid: {
       thrustForce: 8,
@@ -382,7 +382,7 @@ function parseSurfaceBalance(
     crashSpeed: (data.crash_speed as number) ?? defaults.crashSpeed,
     offPadScoreMultiplier: (data.off_pad_score_multiplier as number) ?? defaults.offPadScoreMultiplier,
     padWidth: (data.pad_width as number) ?? defaults.padWidth,
-    maxVerticalSpeed: (data.max_vertical_speed as number) ?? defaults.maxVerticalSpeed,
+    maxSpeed: (data.max_speed as number) ?? defaults.maxSpeed,
   };
 }
 
