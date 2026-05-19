@@ -214,6 +214,7 @@ export interface GameBalance {
       crashSpeed: number;
       offPadScoreMultiplier: number;
       padWidth: number;
+      maxVerticalSpeed: number;
     };
     [key: string]: unknown;
   };

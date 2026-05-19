@@ -21,6 +21,7 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
   private readonly _crashSpeed: number;
   private readonly _offPadScoreMultiplier: number;
   private readonly _padWidth: number;
+  private readonly _maxVerticalSpeed: number;
   private readonly _destId: string;
 
   private _ship: LandingPhysicsState = { x: 0, y: 0, vx: 0, vy: 1 };
@@ -57,6 +58,7 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
     this._crashSpeed = surface.crashSpeed;
     this._offPadScoreMultiplier = surface.offPadScoreMultiplier;
     this._padWidth = surface.padWidth;
+    this._maxVerticalSpeed = surface.maxVerticalSpeed;
 
     if (input.onTouchTrack) {
       input.onTouchTrack({
@@ -122,6 +124,7 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
       gravity: this._gravityAccel,
       airResistance: this._airResistance,
       thrustForce: this._thrustForce,
+      maxVerticalSpeed: this._maxVerticalSpeed,
     };
 
     const thrust = {
@@ -243,9 +246,12 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
     if (this._primaryInput !== 'touch') return;
 
     if (!this._joystick) {
-      // Hint when no touch active
+      // Hint when no touch active — place it just above the highest terrain point
       const hint = 'HOLD & DRAG TO THRUST';
-      const hintRow = viewport.top + viewport.height - 2;
+      const minSurface = this._terrain
+        ? Math.min(...this._terrain.map(tc => tc.surfaceRow))
+        : viewport.height - 2;
+      const hintRow = viewport.top + Math.max(0, minSurface - 2);
       const hintCol = viewport.left + Math.floor((viewport.width - hint.length) / 2);
       writeText(buffer, hintRow, hintCol, hint, 'bright-black', 'black');
       return;

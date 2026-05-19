@@ -94,10 +94,11 @@ export function renderTerrain(
 
     const fg = tc.isPad ? 'bright-yellow' : ('white' as const);
 
-    for (let row = tc.surfaceRow; row < viewportTop + viewportHeight; row++) {
+    const bufTopRow = viewportTop + tc.surfaceRow;
+    for (let row = bufTopRow; row < viewportTop + viewportHeight; row++) {
       if (row < 0 || row >= buffer.length) continue;
       if (bufCol >= buffer[row].length) continue;
-      const isTop = row === tc.surfaceRow;
+      const isTop = row === bufTopRow;
       buffer[row][bufCol] = { char: isTop ? topChar : '#', fg, bg: 'black' };
     }
   }

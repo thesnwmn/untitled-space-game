@@ -16,6 +16,7 @@ export interface LandingPhysicsConfig {
   gravity: number;
   airResistance: number;
   thrustForce: number;
+  maxVerticalSpeed?: number;
 }
 
 export interface LandingThrustInput {

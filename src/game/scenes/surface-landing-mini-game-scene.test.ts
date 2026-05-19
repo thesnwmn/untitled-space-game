@@ -192,6 +192,13 @@ describe('SurfaceLandingMiniGameScene', () => {
       expect(Math.abs(next.vx)).toBeLessThanOrEqual(config.thrustForce * 3);
     });
 
+    it('vertical velocity is capped at maxVerticalSpeed', () => {
+      const state = { x: 10, y: 5, vx: 0, vy: 100 };
+      const config = { gravity: 3, airResistance: 1, thrustForce: 8, maxVerticalSpeed: 15 };
+      const next = updatePhysics(state, { up: false, down: false, left: false, right: false }, config, 40, 3, 1);
+      expect(next.vy).toBeLessThanOrEqual(config.maxVerticalSpeed);
+    });
+
     it('ship is clamped to viewport bounds', () => {
       const state = { x: -100, y: 5, vx: 0, vy: 0 };
       const config = { gravity: 0, airResistance: 1, thrustForce: 0 };

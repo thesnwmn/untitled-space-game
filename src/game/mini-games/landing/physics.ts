@@ -21,6 +21,9 @@ export function updatePhysics(
   const maxVx = config.thrustForce * 3;
   vx = Math.max(-maxVx, Math.min(maxVx, vx));
 
+  const maxVy = config.maxVerticalSpeed ?? Infinity;
+  vy = Math.max(-maxVy, Math.min(maxVy, vy));
+
   x += vx * dt;
   y += vy * dt;
 
