@@ -303,7 +303,6 @@ export class DockingMiniGameScene extends BaseMiniGameScene {
     const { top, left, width, height } = viewport;
 
     const safeWrite = (row: number, col: number, char: string, fg: CharBuffer[0][0]['fg']) => {
-      if (row < top || row >= top + height || col < left || col >= left + width) return;
       if (row < 0 || row >= buffer.length || col < 0 || col >= (buffer[row]?.length ?? 0)) return;
       buffer[row][col] = { char, fg, bg: 'black' };
     };

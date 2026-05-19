@@ -264,7 +264,6 @@ export class SurfaceLandingMiniGameScene extends BaseMiniGameScene {
 
     const safeWrite = (row: number, col: number, char: string, fg: typeof buffer[0][0]['fg']) => {
       if (row < 0 || row >= buffer.length || col < 0 || col >= (buffer[row]?.length ?? 0)) return;
-      if (row < viewport.top || row >= viewport.top + viewport.height) return;
       buffer[row][col] = { char, fg, bg: 'black' };
     };
 
