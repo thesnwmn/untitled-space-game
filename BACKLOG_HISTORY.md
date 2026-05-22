@@ -40,6 +40,44 @@ Implemented `AsteroidLandingMiniGameScene` for `locationType: 'asteroid'` destin
 2. Full game: dock at asteroid destination, confirm mini-game plays and landing result scene shows score
 3. Terminal: repeat full game steps
 
+### 059 · Space Navigation Mini-Game — DONE
+
+**What it added:**
+Momentum-based obstacle-avoidance mini-game where the player pilots a ship through a scrolling field of drifting objects (asteroids, debris, or storm particles) covering a fixed distance. The full viewport renders the player ship `^` (bright-green) in the lower third, with a HUD progress bar at the top showing distance covered. Arrow keys apply impulses with momentum cancellation (pressing the opposite direction zeros velocity in that axis before adding the new impulse). Three event type variants (asteroid_belt, space_debris, space_storm) each with distinct obstacle character sets and size distributions. Collision is detected per-character; any obstacle cell matching the player's integer screen position triggers failure with a 400ms flash. Victory occurs when player reaches the target distance (difficulty-parameterised: 300 for easy, 400 for normal, 500 for hard). Score is binary: 100 for success, 0 for collision. Registered in `miniGameRegistry` with id `'navigation'` and three variants.
+
+**Key files:**
+- `src/game/mini-games/navigation-mini-game.ts` — new 520-line scene class with physics model, obstacle spawning, collision detection, and rendering
+- `src/game/mini-games/navigation-mini-game.test.ts` — 11 tests covering momentum model, driftVy enforcement, collision detection, HUD exclusion, despawn, and completion
+- `src/game/mini-games/registry.ts` — added `'navigation'` descriptor and factory with three variants
+- `src/game/world/types.ts` — added `NavigationDifficulty`, `NavigationEventType`, and `NavigationBalance` types; added optional `navigation` to `GameBalance.miniGames`
+- `src/game/world/world-parser.ts` — added default navigation balance config, `parseNavigationBalance()` parser function, and integration with balance parsing
+- `docs/world/settings/balance.md` — added `navigation_minigame` section with ship parameters and per-difficulty settings for all three event types
+
+**Evidence:** `tsc --noEmit`: zero errors. `npm test`: 948 passed (11 new tests), 1 skipped.
+
+**Architectural decisions embedded:**
+- Momentum model uses per-axis velocity with opposite-direction cancellation to match spec behaviour and prevent sticky movement
+- Camera scrolling advances at least `minScrollSpeed` (difficulty-derived) but effective forward speed is `max(playerVelY, minScrollSpeed)`, allowing the world to advance even when player presses DOWN
+- Obstacle spawning uses two strategies: lead-spawn fills bands ahead of the visible area to target density, edge-spawn periodically introduces obstacles from screen edges; both use seeded PRNG for reproducibility
+- Balance configuration is fully parameterised: all obstacle sizes, speeds, and spawn intervals are configurable per difficulty and event type
+- HUD row exclusion prevents obstacles in the top row from colliding or rendering over the progress bar
+
+**Play-test instructions:**
+
+**Browser (`npm run dev:mini-games`)**
+1. Load harness; confirm `navigation` appears with three variant links
+2. Open `asteroid_belt` — verify player ship at bottom centre, obstacles appear above and scroll downward, HUD progress bar at top
+3. Press UP several times — confirm forward acceleration and progress bar fills
+4. Press RIGHT then LEFT quickly — confirm lateral momentum cancels before reversing
+5. Press DOWN repeatedly — confirm forward speed reduces but world still scrolls (due to minScrollSpeed floor)
+6. Allow ship to drift off bottom edge — confirm collision failure and overlay shows `{ outcome: 'completed', result: { score: 0 } }`
+7. Replay and navigate full distance — confirm overlay shows `{ outcome: 'completed', result: { score: 100 } }`
+8. Press MENU mid-game — confirm overlay shows `{ outcome: 'skipped' }`
+9. Repeat steps with `space_debris` and `space_storm` variants — confirm distinct obstacle character sets (round/chunky asteroids, flat angular debris, sparse storm particles)
+
+**Terminal (`bun run terminal-mini-games.ts navigation`)**
+Repeat all steps using keyboard arrows and MENU key.
+
 ### 056 · Planet Landing Mini-Game — DONE
 
 **What it added:**

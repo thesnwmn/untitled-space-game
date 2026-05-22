@@ -120,6 +120,58 @@ const DEFAULT_BALANCE: GameBalance = {
       initialDownwardVelocity: 2,
       maxSpeed: 15,
     },
+    navigation: {
+      ship: {
+        accelerationImpulse: 0.8,
+        maxSpeedLateral: 4.0,
+        maxSpeedForward: 6.0,
+        playerRowPreference: 0.67,
+        topBufferRows: 4,
+      },
+      difficulties: {
+        easy: {
+          baseScrollSpeed: 0.3,
+          minScrollSpeed: 0.2,
+          obstacleDensity: 0.5,
+          edgeSpawnIntervalFrames: 120,
+          driftSpeedMax: 0.2,
+          targetDistance: 150,
+        },
+        normal: {
+          baseScrollSpeed: 0.5,
+          minScrollSpeed: 0.35,
+          obstacleDensity: 0.8,
+          edgeSpawnIntervalFrames: 80,
+          driftSpeedMax: 0.4,
+          targetDistance: 200,
+        },
+        hard: {
+          baseScrollSpeed: 0.8,
+          minScrollSpeed: 0.55,
+          obstacleDensity: 1.3,
+          edgeSpawnIntervalFrames: 50,
+          driftSpeedMax: 0.7,
+          targetDistance: 250,
+        },
+      },
+      eventTypes: {
+        asteroid_belt: {
+          largeRatio: 0.25,
+          mediumRatio: 0.40,
+          smallRatio: 0.35,
+        },
+        space_debris: {
+          largeRatio: 0.08,
+          mediumRatio: 0.25,
+          smallRatio: 0.67,
+        },
+        space_storm: {
+          largeRatio: 0.00,
+          mediumRatio: 0.10,
+          smallRatio: 0.90,
+        },
+      },
+    },
   },
 };
 
@@ -401,6 +453,50 @@ function parseAsteroidBalance(
   };
 }
 
+function parseNavigationBalance(
+  data: Record<string, unknown>,
+  defaults: GameBalance['miniGames']['navigation'],
+): GameBalance['miniGames']['navigation'] {
+  const ship = (data.ship as Record<string, unknown>) ?? {};
+  const difficulties = (data.difficulties as Record<string, unknown>) ?? {};
+  const eventTypes = (data.event_types as Record<string, unknown>) ?? {};
+
+  const parseDifficulty = (d: Record<string, unknown>, def: any) => ({
+    baseScrollSpeed: (d.base_scroll_speed as number) ?? def?.baseScrollSpeed,
+    minScrollSpeed: (d.min_scroll_speed as number) ?? def?.minScrollSpeed,
+    obstacleDensity: (d.obstacle_density as number) ?? def?.obstacleDensity,
+    edgeSpawnIntervalFrames: (d.edge_spawn_interval_frames as number) ?? def?.edgeSpawnIntervalFrames,
+    driftSpeedMax: (d.drift_speed_max as number) ?? def?.driftSpeedMax,
+    targetDistance: (d.target_distance as number) ?? def?.targetDistance,
+  });
+
+  const parseEventType = (et: Record<string, unknown>, def: any) => ({
+    largeRatio: (et.large_ratio as number) ?? def?.largeRatio,
+    mediumRatio: (et.medium_ratio as number) ?? def?.mediumRatio,
+    smallRatio: (et.small_ratio as number) ?? def?.smallRatio,
+  });
+
+  return {
+    ship: {
+      accelerationImpulse: (ship.acceleration_impulse as number) ?? defaults?.ship?.accelerationImpulse ?? 0.4,
+      maxSpeedLateral: (ship.max_speed_lateral as number) ?? defaults?.ship?.maxSpeedLateral ?? 2.0,
+      maxSpeedForward: (ship.max_speed_forward as number) ?? defaults?.ship?.maxSpeedForward ?? 3.0,
+      playerRowPreference: (ship.player_row_preference as number) ?? defaults?.ship?.playerRowPreference ?? 0.67,
+      topBufferRows: (ship.top_buffer_rows as number) ?? defaults?.ship?.topBufferRows ?? 4,
+    },
+    difficulties: {
+      easy: parseDifficulty((difficulties.easy as Record<string, unknown>) ?? {}, defaults?.difficulties?.easy),
+      normal: parseDifficulty((difficulties.normal as Record<string, unknown>) ?? {}, defaults?.difficulties?.normal),
+      hard: parseDifficulty((difficulties.hard as Record<string, unknown>) ?? {}, defaults?.difficulties?.hard),
+    },
+    eventTypes: {
+      asteroid_belt: parseEventType((eventTypes.asteroid_belt as Record<string, unknown>) ?? {}, defaults?.eventTypes?.asteroid_belt),
+      space_debris: parseEventType((eventTypes.space_debris as Record<string, unknown>) ?? {}, defaults?.eventTypes?.space_debris),
+      space_storm: parseEventType((eventTypes.space_storm as Record<string, unknown>) ?? {}, defaults?.eventTypes?.space_storm),
+    },
+  };
+}
+
 function parseBalance(data: { [key: string]: any }): GameBalance {
   const d = DEFAULT_BALANCE;
   const npc = data.npc ?? {};
@@ -484,6 +580,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       noDamageThreshold: mg.no_damage_threshold ?? d.miniGames.noDamageThreshold,
       surface: parseSurfaceBalance(mg.surface ?? {}, d.miniGames.surface),
       asteroid: parseAsteroidBalance(mg.asteroid ?? {}, d.miniGames.asteroid),
+      navigation: parseNavigationBalance(mg.navigation_minigame ?? {}, d.miniGames.navigation!),
     },
   };
 }
