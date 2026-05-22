@@ -10,6 +10,15 @@ feature doc as normal. The idea number does not carry over to the feature number
 
 <!-- Add new ideas below. Always use the next available number. -->
 
+### Idea 006 · Encounter Background Scene Theming
+
+**Area:** Visual polish
+**Inspiration:** The static ship background in NavigationEncounterScene (Feature 060) is intentionally frozen for simplicity
+
+Rather than a frozen generic starfield, the background rendered behind the encounter dialog could reflect the encounter type about to be played: dense rock sprites drifting across the viewport for an asteroid belt, visible debris fragments tumbling for a space debris field, a shimmer or distortion effect overlaid on the stars for a space storm. This would make the visual briefing feel like a window into the hazard ahead rather than a generic ship view, and reinforce the encounter type before the mini-game begins.
+
+---
+
 ### Idea 005 · Miner Origin Narrative
 
 **Area:** Story
