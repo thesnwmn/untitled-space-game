@@ -437,7 +437,7 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
           ];
         }
       } else if (this.eventType === 'space_debris') {
-        const variant = Math.floor(this.rand() * 3);
+        const variant = Math.floor(this.rand() * 5);
         if (variant === 0) {
           // Flat debris field
           return [
@@ -465,7 +465,7 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
             { dcol: 1, drow: 2, char: '\\', color: 'bright-black' as Color },
             { dcol: 3, drow: 2, char: '/', color: 'bright-black' as Color },
           ];
-        } else {
+        } else if (variant === 2) {
           // Twisted debris
           return [
             { dcol: 1, drow: 0, char: '=', color: 'bright-black' as Color },
@@ -477,21 +477,80 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
             { dcol: 1, drow: 2, char: '-', color: 'bright-black' as Color },
             { dcol: 2, drow: 2, char: '=', color: 'bright-black' as Color },
           ];
+        } else if (variant === 3) {
+          // Angular debris
+          return [
+            { dcol: 0, drow: 0, char: '\\', color: 'bright-black' as Color },
+            { dcol: 2, drow: 0, char: '/', color: 'bright-black' as Color },
+            { dcol: 1, drow: 1, char: '=', color: 'bright-black' as Color },
+            { dcol: 0, drow: 2, char: '/', color: 'bright-black' as Color },
+            { dcol: 2, drow: 2, char: '\\', color: 'bright-black' as Color },
+            { dcol: 3, drow: 2, char: '=', color: 'bright-black' as Color },
+          ];
+        } else {
+          // Framed debris
+          return [
+            { dcol: 0, drow: 0, char: '+', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '-', color: 'bright-black' as Color },
+            { dcol: 2, drow: 0, char: '+', color: 'bright-black' as Color },
+            { dcol: 0, drow: 1, char: '|', color: 'bright-black' as Color },
+            { dcol: 2, drow: 1, char: '|', color: 'bright-black' as Color },
+            { dcol: 0, drow: 2, char: '+', color: 'bright-black' as Color },
+            { dcol: 1, drow: 2, char: '-', color: 'bright-black' as Color },
+            { dcol: 2, drow: 2, char: '+', color: 'bright-black' as Color },
+          ];
         }
       } else {
-        // Storm: mostly small scattered pieces with a few medium
-        return [
-          { dcol: 0, drow: 0, char: '.', color: 'cyan' as Color },
-          { dcol: 2, drow: 0, char: "'", color: 'cyan' as Color },
-          { dcol: 4, drow: 0, char: '`', color: 'cyan' as Color },
-          { dcol: 1, drow: 1, char: '`', color: 'cyan' as Color },
-          { dcol: 3, drow: 1, char: ',', color: 'cyan' as Color },
-          { dcol: 0, drow: 2, char: "'", color: 'cyan' as Color },
-          { dcol: 2, drow: 2, char: '.', color: 'cyan' as Color },
-          { dcol: 4, drow: 2, char: ',', color: 'cyan' as Color },
-          { dcol: 1, drow: 3, char: '`', color: 'bright-cyan' as Color },
-          { dcol: 3, drow: 3, char: "'", color: 'cyan' as Color },
-        ];
+        // Storm: 4 variants
+        const variant = Math.floor(this.rand() * 4);
+        if (variant === 0) {
+          return [
+            { dcol: 0, drow: 0, char: '.', color: 'cyan' as Color },
+            { dcol: 2, drow: 0, char: "'", color: 'cyan' as Color },
+            { dcol: 4, drow: 0, char: '`', color: 'cyan' as Color },
+            { dcol: 1, drow: 1, char: '`', color: 'cyan' as Color },
+            { dcol: 3, drow: 1, char: ',', color: 'cyan' as Color },
+            { dcol: 0, drow: 2, char: "'", color: 'cyan' as Color },
+            { dcol: 2, drow: 2, char: '.', color: 'cyan' as Color },
+            { dcol: 4, drow: 2, char: ',', color: 'cyan' as Color },
+            { dcol: 1, drow: 3, char: '`', color: 'bright-cyan' as Color },
+            { dcol: 3, drow: 3, char: "'", color: 'cyan' as Color },
+          ];
+        } else if (variant === 1) {
+          return [
+            { dcol: 1, drow: 0, char: '*', color: 'bright-cyan' as Color },
+            { dcol: 3, drow: 0, char: '.', color: 'cyan' as Color },
+            { dcol: 0, drow: 1, char: "'", color: 'cyan' as Color },
+            { dcol: 2, drow: 1, char: ',', color: 'bright-cyan' as Color },
+            { dcol: 4, drow: 1, char: '`', color: 'cyan' as Color },
+            { dcol: 1, drow: 2, char: '.', color: 'cyan' as Color },
+            { dcol: 3, drow: 2, char: '*', color: 'bright-cyan' as Color },
+            { dcol: 0, drow: 3, char: '`', color: 'cyan' as Color },
+            { dcol: 4, drow: 3, char: "'", color: 'cyan' as Color },
+          ];
+        } else if (variant === 2) {
+          return [
+            { dcol: 2, drow: 0, char: '*', color: 'bright-cyan' as Color },
+            { dcol: 0, drow: 1, char: '.', color: 'cyan' as Color },
+            { dcol: 1, drow: 1, char: "'", color: 'cyan' as Color },
+            { dcol: 3, drow: 1, char: ',', color: 'cyan' as Color },
+            { dcol: 4, drow: 1, char: '`', color: 'bright-cyan' as Color },
+            { dcol: 2, drow: 2, char: '`', color: 'cyan' as Color },
+            { dcol: 1, drow: 3, char: ',', color: 'bright-cyan' as Color },
+            { dcol: 3, drow: 3, char: '.', color: 'cyan' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 1, drow: 0, char: '.', color: 'bright-cyan' as Color },
+            { dcol: 3, drow: 0, char: "'", color: 'cyan' as Color },
+            { dcol: 0, drow: 1, char: '`', color: 'cyan' as Color },
+            { dcol: 2, drow: 1, char: '*', color: 'bright-cyan' as Color },
+            { dcol: 4, drow: 1, char: ',', color: 'cyan' as Color },
+            { dcol: 1, drow: 2, char: '*', color: 'cyan' as Color },
+            { dcol: 3, drow: 2, char: '`', color: 'bright-cyan' as Color },
+            { dcol: 2, drow: 3, char: "'", color: 'cyan' as Color },
+          ];
+        }
       }
     } else if (size === 'medium') {
       if (this.eventType === 'asteroid_belt') {
@@ -515,8 +574,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
           ];
         }
       } else if (this.eventType === 'space_debris') {
-        // Medium debris - 3 characters
-        const variant = Math.floor(this.rand() * 2);
+        // Medium debris - 4 variants
+        const variant = Math.floor(this.rand() * 4);
         if (variant === 0) {
           return [
             { dcol: 0, drow: 0, char: '[', color: 'bright-black' as Color },
@@ -525,40 +584,122 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
             { dcol: 0, drow: 1, char: '-', color: 'bright-black' as Color },
             { dcol: 2, drow: 1, char: ']', color: 'bright-black' as Color },
           ];
-        } else {
+        } else if (variant === 1) {
           return [
             { dcol: 0, drow: 0, char: '/', color: 'bright-black' as Color },
             { dcol: 1, drow: 0, char: '[', color: 'bright-black' as Color },
             { dcol: 2, drow: 0, char: '\\', color: 'bright-black' as Color },
             { dcol: 1, drow: 1, char: '=', color: 'bright-black' as Color },
           ];
+        } else if (variant === 2) {
+          return [
+            { dcol: 0, drow: 0, char: '\\', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '-', color: 'bright-black' as Color },
+            { dcol: 2, drow: 0, char: '/', color: 'bright-black' as Color },
+            { dcol: 1, drow: 1, char: '[', color: 'bright-black' as Color },
+            { dcol: 0, drow: 1, char: '-', color: 'bright-black' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 0, drow: 0, char: '(', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '=', color: 'bright-black' as Color },
+            { dcol: 2, drow: 0, char: ')', color: 'bright-black' as Color },
+            { dcol: 1, drow: 1, char: '-', color: 'bright-black' as Color },
+          ];
         }
       } else {
-        return [
-          { dcol: 0, drow: 0, char: '.', color: 'bright-cyan' as Color },
-          { dcol: 1, drow: 0, char: "'", color: 'cyan' as Color },
-          { dcol: 2, drow: 0, char: '.', color: 'bright-cyan' as Color },
-          { dcol: 0, drow: 1, char: '`', color: 'cyan' as Color },
-          { dcol: 1, drow: 1, char: ',', color: 'bright-cyan' as Color },
-        ];
+        // Medium storm - 3 variants
+        const variant = Math.floor(this.rand() * 3);
+        if (variant === 0) {
+          return [
+            { dcol: 0, drow: 0, char: '.', color: 'bright-cyan' as Color },
+            { dcol: 1, drow: 0, char: "'", color: 'cyan' as Color },
+            { dcol: 2, drow: 0, char: '.', color: 'bright-cyan' as Color },
+            { dcol: 0, drow: 1, char: '`', color: 'cyan' as Color },
+            { dcol: 1, drow: 1, char: ',', color: 'bright-cyan' as Color },
+          ];
+        } else if (variant === 1) {
+          return [
+            { dcol: 0, drow: 0, char: "'", color: 'bright-cyan' as Color },
+            { dcol: 1, drow: 0, char: '*', color: 'cyan' as Color },
+            { dcol: 0, drow: 1, char: ',', color: 'cyan' as Color },
+            { dcol: 2, drow: 1, char: '`', color: 'bright-cyan' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 0, drow: 0, char: '`', color: 'cyan' as Color },
+            { dcol: 1, drow: 0, char: '.', color: 'bright-cyan' as Color },
+            { dcol: 2, drow: 0, char: "'", color: 'cyan' as Color },
+            { dcol: 1, drow: 1, char: '*', color: 'bright-cyan' as Color },
+          ];
+        }
       }
     } else {
-      // Small obstacles - now 2 chars instead of 1
+      // Small obstacles - now 2 chars with variety
       if (this.eventType === 'asteroid_belt') {
-        return [
-          { dcol: 0, drow: 0, char: '*', color: 'bright-white' as Color },
-          { dcol: 1, drow: 0, char: 'o', color: 'white' as Color },
-        ];
+        const variant = Math.floor(this.rand() * 3);
+        if (variant === 0) {
+          return [
+            { dcol: 0, drow: 0, char: '*', color: 'bright-white' as Color },
+            { dcol: 1, drow: 0, char: 'o', color: 'white' as Color },
+          ];
+        } else if (variant === 1) {
+          return [
+            { dcol: 0, drow: 0, char: 'o', color: 'white' as Color },
+            { dcol: 1, drow: 0, char: '*', color: 'bright-white' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 0, drow: 0, char: '@', color: 'white' as Color },
+            { dcol: 1, drow: 0, char: '*', color: 'bright-white' as Color },
+          ];
+        }
       } else if (this.eventType === 'space_debris') {
-        return [
-          { dcol: 0, drow: 0, char: ['+', '=', '-'][Math.floor(this.rand() * 3)], color: 'bright-black' as Color },
-          { dcol: 1, drow: 0, char: ['-', '=', '/'][Math.floor(this.rand() * 3)], color: 'bright-black' as Color },
-        ];
+        const variant = Math.floor(this.rand() * 4);
+        if (variant === 0) {
+          return [
+            { dcol: 0, drow: 0, char: '+', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '=', color: 'bright-black' as Color },
+          ];
+        } else if (variant === 1) {
+          return [
+            { dcol: 0, drow: 0, char: '[', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: ']', color: 'bright-black' as Color },
+          ];
+        } else if (variant === 2) {
+          return [
+            { dcol: 0, drow: 0, char: '/', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '\\', color: 'bright-black' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 0, drow: 0, char: '-', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '=', color: 'bright-black' as Color },
+          ];
+        }
       } else {
-        return [
-          { dcol: 0, drow: 0, char: '.', color: 'cyan' as Color },
-          { dcol: 1, drow: 0, char: "'", color: 'bright-cyan' as Color },
-        ];
+        const variant = Math.floor(this.rand() * 4);
+        if (variant === 0) {
+          return [
+            { dcol: 0, drow: 0, char: '.', color: 'cyan' as Color },
+            { dcol: 1, drow: 0, char: "'", color: 'bright-cyan' as Color },
+          ];
+        } else if (variant === 1) {
+          return [
+            { dcol: 0, drow: 0, char: '`', color: 'bright-cyan' as Color },
+            { dcol: 1, drow: 0, char: ',', color: 'cyan' as Color },
+          ];
+        } else if (variant === 2) {
+          return [
+            { dcol: 0, drow: 0, char: '*', color: 'bright-cyan' as Color },
+            { dcol: 1, drow: 0, char: '.', color: 'cyan' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 0, drow: 0, char: "'", color: 'cyan' as Color },
+            { dcol: 1, drow: 0, char: '*', color: 'bright-cyan' as Color },
+          ];
+        }
       }
     }
   }
