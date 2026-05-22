@@ -135,7 +135,7 @@ const DEFAULT_BALANCE: GameBalance = {
           obstacleDensity: 0.5,
           edgeSpawnIntervalFrames: 120,
           driftSpeedMax: 0.2,
-          targetDistance: 300,
+          targetDistance: 150,
         },
         normal: {
           baseScrollSpeed: 0.5,
@@ -143,7 +143,7 @@ const DEFAULT_BALANCE: GameBalance = {
           obstacleDensity: 0.8,
           edgeSpawnIntervalFrames: 80,
           driftSpeedMax: 0.4,
-          targetDistance: 400,
+          targetDistance: 200,
         },
         hard: {
           baseScrollSpeed: 0.8,
@@ -151,7 +151,7 @@ const DEFAULT_BALANCE: GameBalance = {
           obstacleDensity: 1.3,
           edgeSpawnIntervalFrames: 50,
           driftSpeedMax: 0.7,
-          targetDistance: 500,
+          targetDistance: 250,
         },
       },
       eventTypes: {

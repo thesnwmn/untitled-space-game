@@ -211,6 +211,12 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       this.state.playerVelY -= accelImpulse;
     }
 
+    // Apply sideways resistance (drag) to make stopping easier
+    const lateralResistance = 0.85; // 15% resistance per frame when no input
+    if (!this.heldKeys.has('LEFT') && !this.heldKeys.has('RIGHT')) {
+      this.state.playerVelX *= lateralResistance;
+    }
+
     // Clamp velocities
     this.state.playerVelX = Math.max(-maxLateral, Math.min(maxLateral, this.state.playerVelX));
     this.state.playerVelY = Math.max(-maxForward, Math.min(maxForward, this.state.playerVelY));
@@ -480,34 +486,70 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       }
     } else if (size === 'medium') {
       if (this.eventType === 'asteroid_belt') {
-        return [
-          { dcol: 0, drow: 0, char: '@', color: 'bright-white' as Color },
-          { dcol: 1, drow: 0, char: 'O', color: 'white' as Color },
-          { dcol: 0, drow: 1, char: '#', color: 'bright-white' as Color },
-          { dcol: 1, drow: 1, char: '@', color: 'white' as Color },
-        ];
+        // Medium asteroid - 2x3 or 3x2
+        const variant = Math.floor(this.rand() * 2);
+        if (variant === 0) {
+          return [
+            { dcol: 0, drow: 0, char: '@', color: 'bright-white' as Color },
+            { dcol: 1, drow: 0, char: 'O', color: 'white' as Color },
+            { dcol: 0, drow: 1, char: '#', color: 'bright-white' as Color },
+            { dcol: 1, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 1, drow: 2, char: '#', color: 'white' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 0, drow: 0, char: '#', color: 'white' as Color },
+            { dcol: 1, drow: 0, char: '@', color: 'bright-white' as Color },
+            { dcol: 2, drow: 0, char: 'O', color: 'white' as Color },
+            { dcol: 0, drow: 1, char: 'O', color: 'bright-white' as Color },
+            { dcol: 1, drow: 1, char: '@', color: 'white' as Color },
+          ];
+        }
       } else if (this.eventType === 'space_debris') {
-        return [
-          { dcol: 0, drow: 0, char: '[', color: 'bright-black' as Color },
-          { dcol: 1, drow: 0, char: '=', color: 'bright-black' as Color },
-          { dcol: 0, drow: 1, char: '-', color: 'bright-black' as Color },
-          { dcol: 1, drow: 1, char: ']', color: 'bright-black' as Color },
-        ];
+        // Medium debris - 3 characters
+        const variant = Math.floor(this.rand() * 2);
+        if (variant === 0) {
+          return [
+            { dcol: 0, drow: 0, char: '[', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '=', color: 'bright-black' as Color },
+            { dcol: 2, drow: 0, char: '=', color: 'bright-black' as Color },
+            { dcol: 0, drow: 1, char: '-', color: 'bright-black' as Color },
+            { dcol: 2, drow: 1, char: ']', color: 'bright-black' as Color },
+          ];
+        } else {
+          return [
+            { dcol: 0, drow: 0, char: '/', color: 'bright-black' as Color },
+            { dcol: 1, drow: 0, char: '[', color: 'bright-black' as Color },
+            { dcol: 2, drow: 0, char: '\\', color: 'bright-black' as Color },
+            { dcol: 1, drow: 1, char: '=', color: 'bright-black' as Color },
+          ];
+        }
       } else {
         return [
           { dcol: 0, drow: 0, char: '.', color: 'bright-cyan' as Color },
           { dcol: 1, drow: 0, char: "'", color: 'cyan' as Color },
+          { dcol: 2, drow: 0, char: '.', color: 'bright-cyan' as Color },
           { dcol: 0, drow: 1, char: '`', color: 'cyan' as Color },
           { dcol: 1, drow: 1, char: ',', color: 'bright-cyan' as Color },
         ];
       }
     } else {
+      // Small obstacles - now 2 chars instead of 1
       if (this.eventType === 'asteroid_belt') {
-        return [{ dcol: 0, drow: 0, char: ['o', '*', '@'][Math.floor(this.rand() * 3)], color: 'bright-white' as Color }];
+        return [
+          { dcol: 0, drow: 0, char: '*', color: 'bright-white' as Color },
+          { dcol: 1, drow: 0, char: 'o', color: 'white' as Color },
+        ];
       } else if (this.eventType === 'space_debris') {
-        return [{ dcol: 0, drow: 0, char: ['+', '=', '-', '/', '\\'][Math.floor(this.rand() * 5)], color: 'bright-black' as Color }];
+        return [
+          { dcol: 0, drow: 0, char: ['+', '=', '-'][Math.floor(this.rand() * 3)], color: 'bright-black' as Color },
+          { dcol: 1, drow: 0, char: ['-', '=', '/'][Math.floor(this.rand() * 3)], color: 'bright-black' as Color },
+        ];
       } else {
-        return [{ dcol: 0, drow: 0, char: ['.', "'", '`', ','][Math.floor(this.rand() * 4)], color: 'cyan' as Color }];
+        return [
+          { dcol: 0, drow: 0, char: '.', color: 'cyan' as Color },
+          { dcol: 1, drow: 0, char: "'", color: 'bright-cyan' as Color },
+        ];
       }
     }
   }
@@ -531,7 +573,9 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     if (this.state.outcome === 'collision') return;
 
     const { width, height, top, left } = viewport;
-    const playerScreenCol = left + Math.round(this.state.playerWorldX);
+    // Player is 2 chars wide: / and \
+    const playerScreenColLeft = left + Math.round(this.state.playerWorldX) - 1;
+    const playerScreenColRight = playerScreenColLeft + 1;
     const playerScreenRow = top + height - 1 - Math.round(this.state.playerWorldY - this.state.cameraScrollY);
 
     // Skip if player is in HUD row or above
@@ -545,7 +589,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
         // Skip HUD row
         if (cellScreenRow <= top) continue;
 
-        if (cellScreenCol === playerScreenCol && cellScreenRow === playerScreenRow) {
+        // Check if obstacle hits either side of the 2-char wide ship
+        if ((cellScreenCol === playerScreenColLeft || cellScreenCol === playerScreenColRight) && cellScreenRow === playerScreenRow) {
           this.triggerCollision();
           return;
         }
@@ -631,15 +676,21 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       }
     }
 
-    // Draw player ship (or flash if collision)
-    const playerScreenCol = left + Math.round(this.state.playerWorldX);
+    // Draw player ship (2 chars wide, or flash if collision)
+    const playerScreenCol = left + Math.round(this.state.playerWorldX) - 1; // shift left by 0.5 to center the 2-char ship
     const playerScreenRow = top + height - 1 - Math.round(this.state.playerWorldY - this.state.cameraScrollY);
 
-    if (playerScreenRow >= top && playerScreenRow < top + height && playerScreenCol >= left && playerScreenCol < left + width) {
+    if (playerScreenRow >= top && playerScreenRow < top + height && playerScreenCol >= left && playerScreenCol < left + width - 1) {
+      const isFlashing = this.state.outcome === 'collision' && (Math.floor((performance.now() - (this.state.collisionFlashEndTime - 400)) / 100) % 2 === 0);
+      const color: Color = isFlashing ? 'bright-red' : 'bright-green';
+
+      // Left half of ship
       if (playerScreenRow < buffer.length && playerScreenCol < buffer[playerScreenRow].length) {
-        const isFlashing = this.state.outcome === 'collision' && (Math.floor((performance.now() - (this.state.collisionFlashEndTime - 400)) / 100) % 2 === 0);
-        const color: Color = isFlashing ? 'bright-red' : 'bright-green';
-        buffer[playerScreenRow][playerScreenCol] = { char: '^', fg: color, bg: 'black' as Color };
+        buffer[playerScreenRow][playerScreenCol] = { char: '/', fg: color, bg: 'black' as Color };
+      }
+      // Right half of ship
+      if (playerScreenRow < buffer.length && playerScreenCol + 1 < buffer[playerScreenRow].length) {
+        buffer[playerScreenRow][playerScreenCol + 1] = { char: '\\', fg: color, bg: 'black' as Color };
       }
     }
 

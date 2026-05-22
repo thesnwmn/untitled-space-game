@@ -82,21 +82,21 @@ navigation_minigame:
       obstacle_density: 0.5
       edge_spawn_interval_frames: 120
       drift_speed_max: 0.2
-      target_distance: 300
+      target_distance: 150
     normal:
       base_scroll_speed: 0.5
       min_scroll_speed: 0.35
       obstacle_density: 0.8
       edge_spawn_interval_frames: 80
       drift_speed_max: 0.4
-      target_distance: 400
+      target_distance: 200
     hard:
       base_scroll_speed: 0.8
       min_scroll_speed: 0.55
       obstacle_density: 1.3
       edge_spawn_interval_frames: 50
       drift_speed_max: 0.7
-      target_distance: 500
+      target_distance: 250
   event_types:
     asteroid_belt:
       large_ratio: 0.25
