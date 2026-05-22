@@ -212,7 +212,7 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     }
 
     // Apply sideways resistance (drag) to make stopping easier
-    const lateralResistance = 0.95; // 5% resistance per frame when no input
+    const lateralResistance = 0.98; // 2% resistance per frame when no input
     if (!this.heldKeys.has('LEFT') && !this.heldKeys.has('RIGHT')) {
       this.state.playerVelX *= lateralResistance;
     }
