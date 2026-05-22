@@ -231,7 +231,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     // Clamp player to viewport bounds
     this.state.playerWorldX = Math.max(1, Math.min(width - 2, this.state.playerWorldX));
 
-    // Camera advances based on forward speed (player stays at fixed screen row)
+    // Both player and camera advance at same speed to keep player at fixed screen row
+    this.state.playerWorldY += effectiveVelY * dt;
     this.state.cameraScrollY += effectiveVelY * dt;
   }
 
@@ -560,8 +561,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   private checkVictory(diffBalance: any): void {
     if (this.state.completed) return;
 
-    // Victory is reached when camera has scrolled the target distance
-    if (this.state.cameraScrollY >= diffBalance.targetDistance) {
+    // Victory is reached when player has advanced the target distance
+    if (this.state.playerWorldY >= diffBalance.targetDistance) {
       if (this.state.outcome === 'collision') return;
       this.state.outcome = 'victory';
       this.state.completed = true;
