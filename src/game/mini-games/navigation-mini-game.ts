@@ -63,6 +63,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   private eventType: EventType;
   private difficulty: Difficulty;
   private lastViewport: { top: number; left: number; width: number; height: number } = { top: 0, left: 0, width: 80, height: 24 };
+  private _joystick: { centerCol: number; centerRow: number; currentCol: number; currentRow: number; id: number } | null = null;
+  private readonly _primaryInput: 'keyboard' | 'touch';
 
   constructor(
     input: InputHandler,
@@ -76,6 +78,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       title: 'NAVIGATION',
       onComplete,
     });
+
+    this._primaryInput = context.primaryInput;
 
     let eventType: string | null = null;
     let difficulty: string | null = null;
@@ -100,19 +104,39 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     const targetDistance = diffBalance.targetDistance;
 
     this.state = {
-      playerWorldX: 0,
+      playerWorldX: 40, // center horizontally (assuming 80-char viewport)
       playerWorldY: 0,
       playerVelX: 0,
       playerVelY: 0,
-      cameraScrollY: 0,
+      cameraScrollY: -15, // start camera showing player in lower third
       obstacles: [],
-      spawnFrontierY: targetDistance,
+      spawnFrontierY: -20, // start spawning from top of viewport
       lastEdgeSpawnFrame: 0,
       frameCount: 0,
       completed: false,
       collisionFlashEndTime: 0,
       outcome: 'idle',
     };
+
+    if (input.onTouchTrack) {
+      input.onTouchTrack({
+        start: (col, row, id) => {
+          if (row < CONTENT_TOP) return;
+          this._joystick = { centerCol: col, centerRow: row, currentCol: col, currentRow: row, id };
+        },
+        move: (col, row, id) => {
+          if (!this._joystick || this._joystick.id !== id) return;
+          this._joystick.currentCol = col;
+          this._joystick.currentRow = row;
+        },
+        end: (id) => {
+          if (this._joystick?.id === id) {
+            this._joystick = null;
+            this.heldKeys.clear();
+          }
+        },
+      });
+    }
   }
 
   protected override handleAction(action: GameAction): void {
@@ -141,6 +165,18 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     const navBalance = balance.miniGames.navigation as any;
     const diffBalance = navBalance.difficulties[this.difficulty];
     const shipBalance = navBalance.ship;
+
+    // Handle joystick input
+    if (this._joystick) {
+      const JOYSTICK_DEAD_ZONE = 1;
+      const dCol = this._joystick.currentCol - this._joystick.centerCol;
+      const dRow = this._joystick.currentRow - this._joystick.centerRow;
+      this.heldKeys.clear();
+      if (dRow < -JOYSTICK_DEAD_ZONE) this.heldKeys.add('UP');
+      if (dRow > JOYSTICK_DEAD_ZONE) this.heldKeys.add('DOWN');
+      if (dCol < -JOYSTICK_DEAD_ZONE) this.heldKeys.add('LEFT');
+      if (dCol > JOYSTICK_DEAD_ZONE) this.heldKeys.add('RIGHT');
+    }
 
     this.updateInput(shipBalance);
     this.updatePosition(dtSeconds, diffBalance);
@@ -471,6 +507,42 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
         buffer[playerScreenRow][playerScreenCol] = { char: '^', fg: color, bg: 'black' as Color };
       }
     }
+
+    // Draw joystick if in touch mode
+    if (this._primaryInput === 'touch') {
+      this.renderJoystick(buffer, viewport);
+    }
+  }
+
+  private renderJoystick(buffer: CharBuffer, viewport: MiniGameViewport): void {
+    const { top, left, width, height } = viewport;
+
+    const safeWrite = (row: number, col: number, char: string, fg: Color) => {
+      if (row < 0 || row >= buffer.length || col < 0 || col >= (buffer[row]?.length ?? 0)) return;
+      buffer[row][col] = { char, fg, bg: 'black' as Color };
+    };
+
+    if (!this._joystick) {
+      const hint = 'DRAG TO NAVIGATE';
+      const hintRow = top + height - 2;
+      const hintCol = left + Math.floor((width - hint.length) / 2);
+      for (let i = 0; i < hint.length && hintCol + i < left + width; i++) {
+        safeWrite(hintRow, hintCol + i, hint[i], 'bright-black' as Color);
+      }
+      return;
+    }
+
+    const { centerCol, centerRow, currentCol, currentRow } = this._joystick;
+    const dCol = currentCol - centerCol;
+    const dRow = currentRow - centerRow;
+    const JOYSTICK_DEAD_ZONE = 1;
+
+    safeWrite(centerRow, centerCol, 'o', 'bright-white' as Color);
+
+    if (dRow < -JOYSTICK_DEAD_ZONE) safeWrite(centerRow - 2, centerCol, '^', 'bright-green' as Color);
+    if (dRow > JOYSTICK_DEAD_ZONE) safeWrite(centerRow + 2, centerCol, 'v', 'bright-green' as Color);
+    if (dCol < -JOYSTICK_DEAD_ZONE) safeWrite(centerRow, centerCol - 2, '<', 'bright-green' as Color);
+    if (dCol > JOYSTICK_DEAD_ZONE) safeWrite(centerRow, centerCol + 2, '>', 'bright-green' as Color);
   }
 
   private drawHud(buffer: CharBuffer, viewport: MiniGameViewport): void {
