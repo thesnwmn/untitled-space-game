@@ -65,6 +65,7 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   private lastViewport: { top: number; left: number; width: number; height: number } = { top: 0, left: 0, width: 80, height: 24 };
   private _joystick: { centerCol: number; centerRow: number; currentCol: number; currentRow: number; id: number } | null = null;
   private readonly _primaryInput: 'keyboard' | 'touch';
+  private initialized = false;
 
   constructor(
     input: InputHandler,
@@ -529,20 +530,20 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   private checkCollisions(viewport: MiniGameViewport): void {
     if (this.state.outcome === 'collision') return;
 
-    const { width, height } = viewport;
-    const playerScreenCol = Math.round(this.state.playerWorldX);
-    const playerScreenRow = height - 1 - Math.round(this.state.playerWorldY - this.state.cameraScrollY);
+    const { width, height, top, left } = viewport;
+    const playerScreenCol = left + Math.round(this.state.playerWorldX);
+    const playerScreenRow = top + height - 1 - Math.round(this.state.playerWorldY - this.state.cameraScrollY);
 
     // Skip if player is in HUD row or above
-    if (playerScreenRow <= 0) return;
+    if (playerScreenRow <= top) return;
 
     for (const obs of this.state.obstacles) {
       for (const cell of obs.cells) {
-        const cellScreenCol = Math.round(obs.worldX + cell.dcol);
-        const cellScreenRow = height - 1 - Math.round(obs.worldY + cell.drow - this.state.cameraScrollY);
+        const cellScreenCol = left + Math.round(obs.worldX + cell.dcol);
+        const cellScreenRow = top + height - 1 - Math.round(obs.worldY + cell.drow - this.state.cameraScrollY);
 
         // Skip HUD row
-        if (cellScreenRow <= 0) continue;
+        if (cellScreenRow <= top) continue;
 
         if (cellScreenCol === playerScreenCol && cellScreenRow === playerScreenRow) {
           this.triggerCollision();
@@ -593,7 +594,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     const { top, left, width, height } = viewport;
 
     // Initialize player position on first render when viewport is known
-    if (this.state.playerWorldX === 0 && this.state.playerWorldY === 0) {
+    if (!this.initialized) {
+      this.initialized = true;
       this.state.playerWorldX = width / 2;
       this.state.playerWorldY = height * 2 / 3;
       // Position camera so player appears at 1/3 from bottom: gap should be height/3 - 1
