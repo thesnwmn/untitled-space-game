@@ -135,6 +135,41 @@ export interface GameSettings {
   startingShip: string;
 }
 
+export interface NavigationDifficulty {
+  baseScrollSpeed: number;
+  minScrollSpeed: number;
+  obstacleDensity: number;
+  edgeSpawnIntervalFrames: number;
+  driftSpeedMax: number;
+  targetDistance: number;
+}
+
+export interface NavigationEventType {
+  largeRatio: number;
+  mediumRatio: number;
+  smallRatio: number;
+}
+
+export interface NavigationBalance {
+  ship: {
+    accelerationImpulse: number;
+    maxSpeedLateral: number;
+    maxSpeedForward: number;
+    playerRowPreference: number;
+    topBufferRows: number;
+  };
+  difficulties: {
+    easy: NavigationDifficulty;
+    normal: NavigationDifficulty;
+    hard: NavigationDifficulty;
+  };
+  eventTypes: {
+    asteroid_belt: NavigationEventType;
+    space_debris: NavigationEventType;
+    space_storm: NavigationEventType;
+  };
+}
+
 export interface GameBalance {
   npc: {
     specialNameChance: number;
@@ -225,6 +260,7 @@ export interface GameBalance {
       initialDownwardVelocity: number;
       maxSpeed: number;
     };
+    navigation?: NavigationBalance;
     [key: string]: unknown;
   };
 }

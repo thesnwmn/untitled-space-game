@@ -67,4 +67,47 @@ mini_games:
   max_hull_damage_fraction: 0.05
   abandon_damage_fraction: 0.05
   no_damage_threshold: 90
+
+navigation_minigame:
+  ship:
+    acceleration_impulse: 0.4
+    max_speed_lateral: 2.0
+    max_speed_forward: 3.0
+    player_row_preference: 0.67
+    top_buffer_rows: 4
+  difficulties:
+    easy:
+      base_scroll_speed: 0.3
+      min_scroll_speed: 0.2
+      obstacle_density: 0.5
+      edge_spawn_interval_frames: 120
+      drift_speed_max: 0.2
+      target_distance: 300
+    normal:
+      base_scroll_speed: 0.5
+      min_scroll_speed: 0.35
+      obstacle_density: 0.8
+      edge_spawn_interval_frames: 80
+      drift_speed_max: 0.4
+      target_distance: 400
+    hard:
+      base_scroll_speed: 0.8
+      min_scroll_speed: 0.55
+      obstacle_density: 1.3
+      edge_spawn_interval_frames: 50
+      drift_speed_max: 0.7
+      target_distance: 500
+  event_types:
+    asteroid_belt:
+      large_ratio: 0.25
+      medium_ratio: 0.40
+      small_ratio: 0.35
+    space_debris:
+      large_ratio: 0.08
+      medium_ratio: 0.25
+      small_ratio: 0.67
+    space_storm:
+      large_ratio: 0.00
+      medium_ratio: 0.10
+      small_ratio: 0.90
 ---

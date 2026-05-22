@@ -4,6 +4,7 @@ import type { BaseMiniGameScene } from '../scenes/base-mini-game-scene';
 import { DockingMiniGameScene } from '../scenes/docking-mini-game-scene';
 import { SurfaceLandingMiniGameScene } from '../scenes/surface-landing-mini-game-scene';
 import { AsteroidLandingMiniGameScene } from '../scenes/asteroid-landing-mini-game-scene';
+import { NavigationMiniGameScene } from './navigation-mini-game';
 
 // Pure data — safe to import from Bun build scripts and terminal harness
 export const miniGameDescriptors: MiniGameDescriptorMeta[] = [
@@ -30,6 +31,16 @@ export const miniGameDescriptors: MiniGameDescriptorMeta[] = [
     description: 'Navigate freely with no gravity to land on the marked pad',
     variants: [
       { id: 'asteroid', label: 'Asteroid Surface', params: { locationType: 'asteroid' } },
+    ],
+  },
+  {
+    id: 'navigation',
+    name: 'Space Navigation',
+    description: 'Pilot your ship through obstacles with momentum controls',
+    variants: [
+      { id: 'asteroid_belt', label: 'Asteroid Belt', params: { type: 'asteroid_belt', difficulty: 'normal' } },
+      { id: 'space_debris', label: 'Space Debris', params: { type: 'space_debris', difficulty: 'normal' } },
+      { id: 'space_storm', label: 'Space Storm', params: { type: 'space_storm', difficulty: 'normal' } },
     ],
   },
 ];
@@ -61,5 +72,10 @@ export const miniGameRegistry: MiniGameEntry[] = [
     meta: miniGameDescriptors[2],
     factory: (input, context, player, _params, onComplete) =>
       new AsteroidLandingMiniGameScene(input, context, player, onComplete),
+  },
+  {
+    meta: miniGameDescriptors[3],
+    factory: (input, context, player, params, onComplete) =>
+      new NavigationMiniGameScene(input, context, player, params, onComplete),
   },
 ];
