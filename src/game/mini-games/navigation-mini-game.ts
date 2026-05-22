@@ -596,6 +596,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     if (this.state.playerWorldX === 0 && this.state.playerWorldY === 0) {
       this.state.playerWorldX = width / 2;
       this.state.playerWorldY = height * 2 / 3;
+      // Position camera so player appears at 1/3 from bottom: gap should be height/3 - 1
+      this.state.cameraScrollY = this.state.playerWorldY - (height / 3 - 1);
     }
 
     // Clear viewport
