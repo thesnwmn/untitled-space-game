@@ -190,6 +190,11 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     this.checkCollisions(this.lastViewport);
     this.checkVictory(diffBalance);
 
+    // Reset collision flash after it ends (if player still alive)
+    if (this.state.outcome === 'collision' && this.state.lives > 0 && performance.now() > this.state.collisionFlashEndTime) {
+      this.state.outcome = 'idle';
+    }
+
     this.state.frameCount++;
   }
 
