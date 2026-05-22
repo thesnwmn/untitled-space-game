@@ -263,7 +263,7 @@ describe('NavigationMiniGameScene', () => {
       const navBalance = balance.miniGames.navigation!;
       const diffBalance = navBalance.difficulties.normal;
 
-      scene['state'].playerWorldY = diffBalance.targetDistance + 10;
+      scene['state'].cameraScrollY = diffBalance.targetDistance + 10;
       scene['state'].completed = false;
       scene['state'].outcome = 'idle';
 

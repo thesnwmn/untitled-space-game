@@ -223,22 +223,16 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     // Effective forward speed is at least minScrollSpeed
     const effectiveVelY = Math.max(this.state.playerVelY, minScrollSpeed);
 
-    const { width, height } = this.lastViewport;
+    const { width } = this.lastViewport;
 
-    // Initialize player position on first frame
-    if (this.state.playerWorldX === 0 && this.state.playerWorldY === 0) {
-      this.state.playerWorldX = width / 2;
-    }
-
+    // Only update horizontal position; vertical is fixed on screen
     this.state.playerWorldX += this.state.playerVelX * dt;
-    this.state.playerWorldY += effectiveVelY * dt;
 
     // Clamp player to viewport bounds
     this.state.playerWorldX = Math.max(1, Math.min(width - 2, this.state.playerWorldX));
 
-    // Keep player at 1/3 from bottom of screen (2/3 from top)
-    const targetCameraY = this.state.playerWorldY - height * 2 / 3;
-    this.state.cameraScrollY = Math.max(this.state.cameraScrollY, targetCameraY);
+    // Camera advances based on forward speed (player stays at fixed screen row)
+    this.state.cameraScrollY += effectiveVelY * dt;
   }
 
   private spawnObstacles(viewport: MiniGameViewport, diffBalance: any, eventTypeBalance: any): void {
@@ -277,7 +271,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     if (this.state.frameCount - this.state.lastEdgeSpawnFrame >= edgeSpawnInterval) {
       this.state.lastEdgeSpawnFrame = this.state.frameCount;
       const side = this.rand() < 0.5 ? 'left' : 'right';
-      const edgeWorldY = this.state.playerWorldY + (this.rand() - 0.5) * 20;
+      // Spawn ahead in world space
+      const edgeWorldY = this.state.cameraScrollY + height + (this.rand() - 0.5) * 20;
       this.spawnObstacleAtEdge(side, edgeWorldY, width, diffBalance, eventTypeRatios, maxDriftSpeed);
     }
   }
@@ -565,7 +560,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   private checkVictory(diffBalance: any): void {
     if (this.state.completed) return;
 
-    if (this.state.playerWorldY >= diffBalance.targetDistance) {
+    // Victory is reached when camera has scrolled the target distance
+    if (this.state.cameraScrollY >= diffBalance.targetDistance) {
       if (this.state.outcome === 'collision') return;
       this.state.outcome = 'victory';
       this.state.completed = true;
@@ -594,6 +590,12 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   protected renderGame(buffer: CharBuffer, viewport: MiniGameViewport): void {
     this.lastViewport = viewport;
     const { top, left, width, height } = viewport;
+
+    // Initialize player position on first render when viewport is known
+    if (this.state.playerWorldX === 0 && this.state.playerWorldY === 0) {
+      this.state.playerWorldX = width / 2;
+      this.state.playerWorldY = height * 2 / 3;
+    }
 
     // Clear viewport
     for (let row = top; row < top + height; row++) {
