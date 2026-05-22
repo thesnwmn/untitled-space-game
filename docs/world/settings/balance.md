@@ -70,9 +70,9 @@ mini_games:
 
 navigation_minigame:
   ship:
-    acceleration_impulse: 0.4
-    max_speed_lateral: 2.0
-    max_speed_forward: 3.0
+    acceleration_impulse: 0.8
+    max_speed_lateral: 4.0
+    max_speed_forward: 6.0
     player_row_preference: 0.67
     top_buffer_rows: 4
   difficulties:

@@ -104,13 +104,13 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     const targetDistance = diffBalance.targetDistance;
 
     this.state = {
-      playerWorldX: 40, // center horizontally (assuming 80-char viewport)
+      playerWorldX: 0, // Will be set on first render when viewport is known
       playerWorldY: 0,
       playerVelX: 0,
       playerVelY: 0,
-      cameraScrollY: -20, // camera positioned so obstacles ahead are visible
+      cameraScrollY: -8, // Keep player at 1/3 from bottom
       obstacles: [],
-      spawnFrontierY: 0, // spawn obstacles ahead of player starting at player level
+      spawnFrontierY: 0,
       lastEdgeSpawnFrame: 0,
       frameCount: 0,
       completed: false,
@@ -219,21 +219,25 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
 
   private updatePosition(dt: number, diffBalance: any): void {
     const minScrollSpeed = diffBalance.minScrollSpeed;
-    const balance = getGameBalance();
-    const playerRowPreference = (balance.miniGames.navigation as any).ship.playerRowPreference;
 
     // Effective forward speed is at least minScrollSpeed
     const effectiveVelY = Math.max(this.state.playerVelY, minScrollSpeed);
+
+    const { width, height } = this.lastViewport;
+
+    // Initialize player position on first frame
+    if (this.state.playerWorldX === 0 && this.state.playerWorldY === 0) {
+      this.state.playerWorldX = width / 2;
+    }
+
     this.state.playerWorldX += this.state.playerVelX * dt;
     this.state.playerWorldY += effectiveVelY * dt;
 
     // Clamp player to viewport bounds
-    const { width } = this.lastViewport;
     this.state.playerWorldX = Math.max(1, Math.min(width - 2, this.state.playerWorldX));
 
-    // Update camera to keep player at preferred row (never decrease camera Y)
-    const { height } = this.lastViewport;
-    const targetCameraY = this.state.playerWorldY - height * playerRowPreference;
+    // Keep player at 1/3 from bottom of screen (2/3 from top)
+    const targetCameraY = this.state.playerWorldY - height * 2 / 3;
     this.state.cameraScrollY = Math.max(this.state.cameraScrollY, targetCameraY);
   }
 
@@ -324,47 +328,100 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   private getObstacleCells(size: 'large' | 'medium' | 'small'): ObstacleCell[] {
     if (size === 'large') {
       if (this.eventType === 'asteroid_belt') {
-        const variant = Math.floor(this.rand() * 3);
+        const variant = Math.floor(this.rand() * 4);
         if (variant === 0) {
-          // Large jagged asteroid
+          // Large jagged asteroid - 6 rows tall
           return [
-            { dcol: 1, drow: 0, char: '#', color: 'white' as Color },
-            { dcol: 2, drow: 0, char: '@', color: 'white' as Color },
-            { dcol: 0, drow: 1, char: '@', color: 'white' as Color },
-            { dcol: 1, drow: 1, char: 'O', color: 'bright-white' as Color },
-            { dcol: 2, drow: 1, char: '#', color: 'white' as Color },
-            { dcol: 3, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 0, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 0, char: '@', color: 'white' as Color },
+            { dcol: 1, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 1, char: 'O', color: 'bright-white' as Color },
+            { dcol: 3, drow: 1, char: '#', color: 'white' as Color },
+            { dcol: 4, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 0, drow: 2, char: '#', color: 'white' as Color },
             { dcol: 1, drow: 2, char: '@', color: 'white' as Color },
             { dcol: 2, drow: 2, char: 'O', color: 'bright-white' as Color },
             { dcol: 3, drow: 2, char: '#', color: 'white' as Color },
-            { dcol: 0, drow: 3, char: '#', color: 'white' as Color },
+            { dcol: 4, drow: 2, char: '@', color: 'white' as Color },
+            { dcol: 1, drow: 3, char: '#', color: 'white' as Color },
             { dcol: 2, drow: 3, char: '@', color: 'white' as Color },
+            { dcol: 3, drow: 3, char: 'O', color: 'bright-white' as Color },
+            { dcol: 4, drow: 3, char: '#', color: 'white' as Color },
+            { dcol: 2, drow: 4, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 4, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 5, char: 'O', color: 'bright-white' as Color },
           ];
         } else if (variant === 1) {
-          // Round asteroid
+          // Round asteroid - 5 rows
           return [
             { dcol: 1, drow: 0, char: 'O', color: 'bright-white' as Color },
             { dcol: 2, drow: 0, char: '@', color: 'white' as Color },
+            { dcol: 3, drow: 0, char: 'O', color: 'bright-white' as Color },
             { dcol: 0, drow: 1, char: '#', color: 'white' as Color },
             { dcol: 1, drow: 1, char: 'O', color: 'bright-white' as Color },
             { dcol: 2, drow: 1, char: 'O', color: 'bright-white' as Color },
-            { dcol: 3, drow: 1, char: '@', color: 'white' as Color },
-            { dcol: 1, drow: 2, char: '@', color: 'white' as Color },
-            { dcol: 2, drow: 2, char: 'O', color: 'bright-white' as Color },
+            { dcol: 3, drow: 1, char: 'O', color: 'bright-white' as Color },
+            { dcol: 4, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 0, drow: 2, char: '@', color: 'white' as Color },
+            { dcol: 1, drow: 2, char: 'O', color: 'bright-white' as Color },
+            { dcol: 2, drow: 2, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 2, char: 'O', color: 'bright-white' as Color },
+            { dcol: 4, drow: 2, char: '#', color: 'white' as Color },
+            { dcol: 1, drow: 3, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 3, char: 'O', color: 'bright-white' as Color },
+            { dcol: 3, drow: 3, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 4, char: '#', color: 'white' as Color },
           ];
-        } else {
-          // Chunky asteroid
+        } else if (variant === 2) {
+          // Chunky asteroid - 6 rows
           return [
             { dcol: 0, drow: 0, char: '#', color: 'white' as Color },
             { dcol: 1, drow: 0, char: '#', color: 'white' as Color },
+            { dcol: 2, drow: 0, char: '#', color: 'white' as Color },
             { dcol: 3, drow: 0, char: '@', color: 'white' as Color },
             { dcol: 0, drow: 1, char: '#', color: 'white' as Color },
             { dcol: 1, drow: 1, char: 'O', color: 'bright-white' as Color },
             { dcol: 2, drow: 1, char: '@', color: 'white' as Color },
             { dcol: 3, drow: 1, char: '#', color: 'white' as Color },
+            { dcol: 4, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 0, drow: 2, char: '@', color: 'white' as Color },
             { dcol: 1, drow: 2, char: '#', color: 'white' as Color },
             { dcol: 2, drow: 2, char: '@', color: 'white' as Color },
             { dcol: 3, drow: 2, char: 'O', color: 'bright-white' as Color },
+            { dcol: 4, drow: 2, char: '#', color: 'white' as Color },
+            { dcol: 1, drow: 3, char: '#', color: 'white' as Color },
+            { dcol: 2, drow: 3, char: '@', color: 'white' as Color },
+            { dcol: 3, drow: 3, char: '#', color: 'white' as Color },
+            { dcol: 2, drow: 4, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 4, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 5, char: '#', color: 'white' as Color },
+          ];
+        } else {
+          // Massive ragged asteroid - 6 rows, wide
+          return [
+            { dcol: 1, drow: 0, char: '#', color: 'white' as Color },
+            { dcol: 2, drow: 0, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 0, char: '@', color: 'white' as Color },
+            { dcol: 4, drow: 0, char: '#', color: 'white' as Color },
+            { dcol: 0, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 1, drow: 1, char: 'O', color: 'bright-white' as Color },
+            { dcol: 2, drow: 1, char: 'O', color: 'bright-white' as Color },
+            { dcol: 3, drow: 1, char: 'O', color: 'bright-white' as Color },
+            { dcol: 4, drow: 1, char: '#', color: 'white' as Color },
+            { dcol: 5, drow: 1, char: '@', color: 'white' as Color },
+            { dcol: 0, drow: 2, char: '#', color: 'white' as Color },
+            { dcol: 1, drow: 2, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 2, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 2, char: '@', color: 'white' as Color },
+            { dcol: 4, drow: 2, char: 'O', color: 'bright-white' as Color },
+            { dcol: 5, drow: 2, char: '#', color: 'white' as Color },
+            { dcol: 1, drow: 3, char: '#', color: 'white' as Color },
+            { dcol: 2, drow: 3, char: '@', color: 'white' as Color },
+            { dcol: 3, drow: 3, char: '#', color: 'white' as Color },
+            { dcol: 4, drow: 3, char: '@', color: 'white' as Color },
+            { dcol: 2, drow: 4, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 4, char: '#', color: 'white' as Color },
+            { dcol: 3, drow: 5, char: '@', color: 'white' as Color },
           ];
         }
       } else if (this.eventType === 'space_debris') {

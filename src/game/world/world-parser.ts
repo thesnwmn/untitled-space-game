@@ -122,9 +122,9 @@ const DEFAULT_BALANCE: GameBalance = {
     },
     navigation: {
       ship: {
-        accelerationImpulse: 0.4,
-        maxSpeedLateral: 2.0,
-        maxSpeedForward: 3.0,
+        accelerationImpulse: 0.8,
+        maxSpeedLateral: 4.0,
+        maxSpeedForward: 6.0,
         playerRowPreference: 0.67,
         topBufferRows: 4,
       },
