@@ -752,14 +752,14 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
     const currentDist = this.state.playerWorldY;
     const progress = Math.min(1, Math.max(0, currentDist / targetDist));
 
-    const barWidth = 20;
+    const barWidth = 15;
     const filledWidth = Math.round(barWidth * progress);
     let bar = '';
     for (let i = 0; i < filledWidth; i++) bar += '█';
     for (let i = filledWidth; i < barWidth; i++) bar += '░';
 
     const distStr = Math.round(currentDist).toString();
-    const label = `DIST [${bar}] ${distStr}u`;
+    const label = `[${bar}] ${distStr}u`;
 
     if (top < buffer.length) {
       let col = left;
@@ -771,12 +771,15 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       }
     }
 
-    // Draw lives in top right
-    const livesStr = `LIVES: ${this.state.lives}`;
-    if (top < buffer.length) {
-      let col = left + width - livesStr.length;
+    // Draw lives in top right with proper spacing
+    const livesStr = `L:${this.state.lives}`;
+    const padding = 3; // gap between distance and lives
+    const livesStartCol = left + width - livesStr.length - padding;
+
+    if (top < buffer.length && livesStartCol > left + label.length) {
+      let col = livesStartCol;
       for (const char of livesStr) {
-        if (col >= left && col < left + width && col >= 0 && col < buffer[top].length) {
+        if (col >= left && col < left + width && col < buffer[top].length) {
           const color = this.state.lives === 1 ? 'bright-red' : (this.state.lives === 2 ? 'bright-yellow' : 'bright-green');
           buffer[top][col] = { char, fg: color as Color, bg: 'black' as Color };
         }
