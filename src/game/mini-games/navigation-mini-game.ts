@@ -695,13 +695,19 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       }
     }
 
-    // Draw player ship (2 chars wide, or flash if collision)
+    // Draw player ship (2 chars wide, or flash if collision/invincible)
     const playerScreenCol = left + Math.round(this.state.playerWorldX) - 1; // shift left by 0.5 to center the 2-char ship
     const playerScreenRow = top + height - 1 - Math.round(this.state.playerWorldY - this.state.cameraScrollY);
 
     if (playerScreenRow >= top && playerScreenRow < top + height && playerScreenCol >= left && playerScreenCol < left + width - 1) {
-      const isFlashing = this.state.outcome === 'collision' && (Math.floor((performance.now() - (this.state.collisionFlashEndTime - 400)) / 100) % 2 === 0);
-      const color: Color = isFlashing ? 'bright-red' : 'bright-green';
+      const isCollisionFlashing = this.state.outcome === 'collision' && (Math.floor((performance.now() - (this.state.collisionFlashEndTime - 400)) / 100) % 2 === 0);
+      const isInvincible = performance.now() < this.state.invincibilityEndTime;
+      const invincibilityFlashing = isInvincible && (Math.floor(performance.now() / 100) % 2 === 0);
+
+      // Don't render if flashing during invincibility (every other 100ms)
+      if (invincibilityFlashing) return;
+
+      const color: Color = isCollisionFlashing ? 'bright-red' : 'bright-green';
 
       // Left half of ship
       if (playerScreenRow < buffer.length && playerScreenCol < buffer[playerScreenRow].length) {
