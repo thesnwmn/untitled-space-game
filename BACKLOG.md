@@ -26,17 +26,6 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
-### 059 · Space Navigation Mini-Game
-
-Momentum-based obstacle-avoidance mini-game: player pilots a ship through a scrolling
-field of drifting objects (asteroids, debris, or storm particles) covering a fixed
-distance. Full-viewport canvas; arrow-key momentum model with forward-speed floor; three
-event-type variants; binary score (100 = clear, 0 = collision); balance params under
-`GameBalance.miniGames.navigation`. Depends on features 048 and 049.
-See `docs/features/059-space-navigation-mini-game.md` for the full spec.
-
----
-
 ### 060 · Navigation Encounter Trigger
 
 Post-jump random encounter hook: ~30% chance per jump triggers a story screen
