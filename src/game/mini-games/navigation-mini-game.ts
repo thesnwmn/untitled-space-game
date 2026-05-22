@@ -572,7 +572,9 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   }
 
   private checkCollisions(viewport: MiniGameViewport): void {
-    if (this.state.outcome === 'collision') return;
+    if (this.state.completed) return;
+    // Only skip collision detection if game is over (lives <= 0)
+    if (this.state.lives <= 0 && this.state.outcome === 'collision') return;
 
     const { width, height, top, left } = viewport;
     // Player is 2 chars wide: / and \
@@ -773,13 +775,13 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
 
     // Draw lives in top right with proper spacing
     const livesStr = `L:${this.state.lives}`;
-    const padding = 3; // gap between distance and lives
-    const livesStartCol = left + width - livesStr.length - padding;
+    const spacingGap = 3; // gap between distance and lives
+    const livesStartCol = left + width - livesStr.length - spacingGap;
 
-    if (top < buffer.length && livesStartCol > left + label.length) {
+    if (top < buffer.length) {
       let col = livesStartCol;
       for (const char of livesStr) {
-        if (col >= left && col < left + width && col < buffer[top].length) {
+        if (col >= left && col < left + width && col >= 0 && col < buffer[top].length) {
           const color = this.state.lives === 1 ? 'bright-red' : (this.state.lives === 2 ? 'bright-yellow' : 'bright-green');
           buffer[top][col] = { char, fg: color as Color, bg: 'black' as Color };
         }
