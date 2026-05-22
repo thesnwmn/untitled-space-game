@@ -276,7 +276,7 @@ describe('NavigationMiniGameScene', () => {
       expect(completedResult?.result?.score).toBe(100);
     });
 
-    it('should complete with score 0 on collision', () => {
+    it('should complete with score 0 on collision with no lives left', () => {
       const balance = getGameBalance();
       const navBalance = balance.miniGames.navigation!;
       const diffBalance = navBalance.difficulties.normal;
@@ -284,6 +284,7 @@ describe('NavigationMiniGameScene', () => {
       scene['state'].outcome = 'collision';
       scene['state'].collisionFlashEndTime = performance.now();
       scene['state'].completed = false;
+      scene['state'].lives = 0;
 
       vi.useFakeTimers();
       scene['checkVictory'](diffBalance);

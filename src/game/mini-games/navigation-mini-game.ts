@@ -51,6 +51,7 @@ interface NavigationState {
   completed: boolean;
   collisionFlashEndTime: number;
   outcome: 'idle' | 'collision' | 'victory';
+  lives: number;
 }
 
 type EventType = 'asteroid_belt' | 'space_debris' | 'space_storm';
@@ -117,6 +118,7 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       completed: false,
       collisionFlashEndTime: 0,
       outcome: 'idle',
+      lives: 3,
     };
 
     if (input.onTouchTrack) {
@@ -600,22 +602,32 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
 
   private triggerCollision(): void {
     if (this.state.completed) return;
-    this.state.outcome = 'collision';
-    this.state.collisionFlashEndTime = performance.now() + 400;
+    this.state.lives--;
+    if (this.state.lives <= 0) {
+      // Game over - no lives left
+      this.state.outcome = 'collision';
+      this.state.collisionFlashEndTime = performance.now() + 400;
+    } else {
+      // Hit but not dead - brief flash
+      this.state.outcome = 'collision';
+      this.state.collisionFlashEndTime = performance.now() + 200;
+    }
   }
 
   private checkVictory(diffBalance: any): void {
     if (this.state.completed) return;
 
     // Victory is reached when player has advanced the target distance
-    if (this.state.playerWorldY >= diffBalance.targetDistance) {
-      if (this.state.outcome === 'collision') return;
+    if (this.state.playerWorldY >= diffBalance.targetDistance && this.state.lives > 0) {
       this.state.outcome = 'victory';
       this.state.completed = true;
+      // Score based on lives remaining: 100 for perfect, 66 for 1 hit, 33 for 2 hits
+      const score = Math.max(1, Math.round(100 * (this.state.lives / 3)));
       setTimeout(() => {
-        this.complete({ outcome: 'completed', result: { score: 100 } });
+        this.complete({ outcome: 'completed', result: { score } });
       }, 500);
-    } else if (this.state.outcome === 'collision') {
+    } else if (this.state.outcome === 'collision' && this.state.lives <= 0) {
+      // Game over - collision and no lives left
       if (performance.now() > this.state.collisionFlashEndTime) {
         this.state.completed = true;
         this.complete({ outcome: 'completed', result: { score: 0 } });
@@ -754,6 +766,19 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       for (const char of label) {
         if (col < left + width && col < buffer[top].length) {
           buffer[top][col] = { char, fg: 'bright-yellow' as Color, bg: 'black' as Color };
+        }
+        col++;
+      }
+    }
+
+    // Draw lives in top right
+    const livesStr = `LIVES: ${this.state.lives}`;
+    if (top < buffer.length) {
+      let col = left + width - livesStr.length;
+      for (const char of livesStr) {
+        if (col >= left && col < left + width && col >= 0 && col < buffer[top].length) {
+          const color = this.state.lives === 1 ? 'bright-red' : (this.state.lives === 2 ? 'bright-yellow' : 'bright-green');
+          buffer[top][col] = { char, fg: color as Color, bg: 'black' as Color };
         }
         col++;
       }
