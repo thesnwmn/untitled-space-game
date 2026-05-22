@@ -52,6 +52,7 @@ interface NavigationState {
   collisionFlashEndTime: number;
   outcome: 'idle' | 'collision' | 'victory';
   lives: number;
+  invincibilityEndTime: number;
 }
 
 type EventType = 'asteroid_belt' | 'space_debris' | 'space_storm';
@@ -119,6 +120,7 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
       collisionFlashEndTime: 0,
       outcome: 'idle',
       lives: 3,
+      invincibilityEndTime: 0,
     };
 
     if (input.onTouchTrack) {
@@ -573,7 +575,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
 
   private checkCollisions(viewport: MiniGameViewport): void {
     if (this.state.completed) return;
-    // Only skip collision detection if game is over (lives <= 0)
+    // Skip if player is invincible or game is over
+    if (performance.now() < this.state.invincibilityEndTime) return;
     if (this.state.lives <= 0 && this.state.outcome === 'collision') return;
 
     const { width, height, top, left } = viewport;
@@ -605,6 +608,8 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
   private triggerCollision(): void {
     if (this.state.completed) return;
     this.state.lives--;
+    // Grant 2 seconds of invincibility after being hit
+    this.state.invincibilityEndTime = performance.now() + 2000;
     if (this.state.lives <= 0) {
       // Game over - no lives left
       this.state.outcome = 'collision';
@@ -775,7 +780,7 @@ export class NavigationMiniGameScene extends BaseMiniGameScene {
 
     // Draw lives in top right with proper spacing
     const livesStr = `L:${this.state.lives}`;
-    const spacingGap = 3; // gap between distance and lives
+    const spacingGap = 5; // gap between distance and lives (increased by 2)
     const livesStartCol = left + width - livesStr.length - spacingGap;
 
     if (top < buffer.length) {
