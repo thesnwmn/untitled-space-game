@@ -119,7 +119,7 @@ describe('NavigationMiniGameScene', () => {
     it('should detect collision when obstacle cell matches player position', () => {
       scene['state'].playerWorldX = 10;
       scene['state'].playerWorldY = 100;
-      scene['state'].cameraScrollY = 50;
+      scene['state'].cameraScrollY = 100; // Camera at same Y as player
 
       // Create an obstacle with a cell at the player's screen position
       scene['state'].obstacles.push({
@@ -142,7 +142,7 @@ describe('NavigationMiniGameScene', () => {
     it('should not detect collision when obstacle is adjacent to player', () => {
       scene['state'].playerWorldX = 10;
       scene['state'].playerWorldY = 100;
-      scene['state'].cameraScrollY = 50;
+      scene['state'].cameraScrollY = 100;
 
       // Create an obstacle adjacent to player, not on same cell
       scene['state'].obstacles.push({
@@ -166,25 +166,25 @@ describe('NavigationMiniGameScene', () => {
   describe('HUD row exclusion', () => {
     it('should exclude HUD row from collision detection', () => {
       scene['state'].playerWorldX = 10;
-      scene['state'].playerWorldY = 10; // Very close to viewport top
+      scene['state'].playerWorldY = 100;
 
-      // Create an obstacle that would collide in HUD row
+      // Create an obstacle that would collide in HUD row (at very low screen row)
       scene['state'].obstacles.push({
         worldX: 10,
-        worldY: 10,
+        worldY: 200, // Far ahead, would render in HUD row with camera at 100
         driftVx: 0,
         driftVy: -0.5,
-        cells: [{ dcol: 0, drow: -5, char: '#', color: 'white' }], // Cell in HUD row area
+        cells: [{ dcol: 0, drow: 0, char: '#', color: 'white' as any }],
         size: 'small',
       });
 
-      const viewport: MiniGameViewport = { top: 5, left: 0, width: 80, height: 24 };
+      const viewport: MiniGameViewport = { top: 0, left: 0, width: 80, height: 24 };
       scene['lastViewport'] = viewport;
-      scene['state'].cameraScrollY = 0;
+      scene['state'].cameraScrollY = 100;
 
       scene['checkCollisions'](viewport);
 
-      // Collision should not trigger because HUD row is excluded
+      // Collision should not trigger because obstacle is in HUD row (row <= 0)
       expect(scene['state'].outcome).not.toBe('collision');
     });
   });
