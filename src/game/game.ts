@@ -21,6 +21,7 @@ import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animat
 import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import { LandingResultScene } from './scenes/landing-result-scene';
+import { NavigationEncounterScene } from './scenes/navigation-encounter-scene';
 import { miniGameRegistry } from './mini-games/registry';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene, MiniGameResult } from '../shared/types';
 import type { TraderStockEntry, MissionSpec, Commodity, GameBalance, StarSystem } from './world/types';
@@ -513,7 +514,110 @@ export class Game {
     const used = Math.ceil(getGameBalance().fuel.consumptionPerLy * route.distance * drive.fuelEfficiency);
     this.player.consumeFuel(used);
     this.player.jumpTo(targetSystemId);
-    this.currentScene = new JumpAnimationScene(this.player, this.context, () => this.goToArrival());
+    this.currentScene = new JumpAnimationScene(this.player, this.context, () => this.maybeNavigationEncounter(() => this.goToArrival()));
+  }
+
+  private maybeNavigationEncounter(onComplete: () => void): void {
+    const balance = getGameBalance();
+    const encounterChance = balance.navigationEncounter.encounterChanceOnJump;
+
+    if (Math.random() > encounterChance) {
+      onComplete();
+      return;
+    }
+
+    const encounterTypes = ['asteroid_belt', 'space_debris', 'space_storm'] as const;
+    const encounterType = encounterTypes[Math.floor(Math.random() * encounterTypes.length)];
+
+    const system = getSystem(this.player.systemId)!;
+    const difficulty = this.getDifficultyFromDangerLevel(system.dangerLevel);
+
+    this.currentScene = new NavigationEncounterScene(
+      this.input,
+      this.context,
+      this.player,
+      encounterType,
+      () => this.playNavigationMiniGame(encounterType, difficulty, onComplete),
+    );
+  }
+
+  private getDifficultyFromDangerLevel(dangerLevel: string): 'easy' | 'normal' | 'hard' {
+    switch (dangerLevel) {
+      case 'none':
+      case 'low':
+        return 'easy';
+      case 'medium':
+        return 'normal';
+      case 'high':
+      case 'extreme':
+        return 'hard';
+      default:
+        return 'normal';
+    }
+  }
+
+  private playNavigationMiniGame(
+    encounterType: 'asteroid_belt' | 'space_debris' | 'space_storm',
+    difficulty: 'easy' | 'normal' | 'hard',
+    onComplete: () => void,
+  ): void {
+    const params = { type: encounterType, difficulty };
+    const miniGameEntry = miniGameRegistry.find((entry) => entry.meta.id === 'navigation');
+    if (!miniGameEntry) {
+      onComplete();
+      return;
+    }
+
+    this.currentScene = miniGameEntry.factory(this.input, this.context, this.player, params, (result) => {
+      this.handleNavigationMiniGameResult(result, difficulty, onComplete);
+    });
+  }
+
+  private handleNavigationMiniGameResult(
+    result: MiniGameResult,
+    difficulty: 'easy' | 'normal' | 'hard',
+    onComplete: () => void,
+  ): void {
+    const balance = getGameBalance();
+    const difficultyMultiplier = difficulty === 'hard' ? 1.25 : 1.0;
+
+    let outcomeLabel: string;
+    let damageFraction: number;
+    let score: number | null;
+
+    if (result.outcome === 'skipped') {
+      outcomeLabel = 'ABORTED';
+      damageFraction = balance.miniGames.abandonDamageFraction * difficultyMultiplier;
+      score = null;
+    } else {
+      const finalScore = (result.result.score as number) || 0;
+      score = finalScore;
+
+      if (finalScore >= balance.miniGames.noDamageThreshold) {
+        outcomeLabel = 'CLEAR';
+        damageFraction = 0;
+      } else {
+        outcomeLabel = 'COLLISION';
+        damageFraction =
+          balance.miniGames.maxHullDamageFraction *
+          (1 - finalScore / balance.miniGames.noDamageThreshold) *
+          difficultyMultiplier;
+      }
+    }
+
+    if (damageFraction > 0) {
+      this.player.applyHullDamage(damageFraction);
+    }
+
+    this.currentScene = new LandingResultScene(
+      this.input,
+      this.player,
+      this.context,
+      outcomeLabel,
+      score,
+      damageFraction,
+      () => onComplete(),
+    );
   }
 
   private goToEmergencyRescue(): void {

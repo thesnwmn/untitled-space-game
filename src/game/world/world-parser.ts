@@ -173,6 +173,9 @@ const DEFAULT_BALANCE: GameBalance = {
       },
     },
   },
+  navigationEncounter: {
+    encounterChanceOnJump: 0.30,
+  },
 };
 
 export function parseWorldFiles(files: Record<string, string>): WorldData {
@@ -507,6 +510,7 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
   const rescue = data.emergency_rescue ?? {};
   const econ = data.economies ?? {};
   const mg = data.mini_games ?? {};
+  const navEnc = data.navigation_encounter ?? {};
   return {
     npc: {
       specialNameChance: npc.special_name_chance ?? d.npc.specialNameChance,
@@ -581,6 +585,9 @@ function parseBalance(data: { [key: string]: any }): GameBalance {
       surface: parseSurfaceBalance(mg.surface ?? {}, d.miniGames.surface),
       asteroid: parseAsteroidBalance(mg.asteroid ?? {}, d.miniGames.asteroid),
       navigation: parseNavigationBalance(mg.navigation_minigame ?? {}, d.miniGames.navigation!),
+    },
+    navigationEncounter: {
+      encounterChanceOnJump: navEnc.encounter_chance_on_jump ?? d.navigationEncounter.encounterChanceOnJump,
     },
   };
 }
