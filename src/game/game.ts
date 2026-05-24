@@ -21,7 +21,7 @@ import { AsteroidTakeOffAnimationScene } from './scenes/asteroid-take-off-animat
 import { OrbitalDockingAnimationScene } from './scenes/orbital-docking-animation-scene';
 import { OrbitalUndockingAnimationScene } from './scenes/orbital-undocking-animation-scene';
 import { LandingResultScene } from './scenes/landing-result-scene';
-import { NavigationEncounterScene } from './scenes/navigation-encounter-scene';
+import { NavigationEncounterOverlay } from './scenes/navigation-encounter-overlay';
 import { miniGameRegistry } from './mini-games/registry';
 import type { CharBuffer, Color, GameContext, Renderer, InputHandler, Scene, MiniGameResult } from '../shared/types';
 import type { TraderStockEntry, MissionSpec, Commodity, GameBalance, StarSystem } from './world/types';
@@ -532,13 +532,21 @@ export class Game {
     const system = getSystem(this.player.systemId)!;
     const difficulty = this.getDifficultyFromDangerLevel(system.dangerLevel);
 
-    this.currentScene = new NavigationEncounterScene(
-      this.input,
-      this.context,
-      this.player,
-      encounterType,
-      () => this.playNavigationMiniGame(encounterType, difficulty, onComplete),
+    const shipScene = new ShipCockpitScene(
+      this.input, this.context, this.player,
+      () => this.goToTravelMenu(),
+      () => this.goToShip(),
+      () => this.goToCargo(),
+      () => this.goToGlobalMenu(),
     );
+
+    const overlay = new NavigationEncounterOverlay({
+      encounterType,
+      onBegin: () => this.playNavigationMiniGame(encounterType, difficulty, onComplete),
+    });
+
+    shipScene.setOverlay(overlay);
+    this.currentScene = shipScene;
   }
 
   private getDifficultyFromDangerLevel(dangerLevel: string): 'easy' | 'normal' | 'hard' {
