@@ -33,6 +33,7 @@ export class NavigationEncounterOverlay extends EncounterOverlay {
   private charCount = 0;
   private encounterType: EncounterType;
   private wrappedText: string[] = [];
+  private continueBounds: { row: number; colStart: number; colEnd: number } | null = null;
 
   constructor(config: NavigationEncounterOverlayConfig) {
     super(config);
@@ -75,12 +76,15 @@ export class NavigationEncounterOverlay extends EncounterOverlay {
     }
   }
 
-  override handleTap(_col: number, _row: number): void {
-    if (this.phase === 'typing') {
+  override handleTap(col: number, row: number): void {
+    if (this.phase === 'complete' && this.continueBounds) {
+      const { row: btnRow, colStart, colEnd } = this.continueBounds;
+      if (row === btnRow && col >= colStart && col <= colEnd) {
+        this.onBegin();
+      }
+    } else if (this.phase === 'typing') {
       this.charCount = this.getTotalCharCount();
       this.phase = 'complete';
-    } else if (this.phase === 'complete') {
-      this.onBegin();
     }
   }
 
@@ -157,7 +161,18 @@ export class NavigationEncounterOverlay extends EncounterOverlay {
       const buttonText = '[ CONTINUE ]';
       const buttonRow = boxBot - 1;
       const buttonCol = Math.floor((boxWidth - buttonText.length) / 2) + boxLeft;
-      writeText(buffer, buttonRow, buttonCol, buttonText, 'bright-green', 'black');
+
+      const isKeyboard = this.context.primaryInput === 'keyboard';
+      const buttonColor = isKeyboard ? 'bright-white' : 'bright-green';
+      const buttonBg = isKeyboard ? 'green' : 'black';
+
+      writeText(buffer, buttonRow, buttonCol, buttonText, buttonColor, buttonBg);
+
+      this.continueBounds = {
+        row: buttonRow,
+        colStart: buttonCol,
+        colEnd: buttonCol + buttonText.length - 1,
+      };
     }
 
     this.renderSpeakerBar(buffer, bounds);

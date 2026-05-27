@@ -542,6 +542,7 @@ export class Game {
 
     const overlay = new NavigationEncounterOverlay({
       encounterType,
+      context: this.context,
       onBegin: () => this.playNavigationMiniGame(encounterType, difficulty, onComplete),
     });
 
