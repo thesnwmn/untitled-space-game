@@ -93,12 +93,12 @@ export class NavigationEncounterOverlay extends EncounterOverlay {
   }
 
   private renderSpeakerBar(buffer: CharBuffer, bounds: OverlayRenderBounds): void {
-    const speakerRow = bounds.bottomBot - 1;
+    const speakerRow = bounds.bottomBot;
     const speakerStart = 13;
     const speakerEnd = 27;
 
     const prefix = '<)) ';
-    writeText(buffer, speakerRow, speakerStart, prefix, 'cyan', 'black');
+    writeText(buffer, speakerRow, speakerStart, prefix, 'cyan', 'bright-black');
 
     const offset = Math.floor(this.phaseAccum / SPEAKER_ANIMATION_INTERVAL);
     const charSequence = SPEAKER_BAR_CHARS;
@@ -106,14 +106,14 @@ export class NavigationEncounterOverlay extends EncounterOverlay {
     for (let col = speakerStart + prefix.length; col < speakerEnd && col < buffer[0].length; col++) {
       const idx = (col - (speakerStart + prefix.length) + offset) % charSequence.length;
       const char = charSequence[idx];
-      writeText(buffer, speakerRow, col, char, 'cyan', 'black');
+      writeText(buffer, speakerRow, col, char, 'cyan', 'bright-black');
     }
   }
 
   private renderDialogBox(buffer: CharBuffer, bounds: OverlayRenderBounds): void {
     const boxHeight = 7;
-    const boxTop = bounds.viewportBot - boxHeight;
-    const boxBot = bounds.viewportBot;
+    const boxTop = bounds.viewportBot - 8;
+    const boxBot = bounds.viewportBot - 1;
     const boxLeft = 2;
     const boxRight = bounds.width - 3;
     const boxWidth = boxRight - boxLeft;
