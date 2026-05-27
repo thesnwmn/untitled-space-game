@@ -26,17 +26,6 @@ See `docs/features/044-knowledge-base-screens.md` for the full spec.
 
 ---
 
-### 060 · Navigation Encounter Trigger
-
-Post-jump random encounter hook: ~30% chance per jump triggers a story screen
-(`NavigationEncounterScene`) then the navigation mini-game; difficulty derived from system
-`danger_level`; hull damage applied via the Feature 058 formula on collision or
-cancellation; `LandingResultScene` shown before arrival. Depends on features 054, 058,
-and 059.
-See `docs/features/060-navigation-encounter-trigger.md` for the full spec.
-
----
-
 ### 068 · Ship Upgrade Infrastructure & SHIP Screen
 
 Establishes the world-data schema and PlayerState foundation for ship upgrades. Adds a `SHIP`

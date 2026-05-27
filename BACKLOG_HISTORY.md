@@ -14,6 +14,41 @@ Superseded by 028. Hint text is removed entirely. If hints return they will be p
 
 ## DONE
 
+### 060 · Navigation Encounter Trigger — DONE
+
+**What it added:**
+Post-jump random encounter system that triggers on ~30% of jumps, showing a ship-cockpit overlay with incoming-signal animation, typewriter dialog, and typewriter dialog, then the navigation mini-game from Feature 059. Difficulty is derived from destination system `danger_level` (easy for none/low, normal for medium, hard for high/extreme). Hull damage is applied using the Feature 058 formula with a 1.25x multiplier for hard difficulty. Outcome labels (CLEAR, COLLISION, ABORTED) and damage are shown via `LandingResultScene` before normal arrival.
+
+**Key files:**
+- `src/game/scenes/navigation-encounter-scene.ts` — new 251-line scene class extending `BaseScene`; renders ship-cockpit background (starfield, gauges, HUD) with dialog overlay
+- `src/game/scenes/navigation-encounter-scene.test.ts` — 6 tests covering phase transitions, character reveal timing, and rendering
+- `src/game/game.ts` — added `maybeNavigationEncounter()`, `getDifficultyFromDangerLevel()`, `playNavigationMiniGame()`, and `handleNavigationMiniGameResult()` methods; modified `onJumpSelected()` routing
+- `src/game/world/types.ts` — added `navigationEncounter` sub-object to `GameBalance`
+- `src/game/world/world-parser.ts` — added default balance config and parsing for `navigation_encounter`
+- `docs/world/settings/balance.md` — added `navigation_encounter` section with `encounter_chance_on_jump: 0.30`
+
+**Evidence:** `tsc --noEmit`: zero errors. `npm test`: 953 passed (6 new tests), 1 skipped.
+
+**Architectural decisions embedded:**
+- Encounter type selection is fully random (equal weight) to keep logic simple; no weighting by system properties
+- Difficulty multiplier is hardcoded (easy/normal=1.0, hard=1.25) per spec; not a balance key
+- NavigationEncounterScene renders a static starfield snapshot seeded from player destination, not updated per frame, for visual continuity without heavy computation
+- Three-phase animation (incoming 1200ms, typing ~40ms/char, complete) is self-advancing; no user input during incoming phase
+
+**Play-test instructions:**
+1. Browser (`npm run dev`): Jump to any system; ~30% of jumps show NavigationEncounterScene
+2. Confirm ship cockpit background (frozen starfield, live gauges) with static speaker bar
+3. Speaker bar animates with scrolling ASCII heights for ~1.2 s before dialog appears
+4. Dialog box appears with encounter label (ASTEROID BELT / DEBRIS FIELD / SPACE STORM) and text revealing character-by-character
+5. Press ESC/MENU/TRAVEL/DOCK during typing — confirm nothing happens (only skip/continue routes)
+6. While text is typing, press ENTER — confirm text snaps to complete and [ CONTINUE ] appears
+7. Press ENTER or tap [ CONTINUE ] — confirm navigation mini-game loads with correct type and difficulty
+8. Complete successfully (score 100) — confirm LandingResultScene shows CLEAR and HULL DAMAGE: 0%
+9. Trigger another encounter, score 0 — confirm COLLISION label and hull drops in next ShipCockpitScene
+10. Trigger another encounter, press MENU during mini-game — confirm LandingResultScene shows ABORTED with abandon damage
+11. Jump to `danger_level: high` system — confirm hull damage is higher (1.25x multiplier) than easy difficulty
+12. Terminal (`npm run terminal`): Repeat steps 1–11 using keyboard navigation
+
 ### 057 · Asteroid Landing Mini-Game — DONE
 
 **What it added:**

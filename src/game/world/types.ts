@@ -263,6 +263,9 @@ export interface GameBalance {
     navigation?: NavigationBalance;
     [key: string]: unknown;
   };
+  navigationEncounter: {
+    encounterChanceOnJump: number;
+  };
 }
 
 export interface CargoEntry {

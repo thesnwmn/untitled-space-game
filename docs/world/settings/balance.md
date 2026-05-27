@@ -68,6 +68,9 @@ mini_games:
   abandon_damage_fraction: 0.05
   no_damage_threshold: 90
 
+navigation_encounter:
+  encounter_chance_on_jump: 0.30
+
 navigation_minigame:
   ship:
     acceleration_impulse: 0.8

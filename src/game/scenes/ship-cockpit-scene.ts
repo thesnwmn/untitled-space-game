@@ -4,6 +4,7 @@ import { Starfield, hashStringToSeed } from './starfield';
 import { SpaceStation } from './space-station';
 import { selectDestinationGlyph } from './station-types';
 import type { StationGlyph } from './station-types';
+import type { EncounterOverlay } from './encounter-overlay';
 import { getDestination } from '../world/world-data';
 import type { PlayerState } from '../player-state';
 import { BaseScene } from './base-scene';
@@ -107,6 +108,7 @@ export class ShipCockpitScene extends BaseScene {
   private readonly onCargo: () => void;
   private cursorIdx = 0;
   private h = 30;
+  private overlay: EncounterOverlay | null = null;
 
   private readonly starfield: Starfield;
   private readonly destGlyph: StationGlyph | null;
@@ -171,7 +173,16 @@ export class ShipCockpitScene extends BaseScene {
 
   private navCount(): number { return this.inSpace ? 1 : 2; }
 
+  public setOverlay(overlay: EncounterOverlay | null): void {
+    this.overlay = overlay;
+  }
+
   protected override handleAction(action: string): void {
+    if (this.overlay) {
+      this.overlay.handleAction(action as any);
+      return;
+    }
+
     if (action === 'CARGO') {
       this.activated = true;
       this.onCargo();
@@ -191,6 +202,11 @@ export class ShipCockpitScene extends BaseScene {
   }
 
   protected override handleTap(col: number, row: number): void {
+    if (this.overlay) {
+      this.overlay.handleTap(col, row);
+      return;
+    }
+
     const h = this.h;
     if ((row === 3 || row === 4) &&
         col >= CARGO_LABEL_COL && col < CARGO_LABEL_COL + 1 + GAUGE_FILL_COUNT) {
@@ -206,6 +222,7 @@ export class ShipCockpitScene extends BaseScene {
   }
 
   override update(dt: number): void {
+    this.overlay?.update(dt);
     this.starfield.update(dt);
     this.destObject?.update(dt);
     this.blinkPhase = (this.blinkPhase + dt) % 1000;
@@ -281,6 +298,16 @@ export class ShipCockpitScene extends BaseScene {
 
     this.renderBottomPanels(buffer, bottomTop, bottomBot);
     this.renderTicker(buffer, tickerRow);
+
+    if (this.overlay) {
+      this.overlay.render(buffer, {
+        viewportTop,
+        viewportBot,
+        bottomTop,
+        bottomBot,
+        width: w,
+      });
+    }
   }
 
   private renderGaugeStrip(buffer: CharBuffer, top: number): void {
