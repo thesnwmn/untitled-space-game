@@ -5,6 +5,14 @@ export interface EncounterOverlayConfig {
   onBegin: () => void;
 }
 
+export interface OverlayRenderBounds {
+  viewportTop: number;
+  viewportBot: number;
+  bottomTop: number;
+  bottomBot: number;
+  width: number;
+}
+
 export abstract class EncounterOverlay {
   protected onBegin: () => void;
 
@@ -14,7 +22,7 @@ export abstract class EncounterOverlay {
 
   abstract update(dt: number): void;
 
-  abstract render(buffer: CharBuffer, top: number, bottom: number, left: number, right: number): void;
+  abstract render(buffer: CharBuffer, bounds: OverlayRenderBounds): void;
 
   abstract handleAction(action: GameAction): void;
 
@@ -24,3 +32,4 @@ export abstract class EncounterOverlay {
     return true;
   }
 }
+

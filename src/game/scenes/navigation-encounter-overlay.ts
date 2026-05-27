@@ -1,6 +1,6 @@
 import type { CharBuffer, GameAction } from '../../shared/types';
 import { writeText, wrapText } from '../../shared/buffer-utils';
-import { EncounterOverlay, type EncounterOverlayConfig } from './encounter-overlay';
+import { EncounterOverlay, type EncounterOverlayConfig, type OverlayRenderBounds } from './encounter-overlay';
 
 type Phase = 'incoming' | 'typing' | 'complete';
 type EncounterType = 'asteroid_belt' | 'space_debris' | 'space_storm';
@@ -84,55 +84,70 @@ export class NavigationEncounterOverlay extends EncounterOverlay {
     }
   }
 
-  override render(buffer: CharBuffer, top: number, bottom: number, left: number, right: number): void {
+  override render(buffer: CharBuffer, bounds: OverlayRenderBounds): void {
     if (this.phase === 'incoming') {
-      this.renderSpeakerBar(buffer, top, bottom, left, right);
+      this.renderSpeakerBar(buffer, bounds);
     } else {
-      this.renderMessagePanel(buffer, top, bottom, left, right);
-      this.renderSpeakerBar(buffer, top, bottom, left, right);
+      this.renderDialogBox(buffer, bounds);
     }
   }
 
-  private renderSpeakerBar(buffer: CharBuffer, top: number, bottom: number, left: number, right: number): void {
-    const speakerRow = bottom - 1;
-    const speakerStart = left + 2;
+  private renderSpeakerBar(buffer: CharBuffer, bounds: OverlayRenderBounds): void {
+    const speakerRow = bounds.bottomBot - 1;
+    const speakerStart = 13;
+    const speakerEnd = 27;
 
     const prefix = '<)) ';
     writeText(buffer, speakerRow, speakerStart, prefix, 'cyan', 'black');
 
     const offset = Math.floor(this.phaseAccum / SPEAKER_ANIMATION_INTERVAL);
     const charSequence = SPEAKER_BAR_CHARS;
-    const speakerEnd = Math.min(speakerStart + 12, right);
 
-    for (let col = speakerStart + prefix.length; col < speakerEnd; col++) {
+    for (let col = speakerStart + prefix.length; col < speakerEnd && col < buffer[0].length; col++) {
       const idx = (col - (speakerStart + prefix.length) + offset) % charSequence.length;
       const char = charSequence[idx];
       writeText(buffer, speakerRow, col, char, 'cyan', 'black');
     }
   }
 
-  private renderMessagePanel(buffer: CharBuffer, top: number, bottom: number, left: number, right: number): void {
-    const panelTop = top + 1;
-    const panelBottom = bottom - 2;
-    const panelWidth = right - left;
+  private renderDialogBox(buffer: CharBuffer, bounds: OverlayRenderBounds): void {
+    const boxHeight = 7;
+    const boxTop = bounds.viewportBot - boxHeight;
+    const boxBot = bounds.viewportBot;
+    const boxLeft = 2;
+    const boxRight = bounds.width - 3;
+    const boxWidth = boxRight - boxLeft;
+
+    for (let col = boxLeft; col <= boxRight; col++) {
+      writeText(buffer, boxTop, col, '+', 'white', 'black');
+      writeText(buffer, boxBot, col, '+', 'white', 'black');
+    }
+
+    for (let row = boxTop + 1; row < boxBot; row++) {
+      writeText(buffer, row, boxLeft, '|', 'white', 'black');
+      writeText(buffer, row, boxRight, '|', 'white', 'black');
+    }
 
     const label = ENCOUNTER_LABELS[this.encounterType];
-    const labelCol = Math.floor((panelWidth - label.length) / 2) + left;
-    writeText(buffer, panelTop, labelCol, label, 'bright-yellow', 'black');
+    const labelCol = Math.floor((boxWidth - label.length) / 2) + boxLeft;
+    writeText(buffer, boxTop + 1, labelCol, label, 'bright-yellow', 'black');
 
     let displayCharCount = this.charCount;
     let lineIdx = 0;
     let totalCharsProcessed = 0;
 
+    const contentTop = boxTop + 2;
+    const contentBottom = boxBot - 2;
+
     for (const line of this.wrappedText) {
-      const displayRow = panelTop + 2 + lineIdx;
-      if (displayRow >= panelBottom) break;
+      const displayRow = contentTop + lineIdx;
+      if (displayRow >= contentBottom) break;
 
       const lineLength = line.length;
       const charsInThisLine = Math.min(lineLength, Math.max(0, displayCharCount - totalCharsProcessed));
       const displayLine = line.substring(0, charsInThisLine);
 
-      const textCol = left + 1;
+      const textCol = boxLeft + 2;
       writeText(buffer, displayRow, textCol, displayLine, 'white', 'black');
       totalCharsProcessed += lineLength;
       lineIdx++;
@@ -140,10 +155,12 @@ export class NavigationEncounterOverlay extends EncounterOverlay {
 
     if (this.phase === 'complete') {
       const buttonText = '[ CONTINUE ]';
-      const buttonRow = panelBottom - 1;
-      const buttonCol = Math.floor((panelWidth - buttonText.length) / 2) + left;
+      const buttonRow = boxBot - 1;
+      const buttonCol = Math.floor((boxWidth - buttonText.length) / 2) + boxLeft;
       writeText(buffer, buttonRow, buttonCol, buttonText, 'bright-green', 'black');
     }
+
+    this.renderSpeakerBar(buffer, bounds);
   }
 
   private getTotalCharCount(): number {

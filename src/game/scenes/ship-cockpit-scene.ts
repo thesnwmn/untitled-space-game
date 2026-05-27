@@ -300,7 +300,13 @@ export class ShipCockpitScene extends BaseScene {
     this.renderTicker(buffer, tickerRow);
 
     if (this.overlay) {
-      this.overlay.render(buffer, bottomTop, bottomBot, RIGHT_PANEL_START, w - 1);
+      this.overlay.render(buffer, {
+        viewportTop,
+        viewportBot,
+        bottomTop,
+        bottomBot,
+        width: w,
+      });
     }
   }
 
